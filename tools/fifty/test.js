@@ -21,198 +21,79 @@
 		//	*	jsapi / browser: loader/browser/test/api.js
 
 		/**
-		 *
-		 * @param { { parent?: slime.fifty.test.internal.Scope, listener: slime.fifty.test.internal.Listener } } p
-		 * @returns { slime.fifty.test.internal.Scope }
+		 * @type { () => slime.fifty.test.internal.test.State }
 		 */
-		function Scope(p) {
-			return new function() {
-				this.success = true;
+		var State = function() {
+			/** @type { slime.fifty.test.internal.Scope } */
+			var scope;
 
-				this.depth = function() {
-					return (p.parent) ? p.parent.depth() + 1 : 0;
-				};
+			/** @type { slime.definition.verify.Verify } */
+			var verify;
 
-				this.fail = function() {
-					this.success = false;
-					if (p.parent) p.parent.fail();
-				}
+			/**
+			 *
+			 * @param { slime.fifty.test.internal.Scope } newScope
+			 * @param { slime.definition.verify.Verify } newVerify
+			 */
+			var setContext = function(newScope,newVerify) {
+				scope = newScope;
+				verify = newVerify;
+			}
 
-				this.toString = function() {
-					return "Scope: " + this.depth();
-				}
-
-				/** @type { slime.$api.event.Emitter<slime.fifty.test.internal.Events> } */
-				var emitter = $api.events.emitter({
-					source: this,
-					on: p.listener
-				});
-
-				this.start = function(name) {
-					emitter.fire("start", { name: name });
-				};
-
-				this.end = function(name,result) {
-					emitter.fire("end", { name: name, result: result });
-				};
-
-				/** @type { slime.definition.verify.Context } */
-				this.test = function(f) {
-					/** @type { slime.definition.unit.Test.Result } */
-					var result;
-					try {
-						result = f();
-						if (result.success === false) {
-							this.fail();
-						} else if (result.success === true) {
-							//	do nothing
-						} else {
-							throw new TypeError();
+			/**
+			 * @param { string } name
+			 */
+			var start = function(name) {
+				if (scope) {
+					scope.start(name);
+				} else {
+					$context.console.start({
+						//	TODO	this shim is horrendous
+						source: null,
+						type: "start",
+						path: [],
+						timestamp: new Date().getTime(),
+						detail: {
+							name: name
 						}
-					} catch (e) {
-						this.fail();
-						result = {
-							success: null,
-							message: String(e) + ((e.stack) ? ("\n" + e.stack) : ""),
-							error: e
+					});
+					// console.start(null, name);
+				}
+			};
+
+			/**
+			 * @param { string } name
+			 * @param { boolean } result
+			 */
+			var end = function(name,result) {
+				if (scope) {
+					scope.end(name,result);
+				} else {
+					$context.console.end({
+						//	TODO	this shim is horrendous
+						source: null,
+						type: "end",
+						path: [],
+						timestamp: new Date().getTime(),
+						detail: {
+							name: name,
+							result: result
 						}
-					}
-					emitter.fire("test", { message: result.message, success: result.success });
-				};
-			}
-		}
-
-		var state = (
-			function() {
-				/** @type { slime.fifty.test.internal.Scope } */
-				var scope;
-
-				/** @type { slime.definition.verify.Verify } */
-				var verify;
-
-				/**
-				 *
-				 * @param { slime.fifty.test.internal.Scope } newScope
-				 * @param { slime.definition.verify.Verify } newVerify
-				 */
-				var setContext = function(newScope,newVerify) {
-					scope = newScope;
-					verify = newVerify;
-				}
-
-				/**
-				 * @param { string } name
-				 */
-				var start = function(name) {
-					if (scope) {
-						scope.start(name);
-					} else {
-						$context.console.start({
-							//	TODO	this shim is horrendous
-							source: null,
-							type: "start",
-							path: [],
-							timestamp: new Date().getTime(),
-							detail: {
-								name: name
-							}
-						});
-						// console.start(null, name);
-					}
-				};
-
-				/**
-				 * @param { string } name
-				 * @param { boolean } result
-				 */
-				var end = function(name,result) {
-					if (scope) {
-						scope.end(name,result);
-					} else {
-						$context.console.end({
-							//	TODO	this shim is horrendous
-							source: null,
-							type: "end",
-							path: [],
-							timestamp: new Date().getTime(),
-							detail: {
-								name: name,
-								result: result
-							}
-						});
-					}
-				}
-
-				var state = {
-					set: setContext,
-					start: start,
-					end: end,
-					get: function() {
-						return /** @type { slime.fifty.test.internal.test.State } */ ({ scope: scope, verify: verify });
-					}
-				};
-
-				return state;
-			}
-		)();
-
-
-		// var scope;
-		// var verify;
-
-		// /**
-		//  *
-		//  * @param { slime.fifty.test.internal.Scope } newScope
-		//  * @param { slime.definition.verify.Verify } newVerify
-		//  */
-		// var setContext = function(newScope,newVerify) {
-		// 	scope = newScope;
-		// 	verify = newVerify;
-		// }
-
-		/**
-		 *
-		 * @param { slime.fifty.test.tests } tests - the tests for this file
-		 * @param { any } code - the code to run
-		 * @returns
-		 */
-		var getContainerName = function(tests,code) {
-			function getPropertyPathFrom(target) {
-				return function(value) {
-					if (value === target) return [];
-					for (var x in target) {
-						var found = getPropertyPathFrom(target[x])(value);
-						if (found) return [x].concat(found);
-					}
-					return null;
+					});
 				}
 			}
 
-			if (!code) throw new TypeError("Cannot run scope " + code);
-			/** @type { string } */
-			var name;
-			if (!name) name = $api.fp.result(
-				code,
-				getPropertyPathFrom(tests),
-				function(array) {
-					return (array) ? array.join(".") : array;
+			var state = {
+				set: setContext,
+				start: start,
+				end: end,
+				get: function() {
+					return /** @type { slime.fifty.test.internal.test.Current } */ ({ scope: scope, verify: verify });
 				}
-			);
-			if (!name) name = code.name;
-			if (!name) name = "run";
-			return name;
+			};
+
+			return state;
 		};
-
-		// /**
-		//  * @param { string } name
-		//  */
-		// var start = function(name) {
-		// 	if (scope) {
-		// 		scope.start(name);
-		// 	} else {
-		// 		console.start(null, name);
-		// 	}
-		// };
 
 		/**
 		 *
@@ -225,266 +106,281 @@
 					return f(success);
 				}
 			}
-		}
+		};
 
 		/**
-		 *
-		 * @param { { parent: slime.fifty.test.internal.test.AsynchronousScope, name: string } } [p]
-		 * @returns { slime.fifty.test.internal.test.AsynchronousScope }
+		 * @type { slime.fifty.test.internal.test.Executors }
 		 */
-		var AsynchronousScope = function recurse(p) {
-			var name = (p && p.name);
-			$context.promises.console.log("creating scope", name);
-			var nextChild = 0;
+		function executors(/** {@type slime.fifty.test.internal.test.State} */ state) {
+			/**
+			 *
+			 * @param { { parent?: slime.fifty.test.internal.Scope, listener: slime.fifty.test.internal.Listener } } p
+			 * @returns { slime.fifty.test.internal.Scope }
+			 */
+			function Scope(p) {
+				return new function() {
+					this.success = true;
 
-			/** @type { slime.definition.test.promises.Registry } */
-			var registry;
+					this.depth = function() {
+						return (p.parent) ? p.parent.depth() + 1 : 0;
+					};
 
-			/** @type { slime.fifty.test.internal.test.AsynchronousSubscope[] } */
-			var subscopes = [];
+					this.fail = function() {
+						this.success = false;
+						if (p.parent) p.parent.fail();
+					}
 
-			return {
-				test: {
-					depth: function() {
-						//	TODO	Probable bug / unused
-						return scopes["length"];
-					},
-					setName: function(value) {
-						registry.test.setName(value);
-					},
-					log: $context.promises.console.log
-				},
-				start: function() {
-					//	It appears need to launch a null promise here to trigger the flow in case there are no other asynhronous
-					//	promises involved
-					var executor = function nullPromise(resolve,reject) {
+					this.toString = function() {
+						return "Scope: " + this.depth();
+					}
+
+					/** @type { slime.$api.event.Emitter<slime.fifty.test.internal.Events> } */
+					var emitter = $api.events.emitter({
+						source: this,
+						on: p.listener
+					});
+
+					this.start = function(name) {
+						emitter.fire("start", { name: name });
+					};
+
+					this.end = function(name,result) {
+						emitter.fire("end", { name: name, result: result });
+					};
+
+					/** @type { slime.definition.verify.Context } */
+					this.test = function(f) {
+						/** @type { slime.definition.unit.Test.Result } */
+						var result;
+						try {
+							result = f();
+							if (result.success === false) {
+								this.fail();
+							} else if (result.success === true) {
+								//	do nothing
+							} else {
+								throw new TypeError();
+							}
+						} catch (e) {
+							this.fail();
+							result = {
+								success: null,
+								message: String(e) + ((e.stack) ? ("\n" + e.stack) : ""),
+								error: e
+							}
+						}
+						emitter.fire("test", { message: result.message, success: result.success });
+					};
+				}
+			}
+
+			/**
+			 *
+			 * @param { slime.fifty.test.internal.test.AsynchronousScope } ascope
+			 * @param { string } name
+			 * @param { () => void } execute
+			 * @param { slime.fifty.test.internal.Listener } listener
+			 * @returns { slime.fifty.test.internal.test.Result }
+			 */
+			var executeTestScope = function(ascope,name,execute,listener) {
+				if (ascope) ascope.test.log("async tests: starting scope", name, ascope.test.depth());
+				if (ascope) ascope.start();
+				if (ascope) ascope.test.setName(name);
+
+				state.start(name);
+				var was = state.get();
+				var localscope = Scope({ parent: was.scope, listener: listener });
+				var localverify = $context.library.Verify(
+					function(f) {
+						//	Can we use was.scope?
+						state.get().scope.test(f);
+					}
+				);
+				state.set(localscope, localverify);
+
+				function after() {
+					var result = localscope.success;
+					if (ascope) ascope.test.log("async tests: restoring scope and verify to", name, was.scope, was.verify);
+					state.set(was.scope, was.verify);
+					state.end(name, result);
+					return result;
+				}
+
+				if (ascope) {
+					var executor = function synchronous(resolve,reject) {
+						execute();
+						ascope.test.log("Resolving executeTestScope<" + name + ">");
 						resolve(void(0));
 					};
 					executor.toString = function() {
-						return "Null promise for AsynchronousScope <" + name + ">";
+						return "executeTestScope <" + name + ">";
 					}
-					var nullPromise = new Promise(executor);
 
-					$context.promises.console.log("creating registry", name);
-					registry = $context.promises.Registry({ name: name });
-					if (name) registry.test.setName(p.name);
-					$context.promises.console.log("created registry", name);
-				},
-				then: function(v) {
-					subscopes.push(v);
-				},
-				subscopes: function() {
-					return subscopes;
-				},
-				wait: function() {
-					return registry.wait();
-				},
-				child: function() {
-					return recurse({ parent: this, name: name + "/" + String(nextChild++) });
-				},
-				external: function(promise) {
-					registry.external(promise);
-				}
-			}
-		};
+					ascope.test.log("async tests: creating promise for scope", name);
+					var rv = new $context.promises.Promise(executor)
+						.then(function(executed) {
+							ascope.test.log("async tests: waiting for scope synchronous execution", name);
+							return ascope.wait();
+						})
+					;
 
-		//	We use a single `fifty` object throughout, and we can't change it across stack frames, so we cannot implement
-		//	these scopes on the stack; rather, we must implement a stack of them.
-		/**
-		 *
-		 * @param { slime.fifty.test.internal.test.AsynchronousScope } initial
-		 * @returns { slime.fifty.test.internal.test.AsynchronousScopes }
-		 */
-		var AsynchronousScopes = function(initial) {
-			var stack = [ initial ];
-
-			var current = function() {
-				return stack[stack.length-1];
-			}
-
-			return {
-				push: function() {
-					var push = current().child();
-					stack.push(push);
-					return push;
-				},
-				pop: function() {
-					stack.pop();
-				},
-				current: function() {
-					return current();
-				}
-			}
-		};
-
-		/**
-		 *
-		 * @param { slime.fifty.test.internal.test.AsynchronousScope } ascope
-		 * @param { string } name
-		 * @param { () => void } execute
-		 * @param { slime.fifty.test.internal.Listener } listener
-		 * @returns { slime.fifty.test.internal.test.Result }
-		 */
-		var executeTestScope = function(ascope,name,execute,listener) {
-			if (ascope) ascope.test.log("async tests: starting scope", name, ascope.test.depth());
-			if (ascope) ascope.start();
-			if (ascope) ascope.test.setName(name);
-
-			state.start(name);
-			var was = state.get();
-			var localscope = Scope({ parent: was.scope, listener: listener });
-			var localverify = $context.library.Verify(
-				function(f) {
-					//	Can we use was.scope?
-					state.get().scope.test(f);
-				}
-			);
-			state.set(localscope, localverify);
-
-			function after() {
-				var result = localscope.success;
-				if (ascope) ascope.test.log("async tests: restoring scope and verify to", name, was.scope, was.verify);
-				state.set(was.scope, was.verify);
-				state.end(name, result);
-				return result;
-			}
-
-			if (ascope) {
-				var executor = function synchronous(resolve,reject) {
-					execute();
-					ascope.test.log("Resolving executeTestScope<" + name + ">");
-					resolve(void(0));
-				};
-				executor.toString = function() {
-					return "executeTestScope <" + name + ">";
-				}
-
-				ascope.test.log("async tests: creating promise for scope", name);
-				var rv = new $context.promises.Promise(executor)
-					.then(function(executed) {
-						ascope.test.log("async tests: waiting for scope synchronous execution", name);
-						return ascope.wait();
-					})
-				;
-
-				ascope.subscopes().forEach(function(subscope) {
-					rv = rv.then(function(ignore) {
-						return new $context.promises.NativePromise(
-							function(resolve,reject) {
-								subscope().then(function forwardTestResult(success) {
-									resolve(success);
-								})
-							}
-						);
+					ascope.subscopes().forEach(function(subscope) {
+						rv = rv.then(function(ignore) {
+							return new $context.promises.NativePromise(
+								function(resolve,reject) {
+									subscope().then(function forwardTestResult(success) {
+										resolve(success);
+									})
+								}
+							);
+						});
 					});
-				});
 
-				// rv = $context.promises.NativePromise.prototype.then.call(
-				// 	rv,
-				// 	function done(done) {
-				// 		$context.promises.console.log("async tests: computing after() for", name);
-				// 		return Promise.resolve(after());
-				// 	}
-				// )
-				rv = rv
-					.then(function done(done) {
-						$context.promises.console.log("async tests: computing after() for", name);
-						return Promise.resolve(after());
-					})
-				;
+					// rv = $context.promises.NativePromise.prototype.then.call(
+					// 	rv,
+					// 	function done(done) {
+					// 		$context.promises.console.log("async tests: computing after() for", name);
+					// 		return Promise.resolve(after());
+					// 	}
+					// )
+					rv = rv
+						.then(function done(done) {
+							$context.promises.console.log("async tests: computing after() for", name);
+							return Promise.resolve(after());
+						})
+					;
 
-				ascope.external(rv);
+					ascope.external(rv);
 
-				return rv;
-			} else {
-				execute();
-				return toResult(after());
+					return rv;
+				} else {
+					execute();
+					return toResult(after());
+				}
 			}
-		}
 
-		/**
-		 *
-		 * @param { slime.fifty.test.tests } tests
-		 * @param { slime.fifty.test.internal.Listener } console
-		 * @returns
-		 */
-		var runner = function(tests,console) {
 			/**
-			 * @template { any } T
-			 * @param { slime.fifty.test.internal.test.AsynchronousScope } ascope
-			 * @param { (t: T) => void } callable
-			 * @param { string } name essentially for display when reporting results
-			 * @param { T } [argument]
-			 * @returns { slime.fifty.test.internal.test.Result }
+			 *
+			 * @param { slime.fifty.test.tests } tests
+			 * @param { slime.fifty.test.internal.Listener } console
+			 * @returns
 			 */
-			var rv = function(ascope,callable,name,argument) {
-				return executeTestScope(
-					ascope,
-					(name) ? name : getContainerName(tests,callable),
-					function() {
-						try {
-							callable(argument);
-						} catch (e) {
-							state.get().scope.test(function() {
-								throw e;
-							});
+			var runner = function(tests,console) {
+				/**
+				 *
+				 * @param { slime.fifty.test.tests } tests - the tests for this file
+				 * @param { any } code - the code to run
+				 * @returns
+				 */
+				var getContainerName = function(tests,code) {
+					function getPropertyPathFrom(target) {
+						return function(value) {
+							if (value === target) return [];
+							for (var x in target) {
+								var found = getPropertyPathFrom(target[x])(value);
+								if (found) return [x].concat(found);
+							}
+							return null;
 						}
+					}
+
+					if (!code) throw new TypeError("Cannot run scope " + code);
+					/** @type { string } */
+					var name;
+					if (!name) name = $api.fp.result(
+						code,
+						getPropertyPathFrom(tests),
+						function(array) {
+							return (array) ? array.join(".") : array;
+						}
+					);
+					if (!name) name = code.name;
+					if (!name) name = "run";
+					return name;
+				};
+
+				/**
+				 * @template { any } T
+				 * @param { slime.fifty.test.internal.test.AsynchronousScope } ascope
+				 * @param { (t: T) => void } callable
+				 * @param { string } name essentially for display when reporting results
+				 * @param { T } [argument]
+				 * @returns { slime.fifty.test.internal.test.Result }
+				 */
+				var rv = function(ascope,callable,name,argument) {
+					return executeTestScope(
+						ascope,
+						(name) ? name : getContainerName(tests,callable),
+						function() {
+							try {
+								callable(argument);
+							} catch (e) {
+								state.get().scope.test(function() {
+									throw e;
+								});
+							}
+						},
+						console
+					)
+				}
+				return rv;
+			};
+
+			/**
+			 *
+			 * @param { string } name
+			 * @param { Error & { printStackTrace?: () => void, javaException?: any }} e
+			 * @param { slime.fifty.test.internal.Listener } console
+			 */
+			var error = function(name,e,console) {
+				executeTestScope(
+					void(0),
+					name,
+					function() {
+						var error = [
+							String(e),
+							e.stack
+						];
+						if (e["printStackTrace"]) {
+							e.printStackTrace();
+						}
+						if (e.javaException) {
+							error.push("Java exception:");
+							var ex = e.javaException;
+							if (String(ex) == "inonit.script.rhino.Errors") {
+								var Packages = (function() { return this; })().Packages;
+								var JavaAdapter = (function() { return this; })().JavaAdapter;
+								var _log = new JavaAdapter(
+									Packages.inonit.script.rhino.Engine.Log,
+									{
+										println: function(s) {
+											error.push(String(s));
+										}
+									}
+								)
+								ex.dump(_log, "[fifty] ");
+							} else {
+								while(ex != null) {
+									error.push(ex.getClass().getName() + ": " + ex.getMessage());
+									var _stack = ex.getStackTrace();
+									for (var i=0; i<_stack.length; i++) {
+										error.push("\t" + String(_stack[i].toString()));
+									}
+									ex = ex.getCause();
+									if (ex) error.push("");
+								}
+							}
+						}
+						state.get().verify(error.join("\n")).is("Successfully loaded tests");
 					},
 					console
 				)
-			}
-			return rv;
-		};
+			};
 
-		/**
-		 *
-		 * @param { string } name
-		 * @param { Error & { printStackTrace?: () => void, javaException?: any }} e
-		 * @param { slime.fifty.test.internal.Listener } console
-		 */
-		var error = function(name,e,console) {
-			executeTestScope(
-				void(0),
-				name,
-				function() {
-					var error = [
-						String(e),
-						e.stack
-					];
-					if (e["printStackTrace"]) {
-						e.printStackTrace();
-					}
-					if (e.javaException) {
-						error.push("Java exception:");
-						var ex = e.javaException;
-						if (String(ex) == "inonit.script.rhino.Errors") {
-							var Packages = (function() { return this; })().Packages;
-							var JavaAdapter = (function() { return this; })().JavaAdapter;
-							var _log = new JavaAdapter(
-								Packages.inonit.script.rhino.Engine.Log,
-								{
-									println: function(s) {
-										error.push(String(s));
-									}
-								}
-							)
-							ex.dump(_log, "[fifty] ");
-						} else {
-							while(ex != null) {
-								error.push(ex.getClass().getName() + ": " + ex.getMessage());
-								var _stack = ex.getStackTrace();
-								for (var i=0; i<_stack.length; i++) {
-									error.push("\t" + String(_stack[i].toString()));
-								}
-								ex = ex.getCause();
-								if (ex) error.push("");
-							}
-						}
-					}
-					state.get().verify(error.join("\n")).is("Successfully loaded tests");
-				},
-				console
-			)
+			return {
+				runner: runner,
+				error: error
+			}
 		}
 
 		var parsePath = function(path) {
@@ -566,6 +462,13 @@
 		 */
 		var load = function recurse(ascopes,loader,contexts,path,argument) {
 			//	TODO	it appears loader and contexts.jsh.loader may be redundant?
+
+			var state = State();
+
+			var execution = executors(state);
+
+			var runner = execution.runner;
+			var error = execution.error;
 
 			//	TODO	this should probably be completely empty
 			var tests = {
@@ -867,6 +770,96 @@
 				}
 			}
 		}
+
+		/**
+		 *
+		 * @param { { parent: slime.fifty.test.internal.test.AsynchronousScope, name: string } } [p]
+		 * @returns { slime.fifty.test.internal.test.AsynchronousScope }
+		 */
+		var AsynchronousScope = function recurse(p) {
+			var name = (p && p.name);
+			$context.promises.console.log("creating scope", name);
+			var nextChild = 0;
+
+			/** @type { slime.definition.test.promises.Registry } */
+			var registry;
+
+			/** @type { slime.fifty.test.internal.test.AsynchronousSubscope[] } */
+			var subscopes = [];
+
+			return {
+				test: {
+					depth: function() {
+						//	TODO	Probable bug / unused
+						return scopes["length"];
+					},
+					setName: function(value) {
+						registry.test.setName(value);
+					},
+					log: $context.promises.console.log
+				},
+				start: function() {
+					//	It appears need to launch a null promise here to trigger the flow in case there are no other asynhronous
+					//	promises involved
+					var executor = function nullPromise(resolve,reject) {
+						resolve(void(0));
+					};
+					executor.toString = function() {
+						return "Null promise for AsynchronousScope <" + name + ">";
+					}
+					var nullPromise = new Promise(executor);
+
+					$context.promises.console.log("creating registry", name);
+					registry = $context.promises.Registry({ name: name });
+					if (name) registry.test.setName(p.name);
+					$context.promises.console.log("created registry", name);
+				},
+				then: function(v) {
+					subscopes.push(v);
+				},
+				subscopes: function() {
+					return subscopes;
+				},
+				wait: function() {
+					return registry.wait();
+				},
+				child: function() {
+					return recurse({ parent: this, name: name + "/" + String(nextChild++) });
+				},
+				external: function(promise) {
+					registry.external(promise);
+				}
+			}
+		};
+
+		//	We use a single `fifty` object throughout, and we can't change it across stack frames, so we cannot implement
+		//	these scopes on the stack; rather, we must implement a stack of them.
+		/**
+		 *
+		 * @param { slime.fifty.test.internal.test.AsynchronousScope } initial
+		 * @returns { slime.fifty.test.internal.test.AsynchronousScopes }
+		 */
+		var AsynchronousScopes = function(initial) {
+			var stack = [ initial ];
+
+			var current = function() {
+				return stack[stack.length-1];
+			}
+
+			return {
+				push: function() {
+					var push = current().child();
+					stack.push(push);
+					return push;
+				},
+				pop: function() {
+					stack.pop();
+				},
+				current: function() {
+					return current();
+				}
+			}
+		};
 
 		$export({
 			run: function(p/*loader,scopes,path,part*/) {
