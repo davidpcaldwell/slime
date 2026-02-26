@@ -303,9 +303,28 @@ namespace slime.fifty.test.internal.test {
 		promises?: slime.definition.test.promises.Export
 	}
 
-	export interface State {
+	export interface Current {
 		scope: slime.fifty.test.internal.Scope
 		verify: slime.definition.verify.Verify
+	}
+
+	export interface State {
+		get: () => Current
+		set: (newScope: slime.fifty.test.internal.Scope, newVerify: slime.definition.verify.Verify) => void
+		start: (name: string) => void
+		end: (name: string, result: boolean) => void
+	}
+
+	export type Executors = (state: State) => {
+		runner: (tests: slime.fifty.test.tests, console: slime.fifty.test.internal.Listener)
+			=> <T extends unknown>(ascope: slime.fifty.test.internal.test.AsynchronousScope, callable: (t: T) => void, name: string, argument?: T)
+			=> slime.fifty.test.internal.test.Result
+
+		error: (
+			name: string,
+			e: Error & { printStackTrace?: () => void; javaException?: any; },
+			console: slime.$api.event.Handlers<slime.fifty.test.internal.Events>
+		) => void
 	}
 
 	export type Result = {
