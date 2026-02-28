@@ -677,6 +677,7 @@
 								});
 							}
 
+							/** @type { { fifty: slime.fifty.test.Kit, $fifty: slime.fifty.test.Kit }} */
 							var scope = {
 								fifty: fifty,
 								//	We also provide $fifty for namespaces containing the name "fifty"
@@ -706,9 +707,9 @@
 
 					if (!loaderError) {
 						/** @type { any } */
-						var target = scope.tests;
+						var target = scope.fifty.tests;
 						part.split(".").forEach(function(token) {
-							target = $api.fp.result(target, $api.fp.optionalChain(token))
+							target = $api.fp.now(target, $api.fp.optionalChain(token))
 						});
 						if (typeof(target) == "function") {
 							/** @type { (argument: any) => void } */
