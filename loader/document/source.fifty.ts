@@ -202,7 +202,7 @@ namespace slime.runtime.document.internal.source {
 			export const subject: slime.runtime.document.internal.source.Exports = (function(fifty: fifty.test.Kit) {
 				return fifty.$loader.module("source.js");
 			//@ts-ignore
-			})(fifty)
+			})(fifty);
 		}
 		export interface Position {
 			document: string

@@ -46,7 +46,7 @@ namespace slime.project.wf {
 				}
 			};
 		//@ts-ignore
-		})(fifty)
+		})(fifty);
 	}
 
 	type Options = {}

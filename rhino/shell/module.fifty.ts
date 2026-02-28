@@ -1446,5 +1446,5 @@ namespace slime.jrunscript.shell {
 			}
 		}
 	//@ts-ignore
-	)(fifty)
+	)(fifty);
 }

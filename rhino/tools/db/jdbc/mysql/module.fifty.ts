@@ -144,5 +144,5 @@ namespace slime.jrunscript.db.mysql {
 			}
 		}
 	//@ts-ignore
-	)(fifty)
+	)(fifty);
 }

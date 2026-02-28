@@ -99,7 +99,7 @@ namespace slime.servlet.proxy {
 				}
 			});
 		//@ts-ignore
-		})(fifty)
+		})(fifty);
 	}
 
 	(

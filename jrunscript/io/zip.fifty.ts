@@ -20,7 +20,7 @@ namespace slime.jrunscript.io.zip {
 				return file.content.read.string.simple($api.jrunscript.io.Charset.default);
 			};
 		//@ts-ignore
-		})($fifty)
+		})($fifty);
 	}
 
 	(

@@ -492,7 +492,7 @@
 						return path + ":" + part;
 					};
 
-					var x = (
+					var initializeTestScope = (
 						function() {
 							/**
 							 * @type { slime.fifty.test.Kit }
@@ -683,21 +683,6 @@
 								$fifty: fifty
 							}
 
-							//	TODO	deprecate
-							Object.assign(scope, {
-								global: fifty.global,
-								$loader: fifty.$loader,
-								run: fifty.run,
-								load: fifty.load,
-								tests: fifty.tests,
-								verify: fifty.verify
-							});
-
-							//	TODO	deprecate
-							Object.assign(scope, {
-								jsh: ($context.jsh) ? $context.jsh.global : {}
-							});
-
 							var loaderError;
 
 							try {
@@ -716,8 +701,8 @@
 						}
 					)();
 
-					var loaderError = x.loaderError;
-					var scope = x.scope;
+					var loaderError = initializeTestScope.loaderError;
+					var scope = initializeTestScope.scope;
 
 					if (!loaderError) {
 						/** @type { any } */
