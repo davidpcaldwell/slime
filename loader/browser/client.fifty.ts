@@ -417,4 +417,4 @@ namespace slime {
 		}
 	}
 //@ts-ignore
-)(fifty)
+)(fifty);

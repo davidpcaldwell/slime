@@ -452,7 +452,7 @@ namespace slime.jrunscript.tools.git {
 				}
 			}
 		//@ts-ignore
-		)(fifty)
+		)(fifty);
 
 		export interface Local {
 			status: () => {

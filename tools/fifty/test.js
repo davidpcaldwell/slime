@@ -492,7 +492,7 @@
 						return path + ":" + part;
 					};
 
-					var x = (
+					var initializeTestScope = (
 						function() {
 							/**
 							 * @type { slime.fifty.test.Kit }
@@ -677,26 +677,12 @@
 								});
 							}
 
+							/** @type { { fifty: slime.fifty.test.Kit, $fifty: slime.fifty.test.Kit }} */
 							var scope = {
 								fifty: fifty,
 								//	We also provide $fifty for namespaces containing the name "fifty"
 								$fifty: fifty
 							}
-
-							//	TODO	deprecate
-							Object.assign(scope, {
-								global: fifty.global,
-								$loader: fifty.$loader,
-								run: fifty.run,
-								load: fifty.load,
-								tests: fifty.tests,
-								verify: fifty.verify
-							});
-
-							//	TODO	deprecate
-							Object.assign(scope, {
-								jsh: ($context.jsh) ? $context.jsh.global : {}
-							});
 
 							var loaderError;
 
@@ -716,14 +702,14 @@
 						}
 					)();
 
-					var loaderError = x.loaderError;
-					var scope = x.scope;
+					var loaderError = initializeTestScope.loaderError;
+					var scope = initializeTestScope.scope;
 
 					if (!loaderError) {
 						/** @type { any } */
-						var target = scope.tests;
+						var target = scope.fifty.tests;
 						part.split(".").forEach(function(token) {
-							target = $api.fp.result(target, $api.fp.optionalChain(token))
+							target = $api.fp.now(target, $api.fp.optionalChain(token))
 						});
 						if (typeof(target) == "function") {
 							/** @type { (argument: any) => void } */

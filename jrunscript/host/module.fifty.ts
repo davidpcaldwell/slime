@@ -37,7 +37,7 @@ namespace slime.jrunscript.java {
 				}
 			});
 		//@ts-ignore
-		})(fifty)
+		})(fifty);
 	}
 
 	export interface Environment {

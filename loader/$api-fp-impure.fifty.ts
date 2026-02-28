@@ -846,7 +846,7 @@ namespace slime.$api.fp.world {
 			}
 		}
 	//@ts-ignore
-	)(fifty)
+	)(fifty);
 
 	export namespace sensor {
 		export interface Exports {

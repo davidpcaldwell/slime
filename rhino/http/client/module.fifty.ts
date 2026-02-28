@@ -46,7 +46,7 @@ namespace slime.jrunscript.http.client {
 			});
 			return api;
 		//@ts-ignore
-		})(fifty)
+		})(fifty);
 	}
 
 	export type Header = { name: string, value: string }

@@ -206,7 +206,7 @@
 
 			var loader = new jsh.file.Loader({ directory: file.parent });
 
-			return implementation[method]({
+			var scope = {
 				loader: loader,
 				scopes: {
 					jsh: {
@@ -214,10 +214,17 @@
 						loader: loader
 					}
 				},
-				path: file.pathname.basename,
-				part: part,
-				console: view
-			});
+				path: file.pathname.basename
+			};
+
+			if (method == "list") {
+				return implementation.list(scope);
+			} else if (method == "run") {
+				return implementation.run($api.Object.compose(scope, {
+					part: part,
+					console: view
+				}));
+			}
 		}
 
 		/**
