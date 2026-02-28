@@ -16,19 +16,18 @@ public class OperatingSystem {
 		return singleton;
 	}
 
-	//	Used by TypeScript implementation, rhino/shell module, and jsh launcher redefinition of Rhino shell runCommand
+	public Subprocess start(Command.Context context, Command.Configuration configuration) throws IOException {
+		return Command.create(configuration).start(context);
+	}
+
+	//	Used by TypeScript Java interface, rhino/shell module, and jsh launcher redefinition of Rhino shell runCommand
 	public Command.Listener run(Command.Context context, Command.Configuration configuration) {
 		return Command.create(configuration).execute(context);
 	}
 
-	//	Used by rhino/file tests and Cygwin filesystem implementation
+	//	Used by Cygwin filesystem implementation and rhino/file softlink tests
 	public Command.Result execute(String path, String[] arguments) {
 		return Command.create(Command.Configuration.create(path, arguments)).getResult();
-	}
-
-	//	Used by Cygwin filesystem implementation
-	public Subprocess start(Command.Context context, Command.Configuration configuration) throws IOException {
-		return Command.create(configuration).start(context);
 	}
 
 	public static abstract class Environment {

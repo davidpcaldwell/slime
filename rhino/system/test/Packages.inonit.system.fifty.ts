@@ -5,37 +5,13 @@
 //	END LICENSE
 
 namespace slime.jrunscript.native {
-	export namespace inonit {
-		export interface system {
-			OperatingSystem: any
-			Command: {
-				Configuration: any
-				Context: any
-			}
-			Subprocess: {
-				Listener: any
-			}
-			Logging: any
-		}
-	}
-
 	export namespace inonit.system {
-		export namespace test {
-			export interface Fixtures {
-				OperatingSystem: {
-					Environment: {
-						create: (p: { values: object, caseSensitive: boolean }) => slime.jrunscript.native.inonit.system.OperatingSystem.Environment
-					}
-				}
-			}
-		}
-
-		export interface OperatingSystem {
+		export interface OperatingSystem extends java.lang.Object {
 			start: (context: Command.Context, configuration: Command.Configuration) => Subprocess
 
 
 			//	TODO	return type should be Result
-			execute: (path: string, arguments: string[]) => any
+			execute: (path: string, arguments: string[]) => Command.Result
 		}
 
 		export namespace Command {
@@ -43,6 +19,10 @@ namespace slime.jrunscript.native {
 			}
 
 			export interface Configuration {
+			}
+
+			export interface Result {
+				evaluate: () => Result
 			}
 		}
 
@@ -66,6 +46,36 @@ namespace slime.jrunscript.native {
 			export interface Listener {
 			}
 		}
+	}
+
+	export namespace inonit.system {
+		export namespace test {
+			export interface Fixtures {
+				OperatingSystem: {
+					Environment: {
+						create: (p: { values: object, caseSensitive: boolean }) => slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+					}
+				}
+			}
+		}
+	}
+}
+
+namespace slime.jrunscript.Packages.inonit {
+	export interface system {
+		OperatingSystem: JavaClass<slime.jrunscript.native.inonit.system.OperatingSystem,{
+			Environment: JavaClass<slime.jrunscript.native.inonit.system.OperatingSystem.Environment,{
+				SYSTEM: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+				create: any
+			}>
+			get: () => slime.jrunscript.native.inonit.system.OperatingSystem
+		}>
+		Command: {
+			Context: any
+			Configuration: any
+		}
+		Logging: any
+		Subprocess: any
 	}
 }
 

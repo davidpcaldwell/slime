@@ -5,13 +5,6 @@
 //	END LICENSE
 
 namespace slime.jrunscript.shell.subprocess {
-	export interface Exports {}
-
-	export interface Exports {
-		action: slime.$api.fp.world.Means<run.Intention,run.TellEvents>
-		question: slime.$api.fp.world.Sensor<run.Intention,run.AskEvents,run.Exit>
-	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -20,6 +13,18 @@ namespace slime.jrunscript.shell.subprocess {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {}
+
+	export type Environment = {
+		readonly [name: string]: string
+	}
+
+	export interface Exports {
+		action: slime.$api.fp.world.Means<run.Intention,run.TellEvents>
+		question: slime.$api.fp.world.Sensor<run.Intention,run.AskEvents,run.Exit>
+	}
+
 
 	(
 		function(
@@ -49,6 +54,46 @@ namespace slime.jrunscript.shell.subprocess {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Output {
+		stdout: slime.jrunscript.runtime.io.InputStream
+		stderr: slime.jrunscript.runtime.io.InputStream
+	}
+
+	export interface Invocation {
+		context: {
+			environment: Environment
+			directory: string
+		}
+
+		process: {
+			command: string
+			arguments: string[]
+		}
+
+		input: slime.jrunscript.runtime.io.InputStream
+
+		output: (p: {
+			stdout: slime.jrunscript.runtime.io.InputStream
+			stderr: slime.jrunscript.runtime.io.InputStream
+		}) => void
+	}
+
+	export interface MeansEvents {
+		start: {
+			pid: number
+			output: Output
+			kill: () => void
+		}
+
+		exit: {
+			status: number
+		}
+	}
+
+	// export interface Exports {
+	// 	means: slime.$api.fp.world.Means<Invocation,MeansEvents>
+	// }
 }
 
 namespace slime.jrunscript.shell.context.subprocess {
@@ -143,34 +188,13 @@ namespace slime.jrunscript.shell.internal.run {
 namespace slime.jrunscript.shell.run {
 	export type OutputCapture = "string" | "line" | Omit<slime.jrunscript.runtime.io.OutputStream, "close">;
 
+	export type Environment = subprocess.Environment;
+
 	export interface StdioConfiguration {
 		input: slime.jrunscript.runtime.io.InputStream
 		output: OutputCapture
 		error: OutputCapture
 	}
-
-	export type Environment = {
-		readonly [name: string]: string
-	}
-
-	//	Possible future representation
-	// export interface Execution {
-	// 	configuration: {
-	// 		environment: Environment
-	// 		directory: string
-	// 	}
-
-	// 	command: [string, ...string[]]
-
-	// 	input: {
-	// 		stdin: slime.jrunscript.runtime.io.InputStream
-	// 	}
-
-	// 	output: (streams: {
-	// 		stdout: slime.jrunscript.runtime.io.InputStream
-	// 		stderr: slime.jrunscript.runtime.io.InputStream
-	// 	}) => void
-	// }
 
 	export namespace intention {
 		export type Input = string | slime.jrunscript.runtime.io.InputStream
@@ -200,25 +224,6 @@ namespace slime.jrunscript.shell.run {
 
 			stdio: StdioConfiguration
 		}
-	}
-
-	export interface Invocation {
-		context: {
-			environment: Environment
-			directory: string
-		}
-
-		process: {
-			command: string
-			arguments: string[]
-		}
-
-		input: slime.jrunscript.runtime.io.InputStream
-
-		output: (p: {
-			stdout: slime.jrunscript.runtime.io.InputStream
-			stderr: slime.jrunscript.runtime.io.InputStream
-		}) => void
 	}
 
 	export namespace internal {
