@@ -198,7 +198,6 @@
 				library: {
 					Verify: verify
 				},
-				console: view,
 				jsh: {
 					global: jsh,
 					scope: scopes
@@ -216,7 +215,8 @@
 					}
 				},
 				path: file.pathname.basename,
-				part: part
+				part: part,
+				console: view
 			});
 		}
 

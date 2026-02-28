@@ -286,11 +286,6 @@ namespace slime.fifty.test.internal.test {
 			Verify: slime.definition.verify.Export
 		}
 
-		/**
-		 * @deprecated
-		 */
-		console: slime.fifty.test.internal.Listener
-
 		jsh?: {
 			global: slime.jsh.Global
 			scope: slime.fifty.test.internal.scope.jsh.Export
@@ -387,6 +382,7 @@ namespace slime.fifty.test.internal.test {
 			}
 			path: string
 			part?: string
+			console: slime.$api.event.Handlers<slime.fifty.test.internal.Events>
 		}) => Result
 
 		list: (p: {

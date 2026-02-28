@@ -21,9 +21,9 @@
 		//	*	jsapi / browser: loader/browser/test/api.js
 
 		/**
-		 * @type { () => slime.fifty.test.internal.test.State }
+		 * @type { (console: slime.$api.event.Handlers<slime.fifty.test.internal.Events>) => slime.fifty.test.internal.test.State }
 		 */
-		var State = function() {
+		var State = function(console) {
 			/** @type { slime.fifty.test.internal.Scope } */
 			var scope;
 
@@ -47,7 +47,7 @@
 				if (scope) {
 					scope.start(name);
 				} else {
-					$context.console.start({
+					console.start({
 						//	TODO	this shim is horrendous
 						source: null,
 						type: "start",
@@ -69,7 +69,7 @@
 				if (scope) {
 					scope.end(name,result);
 				} else {
-					$context.console.end({
+					console.end({
 						//	TODO	this shim is horrendous
 						source: null,
 						type: "end",
@@ -463,13 +463,6 @@
 		var load = function recurse(ascopes,loader,contexts,path,argument) {
 			//	TODO	it appears loader and contexts.jsh.loader may be redundant?
 
-			var state = State();
-
-			var execution = executors(state);
-
-			var runner = execution.runner;
-			var error = execution.error;
-
 			//	TODO	this should probably be completely empty
 			var tests = {
 				types: {}
@@ -483,6 +476,13 @@
 				 * @returns
 				 */
 				run: function(part, console) {
+					var state = State(console);
+
+					var execution = executors(state);
+
+					var runner = execution.runner;
+					var error = execution.error;
+
 					if (!part) part = "suite";
 
 					var getName = function(path,part) {
@@ -866,7 +866,7 @@
 				var ascopes = ($context.promises) ? AsynchronousScopes(
 					AsynchronousScope({ parent: null, name: "(top)" })
 				) : void(0);
-				return load(ascopes,p.loader,p.scopes,p.path).run(p.part, $context.console);
+				return load(ascopes,p.loader,p.scopes,p.path).run(p.part, p.console);
 			},
 			list: function(p/*loader,scopes,path*/) {
 				var ascopes = ($context.promises) ? AsynchronousScopes(
