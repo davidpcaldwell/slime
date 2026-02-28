@@ -282,11 +282,6 @@
 						var run = slime.module("tools/fifty/test.js", {
 							library: {
 								Verify: verify
-							},
-							console: {
-								start: function() {},
-								end: function() {},
-								test: function() {},
 							}
 						});
 
@@ -313,7 +308,12 @@
 						run.run({
 							loader: (path.folder) ? delegate.Child(path.folder) : delegate,
 							scopes: {},
-							path: path.file
+							path: path.file,
+							console: {
+								start: function() {},
+								end: function() {},
+								test: function() {},
+							}
 						}).then(function(result) {
 							p.verify(result,"Fifty " + p.path + " result").is(true);
 						});

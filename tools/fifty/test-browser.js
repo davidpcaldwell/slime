@@ -171,7 +171,6 @@
 						Verify: verify
 					},
 					promises: promises,
-					console: console,
 					window: {
 						global: window
 					}
@@ -196,7 +195,8 @@
 					loader: loader,
 					scopes: {},
 					path: path.file,
-					part: part
+					part: part,
+					console: console
 				});
 			};
 

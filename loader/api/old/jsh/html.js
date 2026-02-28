@@ -311,11 +311,6 @@
 					var run = slime.module("tools/fifty/test.js", {
 						library: {
 							Verify: slime.file("loader/api/verify.js")
-						},
-						console: {
-							start: function() {},
-							end: function() {},
-							test: function() {},
 						}
 					});
 
@@ -342,7 +337,12 @@
 								directory: (path.folder) ? directory.getSubdirectory(path.folder) : directory
 							}
 						},
-						path: path.file
+						path: path.file,
+						console: {
+							start: function() {},
+							end: function() {},
+							test: function() {},
+						}
 					});
 
 					promise.then(function(result) {
