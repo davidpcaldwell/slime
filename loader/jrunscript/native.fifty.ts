@@ -80,13 +80,14 @@ namespace slime.jrunscript {
 				}
 			}
 			export namespace io {
-				export interface InputStream {
-					read(): any
-					getClass(): any
-					close()
+				export interface InputStream extends slime.jrunscript.native.java.lang.Object {
+					read: () => number
+					close: () => void
 				}
+
 				export interface ByteArrayInputStream extends InputStream {
 				}
+
 				export interface OutputStream extends java.lang.Object {
 					write(b: number)
 					flush()
@@ -842,21 +843,7 @@ namespace slime.jrunscript {
 					}>
 				}
 			}
-			system: {
-				OperatingSystem: {
-					Environment: JavaClass<slime.jrunscript.native.inonit.system.OperatingSystem.Environment,{
-						SYSTEM: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
-						create: any
-					}>
-					get: () => slime.jrunscript.native.inonit.system.OperatingSystem
-				}
-				Command: {
-					Context: any
-					Configuration: any
-				}
-				Logging: any
-				Subprocess: any
-			}
+			system: slime.jrunscript.Packages.inonit.system,
 			tools: {
 				Profiler: any
 			}

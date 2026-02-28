@@ -16,10 +16,12 @@ namespace slime.jrunscript.io {
 		nojavamail: boolean
 	}
 
+	// TODO This should no longer be true, as we now have direct access to $api.jrunscript.runtime.Exports and can thus access the
+	// runtime methods via `$api.jrunscript.io`.
 	/**
-	 * Much of the content of the `jrunscript/io` module is provided by the {@link slime.jrunscript.runtime.Exports | Java SLIME
-	 * runtime} and its {@link slime.jrunscript.runtime.io.Exports | I/O module}, which supplies the `Resource`, and `Loader`
-	 * exports, and whose `io` property supplies the `Streams` and `Buffer` exports.
+	 * Much of the content of the `jrunscript/io` module is provided by the {@link slime.jrunscript.runtime.Exports | Java SLIME runtime}
+	 * and its {@link slime.jrunscript.runtime.io.Exports | I/O module}, which supplies the `Resource`, and `Loader` exports, and
+	 * whose `io` property supplies the `Streams` and `Buffer` exports.
 	 */
 	export interface Exports {
 	}
