@@ -6,8 +6,6 @@
 
 package inonit.script.servlet;
 
-import java.io.*;
-
 import javax.script.*;
 
 import inonit.script.engine.*;

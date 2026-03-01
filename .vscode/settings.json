@@ -11,16 +11,12 @@
 	],
 	"debug.node.autoAttach": "on",
 	"java.configuration.updateBuildConfiguration": "interactive",
-	"java.import.exclusions": [
-		"local/**"
-	],
 	"files.associations": {
 		"*.json": "jsonc"
 	},
 	"git.branchProtection": [
 		"main"
 	],
-	"java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx4G -Xms100m",
 	"task.allowAutomaticTasks": "on",
 	"githubIssues.issueBranchTitle": "${user}/issue/#${issueNumber}",
 	"github.branchProtection": true,
@@ -49,5 +45,50 @@
             "label": "Created Issues",
             "query": "author:${user} state:open repo:${owner}/${repository} sort:created-desc"
         }
-    ]
+    ],
+	"java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx4G -Xms100m",
+	"java.project.referencedLibraries": [
+		// implementation 'javax.servlet:javax.servlet-api:3.0.1'
+		"local/jsh/lib/tomcat/lib/servlet-api.jar",
+
+		// implementation 'org.mozilla:rhino:1.7.15'
+		"local/jsh/lib/js.jar",
+
+		// implementation 'org.graalvm.sdk:graal-sdk:20.3.0'
+		"local/jsh/lib/graal/lib/polyglot/polyglot.jar"
+	],
+	"java.project.sourcePaths": [
+		"rhino/system/java",
+		"loader/jrunscript/java",
+
+		//	Modules
+		"rhino/file/java",
+
+		//	servlet
+		"rhino/http/servlet/java",
+
+		//	jsh
+		"jrunscript/jsh/launcher/java",
+		"jrunscript/jsh/loader/java",
+
+		//	Rhino integration
+		"loader/jrunscript/rhino/java",
+		"rhino/http/servlet/rhino/java",
+		"jrunscript/jsh/loader/rhino/java",
+
+		//	Rhino modules
+		"jrunscript/host/rhino/java",
+
+		//	Graal integration
+		"loader/jrunscript/graal/java",
+		"jrunscript/jsh/loader/graal/java"
+
+		//	rhino/ui?
+		//	Profiler?
+		//	Test code?
+	],
+	"java.import.exclusions": [
+		"local/**"
+	],
+	"java.project.outputPath": "local/classes"
 }

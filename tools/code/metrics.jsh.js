@@ -17,7 +17,7 @@
 			sensor: jsh.file.Location.file.exists.world()
 		});
 
-		/** @type { (root: slime.jrunscript.file.Location) => slime.tools.code.metrics.Settings } */
+		/** @type { (root: slime.jrunscript.file.Location) => slime.tools.code.Settings } */
 		var getSettings = function(root) {
 			var toFile = jsh.tools.code.File.from.location(root);
 
@@ -25,7 +25,7 @@
 
 			var set = existsFile(location);
 
-			/** @type { slime.tools.code.metrics.Settings } */
+			/** @type { slime.tools.code.Settings } */
 			var defaults = {
 				excludes: {
 					descend: function(directory) {
@@ -46,7 +46,7 @@
 			if (set) {
 				//	TODO	switch to new loader when new loader stuff is more mature and easier to use
 				var loader = new jsh.file.Loader({ directory: jsh.file.Pathname(root.pathname).directory });
-				/** @type { slime.tools.code.metrics.Script } */
+				/** @type { slime.tools.code.settings.Script } */
 				var script = loader.script("metrics.js");
 				var settings = script();
 				if (!settings.excludes) settings.excludes = defaults.excludes;
