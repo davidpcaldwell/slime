@@ -21,81 +21,6 @@
 		//	*	jsapi / browser: loader/browser/test/api.js
 
 		/**
-		 * @type { (console: slime.$api.event.Handlers<slime.fifty.test.internal.Events>) => slime.fifty.test.internal.test.State }
-		 */
-		var State = function(console) {
-			/** @type { slime.fifty.test.internal.Scope } */
-			var scope;
-
-			/** @type { slime.definition.verify.Verify } */
-			var verify;
-
-			/**
-			 *
-			 * @param { slime.fifty.test.internal.Scope } newScope
-			 * @param { slime.definition.verify.Verify } newVerify
-			 */
-			var setContext = function(newScope,newVerify) {
-				scope = newScope;
-				verify = newVerify;
-			}
-
-			/**
-			 * @param { string } name
-			 */
-			var start = function(name) {
-				if (scope) {
-					scope.start(name);
-				} else {
-					console.start({
-						//	TODO	this shim is horrendous
-						source: null,
-						type: "start",
-						path: [],
-						timestamp: new Date().getTime(),
-						detail: {
-							name: name
-						}
-					});
-					// console.start(null, name);
-				}
-			};
-
-			/**
-			 * @param { string } name
-			 * @param { boolean } result
-			 */
-			var end = function(name,result) {
-				if (scope) {
-					scope.end(name,result);
-				} else {
-					console.end({
-						//	TODO	this shim is horrendous
-						source: null,
-						type: "end",
-						path: [],
-						timestamp: new Date().getTime(),
-						detail: {
-							name: name,
-							result: result
-						}
-					});
-				}
-			}
-
-			var state = {
-				set: setContext,
-				start: start,
-				end: end,
-				get: function() {
-					return /** @type { slime.fifty.test.internal.test.Current } */ ({ scope: scope, verify: verify });
-				}
-			};
-
-			return state;
-		};
-
-		/**
 		 *
 		 * @param { boolean } success
 		 * @returns { slime.fifty.test.internal.test.Result }
@@ -111,7 +36,84 @@
 		/**
 		 * @type { slime.fifty.test.internal.test.Executors }
 		 */
-		function executors(/** {@type slime.fifty.test.internal.test.State} */ state) {
+		function executors(console) {
+			/**
+			 * @type { (console: slime.$api.event.Handlers<slime.fifty.test.internal.Events>) => slime.fifty.test.internal.test.State }
+			 */
+			var State = function(console) {
+				/** @type { slime.fifty.test.internal.Scope } */
+				var scope;
+
+				/** @type { slime.definition.verify.Verify } */
+				var verify;
+
+				/**
+				 *
+				 * @param { slime.fifty.test.internal.Scope } newScope
+				 * @param { slime.definition.verify.Verify } newVerify
+				 */
+				var setContext = function(newScope,newVerify) {
+					scope = newScope;
+					verify = newVerify;
+				}
+
+				/**
+				 * @param { string } name
+				 */
+				var start = function(name) {
+					if (scope) {
+						scope.start(name);
+					} else {
+						console.start({
+							//	TODO	this shim is horrendous
+							source: null,
+							type: "start",
+							path: [],
+							timestamp: new Date().getTime(),
+							detail: {
+								name: name
+							}
+						});
+						// console.start(null, name);
+					}
+				};
+
+				/**
+				 * @param { string } name
+				 * @param { boolean } result
+				 */
+				var end = function(name,result) {
+					if (scope) {
+						scope.end(name,result);
+					} else {
+						console.end({
+							//	TODO	this shim is horrendous
+							source: null,
+							type: "end",
+							path: [],
+							timestamp: new Date().getTime(),
+							detail: {
+								name: name,
+								result: result
+							}
+						});
+					}
+				}
+
+				var state = {
+					set: setContext,
+					start: start,
+					end: end,
+					get: function() {
+						return /** @type { slime.fifty.test.internal.test.Current } */ ({ scope: scope, verify: verify });
+					}
+				};
+
+				return state;
+			};
+
+			var state = State(console);
+
 			/**
 			 *
 			 * @param { { parent?: slime.fifty.test.internal.Scope, listener: slime.fifty.test.internal.Listener } } p
@@ -379,7 +381,10 @@
 
 			return {
 				runner: runner,
-				error: error
+				error: error,
+				verify: function() {
+					return state.get().verify.apply(this,arguments);
+				}
 			}
 		}
 
@@ -476,9 +481,7 @@
 				 * @returns
 				 */
 				run: function(part, console) {
-					var state = State(console);
-
-					var execution = executors(state);
+					var execution = executors(console);
 
 					var runner = execution.runner;
 					var error = execution.error;
@@ -638,7 +641,7 @@
 								},
 								tests: tests,
 								verify: function() {
-									return state.get().verify.apply(this,arguments);
+									return execution.verify.apply(this,arguments);
 								},
 								jsh: void(0)
 							};

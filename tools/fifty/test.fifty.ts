@@ -310,7 +310,7 @@ namespace slime.fifty.test.internal.test {
 		end: (name: string, result: boolean) => void
 	}
 
-	export type Executors = (state: State) => {
+	export type Executors = (console: slime.$api.event.Handlers<slime.fifty.test.internal.Events>) => {
 		runner: (tests: slime.fifty.test.tests, console: slime.fifty.test.internal.Listener)
 			=> <T extends unknown>(ascope: slime.fifty.test.internal.test.AsynchronousScope, callable: (t: T) => void, name: string, argument?: T)
 			=> slime.fifty.test.internal.test.Result
@@ -320,6 +320,8 @@ namespace slime.fifty.test.internal.test {
 			e: Error & { printStackTrace?: () => void; javaException?: any; },
 			console: slime.$api.event.Handlers<slime.fifty.test.internal.Events>
 		) => void
+
+		verify: slime.definition.verify.Verify
 	}
 
 	export type Result = {
