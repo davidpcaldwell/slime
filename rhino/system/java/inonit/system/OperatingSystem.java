@@ -20,7 +20,7 @@ public class OperatingSystem {
 		return Command.create(configuration).start(context);
 	}
 
-	//	Used by TypeScript Java interface, rhino/shell module, and jsh launcher redefinition of Rhino shell runCommand
+	//	Used by TypeScript Java interface
 	public Command.Listener run(Command.Context context, Command.Configuration configuration) {
 		return Command.create(configuration).execute(context);
 	}
