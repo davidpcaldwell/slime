@@ -29,7 +29,7 @@
 						function(s) {
 							return s.split("\n").filter(function(line) { return !/^(\s*)\/\//.test(line); }).join("\n");
 						},
-						$api.fp.impure.tap(jsh.shell.console),
+						//$api.fp.impure.tap(jsh.shell.console),
 						JSON.parse,
 						function(settings) { return settings["java.project.sourcePaths"] },
 						$api.fp.Array.map(toLocation)

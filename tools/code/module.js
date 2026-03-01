@@ -974,7 +974,9 @@
 					var gitRepositoryLocation = $api.fp.now.invoke(location, $context.library.file.Location.directory.relativePath(".git"));
 					return {
 						root: location,
-						git: exists.file(gitRepositoryLocation) || exists.directory(gitRepositoryLocation)
+						git: (
+							exists.file(gitRepositoryLocation) || exists.directory(gitRepositoryLocation)
+						) ? { submodules: p.git.submodules } : void(0)
 					}
 				},
 				function(p) {
@@ -986,7 +988,7 @@
 							//			exist anymore
 							? Project.from.git({
 								root: p.root,
-								submodules: false,
+								submodules: p.git.submodules,
 								excludes: settings.excludes
 							})
 							: Project.from.directory({
