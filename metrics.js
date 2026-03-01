@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.loader.Export<slime.tools.code.metrics.Settings> } $export
+	 * @param { slime.loader.Export<slime.tools.code.Settings> } $export
 	 */
 	function($api,jsh,$export) {
 		var excludes = {

@@ -7,7 +7,6 @@
 package inonit.script.jsh.launcher;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
 
 import javax.script.*;

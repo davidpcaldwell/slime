@@ -6,8 +6,6 @@
 
 package inonit.script.servlet;
 
-import java.io.*;
-
 import inonit.script.engine.*;
 import inonit.script.rhino.*;
 
