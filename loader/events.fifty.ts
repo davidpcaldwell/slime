@@ -4,46 +4,6 @@
 //
 //	END LICENSE
 
-namespace slime.runtime.internal.events {
-	export interface Context {
-		deprecate: slime.$api.Global["deprecate"]
-	}
-
-	export interface Exports {
-		/**
-		 * Implements the `$api.events` API.
-		 */
-		exports: slime.$api.event.Exports
-
-		/**
-		 * Helper function, not exported to `$api`, which assists in implementing various wo constructs in `$api.fp.world`.
-		 */
-		handle: <E,T>(p: {
-			implementation: (events: slime.$api.event.Emitter<E>) => T,
-			handlers: slime.$api.event.Handlers<E>
-		}) => T
-	}
-
-	export interface Receiver<D> {
-		attach: () => void
-		detach: () => void
-		emitter: slime.$api.event.Emitter<D>
-	}
-
-	export namespace test {
-		export const subject = (function(fifty: slime.fifty.test.Kit) {
-			var code: Script = fifty.$loader.script("events.js");
-			var subject = code({
-				deprecate: fifty.global.$api.deprecate
-			});
-			return subject;
-		//@ts-ignore
-		})(fifty);
-	}
-
-	export type Script = slime.loader.Script<Context,Exports>
-}
-
 namespace slime.$api {
 	(
 		function(
@@ -286,6 +246,13 @@ namespace slime.$api {
 	)(fifty);
 
 	export namespace event {
+		/**
+		 * A function that receives events.
+		 */
+		export type Handler<T> = (e: Event<T>) => void
+	}
+
+	export namespace event {
 		export interface Producer<D> {
 			/**
 			 * Causes this object to fire an event to its listeners.
@@ -317,13 +284,6 @@ namespace slime.$api {
 				remove: <K extends keyof D>(type: K, handler: event.Handler<D[K]>) => void
 			}
 		}
-	}
-
-	export namespace event {
-		/**
-		 * A function that receives events.
-		 */
-		export type Handler<T> = (e: Event<T>) => void
 	}
 
 	export namespace event {
@@ -618,4 +578,44 @@ namespace slime.$api {
 		}
 	//@ts-ignore
 	)(fifty);
+}
+
+namespace slime.runtime.internal.events {
+	export interface Context {
+		deprecate: slime.$api.Global["deprecate"]
+	}
+
+	export interface Exports {
+		/**
+		 * Implements the `$api.events` API.
+		 */
+		exports: slime.$api.event.Exports
+
+		/**
+		 * Helper function, not exported to `$api`, which assists in implementing various wo constructs in `$api.fp.world`.
+		 */
+		handle: <E,T>(p: {
+			implementation: (events: slime.$api.event.Emitter<E>) => T,
+			handlers: slime.$api.event.Handlers<E>
+		}) => T
+	}
+
+	export interface Receiver<D> {
+		attach: () => void
+		detach: () => void
+		emitter: slime.$api.event.Emitter<D>
+	}
+
+	export namespace test {
+		export const subject = (function(fifty: slime.fifty.test.Kit) {
+			var code: Script = fifty.$loader.script("events.js");
+			var subject = code({
+				deprecate: fifty.global.$api.deprecate
+			});
+			return subject;
+		//@ts-ignore
+		})(fifty);
+	}
+
+	export type Script = slime.loader.Script<Context,Exports>
 }
