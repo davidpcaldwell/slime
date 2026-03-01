@@ -713,153 +713,296 @@
 			}
 		};
 
-		$export({
-			Project: {
-				from: {
-					directory: function(p) {
-						var question = $context.library.file.Location.directory.list.stream({
-							descend: p.excludes.descend
-						}).wo;
-						var listing = $api.fp.world.now.question(question, p.root);
-						var files = $api.fp.now.invoke(
-							listing,
-							$api.fp.Stream.filter($api.fp.world.mapping($context.library.file.Location.file.exists.world())),
-							$api.fp.Stream.filter(function(location) {
-								var include = p.excludes.isSource(location);
-								if (include.present) return include.value;
-								throw new TypeError("Could not determine whether source file: " + location.pathname);
-							}),
-							$api.fp.Stream.collect
-						);
-						return {
-							base: p.root,
-							files: files
-						};
+		var File = (
+			function() {
+				var isJavascript = function(file) {
+					return /\.js$/.test(file.path)
+				};
+
+				var read = $api.fp.Partial.impure.old.exception({
+					/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.$api.fp.Maybe<string>> } */
+					try: $api.fp.world.Sensor.old.mapping({ sensor: $context.library.file.Location.file.read.string.world() }),
+					nothing: function(location) { return new Error("Could not read: " + location.pathname) }
+				});
+
+				/** @type { slime.tools.code.Exports["File"]["isText"]["world"] } */
+				var isText = function() {
+					return function(file) {
+						return function(events) {
+							var basename = getBasename(file.file);
+							var byExtension = filename.isText(basename);
+							if (typeof(byExtension) == "boolean") return $api.fp.Maybe.from.some(byExtension);
+							if (basename.indexOf(".") == -1) {
+								var rv = hasShebang()(file)(events);
+								if (rv.present) return rv;
+							}
+							return $api.fp.Maybe.from.nothing();
+						}
+					}
+				};
+
+				return {
+					from: {
+						location: locationToFile
 					},
-					git: function(p) {
-						//	TODO	descends property is not used, but API does not reflect that
-						var excludes = (p.excludes) ? p.excludes : {
-							descend: function(directory) {
-								return true;
-							},
-							isSource: function(file) {
-								return $api.fp.Maybe.from.some(true);
+					hasShebang: hasShebang,
+					isText: {
+						world: isText,
+						basic: $api.fp.world.Sensor.old.mapping({
+							sensor: isText()
+						})
+					},
+					isJavascript: isJavascript,
+					isTypescript: function(file) {
+						return (/\.ts$/.test(file.path));
+					},
+					isFiftyDefinition: function(file) {
+						return (/\.fifty\.ts$/.test(file.path));
+					},
+					javascript: {
+						hasTypeChecking: function(file) {
+							if (isJavascript(file)) {
+								var code = read(file.file);
+								return $api.fp.Maybe.from.some(code.indexOf("ts-check") != -1);
 							}
-						};
-						var files = $api.fp.world.now.question(
-							getGitSourceFiles,
-							{
-								repository: p.root,
-								isSource: downgradeIsSource(excludes.isSource),
-								submodules: p.submodules
-							}
-						).map(function(file) {
-							return file.file;
-						});
-						return {
-							base: p.root,
-							files: files
-						};
+							return $api.fp.Maybe.from.nothing();
+						}
 					}
+				};
+			}
+		)();
+
+		var exists = {
+			file: $context.library.file.Location.file.exists.simple,
+			directory: $context.library.file.Location.directory.exists.simple
+		};
+
+		var Project = {
+			from: {
+				directory: function(p) {
+					var question = $context.library.file.Location.directory.list.stream({
+						descend: p.excludes.descend
+					}).wo;
+					var listing = $api.fp.world.now.question(question, p.root);
+					var files = $api.fp.now.invoke(
+						listing,
+						$api.fp.Stream.filter($api.fp.world.mapping($context.library.file.Location.file.exists.world())),
+						$api.fp.Stream.filter(function(location) {
+							var include = p.excludes.isSource(location);
+							if (include.present) return include.value;
+							throw new TypeError("Could not determine whether source file: " + location.pathname);
+						}),
+						$api.fp.Stream.collect
+					);
+					return {
+						base: p.root,
+						files: files
+					};
 				},
-				files: function(project) {
-					return project.files.map(locationToFile(project.base));
+				git: function(p) {
+					//	TODO	descends property is not used, but API does not reflect that
+					var excludes = (p.excludes) ? p.excludes : {
+						descend: function(directory) {
+							return true;
+						},
+						isSource: function(file) {
+							return $api.fp.Maybe.from.some(true);
+						}
+					};
+					var files = $api.fp.world.now.question(
+						getGitSourceFiles,
+						{
+							repository: p.root,
+							isSource: downgradeIsSource(excludes.isSource),
+							submodules: p.submodules
+						}
+					).map(function(file) {
+						return file.file;
+					});
+					return {
+						base: p.root,
+						files: files
+					};
 				},
-				gitignoreLocal: $api.fp.world.Means.from.flat(
-					function(p) {
-						var readString = $api.fp.world.Sensor.old.mapping({
-							sensor: $context.library.file.Location.file.read.string.world()
-						});
+				root: void(0)
+			},
+			files: function(project) {
+				return project.files.map(locationToFile(project.base));
+			},
+			gitignoreLocal: $api.fp.world.Means.from.flat(
+				function(p) {
+					var readString = $api.fp.world.Sensor.old.mapping({
+						sensor: $context.library.file.Location.file.read.string.world()
+					});
 
-						/** @param { { location: slime.jrunscript.file.Location, content: string } } p */
-						var write = function(p) {
-							var write = $api.fp.now.invoke(
-								p.location,
-								$context.library.file.Location.file.write.old,
-								$api.fp.property("string")
-							);
-
-							$api.fp.world.now.action(
-								write,
-								{ value: p.content }
-							);
-						};
-
-						var gitignore = $api.fp.now.invoke(p.order.base, $context.library.file.Location.directory.relativePath(".gitignore"));
-
-						var snippet = [
-							"# Local work directory for SLIME projects",
-							"/local"
-						];
-
-						//	TODO	this implementation inefficiently reads the contents multiple times
-
-						/** @type { slime.$api.fp.Partial<slime.jrunscript.file.Location,slime.$api.fp.impure.Process> } */
-						var process = $api.fp.switch([
-							$api.fp.Partial.match({
-								if: $api.fp.pipe(
-									readString,
-									$api.fp.property("present"),
-									function(b) { return !b; }
-								),
-								then: function(location) {
-									return function() {
-										p.events.fire("creating", { file: location });
-										var output = snippet.join("\n") + "\n";
-										write({ location: location, content: output });
-									}
-								}
-							}),
-							$api.fp.Partial.match({
-								if: $api.fp.pipe(
-									readString,
-									$api.fp.Maybe.map(
-										$api.fp.pipe(
-											$api.fp.string.split("\n"),
-											$api.fp.Array.some(function(item) {
-												return item == "/local";
-											})
-										)
-									),
-									$api.fp.Maybe.else( $api.fp.impure.Input.value(false) )
-								),
-								then: function(location) {
-									return function() {
-										p.events.fire("found", { file: location, pattern: "/local" });
-									}
-								}
-							}),
-							function(location) {
-								return $api.fp.Maybe.from.some(
-									function() {
-										p.events.fire("updating", { file: location });
-										var input = readString(location);
-										if (input.present) {
-											var output = snippet.concat([
-												""
-											]).join("\n") + "\n" + input.value;
-
-											write({ location: location, content: output });
-										} else {
-											throw new Error("Unreachable.");
-										}
-									}
-								)
-							}
-						]);
-
-						var effect = $api.fp.now.invoke(
-							gitignore,
-							$api.fp.Partial.impure.old.exception({
-								try: process,
-								nothing: function(t) { throw new Error("Unreachable: .gitignore classification.") }
-							})
+					/** @param { { location: slime.jrunscript.file.Location, content: string } } p */
+					var write = function(p) {
+						var write = $api.fp.now.invoke(
+							p.location,
+							$context.library.file.Location.file.write.old,
+							$api.fp.property("string")
 						);
 
-						$api.fp.impure.now.process(effect);
+						$api.fp.world.now.action(
+							write,
+							{ value: p.content }
+						);
+					};
+
+					var gitignore = $api.fp.now.invoke(p.order.base, $context.library.file.Location.directory.relativePath(".gitignore"));
+
+					var snippet = [
+						"# Local work directory for SLIME projects",
+						"/local"
+					];
+
+					//	TODO	this implementation inefficiently reads the contents multiple times
+
+					/** @type { slime.$api.fp.Partial<slime.jrunscript.file.Location,slime.$api.fp.impure.Process> } */
+					var process = $api.fp.switch([
+						$api.fp.Partial.match({
+							if: $api.fp.pipe(
+								readString,
+								$api.fp.property("present"),
+								function(b) { return !b; }
+							),
+							then: function(location) {
+								return function() {
+									p.events.fire("creating", { file: location });
+									var output = snippet.join("\n") + "\n";
+									write({ location: location, content: output });
+								}
+							}
+						}),
+						$api.fp.Partial.match({
+							if: $api.fp.pipe(
+								readString,
+								$api.fp.Maybe.map(
+									$api.fp.pipe(
+										$api.fp.string.split("\n"),
+										$api.fp.Array.some(function(item) {
+											return item == "/local";
+										})
+									)
+								),
+								$api.fp.Maybe.else( $api.fp.impure.Input.value(false) )
+							),
+							then: function(location) {
+								return function() {
+									p.events.fire("found", { file: location, pattern: "/local" });
+								}
+							}
+						}),
+						function(location) {
+							return $api.fp.Maybe.from.some(
+								function() {
+									p.events.fire("updating", { file: location });
+									var input = readString(location);
+									if (input.present) {
+										var output = snippet.concat([
+											""
+										]).join("\n") + "\n" + input.value;
+
+										write({ location: location, content: output });
+									} else {
+										throw new Error("Unreachable.");
+									}
+								}
+							)
+						}
+					]);
+
+					var effect = $api.fp.now.invoke(
+						gitignore,
+						$api.fp.Partial.impure.old.exception({
+							try: process,
+							nothing: function(t) { throw new Error("Unreachable: .gitignore classification.") }
+						})
+					);
+
+					$api.fp.impure.now.process(effect);
+				}
+			)
+		};
+
+		/** @type { slime.tools.code.Exports["Project"]["from"]["root"] } */
+		Project.from.root = function(p) {
+			/** @type { (root: slime.jrunscript.file.Location) => slime.tools.code.Settings } */
+			var getSettings = function(root) {
+				var toFile = File.from.location(root);
+
+				var location = $api.fp.now(root, $context.library.file.Location.directory.relativePath("metrics.js"));
+
+				var set = exists.file(location);
+
+				/** @type { slime.tools.code.Settings } */
+				var defaults = {
+					excludes: {
+						descend: function(directory) {
+							var basename = $context.library.file.Location.basename(directory);
+							if (basename == ".git") return false;
+							if (basename == "local") return false;
+							return true;
+						},
+						isSource: function(file) {
+							return File.isText.basic(toFile(file));
+						}
+					},
+					isGenerated: function(file) {
+						return false;
 					}
-				)
-			},
+				};
+
+				if (set) {
+					//	TODO	switch to new loader when new loader stuff is more mature and easier to use
+					var loader = new $context.library.file.Loader({ directory: $context.library.file.Pathname(root.pathname).directory });
+					/** @type { slime.tools.code.settings.Script } */
+					var script = loader.script("metrics.js");
+					var settings = script();
+					if (!settings.excludes) settings.excludes = defaults.excludes;
+					if (!settings.excludes.descend) settings.excludes.descend = defaults.excludes.descend;
+					if (!settings.excludes.isSource) settings.excludes.isSource = defaults.excludes.isSource;
+					if (!settings.isGenerated) settings.isGenerated = defaults.isGenerated;
+					return settings;
+				} else {
+					return defaults;
+				}
+			}
+			var project = $api.fp.impure.Input.value(
+				p.root,
+				function(location) {
+					var gitRepositoryLocation = $api.fp.now.invoke(location, $context.library.file.Location.directory.relativePath(".git"));
+					return {
+						root: location,
+						git: (
+							exists.file(gitRepositoryLocation) || exists.directory(gitRepositoryLocation)
+						) ? { submodules: p.git.submodules } : void(0)
+					}
+				},
+				function(p) {
+					var settings = getSettings(p.root);
+
+					return (
+						(p.git)
+							//	TODO	this causes a crash when moving files, as files are still listed by git even if they do not
+							//			exist anymore
+							? Project.from.git({
+								root: p.root,
+								submodules: p.git.submodules,
+								excludes: settings.excludes
+							})
+							: Project.from.directory({
+								root: p.root,
+								excludes: settings.excludes
+							})
+					);
+				}
+			);
+			return project();
+		}
+
+		$export({
+			Project: Project,
 			jsapi: {
 				Location: jsapi.Location,
 				Element: {
@@ -907,64 +1050,7 @@
 					}
 				}
 			},
-			File: (
-				function() {
-					var isJavascript = function(file) {
-						return /\.js$/.test(file.path)
-					};
-
-					var read = $api.fp.Partial.impure.old.exception({
-						/** @type { slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.$api.fp.Maybe<string>> } */
-						try: $api.fp.world.Sensor.old.mapping({ sensor: $context.library.file.Location.file.read.string.world() }),
-						nothing: function(location) { return new Error("Could not read: " + location.pathname) }
-					});
-
-					/** @type { slime.tools.code.Exports["File"]["isText"]["world"] } */
-					var isText = function() {
-						return function(file) {
-							return function(events) {
-								var basename = getBasename(file.file);
-								var byExtension = filename.isText(basename);
-								if (typeof(byExtension) == "boolean") return $api.fp.Maybe.from.some(byExtension);
-								if (basename.indexOf(".") == -1) {
-									var rv = hasShebang()(file)(events);
-									if (rv.present) return rv;
-								}
-								return $api.fp.Maybe.from.nothing();
-							}
-						}
-					};
-
-					return {
-						from: {
-							location: locationToFile
-						},
-						hasShebang: hasShebang,
-						isText: {
-							world: isText,
-							basic: $api.fp.world.Sensor.old.mapping({
-								sensor: isText()
-							})
-						},
-						isJavascript: isJavascript,
-						isTypescript: function(file) {
-							return (/\.ts$/.test(file.path));
-						},
-						isFiftyDefinition: function(file) {
-							return (/\.fifty\.ts$/.test(file.path));
-						},
-						javascript: {
-							hasTypeChecking: function(file) {
-								if (isJavascript(file)) {
-									var code = read(file.file);
-									return $api.fp.Maybe.from.some(code.indexOf("ts-check") != -1);
-								}
-								return $api.fp.Maybe.from.nothing();
-							}
-						}
-					};
-				}
-			)(),
+			File: File,
 			filename: filename,
 			directory: directory,
 			defaults: defaults,

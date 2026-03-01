@@ -40,6 +40,16 @@ namespace slime.tools.code {
 		isSource: isSource
 	}
 
+	export interface Settings {
+		excludes: slime.tools.code.Excludes
+
+		isGenerated: slime.$api.fp.Predicate<slime.tools.code.File>
+	}
+
+	export namespace settings {
+		export type Script = slime.loader.Script<void,Settings>
+	}
+
 	export interface Exports {
 		Project: {
 			from: {
@@ -52,6 +62,13 @@ namespace slime.tools.code {
 					root: slime.jrunscript.file.Location
 					submodules: boolean
 					excludes?: Pick<Excludes,"isSource">
+				}) => Project
+
+				root: (p: {
+					root: slime.jrunscript.file.Location
+					git: {
+						submodules: boolean
+					}
 				}) => Project
 			}
 

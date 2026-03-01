@@ -7,14 +7,12 @@
 package inonit.script.jsh.launcher;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
 import java.util.logging.*;
 
 import javax.script.*;
 
 import inonit.system.*;
-import inonit.system.cygwin.*;
 
 public class Main {
 	private static final Logger LOG = Logger.getLogger(Main.class.getName());
@@ -97,7 +95,7 @@ public class Main {
 			LOG.log(Level.FINER, "Completed with status: %d", status);
 		} catch (Throwable t) {
 			t.printStackTrace();
-			status = new Integer(127);
+			status = Integer.valueOf(127);
 			LOG.log(Level.FINER, "Completed with stack trace.");
 		} finally {
 			beforeExit.setStatus(status);

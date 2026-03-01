@@ -6,8 +6,6 @@
 
 package inonit.script.graal;
 
-import org.graalvm.polyglot.HostAccess;
-
 import inonit.script.engine.*;
 
 public class HostFactory extends inonit.script.engine.Host.Factory {
