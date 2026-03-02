@@ -4,6 +4,17 @@
 //
 //	END LICENSE
 
+namespace slime.runtime.internal.events.test {
+	export const subject = (function(fifty: slime.fifty.test.Kit) {
+		var code: Script = fifty.$loader.script("events.js");
+		var subject = code({
+			deprecate: fifty.global.$api.deprecate
+		});
+		return subject;
+	//@ts-ignore
+	})(fifty);
+}
+
 namespace slime.$api {
 	(
 		function(
@@ -604,17 +615,6 @@ namespace slime.runtime.internal.events {
 		attach: () => void
 		detach: () => void
 		emitter: slime.$api.event.Emitter<D>
-	}
-
-	export namespace test {
-		export const subject = (function(fifty: slime.fifty.test.Kit) {
-			var code: Script = fifty.$loader.script("events.js");
-			var subject = code({
-				deprecate: fifty.global.$api.deprecate
-			});
-			return subject;
-		//@ts-ignore
-		})(fifty);
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>
