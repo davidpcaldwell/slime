@@ -152,15 +152,38 @@
 					}
 				}
 
+				var get = function() {
+					return /** @type { slime.fifty.test.internal.test.Current } */ ({ scope: scope, verify: verify });
+				};
+
+				var set = function(newScope,newVerify) {
+					scope = newScope;
+					verify = newVerify;
+				};
+
+				/** @type { slime.fifty.test.internal.test.State } */
 				var state = {
-					set: function(newScope,newVerify) {
-						scope = newScope;
-						verify = newVerify;
+					get: get,
+					start: function(name) {
+						start(name);
+						var was = get();
+						var localscope = Scope({ parent: was.scope, listener: console });
+						var localverify = $context.library.Verify(
+							function(f) {
+								localscope.test(f);
+							}
+						);
+						set(localscope, localverify);
+						return {
+							previous: was,
+							current: get()
+						};
 					},
-					start: start,
-					end: end,
-					get: function() {
-						return /** @type { slime.fifty.test.internal.test.Current } */ ({ scope: scope, verify: verify });
+					end: function(name,was) {
+						var result = scope.success;
+						set(was.scope, was.verify);
+						end(name, result);
+						return result;
 					}
 				};
 
@@ -182,22 +205,12 @@
 				if (ascope) ascope.start();
 				if (ascope) ascope.test.setName(name);
 
-				state.start(name);
-				var was = state.get();
-				var localscope = Scope({ parent: was.scope, listener: listener });
-				var localverify = $context.library.Verify(
-					function(f) {
-						localscope.test(f);
-					}
-				);
-				state.set(localscope, localverify);
+				var states = state.start(name);
+				var was = states.previous;
 
 				function after() {
-					var result = localscope.success;
 					if (ascope) ascope.test.log("async tests: restoring scope and verify to", name, was.scope, was.verify);
-					state.set(was.scope, was.verify);
-					state.end(name, result);
-					return result;
+					return state.end(name, was);
 				}
 
 				if (ascope) {
