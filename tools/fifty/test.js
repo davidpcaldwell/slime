@@ -187,8 +187,7 @@
 				var localscope = Scope({ parent: was.scope, listener: listener });
 				var localverify = $context.library.Verify(
 					function(f) {
-						//	TODO	Can we use was.scope?
-						state.get().scope.test(f);
+						localscope.test(f);
 					}
 				);
 				state.set(localscope, localverify);
