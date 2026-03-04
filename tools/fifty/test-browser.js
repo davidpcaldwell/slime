@@ -121,7 +121,7 @@
 				 */
 				function(delegate) {
 					var depth = function(scope) {
-						return (scope) ? scope.depth() + 1 : 0;
+						return (scope.depth) ? scope.depth() + 1 : 0;
 					};
 
 					/** @type { HTMLElement } */
