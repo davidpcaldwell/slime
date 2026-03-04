@@ -103,6 +103,12 @@
 			 * @type { (console: slime.$api.event.Handlers<slime.fifty.test.internal.Events>) => slime.fifty.test.internal.test.State }
 			 */
 			var State = function(console) {
+				/** @type { slime.$api.event.Emitter<slime.fifty.test.internal.Events> } */
+				var emitter = $api.events.emitter({
+					source: this,
+					on: console
+				});
+
 				/** @type { slime.fifty.test.internal.Scope } */
 				var scope;
 
@@ -116,17 +122,7 @@
 					if (scope) {
 						scope.start(name);
 					} else {
-						console.start({
-							//	TODO	this shim is horrendous
-							source: null,
-							type: "start",
-							path: [],
-							timestamp: new Date().getTime(),
-							detail: {
-								name: name
-							}
-						});
-						// console.start(null, name);
+						emitter.fire("start", { name: name });
 					}
 				};
 
@@ -138,17 +134,7 @@
 					if (scope) {
 						scope.end(name,result);
 					} else {
-						console.end({
-							//	TODO	this shim is horrendous
-							source: null,
-							type: "end",
-							path: [],
-							timestamp: new Date().getTime(),
-							detail: {
-								name: name,
-								result: result
-							}
-						});
+						emitter.fire("end", { name: name, result: result });
 					}
 				}
 
@@ -209,7 +195,6 @@
 				var was = states.previous;
 
 				function after() {
-					if (ascope) ascope.test.log("async tests: restoring scope and verify to", name, was.scope, was.verify);
 					return state.end(name, was);
 				}
 
@@ -253,6 +238,7 @@
 					rv = rv
 						.then(function done(done) {
 							$context.promises.console.log("async tests: computing after() for", name);
+							ascope.test.log("async tests: restoring scope and verify to", name, was.scope, was.verify);
 							return Promise.resolve(after());
 						})
 					;

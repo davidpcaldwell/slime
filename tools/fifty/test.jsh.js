@@ -101,11 +101,11 @@
 			console: (function() {
 				/**
 				 *
-				 * @param { slime.fifty.test.internal.Scope } scope
+				 * @param { Pick<slime.fifty.test.internal.Scope,"depth"> } scope
 				 * @param { string } string
 				 */
 				var write = function(scope,string) {
-					var indent = (scope) ? scope.depth() + 1 : 0;
+					var indent = (scope.depth) ? scope.depth() + 1 : 0;
 					var prefix = new Array(indent + 1).join("  ")
 					jsh.shell.console(prefix + string);
 				};
