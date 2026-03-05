@@ -46,8 +46,8 @@
  * including Nashorn, the **built-in JDK 8-14 Nashorn** is used, while for JDK versions subsequent to Nashorn's removal, standalone
  * **Nashorn {@include ./local/typedoc/dependencies.md#nashorn.standalone.version}** is used.
  *
- * **GraalVM** is not yet supported, although
- * [development is underway](https://github.com/davidpcaldwell/slime/issues?q=is%3Aissue%20state%3Aopen%20graal%20label%3Agraalvm).
+ * **GraalJS** is not yet supported, although
+ * [development is underway](https://github.com/davidpcaldwell/slime/issues?q=is%3Aissue%20state%3Aopen%20graal%20label%3Agraal).
  *
  * ##### Servlet containers
  *
