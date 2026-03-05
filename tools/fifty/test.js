@@ -65,12 +65,15 @@
 						on: p.listener
 					});
 
+					var started;
+
 					this.start = function(name) {
+						started = new Date().getTime();
 						emitter.fire("start", { name: name });
 					};
 
 					this.end = function(name,result) {
-						emitter.fire("end", { name: name, result: result });
+						emitter.fire("end", { name: name, result: result, elapsed: new Date().getTime() - started });
 					};
 
 					/** @type { slime.definition.verify.Context } */
@@ -115,6 +118,8 @@
 				/** @type { slime.definition.verify.Verify } */
 				var verify;
 
+				var started;
+
 				/**
 				 * @param { string } name
 				 */
@@ -122,6 +127,7 @@
 					if (scope) {
 						scope.start(name);
 					} else {
+						started = new Date().getTime();
 						emitter.fire("start", { name: name });
 					}
 				};
@@ -134,7 +140,7 @@
 					if (scope) {
 						scope.end(name,result);
 					} else {
-						emitter.fire("end", { name: name, result: result });
+						emitter.fire("end", { name: name, result: result, elapsed: new Date().getTime() - started });
 					}
 				}
 
