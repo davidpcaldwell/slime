@@ -88,7 +88,7 @@
 				}
 			} else if (jsh.script.file) {
 				if (typeof(rv.rhino) == "undefined") {
-					if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
+					if (jsh.internal.bootstrap.engine.nashorn.running()) {
 						if (parameters.options.rhino) {
 							rv.rhino = downloadRhino(parameters.options.rhino);
 						} else {
