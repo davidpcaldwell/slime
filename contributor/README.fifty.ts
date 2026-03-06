@@ -105,6 +105,11 @@
  * * `./fifty test.browser --browser dockercompose:selenium:chrome contributor/browser.fifty.ts --interactive`
  * * Go to appropriate VNC port using HTTP to get a VNC client and use `secret` as the password
  *
+ * ### Test suite performance
+ *
+ * The fifty tests output timing information to the console. To find fifty test stages that take >10s in a `test.jsh` log file,
+ * grep the file for `\(\d*\d{5} ms`.
+ *
  * ## Documentation
  *
  * ### Namespaces split across multiple files
