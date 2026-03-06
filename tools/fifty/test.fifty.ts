@@ -269,7 +269,7 @@ namespace slime.fifty.test.internal {
 	export interface Events {
 		start: { name: string }
 		test: { message: string, success: boolean }
-		end: { name: string, result: boolean }
+		end: { name: string, result: boolean, elapsed: number }
 	}
 
 	/**
