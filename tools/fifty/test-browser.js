@@ -85,16 +85,16 @@
 				start: function(scope, name) {
 					scope.children[0].innerHTML = name;
 				},
-				test: function(scope, message, result) {
+				test: function(/** @type { HTMLElement } */scope, /** @type { string } */message, /** @type { boolean } */result) {
 					var test = templates.test();
 					test.children[0].innerHTML = "";
 					test.children[0].appendChild(document.createTextNode(message));
 					addHtmlClass(test, getHtmlClass(result));
 					scope.children[1].appendChild(test);
 				},
-				end: function(scope, name, result) {
+				end: function(scope, name, result, /** @type { number } */elapsed) {
 					scope.children[2].innerHTML = "";
-					scope.children[2].appendChild(document.createTextNode(name));
+					scope.children[2].appendChild(document.createTextNode(name + " (" + elapsed + " ms)"));
 					addHtmlClass(scope, getHtmlClass(result));
 				}
 			}
@@ -109,7 +109,7 @@
 				document.body.appendChild(top);
 				scopes.start(top, "foo");
 				scopes.test(top, "foo is foo", true);
-				scopes.end(top, "bar", true);
+				scopes.end(top, "bar", true, 123);
 				return;
 			}
 
@@ -141,7 +141,7 @@
 							delegate.log("START", depth(e.source), e.detail.name);
 						},
 						end: function(e) {
-							scopes.end(target, e.detail.name, e.detail.result);
+							scopes.end(target, e.detail.name, e.detail.result, e.detail.elapsed);
 							target = target.parentElement.parentElement;
 							delegate.log("END", depth(e.source), e.detail.name, e.detail.result);
 						},

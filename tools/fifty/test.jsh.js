@@ -110,20 +110,15 @@
 					jsh.shell.console(prefix + string);
 				};
 
-				var map = new Map();
-
 				/** @type { slime.fifty.test.internal.Listener } */
 				var rv = {
 					start: function(event) {
 						write(event.source, "Running: " + event.detail.name);
-						map.set(event.source, new Date().getTime());
 					},
 
 					end: function(event) {
-						var elapsed = new Date().getTime() - map.get(event.source);
 						var resultString = (event.detail.result) ? "PASSED" : "FAILED"
-						write(event.source, resultString + ": " + event.detail.name + " (" + elapsed + " ms)");
-						map.delete(event.source);
+						write(event.source, resultString + ": " + event.detail.name + " (" + event.detail.elapsed + " ms)");
 					},
 
 					test: function(event) {
