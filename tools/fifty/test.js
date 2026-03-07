@@ -693,11 +693,6 @@
 				var threw = testFileEvaluation.threw;
 				var fifty = testFileEvaluation.fifty;
 
-				var execution = TestExecutors(console);
-
-				var runner = execution.runner;
-				var error = execution.error;
-
 				if (!part) part = "suite";
 
 				var getName = function(path,part) {
@@ -717,7 +712,7 @@
 						/** @type { (argument: any) => void } */
 						var callable = target;
 						var createRunner = function() {
-							return runner(fifty.tests, console)( (ascopes) ? ascopes.current() : void(0), callable, getName(context.file.path,part), argument);
+							return executors.runner(fifty.tests, console)( (ascopes) ? ascopes.current() : void(0), callable, getName(context.file.path,part), argument);
 						}
 						if ($context.promises) {
 							return createRunner();
@@ -728,7 +723,7 @@
 						throw new TypeError("Not a function: " + part);
 					}
 				} else {
-					error(context.file.path, threw, console);
+					executors.error(context.file.path, threw, console);
 					//	TODO	no test coverage
 					return toResult(false);
 				}
