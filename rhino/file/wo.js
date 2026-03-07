@@ -276,12 +276,6 @@
 			}
 		});
 
-		/** @type { slime.jrunscript.file.location.file.Exports["remove"]["wo"] } */
-		var Location_file_remove = remove.file;
-
-		/** @type { slime.jrunscript.file.location.directory.Exports["remove"]["wo"] } */
-		var Location_directory_remove = remove.directory;
-
 		/** @type { slime.jrunscript.file.location.Exports["remove"] } */
 		var Location_remove = function(settings) {
 			var remover = remove.location(settings);
@@ -305,7 +299,7 @@
 					Location_file_read_string: Location_file_read.string,
 					Store: $context.library.loader.Store,
 					Location_directory_exists: Location_directory_exists,
-					remove: Location_directory_remove,
+					remove: remove.directory,
 					list_world: list_world,
 					list_stream: list_stream
 				});
@@ -603,7 +597,7 @@
 							}
 						},
 						/** @type { slime.jrunscript.file.location.Exports["file"]["remove"] } */
-						remove: $api.fp.world.Sensor.api.maybe(Location_file_remove),
+						remove: $api.fp.world.Sensor.api.maybe(remove.file),
 					}
 				})(),
 				directory: parts.directory,
