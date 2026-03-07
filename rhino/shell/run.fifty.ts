@@ -448,6 +448,8 @@ namespace slime.jrunscript.shell.internal.run {
 
 	export interface Exports {
 		internal: {
+			toInputStream: (input: shell.run.intention.Input) => slime.jrunscript.runtime.io.InputStream
+
 			buildStdio: slime.$api.fp.world.Sensor<
 				slime.jrunscript.shell.run.StdioConfiguration,
 				slime.jrunscript.shell.run.TellEvents,

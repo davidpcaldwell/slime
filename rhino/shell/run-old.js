@@ -14,33 +14,13 @@
 	 */
 	function($api,$context,$export) {
 		/**
-		 *
-		 * @param { slime.jrunscript.shell.run.intention.Input } p
-		 * @return { slime.jrunscript.runtime.io.InputStream }
-		 */
-		var toInputStream = (
-			function($context) {
-				return function(p) {
-					if (typeof(p) == "string") {
-						var buffer = new $context.library.io.Buffer();
-						buffer.writeText().write(p);
-						buffer.close();
-						return buffer.readBinary();
-					} else {
-						return p;
-					}
-				};
-			}
-		)({ library: { io: $context.api.io }});
-
-		/**
 		 * @param { slime.jrunscript.shell.invocation.old.Stdio } p
 		 * @return { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed }
 		 */
 		var updateForStringInput = function(p) {
 			/** @type { slime.jrunscript.shell.run.StdioConfiguration } */
 			return {
-				input: toInputStream(p.input),
+				input: $context.scripts.run.internal.toInputStream(p.input),
 				output: p.output,
 				error: p.error
 			};
@@ -163,7 +143,7 @@
 								directory: (p.directory) ? p.directory.toString() : defaults.directory,
 								stdio: {
 									input: (function() {
-										if (p.stdio && p.stdio.input) return toInputStream(p.stdio.input);
+										if (p.stdio && p.stdio.input) return $context.scripts.run.internal.toInputStream(p.stdio.input);
 										return null;
 									})(),
 									output: (p.stdio && p.stdio.output) ? p.stdio.output : defaults.stdio.output,
@@ -289,7 +269,7 @@
 					}
 				};
 			}
-		)($api,{ library: { io: $context.api.io }})
+		)($api, { library: { io: $context.api.io }, scripts: $context.scripts })
 
 		/**
 		 * Returns a stdio object given the argument, using the `stdio` property of the argument if it is available, then using
