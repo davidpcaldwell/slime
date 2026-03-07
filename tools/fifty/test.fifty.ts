@@ -334,7 +334,13 @@ namespace slime.fifty.test.internal.test {
 		context: TestFileContext,
 		argument?: any
 	) => {
-		run: (part: string, listener:slime.fifty.test.internal.Listener) => slime.fifty.test.internal.test.Result
+		/**
+		 * @param part - the part of the test suite. If `undefined`, the default value `"suite"` will be used.
+		 */
+		part: (part: string) => {
+			run: (listener: slime.fifty.test.internal.Listener) => slime.fifty.test.internal.test.Result
+		}
+
 		list: () => slime.fifty.test.internal.test.Manifest
 	}
 
