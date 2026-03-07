@@ -306,9 +306,11 @@
 						debugger;
 
 						run.run({
-							loader: (path.folder) ? delegate.Child(path.folder) : delegate,
+							file: {
+								loader: (path.folder) ? delegate.Child(path.folder) : delegate,
+								path: path.file
+							},
 							scopes: {},
-							path: path.file,
 							console: {
 								start: function() {},
 								end: function() {},

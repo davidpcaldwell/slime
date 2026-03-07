@@ -330,14 +330,16 @@
 					})(p.path);
 
 					var promise = run.run({
-						loader: (path.folder) ? delegate.Child(path.folder) : delegate,
+						file: {
+							loader: (path.folder) ? delegate.Child(path.folder) : delegate,
+							path: path.file
+						},
 						scopes: {
 							jsh: {
 								loader: (path.folder) ? delegate.Child(path.folder) : delegate,
 								directory: (path.folder) ? directory.getSubdirectory(path.folder) : directory
 							}
 						},
-						path: path.file,
 						console: {
 							start: function() {},
 							end: function() {},

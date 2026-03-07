@@ -192,9 +192,11 @@
 				);
 
 				return implementation.run({
-					loader: loader,
+					file: {
+						loader: loader,
+						path: path.file
+					},
 					scopes: {},
-					path: path.file,
 					part: part,
 					console: console
 				});

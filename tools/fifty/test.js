@@ -454,16 +454,13 @@
 		)
 
 		/**
-		 *
-		 * @param { slime.fifty.test.internal.test.AsynchronousScopes } ascopes
-		 * @param { slime.old.Loader } loader
-		 * @param { Parameters<slime.fifty.test.internal.test.Exports["run"]>[0]["scopes"] } contexts
-		 * @param { string } path
-		 * @param { any } [argument]
-		 * @returns { { run: (part: string, listener:slime.fifty.test.internal.Listener) => slime.fifty.test.internal.test.Result, list: () => slime.fifty.test.internal.test.Manifest } }
+		 * @type { slime.fifty.test.internal.test.Load }
 		 */
-		var load = function recurse(ascopes,loader,contexts,path,argument) {
+		var load = function recurse(ascopes,context,argument) {
+			var contexts = context.scopes;
 			//	TODO	it appears loader and contexts.jsh.loader may be redundant?
+
+			var loader = context.file.loader;
 
 			//	TODO	this should probably be completely empty
 			var tests = {
@@ -550,16 +547,20 @@
 										if (ascopes) ascopes.push();
 										var rv = recurse(
 											ascopes,
-											subloader,
 											{
-												jsh: (scopes.jsh)
-													? {
-														loader: (path.folder) ? contexts.jsh.loader.Child(path.folder) : contexts.jsh.loader,
-														directory: (path.folder) ? contexts.jsh.directory.getSubdirectory(path.folder) : contexts.jsh.directory
-													}
-													: void(0)
+												file: {
+													loader: subloader,
+													path: path.file
+												},
+												scopes: {
+													jsh: (scopes.jsh)
+														? {
+															loader: (path.folder) ? contexts.jsh.loader.Child(path.folder) : contexts.jsh.loader,
+															directory: (path.folder) ? contexts.jsh.directory.getSubdirectory(path.folder) : contexts.jsh.directory
+														}
+														: void(0)
+												}
 											},
-											path.file,
 											argument
 										).run(part, console);
 										if (controlled) controlled.resolve(void(0));
@@ -647,7 +648,7 @@
 								var jshScope = scopes.jsh({
 									loader: contexts.jsh.loader,
 									directory: contexts.jsh.directory,
-									filename: path,
+									filename: context.file.path,
 									fifty: fifty
 								});
 
@@ -688,7 +689,7 @@
 
 							try {
 								loader.run(
-									path,
+									context.file.path,
 									scope
 								);
 							} catch (e) {
@@ -715,7 +716,7 @@
 							/** @type { (argument: any) => void } */
 							var callable = target;
 							var createRunner = function() {
-								return runner(tests, console)( (ascopes) ? ascopes.current() : void(0), callable, getName(path,part), argument);
+								return runner(tests, console)( (ascopes) ? ascopes.current() : void(0), callable, getName(context.file.path,part), argument);
 							}
 							if ($context.promises) {
 								return createRunner();
@@ -726,7 +727,7 @@
 							throw new TypeError("Not a function: " + part);
 						}
 					} else {
-						error(path, loaderError, console);
+						error(context.file.path, loaderError, console);
 						//	TODO	no test coverage
 						return toResult(false);
 					}
@@ -852,13 +853,13 @@
 				var ascopes = ($context.promises) ? AsynchronousScopes(
 					AsynchronousScope({ parent: null, name: "(top)" })
 				) : void(0);
-				return load(ascopes,p.loader,p.scopes,p.path).run(p.part, p.console);
+				return load(ascopes,p).run(p.part, p.console);
 			},
 			list: function(p/*loader,scopes,path*/) {
 				var ascopes = ($context.promises) ? AsynchronousScopes(
 					AsynchronousScope({ parent: null, name: "(top)" })
 				) : void(0);
-				return load(ascopes,p.loader,p.scopes,p.path).list();
+				return load(ascopes,p).list();
 			}
 		})
 	}
