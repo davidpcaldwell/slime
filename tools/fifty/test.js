@@ -466,269 +466,282 @@
 				types: {}
 			};
 
-			return {
-				/**
-				 *
-				 * @param { string } part - the part to execute. If `undefined`, the default value `"suite"` will be used.
-				 * @param { slime.fifty.test.internal.Listener } console
-				 * @returns
-				 */
-				run: function(part, console) {
-					var execution = executors(console);
+			var run = function(part, console) {
+				var execution = executors(console);
 
-					var runner = execution.runner;
-					var error = execution.error;
+				var runner = execution.runner;
+				var error = execution.error;
 
-					if (!part) part = "suite";
+				if (!part) part = "suite";
 
-					var getName = function(path,part) {
-						if (context.scopes.jsh) {
-							return context.scopes.jsh.directory.getRelativePath(path) + ":" + part;
-						}
-						return path + ":" + part;
-					};
+				var getName = function(path,part) {
+					if (context.scopes.jsh) {
+						return context.scopes.jsh.directory.getRelativePath(path) + ":" + part;
+					}
+					return path + ":" + part;
+				};
 
-					var initializeTestScope = (
-						function() {
-							/**
-							 * @type { slime.fifty.test.Kit }
-							 */
-							var fifty = {
-								global: global,
-								$loader: loader,
-								promises: $context.promises,
-								$api: {
-									Events: {
-										Captor: function(template) {
-											var events = [];
-											/** @type { ReturnType<slime.fifty.test.Kit["$api"]["Events"]["Captor"]>["handler"] } */
-											var initial = {};
-											var handler = Object.entries(template).reduce(function(rv,entry) {
-												rv[entry[0]] = function(e) {
-													events.push(e);
-												}
-												return rv;
-											}, initial);
-											return {
-												events: events,
-												handler: handler
+				var initializeTestScope = (
+					function() {
+						/**
+						 * @type { slime.fifty.test.Kit }
+						 */
+						var fifty = {
+							global: global,
+							$loader: loader,
+							promises: $context.promises,
+							$api: {
+								Events: {
+									Captor: function(template) {
+										var events = [];
+										/** @type { ReturnType<slime.fifty.test.Kit["$api"]["Events"]["Captor"]>["handler"] } */
+										var initial = {};
+										var handler = Object.entries(template).reduce(function(rv,entry) {
+											rv[entry[0]] = function(e) {
+												events.push(e);
 											}
-										}
-									}
-								},
-								run: function(f, name) {
-									if ($context.promises) $context.promises.console.log("run", f, name);
-
-									var controlled = (ascopes) ? $context.promises.controlled({ id: "run:" + (name || f["name"] ) }) : void(0);
-
-									var run = function() {
-										if ($context.promises) $context.promises.console.log("processing next child", name);
-										var rv = runner(tests, console)( (ascopes) ? ascopes.push() : void(0), f, name);
-										if (controlled) controlled.resolve(void(0));
-										if (ascopes) ascopes.pop();
-										return rv;
-									};
-
-									if (ascopes) {
-										if ($context.promises) $context.promises.console.log("ascope", ascopes.current().test.depth(), ascopes.current());
-										ascopes.current().then(run);
-										if ($context.promises) $context.promises.console.log("ascope now", ascopes.current().test.depth(), ascopes.current());
-									} else {
-										run();
-									}
-								},
-								load: function(at,part,argument) {
-									var controlled = ($context.promises) ? $context.promises.controlled() : void(0);
-
-									var run = function() {
-										var path = parsePath(at);
-										var subloader = (path.folder) ? loader.Child(path.folder) : loader;
-										if (ascopes) ascopes.push();
-										var rv = recurse(
-											ascopes,
-											{
-												file: {
-													loader: subloader,
-													path: path.file
-												},
-												scopes: {
-													jsh: (scopes.jsh)
-														? {
-															loader: (path.folder) ? context.scopes.jsh.loader.Child(path.folder) : context.scopes.jsh.loader,
-															directory: (path.folder) ? context.scopes.jsh.directory.getSubdirectory(path.folder) : context.scopes.jsh.directory
-														}
-														: void(0)
-												}
-											},
-											argument
-										).run(part, console);
-										if (controlled) controlled.resolve(void(0));
-										if (ascopes) ascopes.pop();
-										return rv;
-									};
-
-									if (ascopes) {
-										ascopes.current().then(run);
-									} else {
-										run();
-									}
-								},
-								test: {
-									//	TODO	Should this do filtering?
-									Parent: function() {
-										var runChildren = function(target) {
-											if (typeof(target) == "object") {
-												for (var x in target) {
-													runChildren(target[x]);
-												}
-											} else if (typeof(target) == "function") {
-												fifty.run(target);
-											}
-										}
-										var rv = function() {
-											var callee = rv;
-											for (var x in callee) {
-												runChildren(callee[x])
-											}
-										};
-										return rv;
-									},
-									multiplatform: void(0),
-									platforms: void(0)
-								},
-								evaluate: {
-									create: function(f,string) {
-										return Object.assign(
-											f,
-											{
-												toString: function() {
-													return string;
-												}
-											}
-										)
-									}
-								},
-								spy: {
-									/**
-									 * @template { any } T
-									 * @template { any[] } P
-									 * @template { any } R
-									 * @template { slime.external.lib.es5.Function<T,P,R> } F
-									 * @param { F } f
-									 * @returns { { function: F, invocations: slime.fifty.test.spy.Invocation<F>[] } }
-									 */
-									//	sometimes when this is embedded in another project, an error results here, so we ignore it
-									//@ts-ignore
-									create: function(f) {
-										/** @type { slime.fifty.test.spy.Invocation<F>[] } */
-										var recorded = [];
+											return rv;
+										}, initial);
 										return {
-											function: /** @type { F } */(function() {
-												/** @tyoe { T } */
-												var target = this;
-												var args = Array.prototype.slice.call(arguments);
-												var rv = f.apply(this, arguments);
-												var invocation = /** @type { slime.fifty.test.spy.Invocation<F> }*/({ target: target, arguments: args, returned: rv });
-												recorded.push(invocation);
-												return rv;
-											}),
-											invocations: recorded
-										};
+											events: events,
+											handler: handler
+										}
 									}
-								},
-								tests: tests,
-								verify: function() {
-									return execution.verify.apply(this,arguments);
-								},
-								jsh: void(0)
-							};
+								}
+							},
+							run: function(f, name) {
+								if ($context.promises) $context.promises.console.log("run", f, name);
 
-							if (scopes.jsh) {
-								var jshScope = scopes.jsh({
-									loader: context.scopes.jsh.loader,
-									directory: context.scopes.jsh.directory,
-									filename: context.file.path,
-									fifty: fifty
-								});
+								var controlled = (ascopes) ? $context.promises.controlled({ id: "run:" + (name || f["name"] ) }) : void(0);
 
-								fifty.test.multiplatform = jshScope.multiplatform;
-
-								fifty.jsh = jshScope;
-							} else {
-								fifty.test.multiplatform = function(p) {
-									var rv = function() {
-										if (p.browser) p.browser();
-									};
-									rv.browser = p.browser;
-									fifty.tests[p.name] = rv;
+								var run = function() {
+									if ($context.promises) $context.promises.console.log("processing next child", name);
+									var rv = runner(tests, console)( (ascopes) ? ascopes.push() : void(0), f, name);
+									if (controlled) controlled.resolve(void(0));
+									if (ascopes) ascopes.pop();
+									return rv;
 								};
-							}
 
-							fifty.test.platforms = function() {
-								fifty.test.multiplatform({
-									name: "platforms",
-									jsh: function() {
-										fifty.run(fifty.tests.suite);
-									},
-									browser: function() {
-										//fifty.tests.suite();
-										fifty.run(fifty.tests.suite);
+								if (ascopes) {
+									if ($context.promises) $context.promises.console.log("ascope", ascopes.current().test.depth(), ascopes.current());
+									ascopes.current().then(run);
+									if ($context.promises) $context.promises.console.log("ascope now", ascopes.current().test.depth(), ascopes.current());
+								} else {
+									run();
+								}
+							},
+							load: function(at,part,argument) {
+								var controlled = ($context.promises) ? $context.promises.controlled() : void(0);
+
+								var run = function() {
+
+									var file = (
+										function() {
+											var path = parsePath(at);
+											var subloader = (path.folder) ? loader.Child(path.folder) : loader;
+											return {
+												folder: path.folder,
+												loader: subloader,
+												path: path.file
+											}
+										}
+									)();
+
+									if (ascopes) ascopes.push();
+
+									var rv = recurse(
+										ascopes,
+										{
+											file: file,
+											scopes: {
+												jsh: (scopes.jsh)
+													? {
+														loader: (file.folder) ? context.scopes.jsh.loader.Child(file.folder) : context.scopes.jsh.loader,
+														directory: (file.folder) ? context.scopes.jsh.directory.getSubdirectory(file.folder) : context.scopes.jsh.directory
+													}
+													: void(0)
+											}
+										},
+										argument
+									).part(part).run(console);
+
+									if (controlled) controlled.resolve(void(0));
+									if (ascopes) ascopes.pop();
+
+									return rv;
+								};
+
+								if (ascopes) {
+									ascopes.current().then(run);
+								} else {
+									run();
+								}
+							},
+							test: {
+								//	TODO	Should this do filtering?
+								Parent: function() {
+									var runChildren = function(target) {
+										if (typeof(target) == "object") {
+											for (var x in target) {
+												runChildren(target[x]);
+											}
+										} else if (typeof(target) == "function") {
+											fifty.run(target);
+										}
 									}
-								});
-							}
+									var rv = function() {
+										var callee = rv;
+										for (var x in callee) {
+											runChildren(callee[x])
+										}
+									};
+									return rv;
+								},
+								multiplatform: void(0),
+								platforms: void(0)
+							},
+							evaluate: {
+								create: function(f,string) {
+									return Object.assign(
+										f,
+										{
+											toString: function() {
+												return string;
+											}
+										}
+									)
+								}
+							},
+							spy: {
+								/**
+								 * @template { any } T
+								 * @template { any[] } P
+								 * @template { any } R
+								 * @template { slime.external.lib.es5.Function<T,P,R> } F
+								 * @param { F } f
+								 * @returns { { function: F, invocations: slime.fifty.test.spy.Invocation<F>[] } }
+								 */
+								//	sometimes when this is embedded in another project, an error results here, so we ignore it
+								//@ts-ignore
+								create: function(f) {
+									/** @type { slime.fifty.test.spy.Invocation<F>[] } */
+									var recorded = [];
+									return {
+										function: /** @type { F } */(function() {
+											/** @tyoe { T } */
+											var target = this;
+											var args = Array.prototype.slice.call(arguments);
+											var rv = f.apply(this, arguments);
+											var invocation = /** @type { slime.fifty.test.spy.Invocation<F> }*/({ target: target, arguments: args, returned: rv });
+											recorded.push(invocation);
+											return rv;
+										}),
+										invocations: recorded
+									};
+								}
+							},
+							tests: tests,
+							verify: function() {
+								return execution.verify.apply(this,arguments);
+							},
+							jsh: void(0)
+						};
 
-							/** @type { { fifty: slime.fifty.test.Kit, $fifty: slime.fifty.test.Kit }} */
-							var scope = {
-								fifty: fifty,
-								//	We also provide $fifty for namespaces containing the name "fifty"
-								$fifty: fifty
-							}
+						if (scopes.jsh) {
+							var jshScope = scopes.jsh({
+								loader: context.scopes.jsh.loader,
+								directory: context.scopes.jsh.directory,
+								filename: context.file.path,
+								fifty: fifty
+							});
 
-							var loaderError;
+							fifty.test.multiplatform = jshScope.multiplatform;
 
-							try {
-								loader.run(
-									context.file.path,
-									scope
-								);
-							} catch (e) {
-								loaderError = e;
-							}
-
-							return {
-								loaderError: loaderError,
-								scope: scope
-							}
-						}
-					)();
-
-					var loaderError = initializeTestScope.loaderError;
-					var scope = initializeTestScope.scope;
-
-					if (!loaderError) {
-						/** @type { any } */
-						var target = scope.fifty.tests;
-						part.split(".").forEach(function(token) {
-							target = $api.fp.now(target, $api.fp.optionalChain(token))
-						});
-						if (typeof(target) == "function") {
-							/** @type { (argument: any) => void } */
-							var callable = target;
-							var createRunner = function() {
-								return runner(tests, console)( (ascopes) ? ascopes.current() : void(0), callable, getName(context.file.path,part), argument);
-							}
-							if ($context.promises) {
-								return createRunner();
-							} else {
-								return createRunner();
-							}
+							fifty.jsh = jshScope;
 						} else {
-							throw new TypeError("Not a function: " + part);
+							fifty.test.multiplatform = function(p) {
+								var rv = function() {
+									if (p.browser) p.browser();
+								};
+								rv.browser = p.browser;
+								fifty.tests[p.name] = rv;
+							};
+						}
+
+						fifty.test.platforms = function() {
+							fifty.test.multiplatform({
+								name: "platforms",
+								jsh: function() {
+									fifty.run(fifty.tests.suite);
+								},
+								browser: function() {
+									//fifty.tests.suite();
+									fifty.run(fifty.tests.suite);
+								}
+							});
+						}
+
+						/** @type { { fifty: slime.fifty.test.Kit, $fifty: slime.fifty.test.Kit }} */
+						var scope = {
+							fifty: fifty,
+							//	We also provide $fifty for namespaces containing the name "fifty"
+							$fifty: fifty
+						}
+
+						var loaderError;
+
+						try {
+							loader.run(
+								context.file.path,
+								scope
+							);
+						} catch (e) {
+							loaderError = e;
+						}
+
+						return {
+							loaderError: loaderError,
+							scope: scope
+						}
+					}
+				)();
+
+				var loaderError = initializeTestScope.loaderError;
+				var scope = initializeTestScope.scope;
+
+				if (!loaderError) {
+					/** @type { any } */
+					var target = scope.fifty.tests;
+					part.split(".").forEach(function(token) {
+						target = $api.fp.now(target, $api.fp.optionalChain(token))
+					});
+					if (typeof(target) == "function") {
+						/** @type { (argument: any) => void } */
+						var callable = target;
+						var createRunner = function() {
+							return runner(tests, console)( (ascopes) ? ascopes.current() : void(0), callable, getName(context.file.path,part), argument);
+						}
+						if ($context.promises) {
+							return createRunner();
+						} else {
+							return createRunner();
 						}
 					} else {
-						error(context.file.path, loaderError, console);
-						//	TODO	no test coverage
-						return toResult(false);
+						throw new TypeError("Not a function: " + part);
+					}
+				} else {
+					error(context.file.path, loaderError, console);
+					//	TODO	no test coverage
+					return toResult(false);
+				}
+			};
+
+			return /** @type { ReturnType<slime.fifty.test.internal.test.Load> } */({
+				part: function(part) {
+					return {
+						run: function(listener) {
+							return run(part, listener);
+						}
 					}
 				},
 				list: function() {
@@ -754,8 +767,8 @@
 
 					return rv;
 				}
-			}
-		}
+			})
+		};
 
 		/**
 		 *
@@ -851,7 +864,7 @@
 		$export({
 			run: function(p/*loader,scopes,path,part*/) {
 				var ascopes = ($context.promises) ? AsynchronousScopes() : void(0);
-				return load(ascopes,p).run(p.part, p.console);
+				return load(ascopes,p).part(p.part).run(p.console);
 			},
 			list: function(p/*loader,scopes,path*/) {
 				var ascopes = ($context.promises) ? AsynchronousScopes() : void(0);
