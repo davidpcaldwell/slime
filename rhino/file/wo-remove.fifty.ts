@@ -145,6 +145,12 @@ namespace slime.jrunscript.file.remove {
 
 	/**
 	 * High-level API for removing whatever is at a location (optionally including doing nothing if nothing is there).
+	 *
+	 * @param p.recursive if true, will remove directories recursively. If false or not provided, will only remove empty directories.
+	 * @param p.known if true (the default), this operation will fail if nothing exists at the location. If `false`, and nothing
+	 * exists at the location, this operation report success and do nothing.
+	 *
+	 * The returned `Maybe` will be present if the operation succeeds, and not present if it fails. The operation should fail if the location does not exist (unless `known` is false) or if it is a non-empty directory (unless `recursive` is true).
 	 */
 	export type Location = (
 		p?: {
