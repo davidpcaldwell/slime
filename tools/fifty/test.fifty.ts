@@ -326,6 +326,18 @@ namespace slime.fifty.test.internal.test {
 		verify: slime.definition.verify.Verify
 	}
 
+	/**
+	 * @param argument - the argument passed to a fifty.load call; used for type invariant verification xyz
+	 */
+	export type Load = (
+		ascopes: slime.fifty.test.internal.test.AsynchronousScopes,
+		context: TestFileContext,
+		argument?: any
+	) => {
+		run: (part: string, listener:slime.fifty.test.internal.Listener) => slime.fifty.test.internal.test.Result
+		list: () => slime.fifty.test.internal.test.Manifest
+	}
+
 	export type Result = {
 		then: (f: (success: boolean) => void) => void
 	}
@@ -372,33 +384,34 @@ namespace slime.fifty.test.internal.test {
 		current: () => AsynchronousScope
 	}
 
+	export interface TestFile {
+		file: {
+			loader: slime.old.Loader
+			path: string
+		}
+	}
+
+	export interface TestScopes {
+		scopes: {
+			jsh?: {
+				directory: slime.jrunscript.file.Directory
+				loader: slime.old.Loader
+			}
+		}
+	}
+
+	export type TestFileContext = TestFile & TestScopes
+
 	export interface Exports {
 		/**
 		 * Executes a Fifty page at the given path from the given loader, optionally limiting the test to a single part.
 		 */
-		run: (p: {
-			loader: slime.old.Loader
-			scopes: {
-				jsh?: {
-					directory: slime.jrunscript.file.Directory
-					loader: slime.old.Loader
-				}
-			}
-			path: string
+		run: (p: TestFile & TestScopes & {
 			part?: string
 			console: slime.$api.event.Handlers<slime.fifty.test.internal.Events>
 		}) => Result
 
-		list: (p: {
-			loader: slime.old.Loader
-			scopes: {
-				jsh?: {
-					directory: slime.jrunscript.file.Directory
-					loader: slime.old.Loader
-				}
-			}
-			path: string
-		}) => Manifest
+		list: (p: TestFile & TestScopes) => Manifest
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>

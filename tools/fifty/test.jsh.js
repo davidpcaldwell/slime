@@ -106,7 +106,8 @@
 				 */
 				var write = function(scope,string) {
 					var indent = (scope.depth) ? scope.depth() + 1 : 0;
-					var prefix = new Array(indent + 1).join("  ")
+					var prefix = new Array(indent + 1).join("  ");
+					jsh.shell.console("Depth: " + Boolean(scope.depth) + " (" + indent + "): [" + prefix + "]");
 					jsh.shell.console(prefix + string);
 				};
 
@@ -202,14 +203,16 @@
 			var loader = new jsh.file.Loader({ directory: file.parent });
 
 			var scope = {
-				loader: loader,
+				file: {
+					loader: loader,
+					path: file.pathname.basename
+				},
 				scopes: {
 					jsh: {
 						directory: file.parent,
 						loader: loader
 					}
 				},
-				path: file.pathname.basename
 			};
 
 			if (method == "list") {
