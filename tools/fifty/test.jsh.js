@@ -107,7 +107,7 @@
 				var write = function(scope,string) {
 					var indent = (scope.depth) ? scope.depth() + 1 : 0;
 					var prefix = new Array(indent + 1).join("  ");
-					jsh.shell.console("Depth: " + Boolean(scope.depth) + " (" + indent + "): [" + prefix + "]");
+					//jsh.shell.console("Depth: " + Boolean(scope.depth) + " (" + indent + "): [" + prefix + "]");
 					jsh.shell.console(prefix + string);
 				};
 

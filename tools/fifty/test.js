@@ -457,8 +457,7 @@
 		 * @type { slime.fifty.test.internal.test.Load }
 		 */
 		var load = function recurse(ascopes,context,argument) {
-			var contexts = context.scopes;
-			//	TODO	it appears loader and contexts.jsh.loader may be redundant?
+			//	TODO	it appears loader and context.scopes.jsh.loader may be redundant?
 
 			var loader = context.file.loader;
 
@@ -483,8 +482,8 @@
 					if (!part) part = "suite";
 
 					var getName = function(path,part) {
-						if (contexts.jsh) {
-							return contexts.jsh.directory.getRelativePath(path) + ":" + part;
+						if (context.scopes.jsh) {
+							return context.scopes.jsh.directory.getRelativePath(path) + ":" + part;
 						}
 						return path + ":" + part;
 					};
@@ -555,8 +554,8 @@
 												scopes: {
 													jsh: (scopes.jsh)
 														? {
-															loader: (path.folder) ? contexts.jsh.loader.Child(path.folder) : contexts.jsh.loader,
-															directory: (path.folder) ? contexts.jsh.directory.getSubdirectory(path.folder) : contexts.jsh.directory
+															loader: (path.folder) ? context.scopes.jsh.loader.Child(path.folder) : context.scopes.jsh.loader,
+															directory: (path.folder) ? context.scopes.jsh.directory.getSubdirectory(path.folder) : context.scopes.jsh.directory
 														}
 														: void(0)
 												}
@@ -646,8 +645,8 @@
 
 							if (scopes.jsh) {
 								var jshScope = scopes.jsh({
-									loader: contexts.jsh.loader,
-									directory: contexts.jsh.directory,
+									loader: context.scopes.jsh.loader,
+									directory: context.scopes.jsh.directory,
 									filename: context.file.path,
 									fifty: fifty
 								});
@@ -823,10 +822,11 @@
 		//	these scopes on the stack; rather, we must implement a stack of them.
 		/**
 		 *
-		 * @param { slime.fifty.test.internal.test.AsynchronousScope } initial
 		 * @returns { slime.fifty.test.internal.test.AsynchronousScopes }
 		 */
-		var AsynchronousScopes = function(initial) {
+		var AsynchronousScopes = function() {
+			var initial = AsynchronousScope({ parent: null, name: "(top)" });
+
 			var stack = [ initial ];
 
 			var current = function() {
@@ -850,15 +850,11 @@
 
 		$export({
 			run: function(p/*loader,scopes,path,part*/) {
-				var ascopes = ($context.promises) ? AsynchronousScopes(
-					AsynchronousScope({ parent: null, name: "(top)" })
-				) : void(0);
+				var ascopes = ($context.promises) ? AsynchronousScopes() : void(0);
 				return load(ascopes,p).run(p.part, p.console);
 			},
 			list: function(p/*loader,scopes,path*/) {
-				var ascopes = ($context.promises) ? AsynchronousScopes(
-					AsynchronousScope({ parent: null, name: "(top)" })
-				) : void(0);
+				var ascopes = ($context.promises) ? AsynchronousScopes() : void(0);
 				return load(ascopes,p).list();
 			}
 		})
