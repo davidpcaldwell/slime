@@ -50,6 +50,14 @@
 						return (p.parent) ? p.parent.depth() + 1 : 0;
 					};
 
+					/** @type { slime.$api.event.Emitter<slime.fifty.test.internal.Events> } */
+					var emitter = $api.events.emitter({
+						source: this,
+						on: p.listener
+					});
+
+					//	TODO	we would like to replace this setup with one where the events bubble to the parent scope and they
+					//			can deal with the call to fail() themselves
 					this.fail = function() {
 						this.success = false;
 						if (p.parent) p.parent.fail();
@@ -58,12 +66,6 @@
 					this.toString = function() {
 						return "Scope: " + this.depth();
 					}
-
-					/** @type { slime.$api.event.Emitter<slime.fifty.test.internal.Events> } */
-					var emitter = $api.events.emitter({
-						source: this,
-						on: p.listener
-					});
 
 					var started;
 
@@ -106,36 +108,30 @@
 			 * @type { (console: slime.$api.event.Handlers<slime.fifty.test.internal.Events>) => slime.fifty.test.internal.test.State }
 			 */
 			var State = function(console) {
-				/** @type { slime.$api.event.Emitter<slime.fifty.test.internal.Events> } */
-				var emitter = $api.events.emitter({
-					source: this,
-					on: console
-				});
+				var initial = Scope({ listener: console });
+
+				var current = function(/** @type { slime.fifty.test.internal.Scope } */scope) {
+					return /** @type { slime.fifty.test.internal.test.Current } */({
+						scope: scope,
+						verify: $context.library.Verify(
+							function(f) {
+								scope.test(f);
+							}
+						)
+					});
+				}
 
 				/** @type { slime.fifty.test.internal.test.Current } */
-				var now;
-
-				var started;
+				var now = current(initial);
 
 				return /** @type { slime.fifty.test.internal.test.State } */({
 					get: function() { return now; },
 					start: function(name) {
-						if (now && now.scope) {
-							now.scope.start(name);
-						} else {
-							started = new Date().getTime();
-							emitter.fire("start", { name: name });
-						}
+						now.scope.start(name);
 						var was = now;
-						var scope = Scope({ parent: (was) ? was.scope : void(0), listener: console });
-						now = {
-							scope: scope,
-							verify: $context.library.Verify(
-								function(f) {
-									scope.test(f);
-								}
-							)
-						};
+						now = current(Scope({ parent: (was) ? was.scope : void(0), listener: console }));
+						//	Caller is currently responsible for keeping track of the stack, but we can at least help by providing
+						//	the previous state
 						return {
 							previous: was,
 							current: now
@@ -144,11 +140,7 @@
 					end: function(name,was) {
 						var result = now.scope.success;
 						now = was;
-						if (now && now.scope) {
-							now.scope.end(name,result);
-						} else {
-							emitter.fire("end", { name: name, result: result, elapsed: new Date().getTime() - started });
-						}
+						now.scope.end(name,result);
 						return result;
 					}
 				});
