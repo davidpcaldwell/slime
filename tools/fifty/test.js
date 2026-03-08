@@ -120,30 +120,6 @@
 
 				var started;
 
-				/**
-				 * @param { string } name
-				 */
-				var start = function(name) {
-					if (scope) {
-						scope.start(name);
-					} else {
-						started = new Date().getTime();
-						emitter.fire("start", { name: name });
-					}
-				};
-
-				/**
-				 * @param { string } name
-				 * @param { boolean } result
-				 */
-				var end = function(name,result) {
-					if (scope) {
-						scope.end(name,result);
-					} else {
-						emitter.fire("end", { name: name, result: result, elapsed: new Date().getTime() - started });
-					}
-				}
-
 				var get = function() {
 					return /** @type { slime.fifty.test.internal.test.Current } */ ({ scope: scope, verify: verify });
 				};
@@ -153,11 +129,15 @@
 					verify = newVerify;
 				};
 
-				/** @type { slime.fifty.test.internal.test.State } */
-				var state = {
+				return /** @type { slime.fifty.test.internal.test.State } */({
 					get: get,
 					start: function(name) {
-						start(name);
+						if (scope) {
+							scope.start(name);
+						} else {
+							started = new Date().getTime();
+							emitter.fire("start", { name: name });
+						}
 						var was = get();
 						var localscope = Scope({ parent: was.scope, listener: console });
 						var localverify = $context.library.Verify(
@@ -174,12 +154,14 @@
 					end: function(name,was) {
 						var result = scope.success;
 						set(was.scope, was.verify);
-						end(name, result);
+						if (scope) {
+							scope.end(name,result);
+						} else {
+							emitter.fire("end", { name: name, result: result, elapsed: new Date().getTime() - started });
+						}
 						return result;
 					}
-				};
-
-				return state;
+				});
 			};
 
 			var state = State(console);
