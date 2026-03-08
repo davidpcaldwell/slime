@@ -261,8 +261,17 @@ namespace slime.fifty.test.internal {
 		depth(): number
 		fail(): void
 
+		/**
+		 * Fires an event indicating this scope has started, including the name of the scope in the event payload.
+		 */
 		start: (name: string) => void
+
 		test: slime.definition.verify.Context
+
+		/**
+		 * Fires an event indicating this scope has finished, including the name, result, and elapsed time of the scope in the event
+		 * payload.
+		 */
 		end: (name: string, result: boolean) => void
 	}
 

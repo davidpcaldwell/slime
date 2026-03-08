@@ -211,6 +211,7 @@
 					return rv;
 				} catch (e) {
 					window.alert(e);
+					window.console.error(e);
 					return Promise.resolve(false);
 				}
 			})();
