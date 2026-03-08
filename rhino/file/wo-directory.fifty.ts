@@ -182,20 +182,13 @@ namespace slime.jrunscript.file.location.directory {
 	export interface Exports {
 		exists: slime.$api.fp.world.sensor.api.Simple<slime.jrunscript.file.Location, {}, boolean>
 
-		require: {
-			(location: slime.jrunscript.file.Location): slime.$api.fp.world.means.api.Simple<
-				{ recursive?: boolean },
-				{
-					created: slime.jrunscript.file.Location
-					found: slime.jrunscript.file.Location
-				}
-			>
-
-			old: (p?: { recursive?: boolean }) => slime.$api.fp.world.Means<slime.jrunscript.file.Location, {
+		require: (mode?: { recursive?: boolean }) => slime.$api.fp.world.means.api.Simple<
+			slime.jrunscript.file.Location,
+			{
 				created: slime.jrunscript.file.Location
 				found: slime.jrunscript.file.Location
-			}>
-		}
+			}
+		>
 	}
 
 
@@ -219,10 +212,10 @@ namespace slime.jrunscript.file.location.directory {
 
 				verify(at).evaluate(exists).is(false);
 
-				$api.fp.world.process(subject.Location.directory.require.old()(at))();
+				$api.fp.world.process(subject.Location.directory.require().wo(at))();
 				verify(at).evaluate(exists).is(true);
 
-				$api.fp.world.process(subject.Location.directory.require.old()(at))();
+				$api.fp.world.process(subject.Location.directory.require().wo(at))();
 				verify(at).evaluate(exists).is(true);
 			}
 		}
@@ -453,7 +446,7 @@ namespace slime.jrunscript.file.location.directory {
 					$api.fp.pipe(
 						//	TODO	Output.compose?
 						$api.fp.impure.tap(
-							$api.fp.world.output(jsh.file.world.Location.directory.require.old())
+							$api.fp.world.output(jsh.file.world.Location.directory.require().wo)
 						),
 						$api.fp.impure.tap(
 							$api.fp.pipe(
