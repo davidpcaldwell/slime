@@ -112,50 +112,40 @@
 					on: console
 				});
 
-				/** @type { slime.fifty.test.internal.Scope } */
-				var scope;
-
-				/** @type { slime.definition.verify.Verify } */
-				var verify;
+				/** @type { slime.fifty.test.internal.test.Current } */
+				var now;
 
 				var started;
 
-				var get = function() {
-					return /** @type { slime.fifty.test.internal.test.Current } */ ({ scope: scope, verify: verify });
-				};
-
-				var set = function(newScope,newVerify) {
-					scope = newScope;
-					verify = newVerify;
-				};
-
 				return /** @type { slime.fifty.test.internal.test.State } */({
-					get: get,
+					get: function() { return now; },
 					start: function(name) {
-						if (scope) {
-							scope.start(name);
+						if (now && now.scope) {
+							now.scope.start(name);
 						} else {
 							started = new Date().getTime();
 							emitter.fire("start", { name: name });
 						}
-						var was = get();
-						var localscope = Scope({ parent: was.scope, listener: console });
-						var localverify = $context.library.Verify(
-							function(f) {
-								localscope.test(f);
-							}
-						);
-						set(localscope, localverify);
+						var was = now;
+						var scope = Scope({ parent: (was) ? was.scope : void(0), listener: console });
+						now = {
+							scope: scope,
+							verify: $context.library.Verify(
+								function(f) {
+									scope.test(f);
+								}
+							)
+						};
 						return {
 							previous: was,
-							current: get()
+							current: now
 						};
 					},
 					end: function(name,was) {
-						var result = scope.success;
-						set(was.scope, was.verify);
-						if (scope) {
-							scope.end(name,result);
+						var result = now.scope.success;
+						now = was;
+						if (now && now.scope) {
+							now.scope.end(name,result);
 						} else {
 							emitter.fire("end", { name: name, result: result, elapsed: new Date().getTime() - started });
 						}
@@ -171,10 +161,9 @@
 			 * @param { slime.fifty.test.internal.test.AsynchronousScope } ascope
 			 * @param { string } name
 			 * @param { () => void } execute
-			 * @param { slime.fifty.test.internal.Listener } listener
 			 * @returns { slime.fifty.test.internal.test.Result }
 			 */
-			var executeTestScope = function(ascope,name,execute,listener) {
+			var executeTestScope = function(ascope,name,execute) {
 				if (ascope) ascope.test.log("async tests: starting scope", name, ascope.test.depth());
 				if (ascope) ascope.start();
 				if (ascope) ascope.test.setName(name);
@@ -226,7 +215,7 @@
 					rv = rv
 						.then(function done(done) {
 							$context.promises.console.log("async tests: computing after() for", name);
-							ascope.test.log("async tests: restoring scope and verify to", name, was.scope, was.verify);
+							ascope.test.log("async tests: restoring scope and verify to", name, (was) ? was.scope : void(0), (was) ? was.verify : void(0));
 							return Promise.resolve(after());
 						})
 					;
@@ -243,10 +232,9 @@
 			/**
 			 *
 			 * @param { slime.fifty.test.tests } tests
-			 * @param { slime.fifty.test.internal.Listener } console
 			 * @returns
 			 */
-			var runner = function(tests,console) {
+			var runner = function(tests) {
 				/**
 				 *
 				 * @param { slime.fifty.test.tests } tests - the tests for this file
@@ -300,8 +288,7 @@
 									throw e;
 								});
 							}
-						},
-						console
+						}
 					)
 				}
 				return rv;
@@ -311,9 +298,8 @@
 			 *
 			 * @param { string } name
 			 * @param { Error & { printStackTrace?: () => void, javaException?: any }} e
-			 * @param { slime.fifty.test.internal.Listener } console
 			 */
-			var error = function(name,e,console) {
+			var error = function(name,e) {
 				executeTestScope(
 					void(0),
 					name,
@@ -353,8 +339,7 @@
 							}
 						}
 						state.get().verify(error.join("\n")).is("Successfully loaded tests");
-					},
-					console
+					}
 				)
 			};
 
