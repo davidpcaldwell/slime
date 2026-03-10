@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.fifty.internal.test {
+namespace slime.fifty.internal.test.data {
 	export interface Context {
 	}
 

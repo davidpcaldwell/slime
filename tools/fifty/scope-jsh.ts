@@ -57,33 +57,8 @@ namespace slime.fifty.test.kit {
 	}
 }
 
-namespace slime.fifty.test.internal.scope.jsh {
-	export interface Scope {
-		/**
-		 * A loader that will load resources from the same directory as the currently executing Fifty file.
-		 */
-		loader: slime.old.Loader
-
-		/**
-		 * The directory containing the currently executing Fifty file.
-		 */
-		directory: slime.jrunscript.file.Directory
-
-		/**
-		 * The filename of the currently executing Fifty file.
-		 */
-		filename: string
-
-		fifty: Omit<slime.fifty.test.Kit,"jsh">
-	}
-
-	export type Export = (scope: slime.fifty.test.internal.scope.jsh.Scope) => slime.fifty.test.kit.Jsh
-
-	export type Script = slime.loader.Script<void,Export>
-}
-
 (
-	function($api: slime.$api.Global, jsh: slime.jsh.Global, $loader: slime.Loader, $export: slime.loader.Export<slime.fifty.test.internal.scope.jsh.Export>) {
+	function($api: slime.$api.Global, jsh: slime.jsh.Global, $loader: slime.Loader, $export: slime.loader.Export<slime.fifty.internal.test.scope.jsh.Export>) {
 		var tmp = {
 			location: function() {
 				var directory = jsh.shell.TMPDIR.createTemporary({ directory: true });

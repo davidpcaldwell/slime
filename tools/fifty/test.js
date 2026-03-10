@@ -9,9 +9,9 @@
 	/**
 	 * @param { slime.runtime.Platform } $platform
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.fifty.test.internal.test.Context } $context
+	 * @param { slime.fifty.internal.test.Context } $context
 	 * @param { slime.Loader } $loader
-	 * @param { slime.loader.Export<slime.fifty.test.internal.test.Exports> } $export
+	 * @param { slime.loader.Export<slime.fifty.internal.test.Exports> } $export
 	 */
 	function($platform,$api,$context,$loader,$export) {
 		//	This file has four callers:
@@ -23,7 +23,7 @@
 		/**
 		 *
 		 * @param { boolean } success
-		 * @returns { slime.fifty.test.internal.test.Result }
+		 * @returns { slime.fifty.internal.test.Result }
 		 */
 		var toResult = function(success) {
 			return ($context.promises) ? $context.promises.Promise.resolve(success) : {
@@ -34,13 +34,13 @@
 		};
 
 		/**
-		 * @type { slime.fifty.test.internal.test.Executors }
+		 * @type { slime.fifty.internal.test.Executors }
 		 */
 		function TestExecutors(console) {
 			/**
 			 *
-			 * @param { { parent?: slime.fifty.test.internal.Scope, listener: slime.fifty.test.internal.Listener } } p
-			 * @returns { slime.fifty.test.internal.Scope }
+			 * @param { { parent?: slime.fifty.internal.test.Scope, listener: slime.fifty.internal.test.Listener } } p
+			 * @returns { slime.fifty.internal.test.Scope }
 			 */
 			function Scope(p) {
 				return new function() {
@@ -50,7 +50,7 @@
 						return (p.parent) ? p.parent.depth() + 1 : 0;
 					};
 
-					/** @type { slime.$api.event.Emitter<slime.fifty.test.internal.Events> } */
+					/** @type { slime.$api.event.Emitter<slime.fifty.internal.test.Events> } */
 					var emitter = $api.events.emitter({
 						source: this,
 						on: p.listener
@@ -105,13 +105,13 @@
 			}
 
 			/**
-			 * @type { (console: slime.$api.event.Handlers<slime.fifty.test.internal.Events>) => slime.fifty.test.internal.test.State }
+			 * @type { (console: slime.$api.event.Handlers<slime.fifty.internal.test.Events>) => slime.fifty.internal.test.State }
 			 */
 			var State = function(console) {
 				var initial = Scope({ listener: console });
 
-				var current = function(/** @type { slime.fifty.test.internal.Scope } */scope) {
-					return /** @type { slime.fifty.test.internal.test.Current } */({
+				var current = function(/** @type { slime.fifty.internal.test.Scope } */scope) {
+					return /** @type { slime.fifty.internal.test.Current } */({
 						scope: scope,
 						verify: $context.library.Verify(
 							function(f) {
@@ -121,10 +121,10 @@
 					});
 				}
 
-				/** @type { slime.fifty.test.internal.test.Current } */
+				/** @type { slime.fifty.internal.test.Current } */
 				var now = current(initial);
 
-				return /** @type { slime.fifty.test.internal.test.State } */({
+				return /** @type { slime.fifty.internal.test.State } */({
 					get: function() { return now; },
 					start: function(name) {
 						now.scope.start(name);
@@ -150,10 +150,10 @@
 
 			/**
 			 *
-			 * @param { slime.fifty.test.internal.test.AsynchronousScope } ascope
+			 * @param { slime.fifty.internal.test.AsynchronousScope } ascope
 			 * @param { string } name
 			 * @param { () => void } execute
-			 * @returns { slime.fifty.test.internal.test.Result }
+			 * @returns { slime.fifty.internal.test.Result }
 			 */
 			var executeTestScope = function(ascope,name,execute) {
 				if (ascope) ascope.test.log("async tests: starting scope", name, ascope.test.depth());
@@ -262,11 +262,11 @@
 
 				/**
 				 * @template { any } T
-				 * @param { slime.fifty.test.internal.test.AsynchronousScope } ascope
+				 * @param { slime.fifty.internal.test.AsynchronousScope } ascope
 				 * @param { (t: T) => void } callable
 				 * @param { string } name essentially for display when reporting results
 				 * @param { T } [argument]
-				 * @returns { slime.fifty.test.internal.test.Result }
+				 * @returns { slime.fifty.internal.test.Result }
 				 */
 				var rv = function(ascope,callable,name,argument) {
 					return executeTestScope(
@@ -415,12 +415,12 @@
 		);
 
 		/**
-		 * @type { slime.fifty.test.internal.test.Load }
+		 * @type { slime.fifty.internal.test.Load }
 		 */
 		var load = function recurse(ascopes,context,argument) {
 			//	TODO	it appears context.file.loader and context.scopes.jsh.loader may be redundant?
 
-			var testFileEvaluator = function(/** @type { Executors } */executors, /** @type { slime.$api.event.Handlers<slime.fifty.test.internal.Events> } */console) {
+			var testFileEvaluator = function(/** @type { Executors } */executors, /** @type { slime.$api.event.Handlers<slime.fifty.internal.test.Events> } */console) {
 				var tests = {
 					//	TODO	this should probably be completely empty
 					types: {}
@@ -688,7 +688,7 @@
 				}
 			};
 
-			return /** @type { ReturnType<slime.fifty.test.internal.test.Load> } */({
+			return /** @type { ReturnType<slime.fifty.internal.test.Load> } */({
 				part: function(part) {
 					return {
 						run: function(listener) {
@@ -726,8 +726,8 @@
 
 		/**
 		 *
-		 * @param { { parent: slime.fifty.test.internal.test.AsynchronousScope, name: string } } [p]
-		 * @returns { slime.fifty.test.internal.test.AsynchronousScope }
+		 * @param { { parent: slime.fifty.internal.test.AsynchronousScope, name: string } } [p]
+		 * @returns { slime.fifty.internal.test.AsynchronousScope }
 		 */
 		var AsynchronousScope = function recurse(p) {
 			var name = (p && p.name);
@@ -737,7 +737,7 @@
 			/** @type { slime.definition.test.promises.Registry } */
 			var registry;
 
-			/** @type { slime.fifty.test.internal.test.AsynchronousSubscope[] } */
+			/** @type { slime.fifty.internal.test.AsynchronousSubscope[] } */
 			var subscopes = [];
 
 			return {
@@ -789,7 +789,7 @@
 		//	these scopes on the stack; rather, we must implement a stack of them.
 		/**
 		 *
-		 * @returns { slime.fifty.test.internal.test.AsynchronousScopes }
+		 * @returns { slime.fifty.internal.test.AsynchronousScopes }
 		 */
 		var AsynchronousScopes = function() {
 			var initial = AsynchronousScope({ parent: null, name: "(top)" });
