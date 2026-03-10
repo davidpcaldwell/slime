@@ -117,7 +117,7 @@
 				/**
 				 *
 				 * @param { any } delegate
-				 * @returns { slime.fifty.test.internal.Listener }
+				 * @returns { slime.fifty.internal.test.Listener }
 				 */
 				function(delegate) {
 					var depth = function(scope) {
@@ -162,7 +162,7 @@
 				var fiftyLoader = new inonit.loader.Loader(inonit.loader.Base.page.url);
 
 				var code = {
-					/** @type { slime.fifty.test.internal.test.Script } */
+					/** @type { slime.fifty.internal.test.Script } */
 					test: fiftyLoader.script("test.js")
 				}
 
