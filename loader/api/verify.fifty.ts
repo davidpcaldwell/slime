@@ -129,12 +129,12 @@ namespace slime.definition.verify {
 	/**
 	 * An object that can execute {@link slime.definition.unit.Test}s.
 	 */
-	export type Context = (f: slime.definition.unit.Test) => void
+	export type Executor = (f: slime.definition.unit.Test) => void
 
 	/**
-	 * Creates a {@link Verify} object that communicates with the given {@link Context}.
+	 * Creates a {@link Verify} object that communicates with the given {@link Executor}.
 	 */
-	export type Export = ( scope: Context ) => Verify
+	export type Export = ( scope: Executor ) => Verify
 
 	(
 		function(

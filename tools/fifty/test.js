@@ -39,33 +39,29 @@
 		function TestExecutors(console) {
 			/**
 			 *
-			 * @param { { parent?: slime.fifty.internal.test.Scope, listener: slime.fifty.internal.test.Listener } } p
+			 * @param { { parent?: slime.fifty.internal.test.Scope, listener?: slime.fifty.internal.test.Listener } } p
 			 * @returns { slime.fifty.internal.test.Scope }
 			 */
 			function Scope(p) {
 				return new function() {
-					this.success = true;
+					/** @type { slime.$api.event.Emitter<slime.fifty.internal.test.Events> } */
+					var emitter = $api.events.emitter({
+						source: this,
+						on: p.listener,
+						parent: (p.parent) ? p.parent.emitter : void(0)
+					});
+
+					this.toString = function() {
+						return "Scope: " + this.depth();
+					}
 
 					this.depth = function() {
 						return (p.parent) ? p.parent.depth() + 1 : 0;
 					};
 
-					/** @type { slime.$api.event.Emitter<slime.fifty.internal.test.Events> } */
-					var emitter = $api.events.emitter({
-						source: this,
-						on: p.listener
-					});
+					this.success = true;
 
-					//	TODO	we would like to replace this setup with one where the events bubble to the parent scope and they
-					//			can deal with the call to fail() themselves
-					this.fail = function() {
-						this.success = false;
-						if (p.parent) p.parent.fail();
-					}
-
-					this.toString = function() {
-						return "Scope: " + this.depth();
-					}
+					this.emitter = emitter;
 
 					var started;
 
@@ -78,28 +74,36 @@
 						emitter.fire("end", { name: name, result: result, elapsed: new Date().getTime() - started });
 					};
 
-					/** @type { slime.definition.verify.Context } */
+					var self = this;
+
+					emitter.listeners.add("test", function(e) {
+						var result = e.detail;
+						if (result.success === false) {
+							//	TODO	is this needed, or is the `this` argument already `self`?
+							self.success = false;
+						} else if (result.success === true) {
+							//	do nothing
+						} else if (result.success === null) {
+							self.success = false;
+						} else {
+							throw new TypeError();
+						}
+					});
+
+					/** @type { slime.definition.verify.Executor } */
 					this.test = function(f) {
 						/** @type { slime.definition.unit.Test.Result } */
 						var result;
 						try {
 							result = f();
-							if (result.success === false) {
-								this.fail();
-							} else if (result.success === true) {
-								//	do nothing
-							} else {
-								throw new TypeError();
-							}
 						} catch (e) {
-							this.fail();
 							result = {
 								success: null,
 								message: String(e) + ((e.stack) ? ("\n" + e.stack) : ""),
 								error: e
 							}
 						}
-						emitter.fire("test", { message: result.message, success: result.success });
+						emitter.fire("test", { message: result.message, success: result.success, error: result.error });
 					};
 				}
 			}
@@ -129,7 +133,7 @@
 					start: function(name) {
 						now.scope.start(name);
 						var was = now;
-						now = current(Scope({ parent: (was) ? was.scope : void(0), listener: console }));
+						now = current(Scope({ parent: (was) ? was.scope : void(0)/*, listener: console */ }));
 						//	Caller is currently responsible for keeping track of the stack, but we can at least help by providing
 						//	the previous state
 						return {

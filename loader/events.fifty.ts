@@ -343,7 +343,10 @@ namespace slime.$api {
 			 * Creates an {@link slime.$api.event.Emitter} that can be used to fire events to a set of listeners. Event emitters can be
 			 * arranged in a hierarchy.
 			 *
-			 * @param p
+			 * @param p.parent (optional) A parent emitter to which events fired on the created emitter will also be fired.
+			 * @param p.source (optional) An arbitrary value that will be used as the `source` property of events fired on the created emitter.
+			 * If not specified, the created emitter itself will be used as the source.
+			 * @param p.on (optional) A {@link slime.$api.event.Handlers} object whose properties will be added as listeners to the created emitter.
 			 * @returns An {@link slime.$api.event.Emitter} configured using the given argument.
 			 */
 			emitter: <D>(p?:
@@ -351,13 +354,8 @@ namespace slime.$api {
 					/** (optional; default is the created {@link slime.$api.event.Emitter}) */
 					source?: {}
 					on?: slime.$api.event.Handlers<D>
-				} & (
-					{
-						//	TODO	should turn this into mutually exclusive OR
-						parent?: slime.$api.event.Emitter<D>
-						getParent?: () => slime.$api.event.Emitter<D>
-					}
-				)
+					parent?: slime.$api.event.Emitter<D>
+				}
 			) => slime.$api.event.Emitter<D>
 		}
 
