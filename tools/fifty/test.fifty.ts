@@ -257,16 +257,16 @@ namespace slime.fifty.test {
 namespace slime.fifty.internal.test {
 	export interface Scope {
 		success: boolean
+		emitter: slime.$api.event.Emitter<slime.fifty.internal.test.Events>
 
 		depth(): number
-		fail(): void
 
 		/**
 		 * Fires an event indicating this scope has started, including the name of the scope in the event payload.
 		 */
 		start: (name: string) => void
 
-		test: slime.definition.verify.Context
+		test: slime.definition.verify.Executor
 
 		/**
 		 * Fires an event indicating this scope has finished, including the name, result, and elapsed time of the scope in the event
@@ -334,7 +334,7 @@ namespace slime.fifty.internal.test {
 
 	export interface Events {
 		start: { name: string }
-		test: { message: string, success: boolean }
+		test: slime.definition.unit.Test.Result
 		end: { name: string, result: boolean, elapsed: number }
 	}
 
