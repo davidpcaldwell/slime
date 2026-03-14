@@ -281,12 +281,13 @@ namespace slime.fifty.internal.test {
 	}
 
 	export interface State {
-		get: () => Current
 		start: (name: string) => {
 			previous: Current
 			current: Current
 		}
 		end: (name: string, was: Current) => boolean
+		verify: slime.definition.verify.Verify
+		error: (e: any) => void
 	}
 
 	export type Executors = (console: slime.$api.event.Handlers<slime.fifty.internal.test.Events>) => {
