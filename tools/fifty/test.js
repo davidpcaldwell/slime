@@ -129,7 +129,6 @@
 				var now = current(initial);
 
 				return /** @type { slime.fifty.internal.test.State } */({
-					get: function() { return now; },
 					start: function(name) {
 						now.scope.start(name);
 						var was = now;
@@ -146,7 +145,15 @@
 						now = was;
 						now.scope.end(name,result);
 						return result;
-					}
+					},
+					verify: function() {
+						return now.verify.apply(this,arguments);
+					},
+					error: function(e) {
+						now.scope.test(function() {
+							throw e;
+						});
+					},
 				});
 			};
 
@@ -280,13 +287,12 @@
 							try {
 								callable(argument);
 							} catch (e) {
-								state.get().scope.test(function() {
-									throw e;
-								});
+								state.error(e);
 							}
 						}
 					)
-				}
+				};
+
 				return rv;
 			};
 
@@ -334,7 +340,7 @@
 								}
 							}
 						}
-						state.get().verify(error.join("\n")).is("Successfully loaded tests");
+						state.verify(error.join("\n")).is("Successfully loaded tests");
 					}
 				)
 			};
@@ -343,7 +349,7 @@
 				runner: runner,
 				error: error,
 				verify: function() {
-					return state.get().verify.apply(this,arguments);
+					return state.verify.apply(this,arguments);
 				}
 			}
 		}
@@ -424,7 +430,14 @@
 		var load = function recurse(ascopes,context,argument) {
 			//	TODO	it appears context.file.loader and context.scopes.jsh.loader may be redundant?
 
-			var testFileEvaluator = function(/** @type { Executors } */executors, /** @type { slime.$api.event.Handlers<slime.fifty.internal.test.Events> } */console) {
+			/**
+			 *
+			 * @returns { { threw: any, fifty: slime.fifty.test.Kit } & Pick<ReturnType<slime.fifty.internal.test.Executors>, "runner" | "error"> }
+			 */
+			var testFileEvaluator = function(
+				/** @type { slime.$api.event.Handlers<slime.fifty.internal.test.Events> } */console
+			) {
+				var executors = (console) ? TestExecutors(console) : void(0);
 				var tests = {
 					//	TODO	this should probably be completely empty
 					types: {}
@@ -645,13 +658,20 @@
 
 				return {
 					threw: threw,
+					runner: executors.runner,
+					error: executors.error,
 					fifty: fifty
 				}
 			};
 
+			/**
+			 *
+			 * @param { string } part
+			 * @param { slime.fifty.internal.test.Listener } console
+			 * @returns { slime.fifty.internal.test.Result }
+			 */
 			var run = function(part, console) {
-				var executors = TestExecutors(console);
-				var testFileEvaluation = testFileEvaluator(executors, console);
+				var testFileEvaluation = testFileEvaluator(console);
 
 				var threw = testFileEvaluation.threw;
 				var fifty = testFileEvaluation.fifty;
@@ -675,7 +695,7 @@
 						/** @type { (argument: any) => void } */
 						var callable = target;
 						var createRunner = function() {
-							return executors.runner(fifty.tests, console)( (ascopes) ? ascopes.current() : void(0), callable, getName(context.file.path,part), argument);
+							return testFileEvaluation.runner(fifty.tests, console)( (ascopes) ? ascopes.current() : void(0), callable, getName(context.file.path,part), argument);
 						}
 						if ($context.promises) {
 							return createRunner();
@@ -686,7 +706,7 @@
 						throw new TypeError("Not a function: " + part);
 					}
 				} else {
-					executors.error(context.file.path, threw, console);
+					testFileEvaluation.error(context.file.path, threw, console);
 					//	TODO	no test coverage
 					return toResult(false);
 				}
@@ -701,7 +721,7 @@
 					}
 				},
 				list: function() {
-					var testFileEvaluation = testFileEvaluator(void(0), void(0));
+					var testFileEvaluation = testFileEvaluator(void(0));
 
 					function update(target, rv) {
 						for (var x in target) {
