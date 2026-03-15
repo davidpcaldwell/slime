@@ -310,7 +310,7 @@
 								loader: (path.folder) ? delegate.Child(path.folder) : delegate,
 								path: path.file
 							},
-							scopes: {},
+							environment: {},
 							console: {
 								start: function() {},
 								end: function() {},

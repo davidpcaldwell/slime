@@ -36,7 +36,9 @@
 		/**
 		 * @type { slime.fifty.internal.test.Executors }
 		 */
-		function TestExecutors(console) {
+		function TestExecutors(parent,console) {
+			//	TODO	is console used at all if parent is present?
+
 			/**
 			 *
 			 * @param { { parent?: slime.fifty.internal.test.Scope, listener?: slime.fifty.internal.test.Listener } } p
@@ -157,7 +159,7 @@
 				});
 			};
 
-			var state = State(console);
+			var state = (parent) ? parent : State(console);
 
 			/**
 			 *
@@ -350,6 +352,9 @@
 				error: error,
 				verify: function() {
 					return state.verify.apply(this,arguments);
+				},
+				state: function() {
+					return state;
 				}
 			}
 		}
@@ -427,7 +432,8 @@
 		/**
 		 * @type { slime.fifty.internal.test.Load }
 		 */
-		var load = function recurse(ascopes,context,argument) {
+		var load = function recurse(context,state,argument) {
+			var ascopes = state.asynchronous;
 			//	TODO	it appears context.file.loader and context.scopes.jsh.loader may be redundant?
 
 			/**
@@ -437,7 +443,7 @@
 			var testFileEvaluator = function(
 				/** @type { slime.$api.event.Handlers<slime.fifty.internal.test.Events> } */console
 			) {
-				var executors = (console) ? TestExecutors(console) : void(0);
+				var executors = (console) ? TestExecutors(state.synchronous,console) : void(0);
 				var tests = {
 					//	TODO	this should probably be completely empty
 					types: {}
@@ -510,18 +516,18 @@
 							if (ascopes) ascopes.push();
 
 							var rv = recurse(
-								ascopes,
 								{
 									file: file,
-									scopes: {
+									environment: {
 										jsh: (scopes.jsh)
 											? {
-												loader: (file.folder) ? context.scopes.jsh.loader.Child(file.folder) : context.scopes.jsh.loader,
-												directory: (file.folder) ? context.scopes.jsh.directory.getSubdirectory(file.folder) : context.scopes.jsh.directory
+												loader: (file.folder) ? context.environment.jsh.loader.Child(file.folder) : context.environment.jsh.loader,
+												directory: (file.folder) ? context.environment.jsh.directory.getSubdirectory(file.folder) : context.environment.jsh.directory
 											}
 											: void(0)
 									}
 								},
+								{ synchronous: executors.state(), asynchronous: ascopes },
 								argument
 							).part(part).run(console);
 
@@ -609,8 +615,8 @@
 
 				if (scopes.jsh) {
 					var jshScope = scopes.jsh({
-						loader: context.scopes.jsh.loader,
-						directory: context.scopes.jsh.directory,
+						loader: context.environment.jsh.loader,
+						directory: context.environment.jsh.directory,
 						filename: context.file.path,
 						fifty: fifty
 					});
@@ -679,8 +685,8 @@
 				if (!part) part = "suite";
 
 				var getName = function(path,part) {
-					if (context.scopes.jsh) {
-						return context.scopes.jsh.directory.getRelativePath(path) + ":" + part;
+					if (context.environment.jsh) {
+						return context.environment.jsh.directory.getRelativePath(path) + ":" + part;
 					}
 					return path + ":" + part;
 				};
@@ -842,11 +848,11 @@
 		$export({
 			run: function(p/*loader,scopes,path,part*/) {
 				var ascopes = ($context.promises) ? AsynchronousScopes() : void(0);
-				return load(ascopes,p).part(p.part).run(p.console);
+				return load(p, { synchronous: void(0), asynchronous: ascopes }).part(p.part).run(p.console);
 			},
 			list: function(p/*loader,scopes,path*/) {
 				var ascopes = ($context.promises) ? AsynchronousScopes() : void(0);
-				return load(ascopes,p).list();
+				return load(p, { synchronous: void(0), asynchronous: ascopes }).list();
 			}
 		})
 	}

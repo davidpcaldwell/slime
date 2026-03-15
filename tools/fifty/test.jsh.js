@@ -207,7 +207,7 @@
 					loader: loader,
 					path: file.pathname.basename
 				},
-				scopes: {
+				environment: {
 					jsh: {
 						directory: file.parent,
 						loader: loader
