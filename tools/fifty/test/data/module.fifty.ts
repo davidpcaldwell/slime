@@ -91,7 +91,7 @@ namespace slime.fifty.internal.test.data {
 			});
 		}
 
-		fifty.tests.indent = function() {
+		if (fifty.global.jsh) fifty.tests.indent = function() {
 			var result = test("jsh", "load/child.fifty.ts");
 			jsh.shell.console("===\n" + result.stdio.error + "\n===");
 
@@ -117,8 +117,9 @@ namespace slime.fifty.internal.test.data {
 
 		fifty.tests.bubble = fifty.test.Parent();
 
-		fifty.tests.bubble.jsh = bubble("jsh");
-		fifty.tests.bubble.browser = bubble("browser");
+		if (fifty.global.jsh) fifty.tests.bubble.jsh = bubble("jsh");
+		//	TODO	this runs under jsh currently; may want to re-examine the flow, it'd be nice to run it under the browser instead
+		if (fifty.global.jsh) fifty.tests.bubble.browser = bubble("browser");
 
 		fifty.tests.suite = function() {
 			//	TODO	use more modern script loading techniques
@@ -127,9 +128,8 @@ namespace slime.fifty.internal.test.data {
 				fifty.tests.types.Exports(module);
 			});
 			fifty.run(fifty.tests.subsuite);
-			fifty.run(fifty.tests.indent);
 			fifty.load("load/child.fifty.ts");
-			fifty.run(fifty.tests.indent);
+			if (fifty.tests.indent) fifty.run(fifty.tests.indent);
 			fifty.run(fifty.tests.bubble);
 
 			//	Small demonstration of using function name to name a subsuite
