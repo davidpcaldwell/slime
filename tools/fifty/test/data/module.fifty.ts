@@ -58,19 +58,26 @@ namespace slime.fifty.internal.test.data {
 			verify(1).is(1);
 		}
 
-		fifty.tests.wip = function() {
-			var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
-			var result = run({
+		fifty.tests.wip = fifty.test.Parent();
+
+		var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+
+		var test = function(environment,file) {
+			return run({
 				command: fifty.jsh.file.relative("../../../../fifty").pathname,
 				arguments: [
-					"test.jsh",
-					fifty.jsh.file.relative("load/child.fifty.ts").pathname
+					"test." + environment,
+					fifty.jsh.file.relative(file).pathname
 				],
 				stdio: {
 					output: "string",
 					error: "string"
 				}
 			});
+		}
+
+		fifty.tests.wip.indent = function() {
+			var result = test("jsh", "load/child.fifty.ts");
 			jsh.shell.console("===\n" + result.stdio.error + "\n===");
 
 			var lines = result.stdio.error.split("\n");
@@ -82,7 +89,21 @@ namespace slime.fifty.internal.test.data {
 
 			verify(lines[3]).evaluate(function(s) { return s.substring(0,4); }).is("    ");
 			verify(lines[3]).evaluate(function(s) { return s.substring(0,5); }).is.not("     ");
-		}
+		};
+
+		const bubble = function(where) {
+			return function() {
+				var result = test(where, "load/bubble.fifty.ts");
+				jsh.shell.console("===\n" + result.stdio.error + "\n===");
+				//	TODO	exit status 1 is pretty vague; could be lots of reasons
+				verify(result).status.is(1);
+			}
+		};
+
+		fifty.tests.wip.bubble = fifty.test.Parent();
+
+		fifty.tests.wip.bubble.jsh = bubble("jsh");
+		fifty.tests.wip.bubble.browser = bubble("browser");
 
 		fifty.tests.suite = function() {
 			//	TODO	use more modern script loading techniques
