@@ -38,6 +38,7 @@ namespace slime.fifty.internal.test.data {
 		fifty: slime.fifty.test.Kit
 	) {
 		const { verify } = fifty;
+		const { $api, jsh } = fifty.global;
 
 		fifty.tests.types = {};
 
@@ -55,6 +56,32 @@ namespace slime.fifty.internal.test.data {
 
 		fifty.tests.subsuite = function() {
 			verify(1).is(1);
+		}
+
+		fifty.tests.wip = function() {
+			var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+			var result = run({
+				command: fifty.jsh.file.relative("../../../../fifty").pathname,
+				arguments: [
+					"test.jsh",
+					fifty.jsh.file.relative("load/child.fifty.ts").pathname
+				],
+				stdio: {
+					output: "string",
+					error: "string"
+				}
+			});
+			jsh.shell.console("===\n" + result.stdio.error + "\n===");
+
+			var lines = result.stdio.error.split("\n");
+
+			verify(lines[0]).evaluate(function(s) { return s.substring(0,2); }).is.not("  ");
+
+			verify(lines[2]).evaluate(function(s) { return s.substring(0,2); }).is("  ");
+			verify(lines[2]).evaluate(function(s) { return s.substring(0,3); }).is.not("   ");
+
+			verify(lines[3]).evaluate(function(s) { return s.substring(0,4); }).is("    ");
+			verify(lines[3]).evaluate(function(s) { return s.substring(0,5); }).is.not("     ");
 		}
 
 		fifty.tests.suite = function() {
