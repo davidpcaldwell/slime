@@ -91,7 +91,7 @@ namespace slime.fifty.internal.test.data {
 			});
 		}
 
-		fifty.tests.wip.indent = function() {
+		fifty.tests.indent = function() {
 			var result = test("jsh", "load/child.fifty.ts");
 			jsh.shell.console("===\n" + result.stdio.error + "\n===");
 
@@ -115,16 +115,10 @@ namespace slime.fifty.internal.test.data {
 			}
 		};
 
-		fifty.tests.wip.bubble = fifty.test.Parent();
+		fifty.tests.bubble = fifty.test.Parent();
 
-		fifty.tests.wip.bubble.jsh = bubble("jsh");
-		fifty.tests.wip.bubble.browser = bubble("browser");
-
-		fifty.tests.wip.jsapi = function() {
-			var result = suite("jsapi/fifty");
-			jsh.shell.console("===\n" + result.stdio.error + "\n===");
-			verify(result).status.is(0);
-		}
+		fifty.tests.bubble.jsh = bubble("jsh");
+		fifty.tests.bubble.browser = bubble("browser");
 
 		fifty.tests.suite = function() {
 			//	TODO	use more modern script loading techniques
@@ -133,7 +127,10 @@ namespace slime.fifty.internal.test.data {
 				fifty.tests.types.Exports(module);
 			});
 			fifty.run(fifty.tests.subsuite);
+			fifty.run(fifty.tests.indent);
 			fifty.load("load/child.fifty.ts");
+			fifty.run(fifty.tests.indent);
+			fifty.run(fifty.tests.bubble);
 
 			//	Small demonstration of using function name to name a subsuite
 			fifty.run(function name() {
