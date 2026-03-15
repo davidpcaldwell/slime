@@ -181,16 +181,7 @@ namespace slime.jrunscript.file.location.directory {
 
 	export interface Exports {
 		exists: slime.$api.fp.world.sensor.api.Simple<slime.jrunscript.file.Location, {}, boolean>
-
-		require: (mode?: { recursive?: boolean }) => slime.$api.fp.world.means.api.Simple<
-			slime.jrunscript.file.Location,
-			{
-				created: slime.jrunscript.file.Location
-				found: slime.jrunscript.file.Location
-			}
-		>
 	}
-
 
 	(
 		function(
@@ -217,6 +208,182 @@ namespace slime.jrunscript.file.location.directory {
 
 				$api.fp.world.process(subject.Location.directory.require().wo(at))();
 				verify(at).evaluate(exists).is(true);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports {
+		/**
+		 *
+		 * @param mode.recursive If true, parent directories will be created as needed; default `false`.
+		 * @param mode.fresh If true, the directory will be removed if it already exists before being created; default `false`.
+		 * @returns
+		 */
+		require: (mode?: { recursive?: boolean, fresh?: boolean }) => slime.$api.fp.world.sensor.api.Maybe<
+			slime.jrunscript.file.Location,
+			{
+				created: slime.jrunscript.file.Location
+				found: slime.jrunscript.file.Location
+			},
+			slime.jrunscript.file.Location
+		>
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			var Captor = function() {
+				return fifty.$api.Events.Captor({
+					created: void(0),
+					found: void(0)
+				});
+			};
+
+			var wo = function(mode?: {
+				recursive?: boolean;
+				fresh?: boolean;
+			}) {
+				return fifty.global.jsh.file.Location.directory.require(mode).wo;
+			};
+
+			const exists = {
+				directory: fifty.global.jsh.file.Location.directory.exists.simple,
+				file: fifty.global.jsh.file.Location.file.exists.simple
+			};
+
+			const asLocation = (a: any) => a as slime.jrunscript.file.Location;
+
+			fifty.tests.sandbox.locations.directory.require = fifty.test.Parent();
+
+			fifty.tests.sandbox.locations.directory.require.basic = function() {
+				var captor = Captor();
+
+				var simple = $api.fp.now(wo(), $api.fp.world.Sensor.mapping(captor.handler));
+
+				var at = fifty.jsh.file.temporary.location();
+
+				verify(at).evaluate(exists.directory).is(false);
+				verify(captor).events.length.is(0);
+
+				var result = simple(at);
+
+				verify(result).present.is(true);
+				verify(at).evaluate(exists.directory).is(true);
+				verify(captor).events.length.is(1);
+
+				if (captor.events.length > 0) {
+					verify(captor.events[0].type).is("created");
+					verify(captor.events[0].detail).evaluate(asLocation).pathname.is(at.pathname);
+				}
+			}
+
+			fifty.tests.sandbox.locations.directory.require.recursive = fifty.test.Parent();
+
+			const recursive = function(mode?: {
+				recursive?: boolean;
+				fresh?: boolean;
+			}) {
+				var captor = Captor();
+
+				var simple = $api.fp.now(wo(mode), $api.fp.world.Sensor.mapping(captor.handler));
+
+				var at = fifty.jsh.file.temporary.location();
+				var base = fifty.global.jsh.file.Location.directory.base(at);
+				var nested = base("a/b/c");
+
+				verify(nested).evaluate(exists.directory).is(false);
+				verify(captor).events.length.is(0);
+
+				var result = simple(nested);
+
+				return { at, base, nested, result, events: captor.events };
+			};
+
+			fifty.tests.sandbox.locations.directory.require.recursive.yes = function() {
+				const { at, base, nested, result, events } = recursive({ recursive: true });
+
+				verify(result).present.is(true);
+				verify(nested).evaluate(exists.directory).is(true);
+				verify(events).length.is(4);
+				if (events.length == 4) {
+					verify(events[0].type).is("created");
+					verify(events[0].detail).evaluate(asLocation).pathname.is(at.pathname);
+					verify(events[1].type).is("created");
+					verify(events[1].detail).evaluate(asLocation).pathname.is(base("a").pathname);
+					verify(events[2].type).is("created");
+					verify(events[2].detail).evaluate(asLocation).pathname.is(base("a/b").pathname);
+					verify(events[3].type).is("created");
+					verify(events[3].detail).evaluate(asLocation).pathname.is(base("a/b/c").pathname);
+				}
+			};
+
+			fifty.tests.sandbox.locations.directory.require.recursive.no = function() {
+				const { at, base, nested, result, events } = recursive({ recursive: false });
+
+				verify(result).present.is(false);
+				verify(nested).evaluate(exists.directory).is(false);
+				verify(events).length.is(0);
+			};
+
+			fifty.tests.sandbox.locations.directory.require.fresh = fifty.test.Parent();
+
+			var fresh = function(before: { nonempty: boolean }) {
+				return function(mode?: { recursive?: boolean; fresh?: boolean }) {
+					return function(after: { exists: boolean, files: number }) {
+						var at: slime.jrunscript.file.Location;
+
+						debugger;
+
+						if (before.nonempty) {
+							at = fifty.jsh.file.temporary.directory();
+							var it = $api.fp.now(at, jsh.file.Location.relative("it"));
+							verify(it).evaluate(exists.file).is(false);
+							var write = jsh.file.Location.file.write.open(it).simple;
+							var out = write();
+							verify(it).evaluate(exists.file).is(true);
+						} else {
+							at = fifty.jsh.file.temporary.location();
+						}
+
+						var listing = $api.fp.pipe(
+							jsh.file.Location.directory.list.stream().simple,
+							$api.fp.Stream.collect
+						);
+
+						var captor = Captor();
+
+						var simple = $api.fp.now(wo(mode), $api.fp.world.Sensor.mapping(captor.handler));
+
+						verify(at).evaluate(exists.directory).is(before.nonempty);
+						verify(captor).events.length.is(0);
+						if (before.nonempty) verify(at).evaluate(listing).length.is( 1 );
+
+						var result = simple(at);
+
+						verify(result).present.is(true);
+						verify(at).evaluate(exists.directory).is(true);
+						verify(at).evaluate(listing).length.is( (mode.fresh) ? 0 : after.files );
+					}
+				}
+			}
+
+			fifty.tests.sandbox.locations.directory.require.fresh.create = function() {
+				fresh({ nonempty: false })({ fresh: true })({ exists: true, files: 0 });
+				fresh({ nonempty: false })({ fresh: false })({ exists: true, files: 0 });
+			}
+
+			fifty.tests.sandbox.locations.directory.require.fresh.yes = function() {
+				debugger;
+				fresh({ nonempty: true })({ fresh: true })({ exists: true, files: 0 });
+			}
+
+			fifty.tests.sandbox.locations.directory.require.fresh.no = function() {
+				fresh({ nonempty: true })({ fresh: false })({ exists: true, files: 1 });
 			}
 		}
 	//@ts-ignore
@@ -689,7 +856,10 @@ namespace slime.jrunscript.file.internal.wo.directory {
 		Location_directory_exists: slime.jrunscript.file.Exports["Location"]["directory"]["exists"]["wo"]
 		list_world: slime.jrunscript.file.location.directory.Exports["list"]["world"]
 		list_stream: slime.jrunscript.file.location.directory.Exports["list"]["stream"]
-		remove: slime.jrunscript.file.location.file.Exports["remove"]["wo"]
+		remove: {
+			directory: slime.jrunscript.file.location.directory.Exports["remove"]["wo"]
+			location: slime.jrunscript.file.remove.internal.Exports["location"]
+		}
 	}
 
 	export type Exports = slime.jrunscript.file.location.directory.Exports

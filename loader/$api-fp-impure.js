@@ -399,7 +399,7 @@
 								});
 							}
 						},
-						effect: function(handlers) {
+						effector: function(handlers) {
 							return function(means) {
 								return function(output) {
 									$context.events.handle({
@@ -413,7 +413,7 @@
 							simple: function(means) {
 								return {
 									wo: means,
-									simple: $context.now(means, world.Means.effect())
+									simple: $context.now(means, world.Means.effector())
 								}
 							}
 						}

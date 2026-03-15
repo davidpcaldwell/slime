@@ -65,7 +65,7 @@ namespace slime.jrunscript.file.internal.java {
 
 		/**
 		 * Creates a directory at the given location. Will throw an exception if the operation fails, for example, if the parent
-		 * does not exist.
+		 * does not exist, or if a file or directory already exists at the given location.
 		 */
 		createDirectoryAt: (peer: Peer) => void
 

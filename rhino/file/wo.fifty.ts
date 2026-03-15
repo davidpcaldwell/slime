@@ -226,19 +226,19 @@ namespace slime.jrunscript.file {
 					//	TODO	provide simple API for this
 					var setLastModified = $api.fp.now(
 						attributes.times.modified.set,
-						$api.fp.world.Means.effect()
+						$api.fp.world.Means.effector()
 					);
 
 					//	TODO	provide simple API for this
 					var setCreated = $api.fp.now(
 						attributes.times.created.set,
-						$api.fp.world.Means.effect()
+						$api.fp.world.Means.effector()
 					);
 
 					//	TODO	provide simple API for this
 					var setAccessed = $api.fp.now(
 						attributes.times.accessed.set,
-						$api.fp.world.Means.effect()
+						$api.fp.world.Means.effector()
 					);
 
 					var initialLastModified = lastModified();

@@ -150,7 +150,7 @@
 				},
 				pipe: {
 					all: pipe_all,
-					simple: $api.fp.now(pipe_all, $api.fp.world.Means.effect())
+					simple: $api.fp.now(pipe_all, $api.fp.world.Means.effector())
 				},
 				character: character,
 				java: {
@@ -180,7 +180,7 @@
 			return {
 				pipe: {
 					all: pipe_all,
-					simple: $api.fp.now(pipe_all, $api.fp.world.Means.effect())
+					simple: $api.fp.now(pipe_all, $api.fp.world.Means.effector())
 				},
 				split: function(other) {
 					var otherPeer = other.java.adapt();
