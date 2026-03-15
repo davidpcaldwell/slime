@@ -62,6 +62,21 @@ namespace slime.fifty.internal.test.data {
 
 		var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
 
+		var suite = function(part) {
+			return run({
+				command: fifty.jsh.file.relative("../../../../jsh").pathname,
+				arguments: [
+					"contributor/jrunscript.jsh.js",
+					"-part", part
+				],
+				directory: fifty.jsh.file.relative("../../../..").pathname,
+				stdio: {
+					output: "string",
+					error: "string"
+				}
+			});
+		};
+
 		var test = function(environment,file) {
 			return run({
 				command: fifty.jsh.file.relative("../../../../fifty").pathname,
@@ -104,6 +119,12 @@ namespace slime.fifty.internal.test.data {
 
 		fifty.tests.wip.bubble.jsh = bubble("jsh");
 		fifty.tests.wip.bubble.browser = bubble("browser");
+
+		fifty.tests.wip.jsapi = function() {
+			var result = suite("jsapi/fifty");
+			jsh.shell.console("===\n" + result.stdio.error + "\n===");
+			verify(result).status.is(0);
+		}
 
 		fifty.tests.suite = function() {
 			//	TODO	use more modern script loading techniques
