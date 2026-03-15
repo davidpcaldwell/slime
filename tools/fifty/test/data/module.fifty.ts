@@ -60,7 +60,7 @@ namespace slime.fifty.internal.test.data {
 
 		fifty.tests.wip = fifty.test.Parent();
 
-		var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+		var run = (jsh) ? $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping()) : void(0);
 
 		var suite = function(part) {
 			return run({
