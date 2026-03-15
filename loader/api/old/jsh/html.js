@@ -334,7 +334,7 @@
 							loader: (path.folder) ? delegate.Child(path.folder) : delegate,
 							path: path.file
 						},
-						scopes: {
+						environment: {
 							jsh: {
 								loader: (path.folder) ? delegate.Child(path.folder) : delegate,
 								directory: (path.folder) ? directory.getSubdirectory(path.folder) : directory

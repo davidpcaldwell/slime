@@ -58,19 +58,41 @@ namespace slime.fifty.internal.test.data {
 			verify(1).is(1);
 		}
 
-		fifty.tests.wip = function() {
-			var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
-			var result = run({
+		fifty.tests.wip = fifty.test.Parent();
+
+		var run = (jsh) ? $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping()) : void(0);
+
+		var suite = function(part) {
+			return run({
+				command: fifty.jsh.file.relative("../../../../jsh").pathname,
+				arguments: [
+					"contributor/jrunscript.jsh.js",
+					"-part", part
+				],
+				directory: fifty.jsh.file.relative("../../../..").pathname,
+				stdio: {
+					output: "string",
+					error: "string"
+				}
+			});
+		};
+
+		var test = function(environment,file) {
+			return run({
 				command: fifty.jsh.file.relative("../../../../fifty").pathname,
 				arguments: [
-					"test.jsh",
-					fifty.jsh.file.relative("load/child.fifty.ts").pathname
+					"test." + environment,
+					fifty.jsh.file.relative(file).pathname
 				],
 				stdio: {
 					output: "string",
 					error: "string"
 				}
 			});
+		}
+
+		if (fifty.global.jsh) fifty.tests.indent = function() {
+			var result = test("jsh", "load/child.fifty.ts");
 			jsh.shell.console("===\n" + result.stdio.error + "\n===");
 
 			var lines = result.stdio.error.split("\n");
@@ -82,7 +104,22 @@ namespace slime.fifty.internal.test.data {
 
 			verify(lines[3]).evaluate(function(s) { return s.substring(0,4); }).is("    ");
 			verify(lines[3]).evaluate(function(s) { return s.substring(0,5); }).is.not("     ");
-		}
+		};
+
+		const bubble = function(where) {
+			return function() {
+				var result = test(where, "load/bubble.fifty.ts");
+				jsh.shell.console("===\n" + result.stdio.error + "\n===");
+				//	TODO	exit status 1 is pretty vague; could be lots of reasons
+				verify(result).status.is(1);
+			}
+		};
+
+		fifty.tests.bubble = fifty.test.Parent();
+
+		if (fifty.global.jsh) fifty.tests.bubble.jsh = bubble("jsh");
+		//	TODO	this runs under jsh currently; may want to re-examine the flow, it'd be nice to run it under the browser instead
+		if (fifty.global.jsh) fifty.tests.bubble.browser = bubble("browser");
 
 		fifty.tests.suite = function() {
 			//	TODO	use more modern script loading techniques
@@ -92,6 +129,8 @@ namespace slime.fifty.internal.test.data {
 			});
 			fifty.run(fifty.tests.subsuite);
 			fifty.load("load/child.fifty.ts");
+			if (fifty.tests.indent) fifty.run(fifty.tests.indent);
+			fifty.run(fifty.tests.bubble);
 
 			//	Small demonstration of using function name to name a subsuite
 			fifty.run(function name() {

@@ -196,7 +196,7 @@
 						loader: loader,
 						path: path.file
 					},
-					scopes: {},
+					environment: {},
 					part: part,
 					console: console
 				});

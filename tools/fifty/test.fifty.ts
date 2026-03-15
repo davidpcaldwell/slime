@@ -290,7 +290,7 @@ namespace slime.fifty.internal.test {
 		error: (e: any) => void
 	}
 
-	export type Executors = (console: slime.$api.event.Handlers<slime.fifty.internal.test.Events>) => {
+	export type Executors = (state: slime.fifty.internal.test.State, console: slime.fifty.internal.test.Listener) => {
 		runner: (tests: slime.fifty.test.tests, console: slime.fifty.internal.test.Listener)
 			=> <T extends unknown>(ascope: slime.fifty.internal.test.AsynchronousScope, callable: (t: T) => void, name: string, argument?: T)
 			=> slime.fifty.internal.test.Result
@@ -298,18 +298,41 @@ namespace slime.fifty.internal.test {
 		error: (
 			name: string,
 			e: Error & { printStackTrace?: () => void; javaException?: any; },
-			console: slime.$api.event.Handlers<slime.fifty.internal.test.Events>
+			console: slime.fifty.internal.test.Listener
 		) => void
 
 		verify: slime.definition.verify.Verify
+
+		state: () => slime.fifty.internal.test.State
 	}
+
+	export interface TestFile {
+		file: {
+			loader: slime.old.Loader
+			path: string
+		}
+	}
+
+	export interface TestEnvironment {
+		environment: {
+			jsh?: {
+				directory: slime.jrunscript.file.Directory
+				loader: slime.old.Loader
+			}
+		}
+	}
+
+	export type TestFileContext = TestFile & TestEnvironment
 
 	/**
 	 * @param argument - the argument passed to a fifty.load call; used for type invariant verification xyz
 	 */
 	export type Load = (
-		ascopes: slime.fifty.internal.test.AsynchronousScopes,
 		context: TestFileContext,
+		state: {
+			synchronous: slime.fifty.internal.test.State
+			asynchronous: slime.fifty.internal.test.AsynchronousScopes
+		},
 		argument?: any
 	) => {
 		/**
@@ -425,34 +448,16 @@ namespace slime.fifty.internal.test {
 		current: () => AsynchronousScope
 	}
 
-	export interface TestFile {
-		file: {
-			loader: slime.old.Loader
-			path: string
-		}
-	}
-
-	export interface TestScopes {
-		scopes: {
-			jsh?: {
-				directory: slime.jrunscript.file.Directory
-				loader: slime.old.Loader
-			}
-		}
-	}
-
-	export type TestFileContext = TestFile & TestScopes
-
 	export interface Exports {
 		/**
 		 * Executes a Fifty page at the given path from the given loader, optionally limiting the test to a single part.
 		 */
-		run: (p: TestFile & TestScopes & {
+		run: (p: TestFileContext & {
 			part?: string
 			console: slime.$api.event.Handlers<slime.fifty.internal.test.Events>
 		}) => Result
 
-		list: (p: TestFile & TestScopes) => Manifest
+		list: (p: TestFileContext) => Manifest
 	}
 
 	export type Script = slime.loader.Script<Context,Exports>
