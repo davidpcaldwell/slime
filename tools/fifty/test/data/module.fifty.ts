@@ -119,7 +119,7 @@ namespace slime.fifty.internal.test.data {
 
 		if (fifty.global.jsh) fifty.tests.bubble.jsh = bubble("jsh");
 		//	TODO	this runs under jsh currently; may want to re-examine the flow, it'd be nice to run it under the browser instead
-		if (fifty.global.jsh) fifty.tests.bubble.browser = bubble("browser");
+		if (fifty.global.jsh && !fifty.global.jsh.shell.environment.SLIME_TEST_NO_BROWSER) fifty.tests.bubble.browser = bubble("browser");
 
 		fifty.tests.suite = function() {
 			//	TODO	use more modern script loading techniques

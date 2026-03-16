@@ -73,9 +73,21 @@ namespace slime.jrunscript.shell.subprocess {
 
 		input: slime.jrunscript.runtime.io.InputStream
 
-		output: (p: {
-			stdout: slime.jrunscript.runtime.io.InputStream
-			stderr: slime.jrunscript.runtime.io.InputStream
+		output: <O,E>(p: {
+			events: (
+				p: {
+					stdout: slime.jrunscript.runtime.io.InputStream
+					stderr: slime.jrunscript.runtime.io.InputStream
+				}
+			) => {
+				stdout: slime.$api.event.Producer<O>
+				stderr: slime.$api.event.Producer<E>
+			}
+
+			handlers: {
+				stdout: slime.$api.event.Handlers<O>
+				stderr: slime.$api.event.Handlers<E>
+			}
 		}) => void
 	}
 
@@ -90,10 +102,6 @@ namespace slime.jrunscript.shell.subprocess {
 			status: number
 		}
 	}
-
-	// export interface Exports {
-	// 	means: slime.$api.fp.world.Means<Invocation,MeansEvents>
-	// }
 }
 
 namespace slime.jrunscript.shell.context.subprocess {
