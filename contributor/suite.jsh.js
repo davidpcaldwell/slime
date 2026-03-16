@@ -13,33 +13,17 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(Packages,$api,jsh) {
-		jsh.shell.tools.rhino.require.simple();
-
-		var TOMCAT_ATTEMPTS = 5;
-		var TOMCAT_RETRY_INTERVAL = 60;
-		for (var i=0; i<TOMCAT_ATTEMPTS; i++) {
-			try {
-				jsh.shell.tools.tomcat.jsh.require.simple();
-			} catch (e) {
-				jsh.shell.console("Tomcat installation failed.");
-				if (i != (TOMCAT_ATTEMPTS - 1)) {
-					jsh.shell.console("Waiting " + TOMCAT_RETRY_INTERVAL + " seconds for retry ...");
-					Packages.java.lang.Thread.sleep(TOMCAT_RETRY_INTERVAL * 1000);
-					jsh.shell.console("Retrying Tomcat installation ...");
-				}
-			}
-		}
-		//	TODO	should have a better way of dealing with this, but for now we just reload the plugin that depended on Tomcat
-		//			and it will succeed now.
-		jsh.loader.plugins(jsh.script.file.parent.parent.getRelativePath("loader/api/old/jsh"));
-
-		jsh.wf.typescript.require();
+		jsh.loader.plugins(jsh.script.file.parent);
 
 		var parameters = jsh.script.getopts({
 			options: {
 				java: jsh.script.getopts.ARRAY(jsh.file.Pathname),
 				engine: jsh.script.getopts.ARRAY(String),
-				docker: false,
+
+				//	TODO	browsers should go away, but is used for local testing of all locally installed and detected browsers
+				//	presently
+				browsers: false,
+
 				part: String,
 				//	https://github.com/davidpcaldwell/slime/issues/138
 				issue138: false,
@@ -56,31 +40,9 @@
 			unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 		});
 
-		if (parameters.options.docker) {
-			var selenium = (function() {
-				var SELENIUM = jsh.shell.jsh.lib.getRelativePath("selenium/java");
-				return {
-					satisfied: function() {
-						return Boolean(SELENIUM.directory);
-					},
-					install: function() {
-						jsh.shell.console("Installing Selenium Java driver ...");
-						jsh.tools.install.install({
-							url: "https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.1.0/selenium-java-4.1.3.zip",
-							getDestinationPath: function(file) { return ""; },
-							to: SELENIUM
-						});
-					}
-				}
-			})();
-
-			$api.fp.now(
-				selenium,
-				jsh.shell.jsh.require,
-				$api.fp.world.events.ignore.action,
-				$api.fp.impure.Process.now
-			)
-		}
+		jsh.project.suite.initialize({
+			selenium: false
+		});
 
 		jsh.java.Thread.start(
 			/**
@@ -127,13 +89,6 @@
 			parameters.options.engine = [""];
 		}
 
-		var code = {
-			/** @type { slime.project.internal.jrunscript_environment.Script } */
-			Environment: jsh.script.loader.script("jrunscript-environment.js")
-		};
-
-		var Environment = code.Environment();
-
 		var hasGit = (
 			function() {
 				if (jsh.shell.environment.SLIME_TEST_NO_GIT) return false;
@@ -146,7 +101,7 @@
 			return Boolean(SLIME.getSubdirectory(".git") || SLIME.getFile(".git"));
 		})();
 
-		var environment = new Environment({
+		var environment = new jsh.project.suite.Environment({
 			src: jsh.script.file.parent.parent,
 			noselfping: parameters.options.noselfping,
 			tomcat: true,
@@ -263,15 +218,8 @@
 			}
 		)();
 
-		if (jsh.unit.browser && !jsh.shell.environment.SLIME_TEST_NO_BROWSER) suite.add("browsers", new function() {
-			var browsers = (parameters.options.docker)
-				? $api.Array.build(function(rv) {
-					rv.push({ id: "dockercompose:selenium:chrome", name: "Chrome (Selenium)" });
-					//	TODO	need to debug why this didn't work:
-					//	TypeError: Cannot call method "start" of undefined
-					rv.push({ id: "dockercompose:selenium:firefox", name: "Firefox (Selenium)" });
-				})
-				: jsh.unit.browser.installed;
+		if (jsh.unit.browser && parameters.options.browsers) suite.add("browsers", new function() {
+			var browsers = jsh.unit.browser.installed;
 
 			this.name = "Browser tests";
 
@@ -398,17 +346,11 @@
 			}
 		);
 
-		jsh.unit.interface.create(suite.build(), new function() {
-			if (parameters.options.view == "chrome") {
-				this.chrome = {
-					profile: parameters.options["chrome:profile"],
-					port: parameters.options.port
-				};
-			} else {
-				this.view = parameters.options.view;
-			}
-
-			this.path = (parameters.options.part) ? parameters.options.part.split("/") : void(0);
+		jsh.project.suite.run({
+			view: parameters.options.view,
+			port: parameters.options.port,
+			part: parameters.options.part,
+			suite: suite
 		});
 	}
 //@ts-ignore

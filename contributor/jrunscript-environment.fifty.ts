@@ -54,5 +54,5 @@ namespace slime.project.internal.jrunscript_environment {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<void,Exports>
+	export type Script = slime.loader.Script<{ jsh: slime.jsh.Global },Exports>
 }

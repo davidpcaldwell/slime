@@ -394,12 +394,9 @@
 		/**
 		 * Runs the test suite, first installing Java, and Rhino.
 		 *
-		 * If the `docker` property is specified, the Selenium driver is installed and the docker flag is passed through to the
-		 * test suite to specify running the tests configured for the Docker environment.
-		 *
 		 * Exits the VM with exit status 1 on failure; otherwise, returns `true`.
 		 *
-		 * @param { { docker?: boolean } } [p]
+		 * @param { {} } [p]
 		 * @returns { slime.jsh.wf.Test }
 		 */
 		var test = function(p) {
@@ -427,7 +424,6 @@
 						arguments: $api.Array.build(function(rv) {
 							rv.push(jsh.shell.jsh.src.getFile("jsh").toString());
 							rv.push($context.base.getRelativePath("contributor/suite.jsh.js"));
-							if (p.docker) rv.push("-docker");
 							if (jsh.shell.environment.JSH_TEST_ISSUE317) rv.push("-issue317");
 						})
 					},

@@ -4,7 +4,7 @@
 #
 #	END LICENSE
 
-name: test-jdk17
+name: test-jdk21
 on:
   pull_request:
     branches:
@@ -30,4 +30,4 @@ jobs:
       - name: Use Docker to create image, and then run the linting and tests
         env:
           SLIME_TEST_NO_WF_SUBMODULE_RESET: 1
-        run: contributor/suite-docker-jrunscript 17
+        run: contributor/suite-docker-browser

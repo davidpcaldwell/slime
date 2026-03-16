@@ -11,9 +11,12 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global & { test: any } } jsh
+	 * @param { { jsh: slime.jsh.Global } } jsh
 	 * @param { slime.loader.Export<slime.project.internal.jrunscript_environment.Exports> } $export
 	 */
-	function(Packages,$api,jsh,$export) {
+	function(Packages,$api,jsh,$context,$export) {
+		if (!jsh) jsh = $context.jsh;
+
 		/** @type { (specified: slime.jrunscript.file.Pathname) => slime.$api.fp.impure.Input<slime.jrunscript.file.Pathname> } */
 		var configureBuiltShellLocation = function(specified) {
 			return $api.fp.impure.Input.memoized(function() {
@@ -293,4 +296,4 @@
 		$export(Environment);
 	}
 //@ts-ignore
-)(Packages,$api,jsh,$export);
+)(Packages,$api, (function() { return this; })().jsh,$context,$export);
