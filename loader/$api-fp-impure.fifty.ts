@@ -1096,7 +1096,7 @@ namespace slime.$api.fp.world {
 					var effect = $api.fp.now(
 						recorder,
 						$api.fp.world.Means.order(function(s: string): number { return Number(s) * 2; }),
-						$api.fp.world.Means.effect(captor.handler)
+						$api.fp.world.Means.effector(captor.handler)
 					);
 
 					verify(orders).length.is(0);
@@ -1161,7 +1161,7 @@ namespace slime.$api.fp.world {
 				handlers?: slime.$api.event.Handlers<E>
 			}) => impure.Output<O>
 
-			effect: <O,E>(events?: slime.$api.event.Handlers<E>)
+			effector: <O,E>(events?: slime.$api.event.Handlers<E>)
 				=> (means: slime.$api.fp.world.Means<O,E>) => impure.Effector<O>
 
 			process: <O,E>(p: {

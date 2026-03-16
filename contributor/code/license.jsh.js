@@ -182,7 +182,8 @@
 				if (files[i].path == "contributor/test-docker-clean-start") extension = "bash";
 				if (files[i].path == "contributor/test-docker-clean-command") extension = "bash";
 				if (files[i].path == "contributor/test-docker-clean-jsh") extension = "bash";
-				if (files[i].path == "contributor/suite-docker") extension = "bash";
+				if (files[i].path == "contributor/suite-docker-jrunscript") extension = "bash";
+				if (files[i].path == "contributor/suite-docker-browser") extension = "bash";
 				if (files[i].path == "contributor/suite-macos") extension = "bash";
 				if (files[i].path == "contributor/hooks/pre-commit") extension = "bash";
 				if (files[i].path == "contributor/devcontainer/check") extension = "bash";

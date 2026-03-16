@@ -299,7 +299,10 @@
 					Location_file_read_string: Location_file_read.string,
 					Store: $context.library.loader.Store,
 					Location_directory_exists: Location_directory_exists,
-					remove: remove.directory,
+					remove: {
+						directory: remove.directory,
+						location: remove.location
+					},
 					list_world: list_world,
 					list_stream: list_stream
 				});
@@ -319,7 +322,7 @@
 		var Location_write_open_wo = function(location) {
 			return function(settings) {
 				return function(events) {
-					var recurse = (settings && settings.recursive) ? $api.fp.now(parts.directoryensureParent, $api.fp.world.Means.effect({
+					var recurse = (settings && settings.recursive) ? $api.fp.now(parts.directoryensureParent, $api.fp.world.Means.effector({
 						created: function(e) {
 							events.fire("createdFolder", e.detail);
 						}

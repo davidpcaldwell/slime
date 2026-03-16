@@ -69,6 +69,10 @@ namespace slime.jrunscript.file {
 				pathname: string
 			},{},slime.$api.fp.Maybe<boolean>>
 
+			/**
+			 * Create a directory with the given pathname. The operation should fail if a file or directory already exists at the
+			 * given pathname, or if the parent directory does not exist.
+			 */
 			createDirectory: slime.$api.fp.world.Means<{
 				pathname: string
 			},{

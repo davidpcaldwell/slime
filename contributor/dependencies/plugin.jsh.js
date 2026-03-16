@@ -21,7 +21,8 @@
 					jsh.project = {
 						code: void(0),
 						openapi: void(0),
-						dependencies: void(0)
+						dependencies: void(0),
+						suite: void(0)
 					};
 				}
 				/** @type { slime.project.dependencies.Script } */

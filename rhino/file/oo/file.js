@@ -333,7 +333,7 @@
 				var setLastModified = function(date) {
 					var set = $api.fp.now(
 						parameters.filesystem.attributes.times.modified.set({ pathname: location.pathname }),
-						$api.fp.world.Means.effect()
+						$api.fp.world.Means.effector()
 					)
 					set(date.getTime());
 				}
