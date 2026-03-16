@@ -726,7 +726,7 @@ namespace slime.jrunscript.runtime.io {
 						newline: "\n"
 					}),
 					$api.fp.property("all"),
-					$api.fp.world.Means.effect({
+					$api.fp.world.Means.effector({
 						progress: function(e) {
 							all = e.detail;
 						}
@@ -748,7 +748,7 @@ namespace slime.jrunscript.runtime.io {
 							newline: "\n"
 						}),
 						$api.fp.property("lines"),
-						$api.fp.world.Means.effect({
+						$api.fp.world.Means.effector({
 							progress: function(e) {
 								all += e.detail;
 							},
@@ -787,7 +787,7 @@ namespace slime.jrunscript.runtime.io {
 							newline: "\n"
 						}),
 						$api.fp.property("lines"),
-						$api.fp.world.Means.effect({
+						$api.fp.world.Means.effector({
 							progress: function(e) {
 								all += e.detail;
 							},
