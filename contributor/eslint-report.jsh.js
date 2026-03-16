@@ -31,7 +31,7 @@
 			action: action
 		});
 
-		var eslintInstallDefaultsAction = modules.require({ name: "@eslint/js" });
+		var eslintInstallDefaultsAction = modules.require({ name: "@eslint/js", version: "9.13.0" });
 
 		jsh.shell.console("Require @eslint/js ...");
 		$api.fp.world.Action.now({

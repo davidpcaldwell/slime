@@ -42,7 +42,7 @@
 					});
 
 					$api.fp.world.Action.now({
-						action: modules.require({ name: "@eslint/js" }),
+						action: modules.require({ name: "@eslint/js", version: "9.13.0" }),
 					});
 
 					var module = $api.fp.world.Question.now({
