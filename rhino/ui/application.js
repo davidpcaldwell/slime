@@ -66,10 +66,12 @@
 		 * @returns { slime.jsh.httpd.Tomcat }
 		 */
 		var Server = function(p) {
+			var servletWebapp = toServletDescriptor(p);
 			var server = jsh.httpd.Tomcat({
 				port: (p.port) ? p.port : void(0),
 				https: p.https,
-				webapp: toServletDescriptor(p)
+				resources: servletWebapp.resources,
+				servlet: servletWebapp.servlet
 			});
 			return server;
 		};
