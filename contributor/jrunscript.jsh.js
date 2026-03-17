@@ -11,6 +11,16 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(jsh) {
+		//	Currently, this script runs the test suite for a specific JRE and JavaScript engine.
+		//
+		//	It receives its configuration through a combination of command-line arguments and environment variables.
+		//
+		//	Some of the environment variables are `jsh`-based variables used to configure the shell in which this script is running.
+		//
+		//	Environment variables recognized by `jsh`:
+		//	* `CATALINA_HOME`: A home to use for Tomcat.
+		//	* `JSH_ENGINE`: The value to use for the JSH_ENGINE environment variable when running tests.
+		//	* `JSH_ENGINE_RHINO_CLASSPATH`: TODO
 		var parameters = jsh.script.getopts({
 			options: {
 				//	undocumented; used by suite.jsh.js
@@ -44,22 +54,6 @@
 		var suite = new jsh.unit.html.Suite();
 
 		var SRC = jsh.script.file.parent.parent;
-
-		/**
-		 *
-		 * @param { { file: slime.jrunscript.file.File }} p
-		 */
-		var FiftyPart = function(p) {
-			return jsh.unit.fifty.Part({
-				shell: environment.jsh.unbuilt.src,
-				script: SRC.getFile("tools/fifty/test.jsh.js"),
-				file: p.file
-			});
-		}
-
-		suite.add("fifty", FiftyPart({
-			file: jsh.script.file.parent.getFile("jrunscript.fifty.ts")
-		}));
 
 		// TODO: does this require hg be installed?
 		if (jsh.tools.hg.init) suite.add("jrunscript/tools/hg", new jsh.unit.html.Part({

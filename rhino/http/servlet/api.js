@@ -10,7 +10,8 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
 	 * @param { slime.servlet.internal.$host } $host An object of type `slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject`
-	 * provided by the SLIME servlet environment upon initialization, or directly by the `jsh` servlet plugin in the case of `jsh`.
+	 * provided by the SLIME servlet environment upon initialization, or an object of type `slime.servlet.internal.$host.jsh`
+	 * provided directly by the `jsh` servlet plugin in the case of `jsh`.
 	 */
 	function(Packages,JavaAdapter,$host) {
 		/** @type { slime.servlet.internal.Context } */

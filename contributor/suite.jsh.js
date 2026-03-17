@@ -170,14 +170,14 @@
 					var ENGINE = (engine) ? engine : "engine";
 					jsh.shell.console("Running " + jsh.shell.jsh.home + " with Java " + launcher + " and engine " + engine + " ...");
 
-					var env = jsh.js.Object.set({}, jsh.shell.environment
-						, (parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {}
-						, (engine) ? { JSH_ENGINE: engine.toLowerCase() } : {}
-						, (jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : {}
-					);
+					suite.add("jrunscript/" + JRE + "/" + ENGINE + "/fifty", jsh.unit.fifty.Part({
+						shell: environment.jsh.unbuilt.src,
+						script: environment.jsh.unbuilt.src.getFile("tools/fifty/test.jsh.js"),
+						file: jsh.script.file.parent.getFile("jrunscript.fifty.ts")
+					}));
 
-					suite.add("jrunscript/" + JRE + "/" + ENGINE, jsh.unit.Suite.Fork({
-						name: "Java tests for JRE " + JRE + " and engine " + ENGINE,
+					suite.add("jrunscript/" + JRE + "/" + ENGINE + "/jsapi", jsh.unit.Suite.Fork({
+						name: "JSAPI Java tests for JRE " + JRE + " and engine " + ENGINE,
 						run: jsh.shell.jsh,
 						vmarguments: ["-Xms1024m"],
 						shell: environment.jsh.src,
@@ -190,7 +190,12 @@
 						).concat(
 							(parameters.options.issue138) ? ["-issue138"] : []
 						),
-						environment: env
+						environment: $api.Object.compose(
+							jsh.shell.environment,
+							(parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {},
+							(engine) ? { JSH_ENGINE: engine.toLowerCase() } : {},
+							(jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : {}
+						)
 					}));
 				}
 			});
