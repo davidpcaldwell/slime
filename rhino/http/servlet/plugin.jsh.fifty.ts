@@ -196,7 +196,7 @@ namespace slime.jsh.httpd {
 		export type Webapps = SingleWebapp | MultipleWebapps | servlet.configuration.WebappServlet
 
 		/** @deprecated Should be declaring webapps at time of server creation. */
-		export type AcceptOldForm = Webapps | NoWebapps
+		export type WebappsWithOldOptionalForm = Webapps | NoWebapps
 
 		export interface Configuration {
 			/**
@@ -246,7 +246,7 @@ namespace slime.jsh.httpd {
 			 * @param p (optional; default is an object with no properties) An object specifying the configuration of the embedded
 			 * server.
 			 */
-			(p?: tomcat.Configuration & tomcat.AcceptOldForm): Tomcat
+			(p?: tomcat.Configuration & tomcat.WebappsWithOldOptionalForm): Tomcat
 
 			/**
 			 * Starts a server that serves files from a particular directory.
