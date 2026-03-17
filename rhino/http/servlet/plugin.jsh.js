@@ -223,19 +223,19 @@
 					}
 				}
 
-				/** @type { (webapps: slime.jsh.httpd.tomcat.AcceptOldForm) => slime.jsh.httpd.tomcat.MultipleWebapps["webapps"] } */
+				/** @type { (webapps: slime.jsh.httpd.tomcat.WebappsWithOldOptionalForm) => slime.jsh.httpd.tomcat.MultipleWebapps["webapps"] } */
 				var normalizeWebapps = function(webapps) {
-					/** @type { (webapps: slime.jsh.httpd.tomcat.AcceptOldForm) => webapps is slime.jsh.httpd.tomcat.SingleWebapp } */
+					/** @type { (webapps: slime.jsh.httpd.tomcat.WebappsWithOldOptionalForm) => webapps is slime.jsh.httpd.tomcat.SingleWebapp } */
 					var isSingleWebapp = function(webapps) {
 						return Boolean(webapps["webapp"]);
 					}
 
-					/** @type { (webapps: slime.jsh.httpd.tomcat.AcceptOldForm) => webapps is slime.jsh.httpd.tomcat.MultipleWebapps } */
+					/** @type { (webapps: slime.jsh.httpd.tomcat.WebappsWithOldOptionalForm) => webapps is slime.jsh.httpd.tomcat.MultipleWebapps } */
 					var isMultipleWebapps = function(webapps) {
 						return Boolean(webapps["webapps"]);
 					}
 
-					/** @type { (webapps: slime.jsh.httpd.tomcat.AcceptOldForm) => webapps is slime.jsh.httpd.servlet.configuration.WebappServlet } */
+					/** @type { (webapps: slime.jsh.httpd.tomcat.WebappsWithOldOptionalForm) => webapps is slime.jsh.httpd.servlet.configuration.WebappServlet } */
 					var isServletWebapp = function(webapps) {
 						return Boolean(webapps["servlet"]);
 					}
@@ -259,7 +259,7 @@
 				if (TOMCAT_CLASS) {
 					var Tomcat = (
 						/**
-						 * @param { slime.jsh.httpd.tomcat.Configuration & (slime.jsh.httpd.tomcat.AcceptOldForm) } p
+						 * @param { slime.jsh.httpd.tomcat.Configuration & (slime.jsh.httpd.tomcat.WebappsWithOldOptionalForm) } p
 						 */
 						function(p) {
 							//	TODO	probably should not happen now that we specify webapps in the configuration

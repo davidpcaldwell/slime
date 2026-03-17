@@ -80,7 +80,7 @@ Create the issue template in the `local/.github/ISSUE_TEMPLATE` folder, creating
 Issues with a strong focus on improving documentation should receive the `documentation` label, while issues focused on test
 coverage should receive the `project` label.
 
-# Prioritizing modules for improvement
+# Code Quality
 
 If you are asked for suggestions on how to improve the project, please use the information in this section.
 
@@ -90,7 +90,7 @@ checking, ESLint errors, and files that need to be split.
 * If modules are deprecated (have the `@deprecated` annotation in the namespace definition, or have `old` in the namespace name,
 they can be deprioritized).
 
-## Metrics you can access for project planning
+## Metrics you can access for assessing code quality
 
 The project contains several `jsh` scripts you can run in order to generate metrics that will help you find targets for improvement.
 

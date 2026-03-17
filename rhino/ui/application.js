@@ -51,14 +51,14 @@
 
 		/**
 		 * @param { slime.jsh.ui.application.ServerConfiguration } p
-		 * @returns { slime.jsh.httpd.servlet.configuration.Servlets }
+		 * @returns { slime.jsh.httpd.servlet.configuration.WebappServlet<slime.jsh.httpd.servlet.DescriptorUsingLoad> }
 		 */
 		var toServletDescriptor = function(p) {
 			var argument = jsh.httpd.spi.servlet.inWebapp(p.resources,p.servlet);
-			return jsh.httpd.servlet.Servlets.from.root({
-				resources: argument.resources,
+			return {
+				resources: p.resources,
 				servlet: withWebviewInitialize(argument.servlet)
-			});
+			};
 		}
 
 		/**
@@ -66,10 +66,12 @@
 		 * @returns { slime.jsh.httpd.Tomcat }
 		 */
 		var Server = function(p) {
+			var servletWebapp = toServletDescriptor(p);
 			var server = jsh.httpd.Tomcat({
 				port: (p.port) ? p.port : void(0),
 				https: p.https,
-				webapp: toServletDescriptor(p)
+				resources: servletWebapp.resources,
+				servlet: servletWebapp.servlet
 			});
 			return server;
 		};
