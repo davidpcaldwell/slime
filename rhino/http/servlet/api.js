@@ -80,6 +80,23 @@
 				}
 			})();
 
+			var getParameters = function(/** @type { slime.servlet.internal.$host } */$host) {
+				if (isJava($host)) {
+					return (function() {
+						/** @type { { [x: string]: string }} */
+						var rv = {};
+						var _enumeration = $host.getServletConfig().getInitParameterNames();
+						while(_enumeration.hasMoreElements()) {
+							var key = String(_enumeration.nextElement());
+							rv[key] = String($host.getServletConfig().getInitParameter(key));
+						}
+						return rv;
+					})();
+				} else if (isScript($host)) {
+					return $host.parameters;
+				}
+			}
+
 			/**
 			 * An object providing access to selected attributes of the servlet configuration and context. Not present if this is not a
 			 * "real" servlet environment (for example, if running within `jsh`).
@@ -93,23 +110,11 @@
 
 					rv.path = $host.getServletConfig().getInitParameter("script");
 
-					rv.parameters = (function() {
-						/** @type { { [x: string]: string }} */
-						var rv = {};
-						var _enumeration = $host.getServletConfig().getInitParameterNames();
-						while(_enumeration.hasMoreElements()) {
-							var key = String(_enumeration.nextElement());
-							rv[key] = String($host.getServletConfig().getInitParameter(key));
-						}
-						return rv;
-					})();
-
 					rv.getMimeType = function(path) {
 						return $host.getServletContext().getMimeType(path);
 					};
 
 					/**
-					 *
 					 * @param { string } prefix
 					 * @returns { string[] }
 					 */
@@ -272,17 +277,6 @@
 				}
 			)();
 
-			/**
-			 * @type { { [x: string]: any } }
-			 */
-			var $parameters = (function() {
-				if ($servlet) {
-					return $servlet.parameters;
-				} else if (isScript($host)) {
-					return $host.parameters;
-				}
-			})();
-
 			var context = (
 				/**
 				 * @returns { slime.servlet.httpd["context"] }
@@ -353,12 +347,11 @@
 			return {
 				api: api,
 				loaders: loaders,
-				parameters: $parameters,
+				parameters: getParameters($host),
 				context: context,
 				loadServletScriptIntoScope: loadServletScriptIntoScope,
 				$slime: $slime,
 				/**
-				 *
 				 * @param { slime.servlet.Script } $exports
 				 */
 				Servlet: function($exports) {
