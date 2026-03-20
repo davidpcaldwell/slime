@@ -175,84 +175,82 @@
 			var getLoaders = function(/** @type { slime.servlet.internal.$host } */$host) {
 				if (isJava($host)) {
 					/**
-					 * @type { (p: any, prefix?: any) => slime.old.Loader }
+					 * @type { (p: { _source: slime.jrunscript.native.inonit.script.engine.Code.Loader }, prefix?: string) => slime.old.Loader }
 					 */
-					var Loader = (function() {
-						var Loader = function(p,prefix) {
-							var getMimeType = function(path) {
-								return $host.getServletContext().getMimeType(path);
-							};
-							/** @type { slime.old.loader.Source } */
-							var source = {
-								get: function(path) {
-									var pp = {};
-									pp._source = (prefix) ? p._source.child(prefix) : p._source;
-									pp.type = function(path) {
-										var _type = getMimeType(path);
-										if (/\.css$/.test(path)) {
-											_type = new Packages.java.lang.String("text/css");
-										}
-										if (_type) return api.io.mime.Type.parse(String(_type));
-										return null;
-									};
+					var Loader = function(p,prefix) {
+						if (!prefix) prefix = "";
+						var getMimeType = function(path) {
+							return $host.getServletContext().getMimeType(path);
+						};
+						/** @type { slime.old.loader.Source } */
+						var source = {
+							get: function(path) {
+								var pp = {};
+								pp._source = (prefix) ? p._source.child(prefix) : p._source;
+								pp.type = function(path) {
+									var _type = getMimeType(path);
+									if (/\.css$/.test(path)) {
+										_type = new Packages.java.lang.String("text/css");
+									}
+									if (_type) return api.io.mime.Type.parse(String(_type));
+									return null;
+								};
 
-									var delegate = new api.io.Loader(pp);
-									var delegated = delegate.source.get(path);
-									if (!delegated) return null;
-									return api.$api.Object.compose(delegated, {
-										type: pp.type(path)
-									});
-								},
-								list: function(path) {
-									var basePrefix = (typeof prefix === "string") ? prefix : "";
-									var full = basePrefix + path;
-									return api.loader.paths(full).map(function(string) {
-										if (string.substring(string.length-1) == "/") {
-											return {
-												path: string.substring(0,string.length-1),
-												loader: true,
-												resource: false
-											}
-										} else {
-											return {
-												path: string,
-												loader: false,
-												resource: true
-											}
+								var delegate = new api.io.Loader(pp);
+								var delegated = delegate.source.get(path);
+								if (!delegated) return null;
+								return api.$api.Object.compose(delegated, {
+									type: pp.type(path)
+								});
+							},
+							list: function(path) {
+								var full = prefix + path;
+								return api.loader.paths(full).map(function(string) {
+									if (string.substring(string.length-1) == "/") {
+										return {
+											path: string.substring(0,string.length-1),
+											loader: true,
+											resource: false
 										}
-									});
-								}
+									} else {
+										return {
+											path: string,
+											loader: false,
+											resource: true
+										}
+									}
+								});
 							}
-							// var rv = new bootstrap.io.Loader(pp);
-							var rv = new api.io.Loader(source);
-							//	TODO	Below failed TypeScript and didn't seem to make sense; remove when safe
-							// rv.list = function(m) {
-							// 	var path = prefix + m.path;
-							// 	var rv = bootstrap.loader.paths(path);
-							// 	return rv;
-							// }
-							return rv;
 						}
-
-						return Loader;
-					})();
+						// var rv = new bootstrap.io.Loader(pp);
+						var rv = new api.io.Loader(source);
+						//	TODO	Below failed TypeScript and didn't seem to make sense; remove when safe
+						// rv.list = function(m) {
+						// 	var path = prefix + m.path;
+						// 	var rv = bootstrap.loader.paths(path);
+						// 	return rv;
+						// }
+						return rv;
+					};
 
 					//	servlet container, determine webapp path and load relative to that
-					var prefix = (
-						function() {
-							var path = getServletPath($host);
-							var tokens = path.split("/");
-							var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
-							return prefix;
-						}
-					)();
 					var loader = Loader({
 						_source: getServletResources($host)
 					});
 					return {
-						script: Loader({
-							_source: getServletResources($host)
-						},prefix),
+						//	TODO	possibly equivalent to loader.Child( <expression used as second argument> )
+						script: Loader(
+							{
+								_source: getServletResources($host)
+							},(
+								function() {
+									var path = getServletPath($host);
+									var tokens = path.split("/");
+									var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
+									return prefix;
+								}
+							)()
+						),
 						container: Loader({
 							_source: getServletResources($host)
 						},""),
