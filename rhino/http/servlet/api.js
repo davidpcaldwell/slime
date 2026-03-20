@@ -97,6 +97,80 @@
 				}
 			};
 
+			var getServletResourcePaths = function(/** @type { slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject } */$host, /** @type { string } */prefix) {
+				var _set = $host.getServletContext().getResourcePaths("/" + prefix);
+				var rv = [];
+				var _i = _set.iterator();
+				while(_i.hasNext()) {
+					rv.push(String(_i.next().substring(prefix.length+1)));
+				}
+				return rv;
+			};
+
+			var getServletResources = function(/** @type { slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject } */$host) {
+				return Packages.inonit.script.engine.Code.Loader.create($host.getServletContext().getResource("/"));
+			};
+
+			var getServletPath = function(/** @type { slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject } */$host) {
+				return String($host.getServletConfig().getInitParameter("script"));
+			};
+
+			var getBootstrap = function(/** @type { slime.servlet.internal.$host } */$host) {
+				if (isJava($host)) {
+					var bootstrap = (
+						/**
+						 *
+						 * @returns { slime.servlet.internal.api }
+						 */
+						function() {
+							var loader = new $slime.Loader({
+								_source: getServletResources($host)
+							});
+							var code = {
+								/** @type { slime.jrunscript.java.Script } */
+								java: loader.script("WEB-INF/slime/jrunscript/host/"),
+								/** @type { slime.jrunscript.io.Script } */
+								io: loader.script("WEB-INF/slime/jrunscript/io/"),
+								/** @type { slime.web.Script } */
+								web: loader.script("WEB-INF/slime/js/web/")
+							};
+							var rv = {};
+							rv.$api = $slime.$api;
+							rv.js = loader.module("WEB-INF/slime/js/object/", {
+								globals: true
+							});
+							rv.java = code.java({
+								$slime: $slime,
+								logging: {
+									prefix: "slime.servlet"
+								}
+							});
+							rv.io = code.io({
+								$slime: $slime,
+								api: {
+									java: rv.java
+								},
+								nojavamail: false
+							});
+							rv.web = code.web(loader.file("WEB-INF/slime/js/web/context.java.js"));
+							rv.loader = {
+								paths: function(prefix) {
+									return getServletResourcePaths($host, prefix);
+								}
+							}
+
+							rv.js.web = rv.web;
+							$slime.$api.deprecate(rv.js, "web");
+
+							return rv;
+						}
+					)();
+					return bootstrap;
+				} else if (isScript($host)) {
+					return $host.api;
+				}
+			}
+
 			/** @type { ($host: slime.servlet.internal.$host) => slime.servlet.internal.Loaders } */
 			var getLoaders = function(/** @type { slime.servlet.internal.$host } */$host) {
 				if (isJava($host)) {
@@ -166,117 +240,33 @@
 					//	servlet container, determine webapp path and load relative to that
 					var prefix = (
 						function() {
-							var path = String($servlet.path);
+							var path = getServletPath($host);
 							var tokens = path.split("/");
 							var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
 							return prefix;
 						}
 					)();
 					var loader = Loader({
-						_source: $servlet.resources
+						_source: getServletResources($host)
 					});
 					return {
 						script: Loader({
-							_source: $servlet.resources
+							_source: getServletResources($host)
 						},prefix),
 						container: Loader({
-							_source: $servlet.resources
+							_source: getServletResources($host)
 						},""),
 						api: loader.Child("WEB-INF/slime/rhino/http/servlet/server/")
 					};
 				} else if (isScript($host)) {
 					return $host.loaders;
 				} else {
-					throw new Error("Cannot instantiate loaders: $slime = " + $slime + " $servlet = " + $servlet + " $host = " + $host);
+					throw new Error("Cannot instantiate loaders: $slime = " + $slime + " $host = " + $host);
 				}
 			}
 
-			/**
-			 * An object providing access to selected attributes of the servlet configuration and context. Not present if this is not a
-			 * "real" servlet environment (for example, if running within `jsh`).
-			 */
-			var $servlet = (function() {
-				if (isJava($host)) {
-					var rv = {};
-					//	TODO	Find a way to use _url version of loader/jrunscript/expression.js constructor to get access to this object, probably
-					//			via the created loader's .source property
-					rv.resources = Packages.inonit.script.engine.Code.Loader.create($host.getServletContext().getResource("/"));
-
-					rv.path = $host.getServletConfig().getInitParameter("script");
-
-					/**
-					 * @param { string } prefix
-					 * @returns { string[] }
-					 */
-					rv.getResourcePaths = function(prefix) {
-						var _set = $host.getServletContext().getResourcePaths("/" + prefix);
-						var rv = [];
-						var _i = _set.iterator();
-						while(_i.hasNext()) {
-							rv.push(String(_i.next().substring(prefix.length+1)));
-						}
-						return rv;
-					}
-					return rv;
-				}
-			})();
-
 			/** @type { slime.servlet.internal.api } */
-			var api = (function() {
-				if ($servlet) {
-					var bootstrap = (
-						/**
-						 *
-						 * @returns { slime.servlet.internal.api }
-						 */
-						function() {
-							var loader = new $slime.Loader({
-								_source: $servlet.resources
-							});
-							var code = {
-								/** @type { slime.jrunscript.java.Script } */
-								java: loader.script("WEB-INF/slime/jrunscript/host/"),
-								/** @type { slime.jrunscript.io.Script } */
-								io: loader.script("WEB-INF/slime/jrunscript/io/"),
-								/** @type { slime.web.Script } */
-								web: loader.script("WEB-INF/slime/js/web/")
-							};
-							var rv = {};
-							rv.$api = $slime.$api;
-							rv.js = loader.module("WEB-INF/slime/js/object/", {
-								globals: true
-							});
-							rv.java = code.java({
-								$slime: $slime,
-								logging: {
-									prefix: "slime.servlet"
-								}
-							});
-							rv.io = code.io({
-								$slime: $slime,
-								api: {
-									java: rv.java
-								},
-								nojavamail: false
-							});
-							rv.web = code.web(loader.file("WEB-INF/slime/js/web/context.java.js"));
-							rv.loader = {
-								paths: function(prefix) {
-									return $servlet.getResourcePaths(prefix);
-								}
-							}
-
-							rv.js.web = rv.web;
-							$slime.$api.deprecate(rv.js, "web");
-
-							return rv;
-						}
-					)();
-					return bootstrap;
-				} else if (isScript($host)) {
-					return $host.api;
-				}
-			})();
+			var api = getBootstrap($host);
 
 			var loaders = getLoaders($host);
 
@@ -308,8 +298,8 @@
 				 * @returns { (scope: slime.servlet.Scope) => void }
 				 */
 				function() {
-					if ($servlet) {
-						var path = String($servlet.path);
+					if (isJava($host)) {
+						var path = getServletPath($host);
 						var tokens = path.split("/");
 						var basename = tokens[tokens.length-1];
 						/** @type { (scope: slime.servlet.Scope) => void } */
@@ -332,7 +322,7 @@
 			var server = (function() {
 				if (isScript($host)) {
 					return $host.server;
-				} else if ($servlet) {
+				} else if (isJava($host)) {
 					/** @type { slime.servlet.internal.server.Script } */
 					var script = loaders.container.script("WEB-INF/server.js");
 					return script({
