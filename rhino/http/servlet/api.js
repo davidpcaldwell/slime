@@ -110,10 +110,6 @@
 
 					rv.path = $host.getServletConfig().getInitParameter("script");
 
-					rv.getMimeType = function(path) {
-						return $host.getServletContext().getMimeType(path);
-					};
-
 					/**
 					 * @param { string } prefix
 					 * @returns { string[] }
@@ -193,19 +189,22 @@
 				 * @return { slime.servlet.internal.Loaders }
 				 */
 				function() {
-					if ($servlet) {
+					if (isJava($host)) {
 						/**
 						 * @type { (p: any, prefix?: any) => slime.old.Loader }
 						 */
 						var Loader = (function() {
 							var Loader = function(p,prefix) {
+								var getMimeType = function(path) {
+									return $host.getServletContext().getMimeType(path);
+								};
 								/** @type { slime.old.loader.Source } */
 								var source = {
 									get: function(path) {
 										var pp = {};
 										pp._source = (prefix) ? p._source.child(prefix) : p._source;
 										pp.type = function(path) {
-											var _type = $servlet.getMimeType(path);
+											var _type = getMimeType(path);
 											if (/\.css$/.test(path)) {
 												_type = new Packages.java.lang.String("text/css");
 											}
