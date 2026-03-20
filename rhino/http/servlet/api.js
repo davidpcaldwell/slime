@@ -130,7 +130,8 @@
 									});
 								},
 								list: function(path) {
-									var full = prefix + path;
+									var basePrefix = (typeof prefix === "string") ? prefix : "";
+									var full = basePrefix + path;
 									return api.loader.paths(full).map(function(string) {
 										if (string.substring(string.length-1) == "/") {
 											return {
