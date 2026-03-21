@@ -41,11 +41,46 @@
 				return $host["loaders"];
 			}
 
-			/** @type { slime.jrunscript.runtime.Exports } */
-			var $slime = (function() {
-				//	TODO	there is no test coverage for the below; when the rhino/ directory was renamed to jrunscript/, the test suite still passed
-				//	Packages.java.lang.System.err.println("$host.getLoader = " + $host.getLoader + " $host.getEngine = " + $host.getEngine + " $host.getClasspath = " + $host.getClasspath);
-				if (isRhino($host)) {
+			/**
+			 * @type { <T>(p: slime.servlet.internal.ByEnvironment<T>) => ($host: slime.servlet.internal.$host) => T }
+			 */
+			var byEnvironment = function(variants) {
+				return function($host) {
+					if (isRhino($host) && variants.rhino) {
+						return variants.rhino($host);
+					} else if (isJava($host)) {
+						return variants.servlet($host);
+					} else if (isScript($host)) {
+						return variants.script($host);
+					} else {
+						throw new Error("Unrecognized environment: $host = " + $host);
+					}
+				};
+			};
+
+			var servletConfig = {
+				getResourcePaths: function(/** @type { slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject } */$host, /** @type { string } */prefix) {
+					var _set = $host.getServletContext().getResourcePaths("/" + prefix);
+					var rv = [];
+					var _i = _set.iterator();
+					while(_i.hasNext()) {
+						rv.push(String(_i.next().substring(prefix.length+1)));
+					}
+					return rv;
+				},
+				getResources: function(/** @type { slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject } */$host) {
+					return Packages.inonit.script.engine.Code.Loader.create($host.getServletContext().getResource("/"));
+				},
+				getPath: function(/** @type { slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject } */$host) {
+					return String($host.getServletConfig().getInitParameter("script"));
+				}
+			}
+
+			/** @type { ($host: slime.servlet.internal.$host) => slime.jrunscript.runtime.Exports} */
+			var runtime = byEnvironment({
+				rhino: function($host) {
+					//	TODO	there is no test coverage for the below; when the rhino/ directory was renamed to jrunscript/, the test suite still passed
+					//	Packages.java.lang.System.err.println("$host.getLoader = " + $host.getLoader + " $host.getEngine = " + $host.getEngine + " $host.getClasspath = " + $host.getClasspath);
 					//	TODO	consider pushing these details back into inonit.script.servlet.Rhino.Host
 					//			would need to construct the two-property scope object below; rest should be straightforward.
 					//			Need also to identify test case
@@ -57,8 +92,9 @@
 							$rhino: $host.getEngine()
 						},
 						null
-					);
-				} else if (isJava($host)) {
+					)
+				},
+				servlet: function($host) {
 					//	TODO	implement along with Graal servlets
 					var $graal;
 					var scripts = eval(String($host.getLoader().getLoaderCode("jrunscript/nashorn.js")));
@@ -73,15 +109,16 @@
 						null
 					);
 					return rv;
-				} else if (isScript($host)) {
+				},
+				script: function($host) {
 					return $host.$slime;
-				} else {
-					throw new Error("Unreachable.");
 				}
-			})();
+			});
 
-			var getParameters = function(/** @type { slime.servlet.internal.$host } */$host) {
-				if (isJava($host)) {
+			var $slime = runtime($host);
+
+			var getParameters = byEnvironment({
+				servlet: function($host) {
 					return (function() {
 						/** @type { { [x: string]: string }} */
 						var rv = {};
@@ -92,31 +129,14 @@
 						}
 						return rv;
 					})();
-				} else if (isScript($host)) {
+				},
+				script: function($host) {
 					return $host.parameters;
 				}
-			};
+			});
 
-			var getServletResourcePaths = function(/** @type { slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject } */$host, /** @type { string } */prefix) {
-				var _set = $host.getServletContext().getResourcePaths("/" + prefix);
-				var rv = [];
-				var _i = _set.iterator();
-				while(_i.hasNext()) {
-					rv.push(String(_i.next().substring(prefix.length+1)));
-				}
-				return rv;
-			};
-
-			var getServletResources = function(/** @type { slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject } */$host) {
-				return Packages.inonit.script.engine.Code.Loader.create($host.getServletContext().getResource("/"));
-			};
-
-			var getServletPath = function(/** @type { slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject } */$host) {
-				return String($host.getServletConfig().getInitParameter("script"));
-			};
-
-			var getBootstrap = function(/** @type { slime.servlet.internal.$host } */$host) {
-				if (isJava($host)) {
+			var getBootstrap = byEnvironment({
+				servlet: function($host) {
 					var bootstrap = (
 						/**
 						 *
@@ -124,7 +144,7 @@
 						 */
 						function() {
 							var loader = new $slime.Loader({
-								_source: getServletResources($host)
+								_source: servletConfig.getResources($host)
 							});
 							var code = {
 								/** @type { slime.jrunscript.java.Script } */
@@ -155,7 +175,7 @@
 							rv.web = code.web(loader.file("WEB-INF/slime/js/web/context.java.js"));
 							rv.loader = {
 								paths: function(prefix) {
-									return getServletResourcePaths($host, prefix);
+									return servletConfig.getResourcePaths($host, prefix);
 								}
 							}
 
@@ -166,14 +186,16 @@
 						}
 					)();
 					return bootstrap;
-				} else if (isScript($host)) {
+				},
+				script: function($host) {
 					return $host.api;
 				}
-			}
+			});
 
-			/** @type { ($host: slime.servlet.internal.$host) => slime.servlet.internal.Loaders } */
-			var getLoaders = function(/** @type { slime.servlet.internal.$host } */$host) {
-				if (isJava($host)) {
+			var api = getBootstrap($host);
+
+			var getLoaders = byEnvironment({
+				servlet: function($host) {
 					/**
 					 * @type { (p: { _source: slime.jrunscript.native.inonit.script.engine.Code.Loader }, prefix?: string) => slime.old.Loader }
 					 */
@@ -235,16 +257,16 @@
 
 					//	servlet container, determine webapp path and load relative to that
 					var loader = Loader({
-						_source: getServletResources($host)
+						_source: servletConfig.getResources($host)
 					});
 					return {
 						//	TODO	possibly equivalent to loader.Child( <expression used as second argument> )
 						script: Loader(
 							{
-								_source: getServletResources($host)
+								_source: servletConfig.getResources($host)
 							},(
 								function() {
-									var path = getServletPath($host);
+									var path = servletConfig.getPath($host);
 									var tokens = path.split("/");
 									var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
 									return prefix;
@@ -252,28 +274,20 @@
 							)()
 						),
 						container: Loader({
-							_source: getServletResources($host)
+							_source: servletConfig.getResources($host)
 						},""),
 						api: loader.Child("WEB-INF/slime/rhino/http/servlet/server/")
 					};
-				} else if (isScript($host)) {
+				},
+				script: function($host) {
 					return $host.loaders;
-				} else {
-					throw new Error("Cannot instantiate loaders: $slime = " + $slime + " $host = " + $host);
 				}
-			}
-
-			/** @type { slime.servlet.internal.api } */
-			var api = getBootstrap($host);
+			});
 
 			var loaders = getLoaders($host);
 
-			var context = (
-				/**
-				 * @returns { slime.servlet.httpd["context"] }
-				 */
-				function() {
-					if (isScript($host)) return $host.context;
+			var getContext = byEnvironment({
+				servlet: function($host) {
 					return {
 						stdio: {
 							output: function(line) {
@@ -284,71 +298,74 @@
 							}
 						}
 					}
+				},
+				script: function($host) {
+					return $host.context;
 				}
-			)();
+			});
 
-			/**
-			 * Loads the servlet script into the scope; used both on initial load and if a reload is requested.
-			 */
-			var loadServletScriptIntoScope = (
-				/**
-				 *
-				 * @returns { (scope: slime.servlet.Scope) => void }
-				 */
-				function() {
-					if (isJava($host)) {
-						var path = getServletPath($host);
-						var tokens = path.split("/");
-						var basename = tokens[tokens.length-1];
-						/** @type { (scope: slime.servlet.Scope) => void } */
-						var rv = function(scope) {
-							Packages.java.lang.System.err.println("Loading servlet from " + path);
-							loaders.script.run(basename,scope);
-						};
-						return rv;
-					} else if (isScript($host)) {
-						return $host.loadServletScriptIntoScope;
-					} else {
-						throw new Error();
-					}
+			var getServletScriptLoader = byEnvironment({
+				servlet: function($host) {
+					var path = servletConfig.getPath($host);
+					var tokens = path.split("/");
+					var basename = tokens[tokens.length-1];
+					/** @type { (scope: slime.servlet.Scope) => void } */
+					var rv = function(scope) {
+						Packages.java.lang.System.err.println("Loading servlet from " + path);
+						loaders.script.run(basename,scope);
+					};
+					return rv;
+				},
+				script: function($host) {
+					return $host.loadServletScriptIntoScope;
 				}
-			)();
+			});
 
-			/**
-			 * @type { slime.servlet.internal.server.Exports }
-			 */
-			var server = (function() {
-				if (isScript($host)) {
-					return $host.server;
-				} else if (isJava($host)) {
+			var getServer = byEnvironment({
+				servlet: function($host) {
 					/** @type { slime.servlet.internal.server.Script } */
 					var script = loaders.container.script("WEB-INF/server.js");
 					return script({
 						api: api
 					});
+				},
+				script: function($host) {
+					return $host.server;
 				}
-			})();
+			});
 
-			var reload = (isScript($host)) ? function() {
-				servlet.destroy();
-				loadServletScriptIntoScope(scope);
-				servlet.reload(scope.$exports);
-			} : void(0);
+			/**
+			 * Loads the servlet script into the scope; used both on initial load and if a reload is requested.
+			 */
+			var loadServletScriptIntoScope = getServletScriptLoader($host);
+
+			var getReload = byEnvironment({
+				servlet: function($host) {
+					return void(0);
+				},
+				script: function($host) {
+					return function() {
+						servlet.destroy();
+						loadServletScriptIntoScope(scope);
+						servlet.reload(scope.$exports);
+					}
+				}
+			});
 
 			return {
 				api: api,
 				loaders: loaders,
 				parameters: getParameters($host),
-				context: context,
+				context: getContext($host),
 				loadServletScriptIntoScope: loadServletScriptIntoScope,
 				$slime: $slime,
 				/**
 				 * @param { slime.servlet.Script } $exports
 				 */
 				Servlet: function($exports) {
-					return server.Servlet($exports);
+					return getServer($host).Servlet($exports);
 				},
-				reload: reload,
+				reload: getReload($host),
 				register: function(servlet) {
 					//	TODO	trying to push this first form back into a register() method in the jsh plugin, but for some reason it does not work;
 					//			figure out why and do it

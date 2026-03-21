@@ -119,6 +119,12 @@ namespace slime.servlet {
 	}
 
 	export namespace internal {
+		export interface ByEnvironment<T> {
+			rhino?: (p: slime.jrunscript.native.inonit.script.servlet.Rhino.Host) => T
+			servlet: (p: slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject) => T
+			script: (p: slime.servlet.internal.$host.jsh) => T
+		}
+
 		export interface Loaders {
 			api: slime.Loader
 
