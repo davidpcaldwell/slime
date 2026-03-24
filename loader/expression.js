@@ -139,12 +139,12 @@
 			/** @type { slime.js.Cast<slime.runtime.internal.loader.Script> } */
 			Loader: $api.fp.cast.unsafe,
 			/** @type { slime.js.Cast<slime.runtime.internal.old_loaders.Script> } */
-			oldLoader: $api.fp.cast.unsafe
+			oldLoaders: $api.fp.cast.unsafe
 		}
 
 		var code = {
 			Loader: cast.Loader(script("Loader.js")),
-			oldLoaders: cast.oldLoader(script("old-loaders.js"))
+			oldLoaders: cast.oldLoaders(script("old-loaders.js"))
 		};
 
 		var Loader = code.Loader({
