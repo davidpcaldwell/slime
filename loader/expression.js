@@ -59,7 +59,7 @@
 		/**
 		 *
 		 * @param { string } path
-		 * @returns { slime.old.loader.Script<any,any> }
+		 * @returns { ReturnType<slime.runtime.loader.Store["script"]> }
 		 */
 		var script = function(path) {
 			/**
@@ -95,23 +95,17 @@
 				return execute(scope.$slime.getRuntimeScript(path), variables);
 			};
 
-			return Object.assign(
-				function(scope) {
-					return load(path, scope || {});
-				},
-				{
-					thread: function(context) {
-						//	TODO
-						throw new Error();
-					}
-				}
-			)
+			return function(scope) {
+				return load(path, scope || {});
+			};
 		};
 
 		var api = (
 			function() {
-				/** @type { slime.$api.internal.Script } */
-				var code = script("$api.js");
+				/** @type { slime.js.Cast<slime.$api.internal.Script> } */
+				var cast = function(p) { return p; };
+
+				var code = cast(script("$api.js"));
 				return code({
 					$engine: $engine,
 					$slime: {
@@ -141,11 +135,16 @@
 			}
 		);
 
+		var cast = {
+			/** @type { slime.js.Cast<slime.runtime.internal.loader.Script> } */
+			Loader: $api.fp.cast.unsafe,
+			/** @type { slime.js.Cast<slime.runtime.internal.old_loaders.Script> } */
+			oldLoader: $api.fp.cast.unsafe
+		}
+
 		var code = {
-			/** @type { slime.runtime.internal.loader.Script } */
-			Loader: script("Loader.js"),
-			/** @type { slime.runtime.internal.old_loaders.Script } */
-			oldLoaders: script("old-loaders.js")
+			Loader: cast.Loader(script("Loader.js")),
+			oldLoaders: cast.oldLoader(script("old-loaders.js"))
 		};
 
 		var Loader = code.Loader({
@@ -222,7 +221,7 @@
 			}
 		);
 
-		var loaders = code.oldLoaders({
+		var oldLoaders = code.oldLoaders({
 			$api: $api,
 			Resource: ResourceExport,
 			createScriptScope: scripts.internal.createScriptScope,
@@ -235,20 +234,20 @@
 			{
 				/** @type { slime.runtime.Exports["run"] } */
 				run: function(code,scope,target) {
-					return scripts.runtime.internal.methods.run.call(target,loaders.Code.from.Resource(code),scope);
+					return scripts.runtime.internal.methods.run.call(target,oldLoaders.Code.from.Resource(code),scope);
 				},
 				/** @type { slime.runtime.Exports["file"] } */
 				file: function(code,context,target) {
-					return scripts.runtime.internal.methods.old.file.call(target,loaders.Code.from.Resource(code),context);
+					return scripts.runtime.internal.methods.old.file.call(target,oldLoaders.Code.from.Resource(code),context);
 				},
 				/** @type { slime.runtime.Exports["value"] } */
 				value: function(code,scope,target) {
-					return scripts.runtime.internal.methods.old.value.call(target,loaders.Code.from.Resource(code),scope);
+					return scripts.runtime.internal.methods.old.value.call(target,oldLoaders.Code.from.Resource(code),scope);
 				},
 				Resource: ResourceExport,
 				old: {
-					Loader: Object.assign(loaders.constructor, loaders.api, { constructor: null }),
-					loader: loaders.api
+					Loader: Object.assign(oldLoaders.constructor, oldLoaders.api, { constructor: null }),
+					loader: oldLoaders.api
 				},
 				compiler: scripts.runtime.compiler,
 				loader: Loader.api,
