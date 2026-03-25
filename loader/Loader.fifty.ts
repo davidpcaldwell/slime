@@ -361,5 +361,5 @@ namespace slime.runtime.internal.loader {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.old.loader.Script<Scope,Exports>
+	export type Script = slime.runtime.loader.Module<Scope,Exports>
 }

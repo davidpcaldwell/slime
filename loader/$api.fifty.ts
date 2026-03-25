@@ -1403,7 +1403,7 @@ namespace slime.$api.internal {
 		exports: Omit<slime.$api.Global,"scripts"> & { scripts: Omit<slime.$api.Global["scripts"],"compiler"> }
 	}
 
-	export type Script = slime.loader.Script<Scope,Exports>
+	export type Script = slime.runtime.loader.Module<Scope,Exports>
 }
 
 namespace slime.$api.oo {
