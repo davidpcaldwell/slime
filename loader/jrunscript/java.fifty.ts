@@ -228,7 +228,13 @@ namespace slime.jrunscript.runtime.java {
 
 	export interface Exports {
 		adapt: {
-			String(s: slime.jrunscript.native.java.lang.String): string
+			/**
+			 *
+			 * @param s A Java `java.lang.String`.
+			 * @returns A JavaScript string representing the given string, unless the Java value is `null`, in which case it returns
+			 * `null`.
+			 */
+			String: (s: slime.jrunscript.native.java.lang.String) => string
 		}
 		test: any
 	}
