@@ -197,25 +197,29 @@
 			var getLoaders = byEnvironment({
 				servlet: function($host) {
 					/**
-					 * @type { (p: { _source: slime.jrunscript.native.inonit.script.engine.Code.Loader }, prefix?: string) => slime.old.Loader }
+					 * @type { (p: { _source: slime.jrunscript.native.inonit.script.engine.Code.Loader }) => slime.old.Loader }
 					 */
-					var Loader = function(p,prefix) {
-						if (!prefix) prefix = "";
-						var getMimeType = function(path) {
-							return $host.getServletContext().getMimeType(path);
-						};
+					var Loader = function(p) {
+						var getMimeType = $slime.$api.fp.pipe(
+							function(/** @type { string } */path) {
+								return $host.getServletContext().getMimeType(path);
+							},
+							$slime.$api.jrunscript.java.adapt.String
+						);
+
 						/** @type { slime.old.loader.Source } */
 						var source = {
 							get: function(path) {
-								var pp = {};
-								pp._source = (prefix) ? p._source.child(prefix) : p._source;
-								pp.type = function(path) {
-									var _type = getMimeType(path);
-									if (/\.css$/.test(path)) {
-										_type = new Packages.java.lang.String("text/css");
+								var pp = {
+									_source: p._source,
+									type: function(path) {
+										var type = getMimeType(path);
+										if (/\.css$/.test(path)) {
+											type = "text/css";
+										}
+										if (type) return api.io.mime.Type.codec.declaration.decode(type);
+										return null;
 									}
-									if (_type) return api.io.mime.Type.parse(String(_type));
-									return null;
 								};
 
 								var delegate = new api.io.Loader(pp);
@@ -226,7 +230,7 @@
 								});
 							},
 							list: function(path) {
-								var full = prefix + path;
+								var full = path;
 								return api.loader.paths(full).map(function(string) {
 									if (string.substring(string.length-1) == "/") {
 										return {
@@ -244,14 +248,9 @@
 								});
 							}
 						}
-						// var rv = new bootstrap.io.Loader(pp);
+
 						var rv = new api.io.Loader(source);
-						//	TODO	Below failed TypeScript and didn't seem to make sense; remove when safe
-						// rv.list = function(m) {
-						// 	var path = prefix + m.path;
-						// 	var rv = bootstrap.loader.paths(path);
-						// 	return rv;
-						// }
+
 						return rv;
 					};
 
@@ -259,23 +258,18 @@
 					var loader = Loader({
 						_source: servletConfig.getResources($host)
 					});
+
 					return {
 						//	TODO	possibly equivalent to loader.Child( <expression used as second argument> )
-						script: Loader(
-							{
-								_source: servletConfig.getResources($host)
-							},(
-								function() {
-									var path = servletConfig.getPath($host);
-									var tokens = path.split("/");
-									var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
-									return prefix;
-								}
-							)()
+						script: loader.Child(
+							(function() {
+								var path = servletConfig.getPath($host);
+								var tokens = path.split("/");
+								var prefix = tokens.slice(0,tokens.length-1).join("/") + "/";
+								return prefix;
+							})()
 						),
-						container: Loader({
-							_source: servletConfig.getResources($host)
-						},""),
+						container: loader,
 						api: loader.Child("WEB-INF/slime/rhino/http/servlet/server/")
 					};
 				},

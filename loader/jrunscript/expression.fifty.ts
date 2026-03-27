@@ -737,6 +737,7 @@ namespace slime.jrunscript.runtime {
 namespace slime.$api.jrunscript {
 	export interface Global extends slime.$api.Global {
 		jrunscript: {
+			java: slime.jrunscript.runtime.java.Exports
 			io: slime.jrunscript.runtime.io.Exports
 			properties: {
 				get: (name: string) => string | null

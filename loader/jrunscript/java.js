@@ -46,6 +46,7 @@
 
 		$exports.adapt = {
 			String: function(_s) {
+				//	TODO	undefined?
 				if (_s == null) return null;
 				return String(_s);
 			}

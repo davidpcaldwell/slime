@@ -153,6 +153,7 @@
 			}
 		)();
 
+		/** @type { slime.jrunscript.runtime.java.Exports } */
 		var $exports_java = slime.file(
 			new slime.Resource({
 				name: "slime://loader/jrunscript/java.js",
@@ -1093,6 +1094,7 @@
 			slime.$api,
 			{
 				jrunscript: {
+					java: $exports_java,
 					io: $exports_io,
 					properties: properties
 				}
