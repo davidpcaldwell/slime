@@ -134,76 +134,13 @@
 			createScriptScope: api.code.internal.createScriptScope
 		});
 
-		/**
-		 * @param { slime.resource.Descriptor } o
-		 * @this { slime.Resource }
-		 */
-		function Resource(o) {
-			this.type = (function(type,name) {
-				if (typeof(type) == "string") return $api.mime.Type.parse(type);
-				if (type && type.media && type.subtype) return type;
-				if (!type && name) {
-					var fromName = $api.mime.Type.fromName(name);
-					if (fromName) return fromName;
-				}
-				if (!type) return null;
-				throw new TypeError("Resource 'type' property must be a MIME type or string.");
-			})(o.type,o.name);
-
-			this.name = (o.name) ? o.name : void(0);
-
-			if (o.read && o.read.string) {
-				this.read = Object.assign(
-					function(v) {
-						var $platform = api.code.platform;
-
-						if (v === String) {
-							var rv = o.read.string();
-							return rv;
-						}
-						if (v === JSON) return JSON.parse(this.read(String));
-
-						var e4xRead = function() {
-							var string = this.read(String);
-							string = string.replace(/\<\?xml.*\?\>/, "");
-							string = string.replace(/\<\!DOCTYPE.*?\>/, "");
-							return string;
-						};
-
-						if ($platform.e4x && v == $platform.e4x.XML) {
-							return new $platform.e4x.XML( e4xRead.call(this) );
-						} else if ($platform.e4x && v == $platform.e4x.XMLList) {
-							return new $platform.e4x.XMLList( e4xRead.call(this) );
-						}
-					},
-					{
-						string: function() {
-							return o.read.string();
-						}
-					}
-				)
-			}
-		}
-
-		var ResourceExport = Object.assign(
-			Resource,
-			{
-				/** @type { slime.runtime.resource.Exports["ReadInterface"]} */
-				ReadInterface: {
-					string: function(content) {
-						return {
-							string: function() {
-								return content;
-							}
-						}
-					}
-				}
-			}
-		);
-
 		var oldLoaders = code.oldLoaders({
 			$api: $api,
-			Resource: ResourceExport,
+			api: {
+				code: {
+					platform: api.code.platform
+				}
+			},
 			createScriptScope: api.code.internal.createScriptScope,
 			toExportScope: api.code.internal.old.toExportScope,
 			methods: api.code.runtime.internal.methods
@@ -224,7 +161,7 @@
 				value: function(code,scope,target) {
 					return api.code.runtime.internal.methods.old.value.call(target,oldLoaders.Code.from.Resource(code),scope);
 				},
-				Resource: ResourceExport,
+				Resource: oldLoaders.Resource,
 				old: {
 					Loader: Object.assign(oldLoaders.constructor, oldLoaders.api, { constructor: null }),
 					loader: oldLoaders.api
