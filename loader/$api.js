@@ -719,14 +719,23 @@
 			Events: Events,
 			threads: threads,
 			mime: mime,
-			scripts: code.api
+			scripts: {
+				Code: code.api.Code,
+				Compiler: code.api.Compiler,
+				compiler: void(0)
+				//api.code.runtime.compiler.compile
+			}
 		};
+
+		var runtime = code.internal.runtime($exports);
+
+		$exports.scripts.compiler = runtime.compiler.compile;
 
 		$export({
 			code: {
 				platform: code.platform,
 				internal: code.internal,
-				runtime: code.internal.runtime($exports)
+				runtime: runtime
 			},
 			exports: $exports
 		});
