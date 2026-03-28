@@ -420,7 +420,12 @@ namespace slime.runtime.internal.old_loaders {
 	export interface Scope {
 		$api: slime.$api.Global
 		toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
-		Resource: slime.runtime.resource.Exports
+		api: {
+			code: {
+				platform: slime.$api.internal.Exports["code"]["platform"]
+			}
+		}
+		//Resource: slime.runtime.resource.Exports
 		methods: slime.runtime.internal.code.GlobalExecutorMethods
 		createScriptScope: code.Exports["internal"]["createScriptScope"]
 	}
@@ -433,6 +438,7 @@ namespace slime.runtime.internal.old_loaders {
 			}
 		}
 		constructor: runtime.loader.old.Constructor
+		Resource: slime.runtime.resource.Exports
 	}
 
 	export type Script = slime.runtime.loader.Module<Scope,Exports>

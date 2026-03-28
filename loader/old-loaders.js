@@ -9,13 +9,82 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
+	 * @param { slime.$api.internal.Exports } api
 	 * @param { slime.runtime.internal.old_loaders.Scope["toExportScope"] } toExportScope
-	 * @param { slime.runtime.internal.old_loaders.Scope["Resource"] } Resource
 	 * @param { slime.runtime.internal.old_loaders.Scope["createScriptScope"] } createScriptScope
 	 * @param { slime.runtime.internal.old_loaders.Scope["methods"] } methods
 	 * @param { slime.loader.Export<slime.runtime.internal.old_loaders.Exports> } $export
 	 */
-	function($api,toExportScope,Resource,createScriptScope,methods,$export) {
+	function($api,api,toExportScope,createScriptScope,methods,$export) {
+		/**
+		 * @constructor
+		 * @param { slime.resource.Descriptor } o
+		 * @this { slime.Resource }
+		 */
+		function Resource(o) {
+			this.type = (function(type,name) {
+				if (typeof(type) == "string") return $api.mime.Type.parse(type);
+				if (type && type.media && type.subtype) return type;
+				if (!type && name) {
+					var fromName = $api.mime.Type.fromName(name);
+					if (fromName) return fromName;
+				}
+				if (!type) return null;
+				throw new TypeError("Resource 'type' property must be a MIME type or string.");
+			})(o.type,o.name);
+
+			this.name = (o.name) ? o.name : void(0);
+
+			if (o.read && o.read.string) {
+				this.read = Object.assign(
+					function(v) {
+						var $platform = api.code.platform;
+
+						if (v === String) {
+							var rv = o.read.string();
+							return rv;
+						}
+						if (v === JSON) return JSON.parse(this.read(String));
+
+						var e4xRead = function() {
+							var string = this.read(String);
+							string = string.replace(/\<\?xml.*\?\>/, "");
+							string = string.replace(/\<\!DOCTYPE.*?\>/, "");
+							return string;
+						};
+
+						if ($platform.e4x && v == $platform.e4x.XML) {
+							return new $platform.e4x.XML( e4xRead.call(this) );
+						} else if ($platform.e4x && v == $platform.e4x.XMLList) {
+							return new $platform.e4x.XMLList( e4xRead.call(this) );
+						}
+					},
+					{
+						string: function() {
+							return o.read.string();
+						}
+					}
+				)
+			}
+		}
+
+		/** @type { slime.runtime.resource.Exports } */
+		var ResourceExport = Object.assign(
+			Resource,
+			{
+				/** @type { slime.runtime.resource.Exports["ReadInterface"]} */
+				ReadInterface: {
+					string: function(content) {
+						return {
+							string: function() {
+								return content;
+							}
+						}
+					}
+				}
+			}
+		);
+
 		/** @type { slime.$api.fp.Mapping<slime.Resource,slime.runtime.loader.Code> } */
 		var adaptResource = function(object) {
 			/** @type { slime.Resource & { js: { name: string, code: string } } } */
@@ -49,7 +118,7 @@
 		 * @param { slime.old.loader.Source } p
 		 */
 		var old = function(p) {
-			if (!p.Resource) p.Resource = Resource;
+			if (!p.Resource) p.Resource = ResourceExport;
 
 			this.toString = function() {
 				return p.toString();
@@ -454,8 +523,9 @@
 					Resource: adaptResource
 				}
 			},
-			constructor: old
+			constructor: old,
+			Resource: ResourceExport
 		});
 	}
 //@ts-ignore
-)($api,toExportScope,Resource,createScriptScope,methods,$export);
+)($api,api,toExportScope,createScriptScope,methods,$export);
