@@ -33,7 +33,7 @@
  * The Java runtime replaces the `Type.fromName` function of {@link slime.$api.mime.Export} with a version that uses the
  * `java.net.URLConnection` implementation to resolve MIME types unresolved by SLIME. See {@link slime.jrunscript.mime.FromName}.
  *
- * It adds a {@link slime.$api.jrunscript.Global.jrunscript | `$api.jrunscript`} property containing various Java-specific APIs.
+ * It adds a {@link slime.$api.jrunscript.Global["jrunscript"] | `$api.jrunscript`} property containing various Java-specific APIs.
  *
  * ## For contributors
  *

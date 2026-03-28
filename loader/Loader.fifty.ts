@@ -342,9 +342,9 @@ namespace slime.runtime.loader.old {
 namespace slime.runtime.internal.loader {
 	export interface Scope {
 		$api: Pick<slime.$api.Global,"fp"|"content"|"mime"|"Function">
-		methods: scripts.GlobalExecutorMethods
-		Executor: scripts.executor.Constructor
-		createScriptScope: scripts.Exports["internal"]["createScriptScope"]
+		methods: code.GlobalExecutorMethods
+		Executor: code.executor.Constructor
+		createScriptScope: code.Exports["internal"]["createScriptScope"]
 	}
 
 	export interface Exports {

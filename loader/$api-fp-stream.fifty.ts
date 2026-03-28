@@ -446,5 +446,5 @@ namespace slime.$api.fp.internal.stream {
 		impure: slime.$api.fp.stream.impure.Exports
 	};
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Module<Context,Exports>
 }

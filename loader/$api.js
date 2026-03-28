@@ -50,15 +50,15 @@
 			);
 		}
 
-		var code = {
+		var scripts = {
 			/** @type { slime.runtime.internal.content.Script } */
 			content: script("content.js"),
 			/** @type { slime.loader.Script<void,slime.$api.internal.flag.Exports> } */
 			flag: script("$api-flag.js"),
-			/** @type { slime.loader.Script<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
-			mime: script("$api-mime.js"),
 			/** @type { slime.loader.Script<slime.runtime.internal.events.Context,slime.runtime.internal.events.Exports> } */
 			events: script("events.js"),
+			/** @type { slime.loader.Script<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
+			mime: script("$api-mime.js"),
 			/** @type { slime.$api.fp.internal.Script } */
 			Function: script("$api-Function.js"),
 			/** @type { slime.$api.fp.internal.old.Script } */
@@ -67,11 +67,11 @@
 			methods: script("$api-fp-methods.js")
 		};
 
-		var content = code.content();
+		var content = scripts.content();
 
-		var flag = code.flag();
+		var flag = scripts.flag();
 
-		var events = code.events({
+		var events = scripts.events({
 			deprecate: flag.deprecate
 		});
 
@@ -222,9 +222,9 @@
 		};
 
 		var functions = (function() {
-			var old = code.Function_old({ deprecate: flag.deprecate });
+			var old = scripts.Function_old({ deprecate: flag.deprecate });
 
-			var current = code.Function({
+			var current = scripts.Function({
 				$api: { Iterable: Iterable },
 				events: events,
 				old: old,
@@ -232,7 +232,7 @@
 				script: script
 			});
 
-			var methods = code.methods({
+			var methods = scripts.methods({
 				library: {
 					Object: {
 						defineProperty: defineProperty
@@ -657,7 +657,7 @@
 			}
 		);
 
-		var mime = code.mime({
+		var mime = scripts.mime({
 			Function: fp,
 			deprecate: flag.deprecate
 		});
@@ -671,12 +671,12 @@
 			return $exports;
 		})({ Events: Events });
 
-		var scripts = (
+		var code = (
 			function() {
-				/** @type { slime.runtime.internal.scripts.Exports } */
+				/** @type { slime.runtime.internal.code.Exports } */
 				var rv;
 				$engine.execute(
-					$slime.getRuntimeScript("scripts.js"),
+					$slime.getRuntimeScript("code.js"),
 					{
 						Packages: Packages,
 						$engine: $engine,
@@ -719,13 +719,14 @@
 			Events: Events,
 			threads: threads,
 			mime: mime,
-			scripts: scripts.api
+			scripts: code.api
 		};
 
 		$export({
-			scripts: {
-				platform: scripts.platform,
-				internal: scripts.internal
+			code: {
+				platform: code.platform,
+				internal: code.internal,
+				runtime: code.internal.runtime($exports)
 			},
 			exports: $exports
 		});

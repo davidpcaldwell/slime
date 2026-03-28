@@ -9,9 +9,9 @@
 	/**
 	 *
 	 * @param { slime.runtime.Scope["Packages"] } Packages
-	 * @param { slime.runtime.internal.scripts.Scope["$engine"] } $engine
-	 * @param { slime.runtime.internal.scripts.Scope["fp"] } fp
-	 * @param { slime.loader.Export<slime.runtime.internal.scripts.Exports> } $export
+	 * @param { slime.runtime.internal.code.Scope["$engine"] } $engine
+	 * @param { slime.runtime.internal.code.Scope["fp"] } fp
+	 * @param { slime.loader.Export<slime.runtime.internal.code.Exports> } $export
 	 */
 	function(Packages,$engine,fp,$export) {
 		/** @type { slime.runtime.Platform } */
@@ -193,7 +193,7 @@
 		 * @template { { [x: string]: any; } } C
 		 * @template { any } T
 		 * @param { C } $context
-		 * @returns { slime.runtime.internal.scripts.ScriptScope<C,T> }
+		 * @returns { slime.runtime.internal.code.ScriptScope<C,T> }
 		 */
 		var createScriptScope = function($context) {
 			/** @type { slime.js.Cast<C> } */
@@ -206,7 +206,7 @@
 
 		/**
 		 * @template { any } R
-		 * @param { slime.runtime.internal.scripts.executor.Configuration<R> } p
+		 * @param { slime.runtime.internal.code.executor.Configuration<R> } p
 		 * @returns { slime.runtime.loader.Executor<R> }
 		 */
 		var Executor = function(p) {
