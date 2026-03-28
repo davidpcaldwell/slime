@@ -106,10 +106,9 @@
 
 		var api = (
 			function() {
-				/** @type { slime.js.Cast<slime.$api.internal.Script> } */
-				var cast = function(p) { return p; };
+				/** @type { slime.$api.internal.Script } */
+				var code = script("$api.js");
 
-				var code = cast(script("$api.js"));
 				return code({
 					$engine: $engine,
 					$slime: {
@@ -120,29 +119,12 @@
 			}
 		)();
 
-		/** @type { slime.$api.Global } */
-		var $api = Object.assign(
-			api.exports,
-			{
-				scripts: Object.assign(
-					api.exports.scripts,
-					{
-						compiler: api.code.runtime.compiler.compile
-					}
-				)
-			}
-		);
+		var $api = api.exports;
 
-		var cast = {
-			/** @type { slime.js.Cast<slime.runtime.internal.loader.Script> } */
-			Loader: $api.fp.cast.unsafe,
-			/** @type { slime.js.Cast<slime.runtime.internal.old_loaders.Script> } */
-			oldLoaders: $api.fp.cast.unsafe
-		}
-
+		/** @type {{ Loader: slime.runtime.internal.loader.Script, oldLoaders: slime.runtime.internal.old_loaders.Script }} */
 		var code = {
-			Loader: cast.Loader(script("Loader.js")),
-			oldLoaders: cast.oldLoaders(script("old-loaders.js"))
+			Loader: script("Loader.js"),
+			oldLoaders: script("old-loaders.js")
 		};
 
 		var Loader = code.Loader({

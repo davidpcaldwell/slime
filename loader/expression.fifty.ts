@@ -272,12 +272,6 @@ namespace slime {
 		}
 	}
 
-	export namespace $api {
-		export interface Scripts {
-			compiler: slime.runtime.loader.Compiler<slime.runtime.loader.Code>
-		}
-	}
-
 	export namespace mime {
 		/**
 		 * A MIME type.

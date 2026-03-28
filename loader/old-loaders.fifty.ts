@@ -435,5 +435,5 @@ namespace slime.runtime.internal.old_loaders {
 		constructor: runtime.loader.old.Constructor
 	}
 
-	export type Script = slime.old.loader.Script<Scope,Exports>
+	export type Script = slime.runtime.loader.Module<Scope,Exports>
 }

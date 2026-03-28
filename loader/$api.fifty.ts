@@ -1189,6 +1189,10 @@ namespace slime.$api {
 		}
 	}
 
+	export interface Scripts {
+		compiler: slime.runtime.loader.Compiler<slime.runtime.loader.Code>
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -1412,7 +1416,7 @@ namespace slime.$api.internal {
 				runtime: slime.runtime.internal.code.Runtime
 			}
 		)
-		exports: Omit<slime.$api.Global,"scripts"> & { scripts: Omit<slime.$api.Global["scripts"],"compiler"> }
+		exports: slime.$api.Global
 	}
 
 	export type Script = slime.runtime.loader.Module<Scope,Exports>
