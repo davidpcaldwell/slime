@@ -50,6 +50,7 @@
 			}
 		)(scope.$engine);
 
+		//	Polyfills selected ECHMAScript globals used by the platform
 		$engine.execute(
 			scope.$slime.getRuntimeScript("polyfill.js"),
 			{},
@@ -58,8 +59,11 @@
 
 		/**
 		 *
+		 * @template { any } C
+		 * @template { any } E
+		 *
 		 * @param { string } path
-		 * @returns { ReturnType<slime.runtime.loader.Store["script"]> }
+		 * @returns { slime.runtime.loader.Module<C, E> }
 		 */
 		var script = function(path) {
 			/**
@@ -116,12 +120,6 @@
 			}
 		)();
 
-		var scripts = {
-			platform: api.scripts.platform,
-			internal: api.scripts.internal,
-			runtime: api.scripts.internal.runtime(api.exports)
-		};
-
 		/** @type { slime.$api.Global } */
 		var $api = Object.assign(
 			api.exports,
@@ -129,7 +127,7 @@
 				scripts: Object.assign(
 					api.exports.scripts,
 					{
-						compiler: scripts.runtime.compiler.compile
+						compiler: api.code.runtime.compiler.compile
 					}
 				)
 			}
@@ -148,10 +146,10 @@
 		};
 
 		var Loader = code.Loader({
-			Executor: scripts.internal.Executor,
-			methods: scripts.runtime.internal.methods,
+			Executor: api.code.internal.Executor,
+			methods: api.code.runtime.internal.methods,
 			$api: $api,
-			createScriptScope: scripts.internal.createScriptScope
+			createScriptScope: api.code.internal.createScriptScope
 		});
 
 		/**
@@ -175,7 +173,7 @@
 			if (o.read && o.read.string) {
 				this.read = Object.assign(
 					function(v) {
-						var $platform = scripts.platform;
+						var $platform = api.code.platform;
 
 						if (v === String) {
 							var rv = o.read.string();
@@ -224,9 +222,9 @@
 		var oldLoaders = code.oldLoaders({
 			$api: $api,
 			Resource: ResourceExport,
-			createScriptScope: scripts.internal.createScriptScope,
-			toExportScope: scripts.internal.old.toExportScope,
-			methods: scripts.runtime.internal.methods
+			createScriptScope: api.code.internal.createScriptScope,
+			toExportScope: api.code.internal.old.toExportScope,
+			methods: api.code.runtime.internal.methods
 		});
 
 		/** @type { slime.runtime.Exports } */
@@ -234,22 +232,22 @@
 			{
 				/** @type { slime.runtime.Exports["run"] } */
 				run: function(code,scope,target) {
-					return scripts.runtime.internal.methods.run.call(target,oldLoaders.Code.from.Resource(code),scope);
+					return api.code.runtime.internal.methods.run.call(target,oldLoaders.Code.from.Resource(code),scope);
 				},
 				/** @type { slime.runtime.Exports["file"] } */
 				file: function(code,context,target) {
-					return scripts.runtime.internal.methods.old.file.call(target,oldLoaders.Code.from.Resource(code),context);
+					return api.code.runtime.internal.methods.old.file.call(target,oldLoaders.Code.from.Resource(code),context);
 				},
 				/** @type { slime.runtime.Exports["value"] } */
 				value: function(code,scope,target) {
-					return scripts.runtime.internal.methods.old.value.call(target,oldLoaders.Code.from.Resource(code),scope);
+					return api.code.runtime.internal.methods.old.value.call(target,oldLoaders.Code.from.Resource(code),scope);
 				},
 				Resource: ResourceExport,
 				old: {
 					Loader: Object.assign(oldLoaders.constructor, oldLoaders.api, { constructor: null }),
 					loader: oldLoaders.api
 				},
-				compiler: scripts.runtime.compiler,
+				compiler: api.code.runtime.compiler,
 				loader: Loader.api,
 				namespace: function(string) {
 					//	This construct returns the top-level global object, e.g., window in the browser
@@ -275,7 +273,7 @@
 			$api.Object.defineProperty({
 				name: "$platform",
 				descriptor: {
-					value: scripts.platform,
+					value: api.code.platform,
 					enumerable: true
 				}
 			}),
@@ -283,7 +281,7 @@
 				name: "java",
 				descriptor: $api.fp.Partial.from.loose(function(it) {
 					return {
-						value: (scripts.platform.java) ? scripts.platform.java : void(0)
+						value: (api.code.platform.java) ? api.code.platform.java : void(0)
 					};
 				})
 			}),

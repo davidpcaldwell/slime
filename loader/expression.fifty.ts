@@ -953,11 +953,11 @@ namespace slime {
 					fifty.run(fifty.tests.runtime.exports);
 
 					fifty.load("polyfill.fifty.ts");
+
 					fifty.load("$api.fifty.ts");
-					fifty.load("content.fifty.ts");
+
 					fifty.load("Loader.fifty.ts");
 					fifty.load("old-loaders.fifty.ts");
-					fifty.load("events.fifty.ts");
 
 					if (fifty.global.window) {
 						fifty.run(fifty.tests.browser);

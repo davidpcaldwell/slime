@@ -1373,11 +1373,13 @@ namespace slime.$api {
 			fifty: slime.fifty.test.Kit,
 		) {
 			fifty.tests.suite = function() {
+				fifty.load("content.fifty.ts");
 				fifty.load("$api-flag.fifty.ts");
-				fifty.load("$api-mime.fifty.ts");
-				fifty.load("$api-Function.fifty.ts");
+				fifty.load("events.fifty.ts");
 				fifty.load("$api-Function_old.fifty.ts");
+				fifty.load("$api-Function.fifty.ts");
 				fifty.load("$api-fp-methods.fifty.ts");
+				fifty.load("$api-mime.fifty.ts");
 
 				fifty.run(fifty.tests.jsapi);
 				fifty.run(fifty.tests.exports);
@@ -1390,7 +1392,7 @@ namespace slime.$api {
 }
 
 namespace slime.$api.internal {
-	export type script = <C,E>(name: string) => slime.loader.Script<C,E>
+	export type script = <C,E>(name: string) => slime.runtime.loader.Module<C,E>
 
 	export interface Scope {
 		$engine: Pick<slime.runtime.Engine,"execute"|"debugger">
@@ -1398,8 +1400,18 @@ namespace slime.$api.internal {
 		Packages: slime.jrunscript.Packages
 	}
 
+	/**
+	 * Currently, this script exposes a bunch of internals for use within the runtime itself, along with exports designed to be
+	 * passed along to the application level. So this script provides exports for both, and the runtime file rearranges them for
+	 * ultimate export to the application level, while using some of the internals itself.
+	 */
 	export interface Exports {
-		scripts: Pick<slime.runtime.internal.scripts.Exports,"internal"|"platform">
+		code: (
+			Pick<slime.runtime.internal.code.Exports,"internal"|"platform">
+			& {
+				runtime: slime.runtime.internal.code.Runtime
+			}
+		)
 		exports: Omit<slime.$api.Global,"scripts"> & { scripts: Omit<slime.$api.Global["scripts"],"compiler"> }
 	}
 

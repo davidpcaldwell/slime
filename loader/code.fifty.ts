@@ -90,7 +90,7 @@ namespace slime.$api {
 	}
 }
 
-namespace slime.runtime.internal.scripts {
+namespace slime.runtime.internal.code {
 	export interface Scope {
 		Packages: slime.runtime.Scope["Packages"]
 		$engine: slime.runtime.Engine
