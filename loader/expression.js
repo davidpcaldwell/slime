@@ -50,7 +50,7 @@
 			}
 		)(scope.$engine);
 
-		//	Polyfills selected ECHMAScript globals used by the platform
+		//	Polyfills selected ECMAScript globals used by the platform
 		$engine.execute(
 			scope.$slime.getRuntimeScript("polyfill.js"),
 			{},
