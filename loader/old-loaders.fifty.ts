@@ -425,7 +425,6 @@ namespace slime.runtime.internal.old_loaders {
 				platform: slime.$api.internal.Exports["code"]["platform"]
 			}
 		}
-		//Resource: slime.runtime.resource.Exports
 		methods: slime.runtime.internal.code.GlobalExecutorMethods
 		createScriptScope: code.Exports["internal"]["createScriptScope"]
 	}

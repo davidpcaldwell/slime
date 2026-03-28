@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.$api.internal.Exports } api
+	 * @param { slime.runtime.internal.old_loaders.Scope["api"] } api
 	 * @param { slime.runtime.internal.old_loaders.Scope["toExportScope"] } toExportScope
 	 * @param { slime.runtime.internal.old_loaders.Scope["createScriptScope"] } createScriptScope
 	 * @param { slime.runtime.internal.old_loaders.Scope["methods"] } methods
