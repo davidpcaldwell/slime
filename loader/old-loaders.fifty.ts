@@ -4,151 +4,149 @@
 //
 //	END LICENSE
 
-namespace slime {
-	export namespace old.loader {
-		/** @deprecated Can use slime.loader.Script directly. */
-		export type Script<C,E> = slime.loader.Script<C,E>
+namespace slime.old.loader {
+	/** @deprecated Can use slime.loader.Script directly. */
+	export type Script<C,E> = slime.loader.Script<C,E>
 
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
 
-				fifty.tests.script = fifty.test.Parent();
+			fifty.tests.script = fifty.test.Parent();
 
-				fifty.tests.script.context = function() {
-					function echo<T>(t: T): T {
-						var script: slime.old.loader.Script<T,{ provided: T }> = fifty.$loader.script("test/data/context.js");
-						return script(t).provided;
-					}
-
-					//	TODO	should these two tests pass? They do under new loader
-					if (false) {
-						var ifUndefined = echo(void(0));
-						verify(ifUndefined).is.type("undefined");
-						var ifNull = echo(null);
-						verify(ifNull).is.type("null");
-					}
-					var ifString = echo("foo");
-					verify(ifString).is.type("string");
-					var ifNumber = echo(3);
-					verify(ifNumber).is.type("number");
-					var ifBoolean = echo(true);
-					verify(ifBoolean).is.type("boolean");
-					var ifObject = echo({ foo: "bar" });
-					verify(ifObject).is.type("object");
-					verify(ifObject).evaluate.property("foo").is("bar");
+			fifty.tests.script.context = function() {
+				function echo<T>(t: T): T {
+					var script: slime.old.loader.Script<T,{ provided: T }> = fifty.$loader.script("test/data/context.js");
+					return script(t).provided;
 				}
 
-				fifty.tests.script.export = function() {
-					function echo<T>(t: T): T {
-						var script: slime.old.loader.Script<{ export: T },T> = fifty.$loader.script("test/data/export.js");
-						return script({ export: t });
-					}
-
+				//	TODO	should these two tests pass? They do under new loader
+				if (false) {
 					var ifUndefined = echo(void(0));
 					verify(ifUndefined).is.type("undefined");
 					var ifNull = echo(null);
 					verify(ifNull).is.type("null");
-					var ifString = echo("foo");
-					verify(ifString).is.type("string");
-					var ifNumber = echo(3);
-					verify(ifNumber).is.type("number");
-					var ifBoolean = echo(true);
-					verify(ifBoolean).is.type("boolean");
-					var ifObject = echo({ foo: "bar" });
-					verify(ifObject).is.type("object");
-					verify(ifObject).evaluate.property("foo").is("bar");
 				}
+				var ifString = echo("foo");
+				verify(ifString).is.type("string");
+				var ifNumber = echo(3);
+				verify(ifNumber).is.type("number");
+				var ifBoolean = echo(true);
+				verify(ifBoolean).is.type("boolean");
+				var ifObject = echo({ foo: "bar" });
+				verify(ifObject).is.type("object");
+				verify(ifObject).evaluate.property("foo").is("bar");
 			}
-		//@ts-ignore
-		)(fifty);
 
-		/** @deprecated Replaced by {@link Script}. */
-		export type Product<C,E> = Script<C,E>
+			fifty.tests.script.export = function() {
+				function echo<T>(t: T): T {
+					var script: slime.old.loader.Script<{ export: T },T> = fifty.$loader.script("test/data/export.js");
+					return script({ export: t });
+				}
 
-		/** @deprecated Can use slime.loader.Export directly. */
-		export type Export<T> = slime.loader.Export<T>
-
-		export namespace source {
-			//	TODO	this does not seem like a great design
-			/**
-			 * Either a resource or a child loader contained within a Loader.
-			 */
-			export interface Entry {
-				/**
-				 * The name of this entry. It does *not* have a trailing slash for loaders.
-				 */
-				path: string
-
-				/**
-				 * Whether this entry represents a child loader (for example, a directory or folder)
-				 */
-				loader: boolean
-
-				/**
-				 * Whether this entry represents a resource.
-				 */
-				resource: boolean
+				var ifUndefined = echo(void(0));
+				verify(ifUndefined).is.type("undefined");
+				var ifNull = echo(null);
+				verify(ifNull).is.type("null");
+				var ifString = echo("foo");
+				verify(ifString).is.type("string");
+				var ifNumber = echo(3);
+				verify(ifNumber).is.type("number");
+				var ifBoolean = echo(true);
+				verify(ifBoolean).is.type("boolean");
+				var ifObject = echo({ foo: "bar" });
+				verify(ifObject).is.type("object");
+				verify(ifObject).evaluate.property("foo").is("bar");
 			}
 		}
+	//@ts-ignore
+	)(fifty);
 
+	/** @deprecated Replaced by {@link Script}. */
+	export type Product<C,E> = Script<C,E>
+
+	/** @deprecated Can use slime.loader.Export directly. */
+	export type Export<T> = slime.loader.Export<T>
+
+	export namespace source {
+		//	TODO	this does not seem like a great design
 		/**
-		 * An object that provides the implementation for a {@link Loader}.
+		 * Either a resource or a child loader contained within a Loader.
 		 */
-		export interface Source<S = never> {
+		export interface Entry {
 			/**
-			 * Provides the `toString` for the created Loader by default.
+			 * The name of this entry. It does *not* have a trailing slash for loaders.
 			 */
-			toString?(): string
-
-			/**
-			 * Retrieves a resource.
-			 *
-			 * @param path The path from which to load a resource.
-			 * @returns The resource at the given path, or `null` if there is none.
-			 */
-			get?: (path: string) => resource.Descriptor
+			path: string
 
 			/**
-			 * Returns a list of the top-level entries at a particular location in this loader.
-			 *
-			 * @param path A path under this loader to list. Currently, this will either be the empty
-			 * string, in which case the top level should be listed, or it will be a path ending in `/`.
+			 * Whether this entry represents a child loader (for example, a directory or folder)
 			 */
-			list?: (path: string) => source.Entry[]
-
-			thread?: {
-				get: (path: string) => PromiseLike<resource.Descriptor>
-			}
+			loader: boolean
 
 			/**
-			 * Allows the loader to customize the way child sources are created when creating child loaders. If omitted, a child
-			 * that delegates requests back to the parent, prepended by the child's path, will be created.
-			 *
-			 * @param prefix The path representing this child underneath the parent. Currently, this path can be either the empty
-			 * string `""` or a string ending in `/`.
-			 *
-			 * @returns A source that represents a child of the parent source.
+			 * Whether this entry represents a resource.
 			 */
-			child?: (prefix: string) => Source | S
-
-			/**
-			 * Allows the loader to customize the way resource descriptors are turned into resources.
-			 */
-			Resource?: runtime.resource.Exports
-		}
-
-		export interface Scope {
-			$context: any
-			$loader?: slime.old.Loader
-			$exports: any
-			$export: ($exports: any) => void
+			resource: boolean
 		}
 	}
 
-	export namespace old.loader.test {
+	/**
+	 * An object that provides the implementation for a {@link Loader}.
+	 */
+	export interface Source<S = never> {
+		/**
+		 * Provides the `toString` for the created Loader by default.
+		 */
+		toString?(): string
+
+		/**
+		 * Retrieves a resource.
+		 *
+		 * @param path The path from which to load a resource.
+		 * @returns The resource at the given path, or `null` if there is none.
+		 */
+		get?: (path: string) => resource.Descriptor
+
+		/**
+		 * Returns a list of the top-level entries at a particular location in this loader.
+		 *
+		 * @param path A path under this loader to list. Currently, this will either be the empty
+		 * string, in which case the top level should be listed, or it will be a path ending in `/`.
+		 */
+		list?: (path: string) => source.Entry[]
+
+		thread?: {
+			get: (path: string) => PromiseLike<resource.Descriptor>
+		}
+
+		/**
+		 * Allows the loader to customize the way child sources are created when creating child loaders. If omitted, a child
+		 * that delegates requests back to the parent, prepended by the child's path, will be created.
+		 *
+		 * @param prefix The path representing this child underneath the parent. Currently, this path can be either the empty
+		 * string `""` or a string ending in `/`.
+		 *
+		 * @returns A source that represents a child of the parent source.
+		 */
+		child?: (prefix: string) => Source | S
+
+		/**
+		 * Allows the loader to customize the way resource descriptors are turned into resources.
+		 */
+		Resource?: runtime.resource.Exports
+	}
+
+	export interface Scope {
+		$context: any
+		$loader?: slime.old.Loader
+		$exports: any
+		$export: ($exports: any) => void
+	}
+
+	export namespace test {
 		/**
 		 * A script that exports a standard export structure to act as a test case for the loader API.
 		 */
@@ -280,23 +278,11 @@ namespace slime {
 					})
 				});
 			}
-
-			tests.suite = function() {
-				//fifty.run(fifty.tests.script);
-
-				fifty.run(fifty.tests.source);
-				fifty.run(fifty.tests.closure);
-				fifty.run(fifty.tests.$export);
-				fifty.run(fifty.tests.script);
-				//	TODO	tests.thread, browser only?
-			};
-
-			fifty.test.platforms();
 		}
 	//@ts-ignore
 	)(fifty);
-
 }
+
 namespace slime.old {
 	export namespace loader {
 		/**
@@ -368,8 +354,8 @@ namespace slime.old {
 	}
 }
 
-namespace slime.runtime.exports {
-	export interface Old {
+namespace slime.runtime.old {
+	export interface Exports {
 		loader: {
 			source: {
 				/**
@@ -395,7 +381,7 @@ namespace slime.runtime.exports {
 			 *
 			 * @experimental
 			 */
-			series: <S,R extends Resource>(loaders: old.Loader<S,R>[]) => old.Loader
+			series: <S,R extends Resource>(loaders: slime.old.Loader<S,R>[]) => slime.old.Loader
 
 			tools: {
 				toExportScope: <S extends { [x: string]: any },T>(scope: S) => S & { $export: (t: T) => void, $exports: T }
@@ -410,7 +396,7 @@ namespace slime.runtime.exports {
 				 * @param o A synchronous loader
 				 * @returns An old loader that delegates to the synchronous loader.
 				 */
-				synchronous: (o: slime.runtime.loader.Synchronous<any>) => old.Loader
+				synchronous: (o: slime.runtime.loader.Synchronous<any>) => slime.old.Loader
 			}
 		}
 	}
@@ -425,7 +411,7 @@ namespace slime.runtime.internal.old_loaders {
 	}
 
 	export interface Exports {
-		api: slime.runtime.exports.Old["loader"]
+		api: slime.runtime.old.Exports["loader"]
 		Code: {
 			from: {
 				Resource: slime.$api.fp.Mapping<slime.Resource,slime.runtime.loader.Code>
@@ -434,6 +420,25 @@ namespace slime.runtime.internal.old_loaders {
 		constructor: runtime.loader.old.Constructor
 		Resource: slime.runtime.resource.Exports
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				//fifty.run(fifty.tests.script);
+
+				fifty.run(fifty.tests.source);
+				fifty.run(fifty.tests.closure);
+				fifty.run(fifty.tests.$export);
+				fifty.run(fifty.tests.script);
+				//	TODO	tests.thread, browser only?
+			};
+
+			fifty.test.platforms();
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export type Script = slime.runtime.loader.Module<Scope,Exports>
 }

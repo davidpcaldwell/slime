@@ -236,15 +236,6 @@ namespace slime {
 		}
 	}
 
-	export namespace runtime {
-		export interface Exports {
-			/**
-			 * Provides operations related to loading resources and executing code using {@link slime.runtime.loader} types.
-			 */
-			loader: slime.runtime.loader.Exports
-		}
-	}
-
 	export namespace loader {
 		export interface Script<C,E> {
 			(c: C): E

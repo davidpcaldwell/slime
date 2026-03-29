@@ -603,8 +603,8 @@ namespace slime {
 			}
 		}
 
-		export namespace exports {
-			export interface Old {
+		export namespace old {
+			export interface Exports {
 				/**
 				 * Creates a *Loader*. A Loader loads resources from a specified source.
 				 */
@@ -613,7 +613,7 @@ namespace slime {
 		}
 
 		export interface Exports {
-			old: exports.Old
+			old: old.Exports
 		}
 
 		export interface Exports {
@@ -636,6 +636,13 @@ namespace slime {
 			 * @returns The object at the specified location. The object (and its parents) will be created if it does not exist.
 			 */
 			namespace: (name: string) => object
+		}
+
+		export interface Exports {
+			/**
+			 * Provides operations related to loading resources and executing code using {@link slime.runtime.loader} types.
+			 */
+			loader: slime.runtime.loader.Exports
 		}
 
 		export interface Exports {
@@ -942,25 +949,32 @@ namespace slime {
 						});
 					});
 				};
-
-				fifty.tests.suite = function() {
-					fifty.run(fifty.tests.runtime.exports);
-
-					fifty.load("polyfill.fifty.ts");
-
-					fifty.load("$api.fifty.ts");
-
-					fifty.load("Loader.fifty.ts");
-					fifty.load("old-loaders.fifty.ts");
-
-					if (fifty.global.window) {
-						fifty.run(fifty.tests.browser);
-					}
-				}
-
-				fifty.test.platforms();
 			}
 		//@ts-ignore
 		)( (function() { return this; })().Packages, fifty)
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.runtime.exports);
+
+				fifty.load("polyfill.fifty.ts");
+
+				fifty.load("$api.fifty.ts");
+
+				fifty.load("Loader.fifty.ts");
+				fifty.load("old-loaders.fifty.ts");
+
+				if (fifty.global.window) {
+					fifty.run(fifty.tests.browser);
+				}
+			}
+
+			fifty.test.platforms();
+		}
+	//@ts-ignore
+	)(fifty);
 }
