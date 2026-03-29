@@ -396,11 +396,9 @@
 		 *
 		 * Exits the VM with exit status 1 on failure; otherwise, returns `true`.
 		 *
-		 * @param { {} } [p]
 		 * @returns { slime.jsh.wf.Test }
 		 */
-		var test = function(p) {
-			if (!p) p = {};
+		var test = function() {
 			return function(events) {
 				//	This invocation will install the JDK if necessary, and then ensure the version of Rhino is the correct one for
 				//	that JDK
@@ -477,7 +475,8 @@
 						check: lint,
 						fix: jsh.wf.checks.lint().fix
 					},
-					test: test({ docker: false }),
+					//	TODO	arguably this should now run browser tests?
+					test: test(),
 					precommit: precommit
 				}
 			}
@@ -490,7 +489,6 @@
 		);
 
 		$exports.check = $api.fp.pipe(
-			jsh.script.cli.option.boolean({ longname: "docker" }),
 			function(p) {
 				jsh.shell.console("Linting ...");
 				var lintingPassed = $api.fp.world.now.ask(lint, {
@@ -506,9 +504,7 @@
 				jsh.wf.checks.tsc();
 				jsh.shell.console("Running tests ...");
 				var testsPassed = $api.fp.world.now.ask(
-					test({
-						docker: p.options.docker
-					}),
+					test(),
 					{
 						console: function(e) {
 							jsh.shell.console(e.detail);

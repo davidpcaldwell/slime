@@ -8,4 +8,4 @@
 SLIME="$(dirname $0)/../.."
 
 rm -Rf ${SLIME}/local/*
-${SLIME}/.devcontainer/post-create-command.bash
+${SLIME}/.devcontainer/postCreateCommand

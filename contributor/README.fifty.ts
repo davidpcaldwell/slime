@@ -46,27 +46,20 @@
  *
  * Testing is done via GitHub Actions, whose configuration is specified in the `.github` directory.
  *
- * Currently, the GitHub Actions use an older approach to test suite management; they essentially run a single command designed to
- * test the entire project on a given platform, where a platform includes:
+ * Generally speaking, the test actions cover:
  *
- * * For macOS
- *     * Java 21
- *
- * * For Linux
- *     * A version of Java
- *     * Chrome
- *     * Firefox
+ * * Running platform tests under each supported version of Java (8, 11, 17, 21) on Linux under Docker
+ * * Running platform tests under Java 21 on macOS
+ * * Running browser tests for Firefox and Chrome on Linux under Docker
  *
  * The test suite should be broken up into better-defined segments; each platform combination should be a separate job, but that
  * would take some reorganization (and simultaneously the project is
  * [being transitioned](https://github.com/users/davidpcaldwell/projects/21) from the older JSAPI framework to the Fifty definition
  * framework, complicating matters.)
  *
- * Generally speaking, a specific GitHub action is specified by:
+ * Generally speaking, the "platform tests," which as stated are too broad, cover:
  *
- * * The top-level GitHub YAML file, which invokes:
- * * `contributor/suite-[platform]`, which invokes:
- * * `./wf check` (with `--docker` for Docker test environments), which invokes:
+ * * `./wf check`, which invokes:
  *     * the linter
  *     * the TypeScript compiler
  *     * Rhino installation into the shell
