@@ -1189,6 +1189,13 @@ namespace slime.$api {
 		}
 	}
 
+	export interface Global {
+		/**
+		 * Provides information about the underlying JavaScript platform; see the {@link slime.runtime.Platform} type for details.
+		 */
+		platform: slime.runtime.Platform
+	}
+
 	export interface Scripts {
 		compiler: slime.runtime.loader.Compiler<slime.runtime.loader.Code>
 	}
@@ -1385,6 +1392,8 @@ namespace slime.$api {
 				fifty.load("$api-fp-methods.fifty.ts");
 				fifty.load("$api-mime.fifty.ts");
 
+				fifty.load("code.fifty.ts");
+
 				fifty.run(fifty.tests.jsapi);
 				fifty.run(fifty.tests.exports);
 			}
@@ -1411,7 +1420,7 @@ namespace slime.$api.internal {
 	 */
 	export interface Exports {
 		code: (
-			Pick<slime.runtime.internal.code.Exports,"internal"|"platform">
+			Pick<slime.runtime.internal.code.Exports,"internal">
 			& {
 				runtime: slime.runtime.internal.code.Runtime
 			}

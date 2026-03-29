@@ -121,78 +121,99 @@
 
 		var $api = api.exports;
 
-		/** @type {{ Loader: slime.runtime.internal.loader.Script, oldLoaders: slime.runtime.internal.old_loaders.Script }} */
-		var code = {
-			Loader: script("Loader.js"),
-			oldLoaders: script("old-loaders.js")
-		};
+		var oldCodeInterfaces = (
+			function() {
+				/** @type { slime.runtime.internal.old_loaders.Script } */
+				var code = script("old-loaders.js");
 
-		var Loader = code.Loader({
-			Executor: api.code.internal.Executor,
-			methods: api.code.runtime.internal.methods,
-			$api: $api,
-			createScriptScope: api.code.internal.createScriptScope
-		});
+				var oldLoaders = code({
+					$api: $api,
+					createScriptScope: api.code.internal.createScriptScope,
+					toExportScope: api.code.internal.old.toExportScope,
+					methods: api.code.runtime.internal.methods
+				});
 
-		var oldLoaders = code.oldLoaders({
-			$api: $api,
-			api: {
-				code: {
-					platform: api.code.platform
+				return {
+					/** @type { slime.runtime.Exports["run"] } */
+					run: function(code,scope,target) {
+						return api.code.runtime.internal.methods.run.call(target,oldLoaders.Code.from.Resource(code),scope);
+					},
+					/** @type { slime.runtime.Exports["file"] } */
+					file: function(code,context,target) {
+						return api.code.runtime.internal.methods.old.file.call(target,oldLoaders.Code.from.Resource(code),context);
+					},
+					/** @type { slime.runtime.Exports["value"] } */
+					value: function(code,scope,target) {
+						return api.code.runtime.internal.methods.old.value.call(target,oldLoaders.Code.from.Resource(code),scope);
+					},
+					Resource: oldLoaders.Resource,
+					old: {
+						Loader: Object.assign(oldLoaders.constructor, oldLoaders.api, { constructor: null }),
+						loader: oldLoaders.api
+					}
 				}
-			},
-			createScriptScope: api.code.internal.createScriptScope,
-			toExportScope: api.code.internal.old.toExportScope,
-			methods: api.code.runtime.internal.methods
-		});
+			}
+		)();
 
 		/** @type { slime.runtime.Exports } */
 		var rv = $api.fp.now(
-			{
-				/** @type { slime.runtime.Exports["run"] } */
-				run: function(code,scope,target) {
-					return api.code.runtime.internal.methods.run.call(target,oldLoaders.Code.from.Resource(code),scope);
-				},
-				/** @type { slime.runtime.Exports["file"] } */
-				file: function(code,context,target) {
-					return api.code.runtime.internal.methods.old.file.call(target,oldLoaders.Code.from.Resource(code),context);
-				},
-				/** @type { slime.runtime.Exports["value"] } */
-				value: function(code,scope,target) {
-					return api.code.runtime.internal.methods.old.value.call(target,oldLoaders.Code.from.Resource(code),scope);
-				},
-				Resource: oldLoaders.Resource,
-				old: {
-					Loader: Object.assign(oldLoaders.constructor, oldLoaders.api, { constructor: null }),
-					loader: oldLoaders.api
-				},
-				compiler: api.code.runtime.compiler,
-				loader: Loader.api,
-				namespace: function(string) {
-					//	This construct returns the top-level global object, e.g., window in the browser
-					var global = function() {
-						return this;
-					}();
+			oldCodeInterfaces,
+			$api.Object.defineProperty({
+				name: "namespace",
+				descriptor: {
+					value: function(string) {
+						//	This construct returns the top-level global object, e.g., window in the browser
+						var global = function() {
+							return this;
+						}();
 
-					var scope = global;
-					if (string) {
-						var tokens = string.split(".");
-						for (var i=0; i<tokens.length; i++) {
-							if (typeof(scope[tokens[i]]) == "undefined") {
-								scope[tokens[i]] = {};
+						var scope = global;
+						if (string) {
+							var tokens = string.split(".");
+							for (var i=0; i<tokens.length; i++) {
+								if (typeof(scope[tokens[i]]) == "undefined") {
+									scope[tokens[i]] = {};
+								}
+								scope = scope[tokens[i]];
 							}
-							scope = scope[tokens[i]];
 						}
-					}
-					return scope;
+						return scope;
+					},
+					enumerable: true
 				}
-			},
+			}),
+			$api.Object.defineProperty({
+				name: "compiler",
+				descriptor: {
+					value: api.code.runtime.compiler,
+					enumerable: true
+				}
+			}),
+			$api.Object.defineProperty({
+				name: "loader",
+				descriptor: {
+					value: (
+						function() {
+							/** @type { slime.runtime.internal.loader.Script } */
+							var code = script("Loader.js");
+
+							return code({
+								Executor: api.code.internal.Executor,
+								methods: api.code.runtime.internal.methods,
+								$api: $api,
+								createScriptScope: api.code.internal.createScriptScope
+							})
+						}
+					)(),
+					enumerable: true
+				}
+			}),
 			//	TODO	currently only used by jsapi in loader/api/old/jsh via jsh.js
 			//	TODO	also used by client.html unit tests
 			$api.Object.defineProperty({
 				name: "$platform",
 				descriptor: {
-					value: api.code.platform,
+					value: $api.platform,
 					enumerable: true
 				}
 			}),
@@ -200,7 +221,7 @@
 				name: "java",
 				descriptor: $api.fp.Partial.from.loose(function(it) {
 					return {
-						value: (api.code.platform.java) ? api.code.platform.java : void(0)
+						value: ($api.platform.java) ? $api.platform.java : void(0)
 					};
 				})
 			}),

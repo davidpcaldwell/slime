@@ -347,10 +347,6 @@ namespace slime.runtime.internal.loader {
 		createScriptScope: code.Exports["internal"]["createScriptScope"]
 	}
 
-	export interface Exports {
-		api: slime.runtime.loader.Exports
-	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -361,5 +357,5 @@ namespace slime.runtime.internal.loader {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.runtime.loader.Module<Scope,Exports>
+	export type Script = slime.runtime.loader.Module<Scope,slime.runtime.loader.Exports>
 }
