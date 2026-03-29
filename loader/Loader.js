@@ -164,15 +164,6 @@
 						return resources(loader, filter, []);
 					}
 				}
-			},
-			object: {
-				Synchronous: function(loader) {
-					return {
-						script: function(path) {
-							return api.synchronous.scripts(loader)(path);
-						}
-					}
-				}
 			}
 		};
 
