@@ -18,8 +18,6 @@ namespace slime.runtime.loader {
 	 * JavaScript.
 	 */
 	export type Compiler<T> = slime.$api.fp.Partial<T,Script>;
-
-	export type Executor<R> = (this: { [name: string]: any }, code: R, scope: { [name: string]: any }) => void
 }
 
 namespace slime.runtime {
@@ -97,14 +95,24 @@ namespace slime.runtime.internal.code {
 		fp: slime.$api.fp.Exports
 	}
 
+	/**
+	 * A function which executes code by compiling it using a supplied compiler and ensuring sensible defaults are supplied for the
+	 * execution scope. The `this` target is taken directly from the caller and is not modified by the executor.
+	 */
+	export type Executor<R> = (this: { [name: string]: any }, code: R, scope: { [name: string]: any }) => void
+
 	export namespace executor {
 		export type Configuration<R> = {
 			compiler: slime.runtime.loader.Compiler<R>
 			unsupported: (r: R) => string
+
+			/**
+			 * Scope variables that should be provided to all code executed by the created `Executor`.
+			 */
 			scope: { [x: string]: any }
 		}
 
-		export type Constructor = <R>(p: Configuration<R>) => slime.runtime.loader.Executor<R>
+		export type Constructor = <R>(p: Configuration<R>) => Executor<R>
 	}
 
 
@@ -138,9 +146,10 @@ namespace slime.runtime.internal.code {
 	export interface Exports {
 		api: Omit<slime.$api.Global["scripts"],"compiler">
 
-		platform: slime.runtime.Platform
-
 		internal: {
+			/**
+			 * Provides access to the `Executor` constructor for other, older APIs related to code execution.
+			 */
 			Executor: executor.Constructor
 
 			createScriptScope: <C extends { [x: string]: any },T>($context: C) => ScriptScope<C,T>

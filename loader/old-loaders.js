@@ -9,13 +9,12 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.runtime.internal.old_loaders.Scope["api"] } api
 	 * @param { slime.runtime.internal.old_loaders.Scope["toExportScope"] } toExportScope
 	 * @param { slime.runtime.internal.old_loaders.Scope["createScriptScope"] } createScriptScope
 	 * @param { slime.runtime.internal.old_loaders.Scope["methods"] } methods
 	 * @param { slime.loader.Export<slime.runtime.internal.old_loaders.Exports> } $export
 	 */
-	function($api,api,toExportScope,createScriptScope,methods,$export) {
+	function($api,toExportScope,createScriptScope,methods,$export) {
 		/**
 		 * @constructor
 		 * @param { slime.resource.Descriptor } o
@@ -38,7 +37,7 @@
 			if (o.read && o.read.string) {
 				this.read = Object.assign(
 					function(v) {
-						var $platform = api.code.platform;
+						var $platform = $api.platform;
 
 						if (v === String) {
 							var rv = o.read.string();
@@ -528,4 +527,4 @@
 		});
 	}
 //@ts-ignore
-)($api,api,toExportScope,createScriptScope,methods,$export);
+)($api,toExportScope,createScriptScope,methods,$export);
