@@ -16,18 +16,34 @@ shift 1
 
 SLIME="$(dirname $0)/.."
 
-# The DOCKER_HOST_UNAME variable is used to disable tests that are unstable on certain host operating systems running Docker
-# Desktop.
 cd ${SLIME}
+
+# Emit the Docker command for visiblity
 set -x
+
+cd ${SLIME}
+
+# Emit the Docker command for visibility
+set -x
+
+# Environment variables used below:
+#   DOCKER_HOST_UNAME: Used to disable tests that are unstable on certain host operating systems running Docker Desktop
+#   SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: Ordinarily, `wf initialize` requires that `user.name` and `user.email` be set; we don't need that here
+#   SLIME_TEST_NO_WF_SUBMODULE_RESET: Causes the wf standard project implementation interface.submodule.reset test to be skipped, for reasons that are undocumented
+#   SLIME_WF_BASH_DEBUG: Enable debugging for the `wf` script itself
+#   JDK_VERSION: Specified above by caller; although it seems to be redundant with SLIME_WF_JDK_VERSION, this seems clearer in context
+#   SLIME_WF_JDK_VERSION: Set to $JDK_VERSION
+
+# TODO Can we simply check in wf initialize to see whether a `.git` directory exists, and obviate the need for SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT?
+
 docker compose -f docker-compose.yaml -f docker-compose.test.yaml \
 	run \
 	--build \
 	-e DOCKER_HOST_UNAME=$(uname) \
 	-e SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT=1 \
-	-e SLIME_WF_JDK_VERSION=$JDK_VERSION \
 	-e SLIME_TEST_NO_WF_SUBMODULE_RESET \
-	-e JDK_VERSION \
 	-e SLIME_WF_BASH_DEBUG \
+	-e JDK_VERSION \
+	-e SLIME_WF_JDK_VERSION=$JDK_VERSION \
 	local \
 	/bin/bash -c './jsh --install-jdk-$JDK_VERSION; "$@"' -- "$@"

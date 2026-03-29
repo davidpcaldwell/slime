@@ -5,10 +5,13 @@
 #
 #	END LICENSE
 
+#	Command to run something approximating the full test suite inside a devcontainer
+
 #	Specify SLIME_WF_JDK_VERSION=n to run with different JDK; for example, SLIME_WF_JDK_VERSION=8
 
 $(dirname $0)/simulate-new-container
 
 SLIME="$(dirname $0)/../.."
 
-env JSH_LAUNCHER_COMMAND_DEBUG=1 SLIME_WF_BASH_DEBUG=1 ${SLIME}/wf check --docker >${SLIME}/local/devcontainer-check.txt 2>&1
+env JSH_LAUNCHER_COMMAND_DEBUG=1 SLIME_WF_BASH_DEBUG=1 ${SLIME}/wf check >${SLIME}/local/devcontainer-check-jrunscript.txt 2>&1 \
+	&& /bin/bash ${SLIME}/jsh ${SLIME}/contributor/suite-docker-browser.jsh.js >${SLIME}/local/devcontainer-check-browser.txt 2>&1

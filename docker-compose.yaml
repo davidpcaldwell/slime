@@ -6,9 +6,6 @@
 
 name: slime
 
-# SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
-# command: /bin/bash /slime/wf check --docker
-# SLIME_WF_JDK_VERSION = 8 | 11 | 17 | 21
 services:
   # Produces a stateful, persistent SLIME container that begins as a blank box with the source directory mounted. Local changes
   # (to the local/ subdirectory, like installing JDKs, Rhino, Tomcat, and so forth) will persist between runs.
