@@ -96,8 +96,8 @@ namespace slime.runtime.internal.code {
 	}
 
 	/**
-	 * A function which executes code by compiling it using a supplied compiler and ensuring defaults are supplied if needed for the
-	 * `this` target and scope.
+	 * A function which executes code by compiling it using a supplied compiler and ensuring sensible defaults are supplied for the
+	 * execution scope. The `this` target is taken directly from the caller and is not modified by the executor.
 	 */
 	export type Executor<R> = (this: { [name: string]: any }, code: R, scope: { [name: string]: any }) => void
 
