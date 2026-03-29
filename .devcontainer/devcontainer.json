@@ -42,8 +42,8 @@
 		}
 	},
 	"service": "local",
-	"runServices": ["local"],
 	"workspaceFolder": "/slime",
 	"initializeCommand": ".devcontainer/initializeCommand",
-	"postCreateCommand": ".devcontainer/postCreateCommand"
+	"postCreateCommand": ".devcontainer/postCreateCommand",
+	"shutdownAction": "stopCompose"
 }
