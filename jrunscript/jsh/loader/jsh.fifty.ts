@@ -309,7 +309,7 @@ namespace slime.jsh {
 			plugins: (p:
 				slime.runtime.loader.Synchronous<any>
 				| slime.jrunscript.file.Location
-				| slime.runtime.loader.Store
+				| slime.Loader
 				| slime.jrunscript.file.Pathname
 				| slime.jrunscript.file.Directory
 			) => void
