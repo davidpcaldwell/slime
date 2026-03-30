@@ -63,7 +63,7 @@ namespace slime.jxa {
 			/**
 			 * A Loader that loads resources relative to the script's location.
 			 */
-			loader: slime.Loader
+			loader: slime.runtime.loader.Store
 		}
 	}
 }
