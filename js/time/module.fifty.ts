@@ -629,5 +629,5 @@ namespace slime.time {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context|void,Exports>
+	export type Script = slime.runtime.loader.Module<Context|void,Exports>
 }

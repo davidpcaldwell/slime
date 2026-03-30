@@ -341,5 +341,5 @@ namespace slime.jsh.test {
 	//@ts-ignore
 	)(Packages, $api, (function() { return this; })().jsh, $export);
 
-	export type Script = slime.loader.Script<void,Exports>;
+	export type Script = slime.runtime.loader.Module<void,Exports>;
 }
