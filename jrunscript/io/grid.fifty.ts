@@ -21,7 +21,7 @@ namespace slime.jrunscript.io.internal.grid {
 		Streams: slime.jrunscript.io.Exports["Streams"]
 	}
 
-	export type Script = slime.loader.Script<Context,io.grid.Exports>
+	export type Script = slime.runtime.loader.Module<Context,io.grid.Exports>
 }
 
 namespace slime.jrunscript.io.grid.excel {

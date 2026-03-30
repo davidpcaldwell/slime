@@ -78,7 +78,7 @@ namespace slime.codec.ini {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<void,Exports>
+	export type Script = slime.runtime.loader.Module<void,Exports>
 
 	export namespace internal {
 		export interface Line {
