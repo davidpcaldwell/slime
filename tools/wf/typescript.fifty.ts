@@ -273,5 +273,5 @@ namespace slime.jsh.wf.internal.typescript {
 		Project: slime.jsh.wf.internal.module.exports.project.Typescript
 	}
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Module<Context,Exports>
 }
