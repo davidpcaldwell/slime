@@ -97,7 +97,7 @@ namespace slime.fifty.test {
 	 * The variable that appears as `fifty` within the scope of Fifty definition files when executing tests.
 	 */
 	export interface Kit {
-		$loader: slime.old.Loader
+		$loader: slime.loader.old.Loader
 
 		/**
 		 * Provides access to Fifty global constructs for this execution. `$platform` and `$api` are available. If running under
@@ -308,7 +308,7 @@ namespace slime.fifty.internal.test {
 
 	export interface TestFile {
 		file: {
-			loader: slime.old.Loader
+			loader: slime.loader.old.Loader
 			path: string
 		}
 	}
@@ -317,7 +317,7 @@ namespace slime.fifty.internal.test {
 		environment: {
 			jsh?: {
 				directory: slime.jrunscript.file.Directory
-				loader: slime.old.Loader
+				loader: slime.loader.old.Loader
 			}
 		}
 	}
@@ -376,7 +376,7 @@ namespace slime.fifty.internal.test {
 			/**
 			 * A loader that will load resources from the same directory as the currently executing Fifty file.
 			 */
-			loader: slime.old.Loader
+			loader: slime.loader.old.Loader
 
 			/**
 			 * The directory containing the currently executing Fifty file.

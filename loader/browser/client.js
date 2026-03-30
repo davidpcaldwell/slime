@@ -295,7 +295,7 @@
 
 				/**
 				 * @constructor
-				 * @param { string | slime.old.loader.Source } p
+				 * @param { string | slime.loader.old.Source } p
 				 */
 				var Loader = function(p) {
 					if (typeof(p) == "string") {
@@ -303,7 +303,7 @@
 							/**
 							 *
 							 * @param { string } prefix
-							 * @returns { slime.old.loader.Source }
+							 * @returns { slime.loader.old.Source }
 							 */
 							function(prefix) {
 								/**

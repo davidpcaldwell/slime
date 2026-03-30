@@ -71,7 +71,7 @@ namespace slime.servlet {
 			 * {@link slime.jrunscript.runtime.old.Resource}s.
 			 */
 			Loader: (o: {
-				loader: slime.old.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.old.Resource>
+				loader: slime.loader.old.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.old.Resource>
 
 				/**
 				 * An optional path within the loader to use when a request with an empty path is received.

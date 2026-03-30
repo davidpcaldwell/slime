@@ -371,7 +371,7 @@ namespace slime.jsh.script {
 		 * relative to the directory from which the script was run (although a script can replace this property; see `
 		 * `Loader`).
 		 */
-		loader: slime.old.Loader
+		loader: slime.loader.old.Loader
 	}
 
 	(
@@ -442,7 +442,7 @@ namespace slime.jsh.script {
 		 *
 		 * @returns A {@link Loader} that loads code from the location indicated by `path`.
 		 */
-		Loader?: (path: string) => slime.old.Loader
+		Loader?: (path: string) => slime.loader.old.Loader
 	}
 
 	export interface Exports {
@@ -1195,7 +1195,7 @@ namespace slime.jsh.script.internal {
 		uri: string
 		packaged: {
 			file: slime.jrunscript.file.File
-			loader: slime.old.Loader
+			loader: slime.loader.old.Loader
 		}
 	}
 

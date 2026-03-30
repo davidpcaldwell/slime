@@ -66,7 +66,7 @@ namespace slime.jsh.plugin {
 			 * @param p Scope objects to use when loading the plugin, and a definition of the plugin itself.
 			 * @returns objects affected by plugin loading, for evaluation
 			 */
-			mock: (p: Partial<Omit<slime.jsh.plugin.Scope,"$loader">> & { $loader: slime.old.Loader, source?: () => string }) => Pick<slime.jsh.plugin.Scope,"global"|"jsh"|"plugins">
+			mock: (p: Partial<Omit<slime.jsh.plugin.Scope,"$loader">> & { $loader: slime.loader.old.Loader, source?: () => string }) => Pick<slime.jsh.plugin.Scope,"global"|"jsh"|"plugins">
 		}
 	}
 
@@ -128,7 +128,7 @@ namespace slime.jsh.plugin {
 		/**
 		 * An object that allows this plugin to load code, relative to the plugin's location.
 		 */
-		$loader: slime.old.Loader & {
+		$loader: slime.loader.old.Loader & {
 			/**
 			 * An object representing the classpath visible to scripts.
 			 */
@@ -179,18 +179,18 @@ namespace slime.jsh.internal.loader.plugins {
 
 	export type register = (p: {
 		scope: Pick<slime.jsh.plugin.Scope,"plugins"|"$slime"|"global"|"jsh">
-		$loader: slime.old.Loader
+		$loader: slime.loader.old.Loader
 		source: () => string
 	}) => Plugin[]
 
-	export type LoaderSource = { loader: slime.old.Loader }
+	export type LoaderSource = { loader: slime.loader.old.Loader }
 	export type SlimeSource = { slime: any }
 	export type JarSource = { jar: any }
 	export type Source = LoaderSource | SlimeSource | JarSource
 
 	export interface SourceContent {
 		source?: {
-			loader: slime.old.Loader
+			loader: slime.loader.old.Loader
 			from: () => string
 		}
 		classes?: slime.jrunscript.runtime.ClasspathEntry
@@ -201,7 +201,7 @@ namespace slime.jsh.internal.loader.plugins {
 		classpath: slime.jrunscript.runtime.ClasspathEntry[]
 	}
 
-	export type OldLoaderPlugins = { loader: slime.old.Loader }
+	export type OldLoaderPlugins = { loader: slime.loader.old.Loader }
 	export type JavaFilePlugins = { _file: slime.jrunscript.native.java.io.File }
 	export type ZipFilePlugins = { zip: { _file: slime.jrunscript.native.java.io.File } }
 	export type SynchronousLoaderPlugins = { synchronous: slime.runtime.loader.Synchronous<any> }
