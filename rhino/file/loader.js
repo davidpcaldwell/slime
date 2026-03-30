@@ -62,7 +62,7 @@
 
 					return $api.fp.Maybe.from.some(
 						nodes.value.map(
-							/** @type { slime.$api.fp.Mapping<string,slime.runtime.loader.Node> } */
+							/** @type { slime.$api.fp.Mapping<string,slime.runtime.loader.synchronous.Node> } */
 							function(node) {
 								var pathname = $context.library.Location.relative(node)(target).pathname;
 								return {

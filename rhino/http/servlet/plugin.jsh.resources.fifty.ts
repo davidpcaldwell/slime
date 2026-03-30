@@ -8,7 +8,7 @@ namespace slime.jsh.httpd {
 	export namespace resources {
 		export interface MappingDescriptor {
 			directory?: slime.jrunscript.file.Directory
-			loader?: slime.old.Loader
+			loader?: slime.loader.old.Loader
 			prefix: string
 		}
 	}
@@ -19,7 +19,7 @@ namespace slime.jsh.httpd {
 			toString: () => string
 
 			get: (path: string) => slime.resource.Descriptor
-			list: (path: string) => slime.old.loader.Entry[]
+			list: (path: string) => slime.loader.old.loader.Entry[]
 		}
 
 		export type MappingConstructor = (p: jsh.httpd.resources.MappingDescriptor) => Mapping
@@ -132,7 +132,7 @@ namespace slime.jsh.httpd {
 					var verify = fifty.verify;
 					var jsh = fifty.global.jsh;
 					verify(subject.Constructor,"code").is.type("function");
-					var one: { loader: slime.old.Loader, add: any } = new subject.Constructor();
+					var one: { loader: slime.loader.old.Loader, add: any } = new subject.Constructor();
 					var top = fifty.jsh.file.object.getRelativePath(".").directory;
 					one.add({ prefix: "WEB-INF/generic/", directory: top.getSubdirectory("java") });
 					one.add({ prefix: "WEB-INF/mozilla/", directory: top.getSubdirectory("rhino") });
@@ -173,7 +173,7 @@ namespace slime.jsh.httpd {
 					});
 					verify(test,"test").is.not(null);
 					verify(test,"test").length.is(1);
-					var first = test[0] as slime.old.loader.LoaderEntry;
+					var first = test[0] as slime.loader.old.loader.LoaderEntry;
 					verify(first).loader.is.not(null);
 					var file = first.loader.file("resource/1.file.js");
 					verify(file,"file").evaluate(asObject).is.not(null);
@@ -184,7 +184,7 @@ namespace slime.jsh.httpd {
 					var verify = fifty.verify;
 					var jsh = fifty.global.jsh;
 
-					var mapping: { loader: slime.old.Loader, build: any } = subject.script(fifty.jsh.file.object.getRelativePath("test/resource/1.vcs.js").file);
+					var mapping: { loader: slime.loader.old.Loader, build: any } = subject.script(fifty.jsh.file.object.getRelativePath("test/resource/1.vcs.js").file);
 					verify(mapping).is.not(null);
 					verify(mapping).loader.is.not(null);
 					verify(mapping).loader.evaluate.property("list").is.type("function");

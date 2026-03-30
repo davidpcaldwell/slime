@@ -202,7 +202,7 @@
 					var isFile = function(from) { return Boolean(from && from.pathname && from.pathname.file); };
 					/** @type { (from: any) => from is slime.runtime.loader.Synchronous } */
 					var isSynchronousLoader = function(from) { return Boolean(from.get) && Boolean(from.code); };
-					/** @type { (from: any) => from is slime.old.Loader } */
+					/** @type { (from: any) => from is slime.loader.old.Loader } */
 					var isOldLoader = function(from) { return Boolean(from.get) && !Boolean(from.code); };
 
 					/**

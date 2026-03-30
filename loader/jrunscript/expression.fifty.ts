@@ -362,7 +362,7 @@ namespace slime.jrunscript.runtime {
 		}
 
 		export namespace loader {
-			export interface Source extends slime.old.loader.Source {
+			export interface Source extends slime.loader.old.Source {
 				_source?: slime.jrunscript.native.inonit.script.engine.Code.Loader
 				zip?: any
 				_file?: any
@@ -454,7 +454,7 @@ namespace slime.jrunscript.runtime {
 
 		export type CustomSource = ZipFileSource | ZipResourceSource | JavaFileSource | JavaCodeLoaderSource | DeprecatedResourcesSource
 
-		export type Source = slime.old.loader.Source | CustomSource
+		export type Source = slime.loader.old.Source | CustomSource
 	}
 
 	(
@@ -467,10 +467,10 @@ namespace slime.jrunscript.runtime {
 	)(fifty);
 
 	export type JavaFileClasspathEntry = { _file: slime.jrunscript.native.java.io.File }
-	export type SlimeClasspathEntry = { slime: { loader: slime.old.Loader } }
+	export type SlimeClasspathEntry = { slime: { loader: slime.loader.old.Loader } }
 	export type JarFileClasspathEntry = { jar: { _file: slime.jrunscript.native.java.io.File } }
 	export type JarResourceClasspathEntry = { jar: { resource: any } }
-	export type SrcClasspathEntry = { src: { loader: slime.old.Loader } }
+	export type SrcClasspathEntry = { src: { loader: slime.loader.old.Loader } }
 	export type ClasspathEntry = JavaFileClasspathEntry | SlimeClasspathEntry | JarFileClasspathEntry | JarResourceClasspathEntry | SrcClasspathEntry
 
 	//	TODO	probably all jrunscript-specific properties should be properties of the `jrunscript` property; all properties added
@@ -657,7 +657,7 @@ namespace slime.jrunscript.runtime {
 		}
 
 		export namespace entry {
-			export type Loader = (location: slime.runtime.loader.Location) => loader.Entry
+			export type Loader = (location: slime.runtime.loader.synchronous.Location) => loader.Entry
 		}
 	}
 

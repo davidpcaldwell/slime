@@ -608,7 +608,7 @@ namespace slime {
 				/**
 				 * Creates a *Loader*. A Loader loads resources from a specified source.
 				 */
-				Loader: loader.old.Constructor & slime.runtime.internal.old_loaders.Exports["api"]
+				Loader: slime.loader.old.Constructor & slime.runtime.internal.old_loaders.Exports["api"]
 			}
 		}
 

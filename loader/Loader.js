@@ -13,7 +13,7 @@
 	 * @param { slime.runtime.internal.loader.Scope["createScriptScope"] } createScriptScope
 	 * @param { slime.runtime.internal.loader.Scope["$api"] } $api
 	 *
-	 * @param { slime.old.loader.Export<slime.runtime.loader.Exports> } $export
+	 * @param { slime.loader.old.Export<slime.runtime.loader.Exports> } $export
 	 */
 	function(Executor,methods,createScriptScope,$api,$export) {
 		/**

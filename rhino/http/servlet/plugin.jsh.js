@@ -14,7 +14,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.httpd.Dependencies & { httpd: slime.jsh.httpd.Exports } } jsh
 	 * @param { slime.jsh.plugin.plugin } plugin
-	 * @param { slime.old.Loader } $loader
+	 * @param { slime.loader.old.Loader } $loader
 	 */
 	function(Packages,JavaAdapter,$slime,$api,jsh,plugin,$loader) {
 		plugin({
@@ -119,7 +119,7 @@
 					/**
 					 *
 					 * @param { (scope: slime.servlet.Scope) => void } run
-					 * @param { () => slime.old.Loader } getScriptLoader
+					 * @param { () => slime.loader.old.Loader } getScriptLoader
 					 * @returns { slime.jsh.httpd.servlet.DescriptorUsingLoad["load"] }
 					 */
 					var toByLoad = function(run,getScriptLoader) {
@@ -369,7 +369,7 @@
 
 							/**
 							 * @param { any } context Tomcat native Java context object
-							 * @param { slime.old.Loader | undefined } resources
+							 * @param { slime.loader.old.Loader | undefined } resources
 							 * @param { string } pattern
 							 * @param { string } servletName
 							 * @param { slime.jsh.httpd.servlet.Descriptor } servletDeclaration

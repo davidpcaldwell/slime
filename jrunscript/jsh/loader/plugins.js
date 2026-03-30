@@ -144,14 +144,14 @@
 			}
 		};
 
-		/** @type { (entry: slime.old.loader.Entry) => entry is slime.old.loader.ResourceEntry } */
+		/** @type { (entry: slime.loader.old.loader.Entry) => entry is slime.loader.old.loader.ResourceEntry } */
 		var isResourceEntry = function(entry) { return Boolean(entry["resource"]); };
-		/** @type { (entry: slime.old.loader.Entry) => entry is slime.old.loader.LoaderEntry } */
+		/** @type { (entry: slime.loader.old.loader.Entry) => entry is slime.loader.old.loader.LoaderEntry } */
 		var isLoaderEntry = function(entry) { return Boolean(entry["loader"]); };
 
 		/**
 		 *
-		 * @param { slime.old.Loader } loader
+		 * @param { slime.loader.old.Loader } loader
 		 * @returns { slime.jsh.internal.loader.plugins.Source[] }
 		 */
 		var scan = function(loader) {
@@ -262,7 +262,7 @@
 
 		/**
 		 * @param { Parameters<register>[0]["scope"] } scope
-		 * @param { slime.old.Loader } loader
+		 * @param { slime.loader.old.Loader } loader
 		 * @returns { slime.jsh.internal.loader.plugins.PluginsContent }
 		 */
 		var getPluginsContent = function getPluginsContent(scope,loader) {

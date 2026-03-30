@@ -228,12 +228,12 @@ namespace slime {
 				 *
 				 * @param p A URL which should be used as the base URL of the loader.
 				 */
-				new (p: string): slime.old.Loader
+				new (p: string): slime.loader.old.Loader
 
 				/**
 				 * Creates a SLIME {@link slime.Loader | Loader}; see {@link slime.loader.Source}.
 				 */
-				new (p: slime.old.loader.Source): slime.old.Loader
+				new (p: slime.loader.old.Source): slime.loader.old.Loader
 
 				series: slime.runtime.Exports["old"]["loader"]["series"]
 				getCode: any
@@ -349,7 +349,7 @@ namespace slime {
 			/**
 			 * See {@link slime.Loader.value}. Note that the first argument will be interpreted relative to the current page.
 			 */
-			value: slime.old.Loader["value"]
+			value: slime.loader.old.Loader["value"]
 
 			get: slime.Loader["get"]
 		}
@@ -380,7 +380,7 @@ namespace slime {
 			/**
 			 * A loader that loads resources using the current page as the base URL for the loader.
 			 */
-			loader: slime.old.Loader
+			loader: slime.loader.old.Loader
 
 			test: {
 				run: slime.runtime.Exports["run"]

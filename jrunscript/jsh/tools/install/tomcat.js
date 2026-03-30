@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.shell.tools.internal.tomcat.Context } $context
-	 * @param { slime.old.Loader } $loader
+	 * @param { slime.loader.old.Loader } $loader
 	 * @param { slime.loader.Export<slime.jsh.shell.tools.internal.tomcat.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {

@@ -224,7 +224,7 @@ namespace slime.jrunscript.file.remove {
 			}
 		}
 
-		export type Script = slime.loader.synchronous.Script<Context,Exports>
+		export type Script = slime.runtime.loader.synchronous.Script<Context,Exports>
 	}
 
 	(

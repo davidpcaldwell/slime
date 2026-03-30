@@ -14,8 +14,8 @@
 	function($context,$export) {
 		/**
 		 *
-		 * @param { slime.old.loader.Source } delegate
-		 * @returns { slime.old.loader.Source }
+		 * @param { slime.loader.old.Source } delegate
+		 * @returns { slime.loader.old.Source }
 		 */
 		function textLoaderSource(delegate) {
 			return {
@@ -28,7 +28,7 @@
 		}
 		$export(
 			function(p) {
-				/** @type { slime.old.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.old.Resource> } */
+				/** @type { slime.loader.old.Loader<slime.jrunscript.runtime.internal.CustomSource,slime.jrunscript.runtime.old.Resource> } */
 				//@ts-ignore
 				var asTextLoader = new $context.httpd.io.Loader(textLoaderSource(p.loader.source));
 

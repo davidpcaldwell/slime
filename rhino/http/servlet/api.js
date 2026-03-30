@@ -197,7 +197,7 @@
 			var getLoaders = byEnvironment({
 				servlet: function($host) {
 					/**
-					 * @type { (p: { _source: slime.jrunscript.native.inonit.script.engine.Code.Loader }) => slime.old.Loader }
+					 * @type { (p: { _source: slime.jrunscript.native.inonit.script.engine.Code.Loader }) => slime.loader.old.Loader }
 					 */
 					var Loader = function(p) {
 						var getMimeType = $slime.$api.fp.pipe(
@@ -207,7 +207,7 @@
 							$slime.$api.jrunscript.java.adapt.String
 						);
 
-						/** @type { slime.old.loader.Source } */
+						/** @type { slime.loader.old.Source } */
 						var source = {
 							get: function(path) {
 								var pp = {

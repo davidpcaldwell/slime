@@ -146,7 +146,7 @@
 						rv.uri = String(_uri.normalize().toString());
 					}
 					if ($slime.getPackaged()) {
-						/** @type { slime.js.Cast<slime.old.Loader> } */
+						/** @type { slime.js.Cast<slime.loader.old.Loader> } */
 						var toJavaLoader = $api.fp.cast.unsafe;
 						var x = toJavaLoader(new jsh.io.Loader({ _source: $slime.getPackaged().getCode() }));
 						rv.packaged = {

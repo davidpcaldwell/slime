@@ -11,7 +11,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 * @param { slime.jsh.plugin.plugins } plugins
-	 * @param { slime.old.Loader } $loader
+	 * @param { slime.loader.old.Loader } $loader
 	 */
 	function(jsh,plugin,plugins,$loader) {
 		plugin({

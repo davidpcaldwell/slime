@@ -685,7 +685,7 @@
 			return p["_source"];
 		}
 
-		/** @type { (_source: slime.jrunscript.native.inonit.script.engine.Code.Loader) => slime.old.loader.Source<slime.jrunscript.runtime.internal.JavaCodeLoaderSource> } */
+		/** @type { (_source: slime.jrunscript.native.inonit.script.engine.Code.Loader) => slime.loader.old.Source<slime.jrunscript.runtime.internal.JavaCodeLoaderSource> } */
 		function adaptCodeLoader(_source) {
 			return {
 				get: function(path) {
@@ -725,22 +725,22 @@
 			}
 		}
 
-		/** @type { (p: slime.jrunscript.runtime.internal.JavaCodeLoaderSource) => slime.old.loader.Source<slime.jrunscript.runtime.internal.JavaCodeLoaderSource> } */
+		/** @type { (p: slime.jrunscript.runtime.internal.JavaCodeLoaderSource) => slime.loader.old.Source<slime.jrunscript.runtime.internal.JavaCodeLoaderSource> } */
 		function adaptJavaCodeLoaderSource(p) {
 			return adaptCodeLoader(p._source);
 		}
 
-		/** @type { (p: slime.jrunscript.runtime.internal.ZipFileSource) => slime.old.loader.Source } */
+		/** @type { (p: slime.jrunscript.runtime.internal.ZipFileSource) => slime.loader.old.Source } */
 		function adaptZipFileSource(p) {
 			return adaptCodeLoader(Packages.inonit.script.engine.Code.Loader.zip(p.zip._file));
 		}
 
-		/** @type { (p: slime.jrunscript.runtime.internal.ZipResourceSource) => slime.old.loader.Source } */
+		/** @type { (p: slime.jrunscript.runtime.internal.ZipResourceSource) => slime.loader.old.Source } */
 		function adaptZipResourceSource(p) {
 			return adaptCodeLoader(Packages.inonit.script.engine.Code.Loader.zip(p.zip.resource.java.adapt(p.zip.resource.name)));
 		}
 
-		/** @type { (p: slime.jrunscript.runtime.internal.JavaFileSource) => slime.old.loader.Source } */
+		/** @type { (p: slime.jrunscript.runtime.internal.JavaFileSource) => slime.loader.old.Source } */
 		function adaptJavaFileSource(p) {
 			return adaptCodeLoader(Packages.inonit.script.engine.Code.Loader.create(p._file));
 		}
@@ -750,7 +750,7 @@
 			return p["resources"];
 		}
 
-		/** @type { (p: slime.jrunscript.runtime.internal.DeprecatedResourcesSource) => slime.old.loader.Source } */
+		/** @type { (p: slime.jrunscript.runtime.internal.DeprecatedResourcesSource) => slime.loader.old.Source } */
 		function adaptResourcesSource(p) {
 			return {
 				get: function(path) {
@@ -798,7 +798,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.runtime.internal.Source } p
-		 * @returns { slime.old.loader.Source<slime.jrunscript.runtime.internal.CustomSource> }
+		 * @returns { slime.loader.old.Source<slime.jrunscript.runtime.internal.CustomSource> }
 		 */
 		function adaptLoaderArgument(p) {
 			if (isZipFileSource(p)) return adaptZipFileSource(p);
@@ -817,7 +817,7 @@
 
 		/**
 		 *
-		 * @param { slime.old.loader.Source } source
+		 * @param { slime.loader.old.Source } source
 		 * @returns { source is slime.jrunscript.native.inonit.script.engine.Code.Loader }
 		 */
 		var isJavaCodeLoader = function(source) {
@@ -827,7 +827,7 @@
 
 		/**
 		 *
-		 * @param { slime.old.Loader } self
+		 * @param { slime.loader.old.Loader } self
 		 * @returns { slime.jrunscript.native.inonit.script.engine.Code.Loader }
 		 */
 		var toJavaCodeLoader = function(self) {
@@ -866,7 +866,7 @@
 				 */
 				var rv = Object.assign(
 					/**
-					 * @this { slime.old.Loader }
+					 * @this { slime.loader.old.Loader }
 					 */
 					function(p) {
 						if (!p) throw new TypeError("source argument required for Loader.");
@@ -1074,7 +1074,7 @@
 				Loader: {
 					from: {
 						synchronous: function(p) {
-							/** @param { slime.runtime.loader.Location } resource */
+							/** @param { slime.runtime.loader.synchronous.Location } resource */
 							return function(resource) {
 								var loaded = p.loader.get(resource.path.concat([resource.name]));
 								if (loaded.present) return {

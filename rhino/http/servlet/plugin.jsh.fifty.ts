@@ -85,7 +85,7 @@ namespace slime.jsh.httpd {
 				/**
 				 * A loader that loads Java web application resources by path.
 				 */
-				resources?: slime.old.Loader
+				resources?: slime.loader.old.Loader
 
 				//	TODO	add reference to URL patterns from servlet specification -->
 
@@ -100,7 +100,7 @@ namespace slime.jsh.httpd {
 			 * A servlet that implements an entire webapp, in contrast to a servlet that serves as part of a webapp.
 			 */
 			export interface WebappServlet<T extends Descriptor = Descriptor> {
-				resources?: slime.old.Loader
+				resources?: slime.loader.old.Loader
 				servlet: T
 			}
 
@@ -151,7 +151,7 @@ namespace slime.jsh.httpd {
 		 *
 		 * Configures the given servlet as a single top-level servlet in this Tomcat server.
 		 */
-		servlet: (servlet: servlet.Descriptor & { resources?: slime.old.Loader }) => void
+		servlet: (servlet: servlet.Descriptor & { resources?: slime.loader.old.Loader }) => void
 
 		//	TODO	See jsh/test/manual/httpd.lifecycle.jsh.js for tests of the below.
 
@@ -407,7 +407,7 @@ namespace slime.jsh.httpd {
 				 * @param servlet
 				 * @returns
 				 */
-				inWebapp: (resources: slime.old.Loader, servlet: slime.jsh.httpd.servlet.Descriptor) => servlet.configuration.WebappServlet<servlet.DescriptorUsingLoad>
+				inWebapp: (resources: slime.loader.old.Loader, servlet: slime.jsh.httpd.servlet.Descriptor) => servlet.configuration.WebappServlet<servlet.DescriptorUsingLoad>
 			}
 		}
 
