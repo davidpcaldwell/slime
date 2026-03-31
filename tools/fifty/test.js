@@ -10,7 +10,7 @@
 	 * @param { slime.runtime.Platform } $platform
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.fifty.internal.test.Context } $context
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.fifty.internal.test.Exports> } $export
 	 */
 	function($platform,$api,$context,$loader,$export) {
