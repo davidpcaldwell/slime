@@ -4,6 +4,11 @@
 [comment]: # ()
 [comment]: # (	END LICENSE)
 
+# Information for all (human and agent) contributors
+
+General information for contributors is in [CONTRIBUTING.md](CONTRIBUTING.md); please read that first and incorporate its
+information into your approach.
+
 # Modules
 
 SLIME modules are defined by a top-level script, usually called `module.js`. This main module file often loads sibling files to
