@@ -57,5 +57,5 @@ namespace slime.jrunscript.tools.git.internal.log {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Module<Context,Exports>
 }

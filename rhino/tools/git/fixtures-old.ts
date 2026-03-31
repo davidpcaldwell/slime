@@ -47,5 +47,5 @@ namespace slime.jrunscript.tools.git.test.fixtures.old {
 	//@ts-ignore
 	)($context, $export);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Module<Context,Exports>
 }

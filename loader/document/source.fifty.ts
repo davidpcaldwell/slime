@@ -195,7 +195,7 @@ namespace slime.runtime.document.internal.source {
 		internal: internal.Export
 	}
 
-	export type Script = slime.loader.Script<void,Exports>
+	export type Script = slime.runtime.loader.Module<void,Exports>
 
 	export namespace internal {
 		export namespace test {
