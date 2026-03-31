@@ -31,5 +31,5 @@ namespace slime.tools.documentation.wiki {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Export>
+	export type Script = slime.runtime.loader.Module<Context,Export>
 }

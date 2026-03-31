@@ -99,7 +99,7 @@ namespace slime.fifty.test.kit {
 					},
 					mock: {
 						fixtures: function() {
-							var script: slime.loader.Script<slime.jrunscript.file.internal.mock.Context,slime.jrunscript.file.mock.Fixtures> = $loader.script("../../rhino/file/mock.fixtures.ts");
+							var script: slime.runtime.loader.Module<slime.jrunscript.file.internal.mock.Context,slime.jrunscript.file.mock.Fixtures> = $loader.script("../../rhino/file/mock.fixtures.ts");
 							return script({
 								library: {
 									java: jsh.java,
