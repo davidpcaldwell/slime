@@ -58,7 +58,7 @@ namespace slime.jrunscript {
  *
  * However, so that code does not have to be developed twice - once for the bootstrap script and once for the SLIME Java runtime -
  * the bootstrap script can also be embedded in the SLIME Java runtime using the `embed.js` script, which packages the bootstrap
- * script as an ordinary {@link slime.loader.Script} that can be loaded by the SLIME Java runtime.
+ * script as an ordinary {@link slime.runtime.loader.Module} that can be loaded by the SLIME Java runtime.
  *
  * In the context of the `jsh` shell, which is invoked with the `jsh` query parameter, the bootstrap script builds the Java portions
  * of the `jsh` loader process and launches the `jsh` loader configured appropriately.

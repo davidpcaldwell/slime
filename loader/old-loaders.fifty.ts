@@ -93,9 +93,6 @@ namespace slime.loader {
 }
 
 namespace slime.loader.old {
-	/** @deprecated Can use slime.loader.Script directly. */
-	export type Script<C,E> = slime.loader.Script<C,E>
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -106,7 +103,7 @@ namespace slime.loader.old {
 
 			fifty.tests.script.context = function() {
 				function echo<T>(t: T): T {
-					var script: slime.loader.old.Script<T,{ provided: T }> = fifty.$loader.script("test/data/context.js");
+					var script: slime.runtime.loader.Module<T,{ provided: T }> = fifty.$loader.script("test/data/context.js");
 					return script(t).provided;
 				}
 
@@ -130,7 +127,7 @@ namespace slime.loader.old {
 
 			fifty.tests.script.export = function() {
 				function echo<T>(t: T): T {
-					var script: slime.loader.old.Script<{ export: T },T> = fifty.$loader.script("test/data/export.js");
+					var script: slime.runtime.loader.Module<{ export: T },T> = fifty.$loader.script("test/data/export.js");
 					return script({ export: t });
 				}
 
@@ -238,7 +235,7 @@ namespace slime.loader.old {
 		/**
 		 * A script that exports a standard export structure to act as a test case for the loader API.
 		 */
-		export type Script = slime.loader.old.Script<{ scale: number }, { convert: (input: number) => number }>;
+		export type Script = slime.runtime.loader.Module<{ scale: number }, { convert: (input: number) => number }>;
 	}
 
 	(
