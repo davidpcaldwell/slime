@@ -47,7 +47,7 @@ namespace slime.tools.code {
 	}
 
 	export namespace settings {
-		export type Script = slime.loader.Script<void,Settings>
+		export type Script = slime.runtime.loader.Module<void,Settings>
 	}
 
 	export interface Exports {

@@ -10,7 +10,7 @@
  */
 namespace slime.jrunscript.bootstrap {
 	/**
-	 * A SLIME {@link slime.loader.Script} context used when embedding the bootstrap API.
+	 * A SLIME {@link slime.runtime.loader.Module} context used when embedding the bootstrap API.
 	 */
 	export interface Context {
 		debug: boolean
