@@ -9,7 +9,7 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.tools.install.Context } $context
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.tools.install.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {
