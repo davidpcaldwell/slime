@@ -110,7 +110,7 @@ namespace slime.jsh.httpd {
 				}
 			}
 
-			export type Script = slime.runtime.loader.Module<Context,slime.jsh.httpd.resources.Exports>
+			export type Script = slime.runtime.loader.Scoped<Context,slime.jsh.httpd.resources.Exports>
 		}
 	}
 

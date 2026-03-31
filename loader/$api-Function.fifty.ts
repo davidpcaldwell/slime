@@ -1992,5 +1992,5 @@ namespace slime.$api.fp.internal {
 
 	export type Exports = Omit<slime.$api.fp.Exports,"methods">
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

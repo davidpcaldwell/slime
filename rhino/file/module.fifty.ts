@@ -414,5 +414,5 @@ namespace slime.jrunscript.file {
 		java: slime.jrunscript.io.Exports["java"]
 	}
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

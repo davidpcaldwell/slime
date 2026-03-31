@@ -51,7 +51,7 @@ namespace slime.jrunscript.file.internal.test {
 			prefix?: string
 		}
 
-		export type Script = slime.runtime.loader.Module<Context,Fixtures>
+		export type Script = slime.runtime.loader.Scoped<Context,Fixtures>
 	}
 
 	(
@@ -201,7 +201,7 @@ namespace slime.jrunscript.file.internal.test {
 
 			var mockFixtures = (
 				function() {
-					var script: slime.runtime.loader.Module<slime.jrunscript.file.internal.mock.Context,slime.jrunscript.file.mock.Fixtures> = fifty.$loader.script(prefix + "mock.fixtures.ts");
+					var script: slime.runtime.loader.Scoped<slime.jrunscript.file.internal.mock.Context,slime.jrunscript.file.mock.Fixtures> = fifty.$loader.script(prefix + "mock.fixtures.ts");
 					return script({
 						library: {
 							java: jsh.java,

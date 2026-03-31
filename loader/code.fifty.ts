@@ -177,5 +177,5 @@ namespace slime.runtime.internal.code {
 	 * Code which deals with transpiler configuration, creation of scopes for scripts, and running scripts within specified scopes
 	 * (providing `$platform` and `$api`).
 	 */
-	export type Script = slime.loader.Script<Scope,Exports>
+	export type Script = slime.runtime.loader.Scoped<Scope,Exports>
 }

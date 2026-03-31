@@ -27,7 +27,7 @@ namespace slime.fifty.test.internal.browser.script {
 	export interface Exports {
 	}
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }
 
 (

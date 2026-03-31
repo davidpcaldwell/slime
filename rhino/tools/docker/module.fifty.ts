@@ -464,7 +464,7 @@ namespace slime.jrunscript.tools {
 	}
 
 	export namespace docker {
-		export type Script = slime.loader.Script<Context,Exports>
+		export type Script = slime.runtime.loader.Scoped<Context,Exports>
 	}
 
 	export namespace docker {

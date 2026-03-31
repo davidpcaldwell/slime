@@ -22,7 +22,7 @@ namespace slime.runtime.test {
 		}
 	}
 
-	export type Script = slime.loader.Script<void,Exports>;
+	export type Script = slime.runtime.loader.Scoped<void,Exports>;
 
 	(
 		function($api: slime.$api.Global, $export: slime.loader.Export<Exports>) {

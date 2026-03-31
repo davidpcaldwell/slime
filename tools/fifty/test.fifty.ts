@@ -393,7 +393,7 @@ namespace slime.fifty.internal.test {
 
 		export type Export = (scope: slime.fifty.internal.test.scope.jsh.Scope) => slime.fifty.test.kit.Jsh
 
-		export type Script = slime.loader.Script<void,Export>
+		export type Script = slime.runtime.loader.Scoped<void,Export>
 	}
 
 	export interface Context {
@@ -460,7 +460,7 @@ namespace slime.fifty.internal.test {
 		list: (p: TestFileContext) => Manifest
 	}
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }
 
 namespace slime.fifty.test {

@@ -157,5 +157,5 @@ namespace slime.jrunscript.tools.git.test.fixtures.jsapi {
 	//@ts-ignore
 	)($api, jsh, $loader, $export)
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

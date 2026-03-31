@@ -18,5 +18,5 @@ namespace slime.jsh.unit.internal.remote {
 		Stream: any
 	}
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

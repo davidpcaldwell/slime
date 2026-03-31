@@ -132,5 +132,5 @@ namespace slime.jrunscript.tools.kubernetes.cli {
 namespace slime.jrunscript.tools.docker.internal.kubectl {
 	export type Context = void
 
-	export type Script = slime.loader.Script<Context,slime.jrunscript.tools.kubernetes.cli.Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,slime.jrunscript.tools.kubernetes.cli.Exports>
 }

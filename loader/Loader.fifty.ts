@@ -13,10 +13,13 @@ namespace slime.runtime.loader {
 		})(fifty);
 	}
 
-	export type Module<C,E> = ($context: C) => E
+	/**
+	 * A scoped script that will be executed with a runtime scope including a `$context` property that is supplied by the caller.
+	 */
+	export type Scoped<C,E> = ($context: C) => E
 
 	export interface Store {
-		script: <C,E>(path: string) => Module<C,E>
+		script: <C,E>(path: string) => Scoped<C,E>
 
 		/**
 		 * @deprecated Exists for compatibility with {@link slime.Loader} and likely to be removed.
@@ -196,5 +199,5 @@ namespace slime.runtime.internal.loader {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.runtime.loader.Module<Scope,slime.runtime.loader.Exports>
+	export type Script = slime.runtime.loader.Scoped<Scope,slime.runtime.loader.Exports>
 }

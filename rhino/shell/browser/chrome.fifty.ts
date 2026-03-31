@@ -249,5 +249,5 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 	)(Packages,fifty);
 
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }
