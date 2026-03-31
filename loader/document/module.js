@@ -11,7 +11,7 @@
 	 * @param { any } $platform
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.runtime.document.Context } $context
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.runtime.document.Exports> } $export
 	 */
 	function($platform,$api,$context,$loader,$export) {
