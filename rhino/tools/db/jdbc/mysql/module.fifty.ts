@@ -100,7 +100,7 @@ namespace slime.jrunscript.db.mysql {
 			}) => client.Client
 		}
 
-		export type Factory = slime.loader.Script<Context,Exports>
+		export type Factory = slime.runtime.loader.Module<Context,Exports>
 	}
 
 	(

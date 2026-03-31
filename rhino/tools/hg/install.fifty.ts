@@ -53,7 +53,7 @@ namespace slime.jrunscript.tools.hg.install {
 		Repository: any
 	}
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Module<Context,Exports>
 
 	(
 		function(
