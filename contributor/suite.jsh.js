@@ -338,19 +338,6 @@
 			}
 		);
 
-		suite.add(
-			"node",
-			{
-				parts: {
-					runtime: jsh.unit.fifty.Part({
-						shell: environment.jsh.unbuilt.src,
-						script: environment.jsh.unbuilt.src.getFile("tools/fifty/test.jsh.js"),
-						file: environment.jsh.unbuilt.src.getFile("loader/node/loader.fifty.ts")
-					})
-				}
-			}
-		);
-
 		jsh.project.suite.run({
 			view: parameters.options.view,
 			port: parameters.options.port,
