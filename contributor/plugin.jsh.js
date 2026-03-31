@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 *
+	/**
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.plugin.Scope["$loader"] } $loader

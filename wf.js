@@ -11,7 +11,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.wf.cli.Context } $context
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.project.wf.Interface } $exports
 	 */
 	function(Packages,$api,jsh,$context,$loader,$exports) {
