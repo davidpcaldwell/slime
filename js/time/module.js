@@ -9,7 +9,7 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.time.Context } $context
-	 * @param { slime.loader.Script<slime.time.Exports> } $export
+	 * @param { slime.loader.Export<slime.time.Exports> } $export
 	 */
 	function($api,$context,$export) {
 		var now = $context.now || function() { return new Date().getTime(); };
