@@ -1035,7 +1035,7 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>;
+	export type Script = slime.runtime.loader.Module<Context,Exports>;
 
 	export interface Exports {
 		/** @deprecated */

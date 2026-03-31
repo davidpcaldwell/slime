@@ -44,5 +44,5 @@ namespace slime.jrunscript.file.internal.loader {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Module<Context,Exports>
 }

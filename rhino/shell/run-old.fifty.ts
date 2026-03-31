@@ -100,7 +100,7 @@ namespace slime.jrunscript.shell {
 		//@ts-ignore
 		)(fifty);
 
-		export type Script = slime.loader.Script<Context,Export>
+		export type Script = slime.runtime.loader.Module<Context,Export>
 	}
 
 	export interface Exports {
@@ -977,5 +977,5 @@ namespace slime.jrunscript.shell.internal.run.old {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Module<Context,Exports>
 }
