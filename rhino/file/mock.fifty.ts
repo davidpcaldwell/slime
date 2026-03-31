@@ -33,7 +33,7 @@ namespace slime.jrunscript.file.internal.mock {
 			});
 
 			fifty.tests.fixtures = function() {
-				var code: slime.runtime.loader.Module<Context,slime.jrunscript.file.mock.Fixtures> = fifty.$loader.script("mock.fixtures.ts");
+				var code: slime.runtime.loader.Scoped<Context,slime.jrunscript.file.mock.Fixtures> = fifty.$loader.script("mock.fixtures.ts");
 
 				var fixtures = code({
 					library: {
@@ -99,5 +99,5 @@ namespace slime.jrunscript.file.internal.mock {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

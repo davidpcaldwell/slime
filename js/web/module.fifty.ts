@@ -561,5 +561,5 @@ namespace slime.web {
 )(fifty);
 
 namespace slime.web {
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

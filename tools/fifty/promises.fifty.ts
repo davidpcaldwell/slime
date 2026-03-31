@@ -49,7 +49,7 @@ namespace slime.definition.test.promises {
 		}
 	}
 
-	export type Script = slime.runtime.loader.Module<void,Export>
+	export type Script = slime.runtime.loader.Scoped<void,Export>
 
 	/**
 	 * An object that provides a `Promise` that can be controlled by calls to its `resolve` and `reject` methods, so that tests can

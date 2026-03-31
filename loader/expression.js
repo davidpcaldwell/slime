@@ -63,7 +63,7 @@
 		 * @template { any } E
 		 *
 		 * @param { string } path
-		 * @returns { slime.runtime.loader.Module<C, E> }
+		 * @returns { slime.runtime.loader.Scoped<C, E> }
 		 */
 		var script = function(path) {
 			/**

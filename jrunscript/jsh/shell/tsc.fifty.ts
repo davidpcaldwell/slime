@@ -30,5 +30,5 @@ namespace slime.jsh.shell.internal.tsc {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

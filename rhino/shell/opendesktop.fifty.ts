@@ -46,5 +46,5 @@ namespace slime.jrunscript.shell.opendesktop {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

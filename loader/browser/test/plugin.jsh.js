@@ -102,7 +102,7 @@
 					/** @type { slime.servlet.Handler } */
 					var resultsHandler = (function createResultHandler() {
 						if (!resultPath) return $api.fp.Partial.from.loose(function(request) { return void(0); })
-						/** @type { slime.runtime.loader.Module<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
+						/** @type { slime.runtime.loader.Scoped<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
 						var resultServletFactory = $loader.script("handler-results.js");
 
 						var resultServletFile = resultServletFactory({
@@ -304,7 +304,7 @@
 										(
 											(resultsPath)
 												? (function createResultHandler() {
-													/** @type { slime.runtime.loader.Module<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
+													/** @type { slime.runtime.loader.Scoped<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
 													var resultServletFactory = $loader.script("handler-results.js");
 
 													var resultServletFile = resultServletFactory({

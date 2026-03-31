@@ -11,7 +11,7 @@ namespace slime.$api.fp.internal.methods {
 		}
 	}
 
-	export type Script = slime.runtime.loader.Module<Context,slime.$api.fp.methods.Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,slime.$api.fp.methods.Exports>
 }
 
 /**

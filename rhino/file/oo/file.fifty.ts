@@ -1246,5 +1246,5 @@ namespace slime.jrunscript.file.internal.file {
 		list: slime.jrunscript.file.Exports["list"]
 	}
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

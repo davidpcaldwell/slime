@@ -130,5 +130,5 @@ namespace slime.jrunscript.shell.test {
 	//@ts-ignore
 	)($context,$loader,$export);
 
-	export type Script = slime.runtime.loader.Module<Context,Fixtures>
+	export type Script = slime.runtime.loader.Scoped<Context,Fixtures>
 }

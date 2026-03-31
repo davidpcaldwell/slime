@@ -42,7 +42,7 @@ namespace slime.jsh.wf.test {
 		configure: (repository: slime.jrunscript.tools.git.repository.Local) => void
 	}
 
-	export type Script = slime.runtime.loader.Module<void,(fifty: slime.fifty.test.Kit) => Fixtures>
+	export type Script = slime.runtime.loader.Scoped<void,(fifty: slime.fifty.test.Kit) => Fixtures>
 
 	(
 		function(

@@ -1405,7 +1405,7 @@ namespace slime.$api {
 }
 
 namespace slime.$api.internal {
-	export type script = <C,E>(name: string) => slime.runtime.loader.Module<C,E>
+	export type script = <C,E>(name: string) => slime.runtime.loader.Scoped<C,E>
 
 	export interface Scope {
 		$engine: Pick<slime.runtime.Engine,"execute"|"debugger">
@@ -1428,7 +1428,7 @@ namespace slime.$api.internal {
 		exports: slime.$api.Global
 	}
 
-	export type Script = slime.runtime.loader.Module<Scope,Exports>
+	export type Script = slime.runtime.loader.Scoped<Scope,Exports>
 }
 
 namespace slime.$api.oo {

@@ -19,5 +19,5 @@ namespace slime.tools.documentation {
 	 */
 	export type Export = (configuration: Configuration) => (httpd: slime.servlet.httpd) => slime.servlet.Script
 
-	export type Script = slime.runtime.loader.Module<void,Export>
+	export type Script = slime.runtime.loader.Scoped<void,Export>
 }

@@ -226,5 +226,5 @@ namespace slime.definition.verify {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.runtime.loader.Module<void,Export>
+	export type Script = slime.runtime.loader.Scoped<void,Export>
 }

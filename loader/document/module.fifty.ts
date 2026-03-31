@@ -404,5 +404,5 @@ namespace slime.runtime.document {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.runtime.loader.Module<Context | void,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context | void,Exports>
 }

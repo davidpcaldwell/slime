@@ -19,5 +19,5 @@ namespace slime.promise {
 		Controlled: any
 	}
 
-	export type Script = slime.runtime.loader.Module<Context,Export>
+	export type Script = slime.runtime.loader.Scoped<Context,Export>
 }

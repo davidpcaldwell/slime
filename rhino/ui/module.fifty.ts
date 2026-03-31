@@ -70,5 +70,5 @@ namespace slime.jrunscript.ui {
 	//@ts-ignore
 	)(Packages,JavaAdapter,fifty);
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

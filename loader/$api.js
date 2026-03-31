@@ -53,11 +53,11 @@
 		var scripts = {
 			/** @type { slime.runtime.internal.content.Script } */
 			content: script("content.js"),
-			/** @type { slime.runtime.loader.Module<void,slime.$api.internal.flag.Exports> } */
+			/** @type { slime.runtime.loader.Scoped<void,slime.$api.internal.flag.Exports> } */
 			flag: script("$api-flag.js"),
-			/** @type { slime.runtime.loader.Module<slime.runtime.internal.events.Context,slime.runtime.internal.events.Exports> } */
+			/** @type { slime.runtime.loader.Scoped<slime.runtime.internal.events.Context,slime.runtime.internal.events.Exports> } */
 			events: script("events.js"),
-			/** @type { slime.runtime.loader.Module<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
+			/** @type { slime.runtime.loader.Scoped<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
 			mime: script("$api-mime.js"),
 			/** @type { slime.$api.fp.internal.Script } */
 			Function: script("$api-Function.js"),

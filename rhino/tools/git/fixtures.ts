@@ -176,5 +176,5 @@ namespace slime.jrunscript.tools.git.test.fixtures {
 	//@ts-ignore
 	)($export);
 
-	export type Script = slime.runtime.loader.Module<void,Exports>
+	export type Script = slime.runtime.loader.Scoped<void,Exports>
 }

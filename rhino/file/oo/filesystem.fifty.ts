@@ -23,7 +23,7 @@ namespace slime.jrunscript.file.internal.filesystem {
 	export interface Filesystem extends slime.jrunscript.file.Filesystem {
 	}
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 
 	(
 		function(

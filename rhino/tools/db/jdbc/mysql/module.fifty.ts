@@ -45,7 +45,7 @@ namespace slime.jrunscript.db.mysql {
 		local: local.Exports
 	}
 
-	export type Factory = slime.runtime.loader.Module<Context,Exports>
+	export type Factory = slime.runtime.loader.Scoped<Context,Exports>
 
 	export namespace client {
 		export type Server = {
@@ -100,7 +100,7 @@ namespace slime.jrunscript.db.mysql {
 			}) => client.Client
 		}
 
-		export type Factory = slime.runtime.loader.Module<Context,Exports>
+		export type Factory = slime.runtime.loader.Scoped<Context,Exports>
 	}
 
 	(

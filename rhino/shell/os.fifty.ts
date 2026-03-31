@@ -155,5 +155,5 @@ namespace slime.jrunscript.shell.internal.os {
 		desktop: (library: slime.jsh.Global["ui"]) => void
 	}
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

@@ -58,5 +58,5 @@ namespace slime.jrunscript.runtime.test.javac {
 	//@ts-ignore
 	)(Packages,fifty);
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

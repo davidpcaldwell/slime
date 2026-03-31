@@ -36,7 +36,7 @@ namespace slime.jsh.shell {
 
 		export type Exports = Omit<slime.jsh.shell.Exports,"tools">
 
-		export type Script = slime.runtime.loader.Module<Context,slime.jrunscript.shell.Exports & slime.jsh.shell.Exports>
+		export type Script = slime.runtime.loader.Scoped<Context,slime.jrunscript.shell.Exports & slime.jsh.shell.Exports>
 	}
 
 	export namespace test {

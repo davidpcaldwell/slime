@@ -224,7 +224,7 @@ namespace slime.jrunscript.tools.github {
 		}
 	}
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>;
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>;
 
 	(
 		function(

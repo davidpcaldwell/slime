@@ -47,7 +47,7 @@ namespace slime.tools.code {
 	}
 
 	export namespace settings {
-		export type Script = slime.runtime.loader.Module<void,Settings>
+		export type Script = slime.runtime.loader.Scoped<void,Settings>
 	}
 
 	export interface Exports {
@@ -415,7 +415,7 @@ namespace slime.tools.code {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 
 	export namespace internal {
 		export interface functions {
