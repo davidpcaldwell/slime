@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.$api.jrunscript.Global } $api
 	 * @param { slime.jrunscript.io.Context } $context
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.io.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {

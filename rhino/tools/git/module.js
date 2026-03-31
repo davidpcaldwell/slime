@@ -11,7 +11,7 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.tools.git.Context } $context
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.jrunscript.tools.git.Exports } $exports
 	 */
 	function($api,$context,$loader,$exports) {

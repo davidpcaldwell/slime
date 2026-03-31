@@ -8,7 +8,7 @@
 (
 	/**
 	 * @param { slime.jsh.plugin.plugins } plugins
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
 	function(plugins,$loader,plugin) {

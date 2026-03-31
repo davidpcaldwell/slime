@@ -13,7 +13,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 * @param { object } plugins
 	 * @param { slime.jsh.plugin.plugin } plugin
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 */
 	function(Packages,JavaAdapter,$api,jsh,plugins,plugin,$loader) {
 		plugin({
