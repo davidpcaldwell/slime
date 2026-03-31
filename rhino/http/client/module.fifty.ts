@@ -35,7 +35,7 @@ namespace slime.jrunscript.http.client {
 
 	export namespace test {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {
-			var script: slime.loader.Script<Context,Exports> = fifty.$loader.script("module.js");
+			var script: slime.runtime.loader.Module<Context,Exports> = fifty.$loader.script("module.js");
 			var api = script({
 				gae: false,
 				api: {

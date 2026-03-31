@@ -163,5 +163,5 @@ namespace slime.jrunscript.io {
 	 * callers, and adds miscellaneous capabilities (relating to MIME types, the ZIP compression format, and grid-based environments
 	 * like Excel).
 	 */
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Module<Context,Exports>
 }

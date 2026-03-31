@@ -70,7 +70,7 @@ namespace slime.jsh.wf.internal.module {
 		project: exports.project
 	}
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Module<Context,Exports>
 
 	(
 		function(

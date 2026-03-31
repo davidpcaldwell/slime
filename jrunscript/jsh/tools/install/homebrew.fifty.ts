@@ -74,7 +74,7 @@ namespace slime.jrunscript.tools.homebrew {
 		}
 	}
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Module<Context,Exports>
 
 	export namespace test {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {
