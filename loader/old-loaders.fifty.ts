@@ -366,9 +366,7 @@ namespace slime.loader.old {
 		}
 	//@ts-ignore
 	)(fifty);
-}
 
-namespace slime.loader.old {
 	export namespace loader {
 		/**
 		 * The scope provided to a script executed via the {@link Loader | Loader.value()} call.
@@ -437,9 +435,7 @@ namespace slime.loader.old {
 		/** @deprecated Replaced by `script`. */
 		factory: Loader<S,R>["script"]
 	}
-}
 
-namespace slime.loader.old {
 	/**
 	 * @param p The implementation of this `Loader`.
 	 */
