@@ -5,6 +5,8 @@
 //	END LICENSE
 
 {
+	"js/ts.tsdk.path": "local/jsh/lib/node/lib/node_modules/typescript/lib",
+	"js/ts.tsdk.promptToUseWorkspaceVersion": true,
 	"eslint.enable": true,
 	"eslint.validate": [
 		"javascript"
