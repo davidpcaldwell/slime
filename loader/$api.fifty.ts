@@ -1219,6 +1219,13 @@ namespace slime.$api {
 		}
 	}
 
+	export interface Global {
+		/**
+		 * Provides operations related to loading resources and executing code using {@link slime.runtime.loader} types.
+		 */
+		loader: slime.runtime.loader.Exports
+	}
+
 	export interface Scripts {
 		compiler: slime.runtime.loader.Compiler<slime.runtime.loader.Code>
 	}
