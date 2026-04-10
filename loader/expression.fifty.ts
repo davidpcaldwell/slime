@@ -640,7 +640,7 @@ namespace slime {
 
 		export interface Exports {
 			/**
-			 * Provides operations related to loading resources and executing code using {@link slime.runtime.loader} types.
+			 * @deprecated Replaced by `$api.loader`.
 			 */
 			loader: slime.runtime.loader.Exports
 		}

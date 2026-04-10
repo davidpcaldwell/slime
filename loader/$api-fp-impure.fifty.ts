@@ -1318,7 +1318,7 @@ namespace slime.$api.fp.world {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace exports {
+	export namespace question {
 		(
 			function(
 				fifty: slime.fifty.test.Kit
@@ -1328,11 +1328,13 @@ namespace slime.$api.fp.world {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Question {
+		export interface Exports {
 			now: <E,A>(p: {
 				question: world.Question<E,A>
 				handlers?: slime.$api.event.Handlers<E>
 			}) => A
+
+			thunk: <E,T>(handler?: slime.$api.event.Handlers<E>) => (ask: slime.$api.fp.world.Question<E,T>) => slime.$api.fp.impure.External<T>
 		}
 
 		(
@@ -1387,7 +1389,7 @@ namespace slime.$api.fp.world {
 
 		input: <E,A>(ask: world.Question<E,A>, handler?: slime.$api.event.Handlers<E>) => impure.Input<A>
 
-		Question: exports.Question & {
+		Question: question.Exports & {
 			/**
 			 * An operation equivalent to {@link Exports | pipe(argument, question)}, but limited to one argument which provides
 			 * more readable type inference, mapping the produced value to a `Sensor` rather than a function returning a `Question`.
@@ -1429,10 +1431,6 @@ namespace slime.$api.fp.world {
 				action: slime.$api.fp.world.Action<E>
 				handlers?: slime.$api.event.Handlers<E>
 			}) => void
-		}
-
-		Ask: {
-			input: <E,T>(handler?: slime.$api.event.Handlers<E>) => (ask: slime.$api.fp.world.Question<E,T>) => slime.$api.fp.impure.External<T>
 		}
 	}
 

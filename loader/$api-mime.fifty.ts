@@ -4,63 +4,57 @@
 //
 //	END LICENSE
 
-namespace slime.$api {
-	export namespace mime {
-		/**
-		 * Provides APIs relating to MIME types.
-		 */
-		export interface Export {
-			Type: {
-				codec: {
-					/**
-					 * Translates MIME types to and from the standard MIME type declaration format. This translation may be
-					 * lossy, discarding comments and changing formatting. See {@link https://tools.ietf.org/html/rfc2045#section-5}.
-					 */
-					declaration: slime.Codec<slime.mime.Type,string>
-				}
-
+namespace slime.$api.mime {
+	/**
+	 * Provides APIs relating to MIME types.
+	 */
+	export interface Export {
+		Type: {
+			codec: {
 				/**
-				 * Attempts to determine the MIME type of a resource given its name.
-				 *
-				 * @param path A resource name.
-				 * @returns The type determined from the name, or `undefined` if the type cannot be determined.
+				 * Translates MIME types to and from the standard MIME type declaration format. This translation may be
+				 * lossy, discarding comments and changing formatting. See {@link https://tools.ietf.org/html/rfc2045#section-5}.
 				 */
-				fromName(path: string): slime.mime.Type
-
-				/**
-				 * @deprecated Operations on MIME {@link slime.mime.Type}s are now defined as functions rather than methods.
-				 *
-				 * Creates a MIME type from its parsed components.
-				 *
-				 * @param media The MIME media type: for `text/plain`, `"text"`.
-				 * @param subtype The MIME subtype: for `text/plain`, `"plain"`.
-				 * @param parameters Each property of the object represents a MIME parameter that
-				 * will be appended to the MIME type; the name of the property is the name of the parameter, while the value of the property is the
-				 * value of the parameter.
-				 */
-				(media: string, subtype: string, parameters?: { [x: string]: string }): slime.mime.Object
-
-				/**
-				 * @deprecated Use `codec.declaration.decode`, which returns a {@link slime.mime.Type} rather than `slime.mime.Object`.
-				 *
-				 * Parses the given string, returning the appropriate MIME type object.
-				 *
-				 * @param string A MIME type.
-				 */
-				parse(string: string): slime.mime.Object
-
-				/**
-				 * @deprecated Use `codec.declaration.encode`.
-				 *
-				 * Converts a MIME type to a string, suitable for a MIME type declaration.
-				 */
-				toDeclaration(mimeType: slime.mime.Type): string
+				declaration: slime.Codec<slime.mime.Type,string>
 			}
-		}
-	}
 
-	export interface Global {
-		mime: mime.Export
+			/**
+			 * Attempts to determine the MIME type of a resource given its name.
+			 *
+			 * @param path A resource name.
+			 * @returns The type determined from the name, or `undefined` if the type cannot be determined.
+			 */
+			fromName(path: string): slime.mime.Type
+
+			/**
+			 * @deprecated Operations on MIME {@link slime.mime.Type}s are now defined as functions rather than methods.
+			 *
+			 * Creates a MIME type from its parsed components.
+			 *
+			 * @param media The MIME media type: for `text/plain`, `"text"`.
+			 * @param subtype The MIME subtype: for `text/plain`, `"plain"`.
+			 * @param parameters Each property of the object represents a MIME parameter that
+			 * will be appended to the MIME type; the name of the property is the name of the parameter, while the value of the property is the
+			 * value of the parameter.
+			 */
+			(media: string, subtype: string, parameters?: { [x: string]: string }): slime.mime.Object
+
+			/**
+			 * @deprecated Use `codec.declaration.decode`, which returns a {@link slime.mime.Type} rather than `slime.mime.Object`.
+			 *
+			 * Parses the given string, returning the appropriate MIME type object.
+			 *
+			 * @param string A MIME type.
+			 */
+			parse(string: string): slime.mime.Object
+
+			/**
+			 * @deprecated Use `codec.declaration.encode`.
+			 *
+			 * Converts a MIME type to a string, suitable for a MIME type declaration.
+			 */
+			toDeclaration(mimeType: slime.mime.Type): string
+		}
 	}
 
 	//	TODO	According to RFC 2045 section 5.1, matching is case-insensitive

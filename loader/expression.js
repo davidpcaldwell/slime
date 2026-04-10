@@ -192,19 +192,7 @@
 			$api.Object.defineProperty({
 				name: "loader",
 				descriptor: {
-					value: (
-						function() {
-							/** @type { slime.runtime.internal.loader.Script } */
-							var code = script("Loader.js");
-
-							return code({
-								Executor: api.code.internal.Executor,
-								methods: api.code.runtime.internal.methods,
-								$api: $api,
-								createScriptScope: api.code.internal.createScriptScope
-							})
-						}
-					)(),
+					value: $api.loader,
 					enumerable: true
 				}
 			}),

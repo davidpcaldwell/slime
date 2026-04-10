@@ -182,7 +182,7 @@ namespace slime.runtime.loader {
 }
 
 namespace slime.runtime.internal.loader {
-	export interface Scope {
+	export interface Context {
 		$api: Pick<slime.$api.Global,"fp"|"content"|"mime"|"Function">
 		methods: code.GlobalExecutorMethods
 		Executor: code.executor.Constructor
@@ -199,5 +199,5 @@ namespace slime.runtime.internal.loader {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.runtime.loader.Scoped<Scope,slime.runtime.loader.Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,slime.runtime.loader.Exports>
 }

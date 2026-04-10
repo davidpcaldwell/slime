@@ -226,8 +226,8 @@ namespace slime.jsh.wf {
 		}
 
 		/**
-		 * Given a {@link standard.Project} defining a few simple operations, initializes the given `$exports` object
-		 * with a standard set of `wf` commands defined by {@link standard.Interface}.
+		 * Given a {@link slime.jsh.wf.standard.Project} defining a few simple operations, initializes the given `$exports` object
+		 * with a standard set of `wf` commands defined by {@link slime.jsh.wf.standard.Interface}.
 		 */
 		initialize: standard.Export
 	}

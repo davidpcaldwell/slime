@@ -9,7 +9,7 @@ namespace slime.jsh {
 		export interface $slime {
 			loader:
 				slime.jrunscript.runtime.Exports["old"]["loader"]
-				& slime.jrunscript.runtime.Exports["loader"]
+				& slime.$api.Global["loader"]
 				& {
 					getLoaderScript(path: string): any
 				}

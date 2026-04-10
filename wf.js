@@ -503,8 +503,8 @@
 				jsh.shell.console("Running TypeScript compiler ...");
 				jsh.wf.checks.tsc();
 				jsh.shell.console("Running tests ...");
-				var testsPassed = $api.fp.world.now.ask(
-					test(),
+
+				var runTests = $api.fp.now(test(), $api.fp.world.Question.thunk(
 					{
 						console: function(e) {
 							jsh.shell.console(e.detail);
@@ -513,11 +513,15 @@
 							jsh.shell.echo(e.detail);
 						}
 					}
-				);
+				));
+
+				var testsPassed = runTests();
+
 				if (!testsPassed) {
 					jsh.shell.console("Tests failed.");
 					return 1;
 				}
+
 				jsh.shell.console("Passed.");
 			}
 		);
