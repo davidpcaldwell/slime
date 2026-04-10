@@ -421,7 +421,7 @@
 						command: "bash",
 						arguments: $api.Array.build(function(rv) {
 							rv.push(jsh.shell.jsh.src.getFile("jsh").toString());
-							rv.push($context.base.getRelativePath("contributor/suite.jsh.js"));
+							rv.push($context.base.getRelativePath("contributor/jrunscript.jsh.js"));
 							if (jsh.shell.environment.JSH_TEST_ISSUE317) rv.push("-issue317");
 						})
 					},
@@ -759,132 +759,6 @@
 		)();
 
 		//	TODO	implement generation of git hooks so that we can get rid of separate pre-commit implementation
-
-		//	TODO	figure out whether there is anything to be harvested from the below or whether it can simply be removed
-		if (false) $exports.commit = $api.fp.pipe(
-			/**
-			 *
-			 * @param { slime.jsh.script.cli.Invocation<slime.jsh.wf.standard.Options & { message: string }> } p
-			 */
-			function(p) {
-				var rv = {
-					options: $api.Object.compose(p.options),
-					arguments: []
-				};
-				for (var i=0; i<p.arguments.length; i++) {
-					if (p.arguments[i] == "--message") {
-						rv.options.message = p.arguments[++i];
-					} else {
-						rv.arguments.push(p.arguments[i]);
-					}
-				}
-				return rv;
-			},
-			function(p) {
-				if (!p.options.message) {
-					jsh.shell.console("Required: commit message (-m <message>).");
-					jsh.shell.exit(1);
-				}
-				var repository = jsh.tools.git.oo.Repository({ directory: $context.base });
-
-				jsh.wf.requireGitIdentity({
-					repository: repository,
-					get: jsh.wf.requireGitIdentity.get.gui
-				});
-
-				jsh.wf.prohibitUntrackedFiles({
-					repository: repository
-				}, {
-					untracked: function(e) {
-						jsh.shell.console("Untracked files are present; aborting:");
-						jsh.shell.console(e.detail.join("\n"));
-						jsh.shell.exit(1);
-					}
-				});
-
-				//	Below was replaced by new linting API
-				//noTrailingWhitespace();
-
-				jsh.shell.jsh({
-					shell: jsh.shell.jsh.src,
-					script: $context.base.getFile("contributor/eslint.jsh.js"),
-					stdio: {
-						output: null
-					},
-					evaluate: function(result) {
-						if (result.status) {
-							jsh.shell.console("ESLint status: " + result.status + "; failing.");
-							jsh.shell.exit(result.status);
-						} else {
-							jsh.shell.console("ESLint passed.");
-						}
-					}
-				});
-
-				jsh.wf.typescript.tsc();
-
-				//	Runs test suite
-				var timestamp = jsh.time.When.now();
-				var logs = $context.base.getRelativePath("local/wf/logs/commit").createDirectory({
-					recursive: true,
-					exists: function(dir) { return false; }
-				}).getRelativePath(timestamp.local().format("yyyy.mm.dd.HR.mi.sc")).createDirectory();
-				var stdio = {
-					output: logs.getRelativePath("stdout.txt").write(jsh.io.Streams.text),
-					error: logs.getRelativePath("stderr.txt").write(jsh.io.Streams.text)
-				};
-				jsh.shell.run({
-					command: $context.base.getRelativePath("jsh.bash"),
-					arguments: [
-						"--install-jdk"
-					]
-				});
-				jsh.shell.run({
-					command: $context.base.getRelativePath("jsh.bash"),
-					arguments: [
-						$context.base.getRelativePath("jsh/tools/install/rhino.jsh.js"),
-						"--replace"
-					]
-				});
-				jsh.shell.console("Running tests with output to " + logs + " ...");
-				var invocation = {
-					command: jsh.shell.jsh.src.getFile("jsh.bash"),
-					arguments: [
-						$context.base.getFile("contributor/suite.jsh.js")
-					],
-					stdio: {
-						output: {
-							line: function(line) {
-								stdio.output.write(line + "\n");
-							}
-						},
-						error: {
-							line: function(line) {
-								stdio.error.write(line + "\n");
-							}
-						}
-					},
-					evaluate: function(result) {
-						if (result.status != 0) {
-							jsh.shell.console("Failing because tests failed.");
-							jsh.shell.console("Output directory: " + logs);
-							jsh.shell.exit(1);
-						} else {
-							jsh.shell.console("Tests passed.");
-						}
-					}
-				};
-				jsh.shell.run(invocation);
-
-				repository.commit({
-					all: true,
-					noVerify: true,
-					message: p.options.message
-				});
-				jsh.shell.console("Committed changes to " + repository.directory);
-				//	TODO	add conditional push; see issue #166
-			}
-		)
 	}
 //@ts-ignore
 )(Packages,$api,jsh,$context,$loader,$exports);
