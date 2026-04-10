@@ -455,6 +455,11 @@
 						implementation: p.question,
 						handlers: p.handlers
 					});
+				},
+				thunk: function(handlers) {
+					return function(ask) {
+						return input(ask, handlers);
+					}
 				}
 			},
 			Action: {
@@ -505,13 +510,6 @@
 						implementation: p.action,
 						handlers: p.handlers
 					});
-				}
-			},
-			Ask: {
-				input: function(handlers) {
-					return function(ask) {
-						return input(ask, handlers);
-					}
 				}
 			},
 			mapping: function(question, handlers) {
