@@ -98,7 +98,7 @@
 								return Object.assign(
 									{},
 									runtime.old.loader,
-									runtime.loader,
+									runtime.$api.loader,
 									{
 										getLoaderScript: function(/** @type { string }*/path) {
 											return new $slime.Resource({

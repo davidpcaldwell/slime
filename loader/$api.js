@@ -793,6 +793,7 @@
 			TODO: TODO,
 			Events: Events,
 			threads: threads,
+			loader: void(0),
 			scripts: {
 				Code: code.api.Code,
 				Compiler: code.api.Compiler,
@@ -802,6 +803,25 @@
 		};
 
 		var runtime = code.internal.runtime($exports);
+
+		var x = function() {
+			/** @type { slime.runtime.internal.loader.Script } */
+			var scoped = script("Loader.js");
+
+			return scoped({
+				Executor: code.internal.Executor,
+				methods: runtime.internal.methods,
+				$api: {
+					content: content,
+					mime: mime,
+					Function: Object.assign(functions.Function, _Function),
+					fp: fp
+				},
+				createScriptScope: code.internal.createScriptScope
+			})
+		};
+
+		$exports.loader = x();
 
 		$exports.scripts.compiler = runtime.compiler.compile;
 
