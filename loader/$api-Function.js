@@ -531,6 +531,19 @@
 						};
 					}
 				)(),
+				with: function(p) {
+					return function(target) {
+						/** @type { any } */
+						var rv = {};
+						for (var x in target) {
+							rv[x] = target[x];
+						}
+						for (var y in p) {
+							rv[y] = p[y];
+						}
+						return rv;
+					}
+				},
 				entries: Object.entries,
 				fromEntries: Object.fromEntries
 			},

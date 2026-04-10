@@ -791,6 +791,18 @@ namespace slime.$api.fp {
 			 */
 			property: slime.$api.fp.object.property.Exports
 
+			/**
+			 * Creates a function that takes an argument and will map objects to new objects with the same properties as the
+			 * original, along with the properties of the argument (the properties of the argument take precedence). Note that this
+			 * differs from the behavior of the similar Object.assign, which updates the original object with the new properties.
+			 *
+			 * @param p An object whose properties should be added to the objects passed to the returned function
+			 *
+			 * @returns A function that takes an object and returns a new object with the properties of that object, along with
+			 * the properties of `p` (which will overwrite the properties of the argument if there are any conflicts).
+			 */
+			with: <P extends {}, T extends {}>(p: P) => (t: T) => T & P
+
 			/** @deprecated This can be replaced by the stock ECMAScript `Object.entries`. */
 			entries: ObjectConstructor["entries"]
 			/** @deprecated This can be replaced by the stock ECMAScript `Object.fromEntries`. */
@@ -803,6 +815,31 @@ namespace slime.$api.fp {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
+
+			fifty.tests.Object.with = function() {
+				var p: { a: number, b: string } = { a: 1, b: "2" } as const;
+				var t: { a: number, c: boolean } = { a: 2, c: true } as const;
+
+				var combined = fifty.global.$api.fp.Object.with(p)(t) as typeof p & typeof t;
+				verify(combined).a.is(1);
+				verify(combined).b.is("2");
+				verify(combined).c.is(true);
+				verify(combined).evaluate(function(c) { return c === p; }).is(false);
+				verify(combined).evaluate(function(c) { return c === t; }).is(false);
+
+				var combined2 = fifty.global.$api.fp.Object.with(t)(p) as typeof p & typeof t;
+				verify(combined2).a.is(2);
+				verify(combined2).b.is("2");
+				verify(combined2).c.is(true);
+				verify(combined2).evaluate(function(c) { return c === p; }).is(false);
+				verify(combined2).evaluate(function(c) { return c === t; }).is(false);
+
+				//	Note that Object.assign updates the *original* object, not returning a whole new one.
+				var assigned = Object.assign(t, p);
+				verify(assigned).evaluate(function(a) { return a === t; }).is(true);
+			}
+
+			fifty.tests.wip = fifty.tests.Object.with;
 
 			fifty.tests.Object.fromEntries = function() {
 				var array = [ ["a", 2], ["b", 3] ];
