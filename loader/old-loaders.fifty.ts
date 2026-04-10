@@ -12,7 +12,7 @@ namespace slime {
 	 *
 	 * * {@link slime.runtime.loader.Synchronous}, which allows loading arbitrary types from paths (which can, in turn, be turned
 	 * into {@link slime.runtime.loader.Code}), and
-	 * * {@link slime.old.Loader}, which is a subtype of `Loader` that contains additional APIs related to
+	 * * {@link slime.loader.old.Loader}, which is a subtype of `Loader` that contains additional APIs related to
 	 * _sources_ (implementations), enumerability, custom children, asynchrony, and other deprecated APIs.
 	 */
 	export interface Loader {

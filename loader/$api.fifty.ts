@@ -40,6 +40,36 @@ namespace slime.$api {
 
 	export interface Global {
 		engine: slime.runtime.Engine
+	}
+
+	export interface Global {
+		/**
+		 * Provides information about the underlying JavaScript platform; see the {@link slime.runtime.Platform} type for details.
+		 */
+		platform: slime.runtime.Platform
+	}
+
+	export interface Global {
+		/**
+		 * Allows the runtime deprecation of particular API constructs.
+		 */
+		deprecate: Flagger
+
+		/**
+		 * Allows the runtime marking of particular API constructs as experimental.
+		 */
+		experimental: Flagger
+
+		flag: {
+			once: (warning: Flagger["warning"]) => Flagger["warning"]
+		}
+	}
+
+	export interface Global {
+		mime: mime.Export
+	}
+
+	export interface Global {
 		content: slime.runtime.content.Exports
 	}
 
@@ -1187,13 +1217,6 @@ namespace slime.$api {
 				Task: any
 			}
 		}
-	}
-
-	export interface Global {
-		/**
-		 * Provides information about the underlying JavaScript platform; see the {@link slime.runtime.Platform} type for details.
-		 */
-		platform: slime.runtime.Platform
 	}
 
 	export interface Scripts {
