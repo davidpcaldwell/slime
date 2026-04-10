@@ -157,7 +157,15 @@
 
 		/** @type { slime.runtime.Exports } */
 		var rv = $api.fp.now(
-			oldCodeInterfaces,
+			{},
+			$api.fp.Object.with(oldCodeInterfaces),
+			$api.Object.defineProperty({
+				name: "loader",
+				descriptor: {
+					value: $api.loader,
+					enumerable: true
+				}
+			}),
 			$api.Object.defineProperty({
 				name: "namespace",
 				descriptor: {
@@ -186,13 +194,6 @@
 				name: "compiler",
 				descriptor: {
 					value: api.code.runtime.compiler,
-					enumerable: true
-				}
-			}),
-			$api.Object.defineProperty({
-				name: "loader",
-				descriptor: {
-					value: $api.loader,
 					enumerable: true
 				}
 			}),

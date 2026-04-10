@@ -531,6 +531,11 @@
 						};
 					}
 				)(),
+				with: function(p) {
+					return function(target) {
+						return Object.assign({}, target, p);
+					}
+				},
 				entries: Object.entries,
 				fromEntries: Object.fromEntries
 			},
