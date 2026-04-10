@@ -407,8 +407,6 @@ namespace slime.$api.fp {
 
 				verify(halve(2)).is(1);
 			}
-
-			fifty.tests.wip = fifty.tests.exports.flatten;
 		}
 	//@ts-ignore
 	)(fifty);
@@ -801,7 +799,7 @@ namespace slime.$api.fp {
 			 * @returns A function that takes an object and returns a new object with the properties of that object, along with
 			 * the properties of `p` (which will overwrite the properties of the argument if there are any conflicts).
 			 */
-			with: <P extends {}, T extends {}>(p: P) => (t: T) => T & P
+			with: <P extends object, T extends object>(p: P) => (t: T) => Omit<T, keyof P> & P
 
 			/** @deprecated This can be replaced by the stock ECMAScript `Object.entries`. */
 			entries: ObjectConstructor["entries"]
@@ -838,8 +836,6 @@ namespace slime.$api.fp {
 				var assigned = Object.assign(t, p);
 				verify(assigned).evaluate(function(a) { return a === t; }).is(true);
 			}
-
-			fifty.tests.wip = fifty.tests.Object.with;
 
 			fifty.tests.Object.fromEntries = function() {
 				var array = [ ["a", 2], ["b", 3] ];

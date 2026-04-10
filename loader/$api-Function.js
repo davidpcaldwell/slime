@@ -533,15 +533,7 @@
 				)(),
 				with: function(p) {
 					return function(target) {
-						/** @type { any } */
-						var rv = {};
-						for (var x in target) {
-							rv[x] = target[x];
-						}
-						for (var y in p) {
-							rv[y] = p[y];
-						}
-						return rv;
+						return Object.assign({}, target, p);
 					}
 				},
 				entries: Object.entries,

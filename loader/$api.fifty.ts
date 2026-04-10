@@ -704,9 +704,9 @@ namespace slime.$api {
 			defineProperty: <N extends string,V>(p: {
 				name: N
 				descriptor: PropertyDescriptor<V>
-			}) => <T extends {}>(t: T) => T & { [n in N]: V }
+			}) => <T extends object>(t: T) => T & { [n in N]: V }
 
-			maybeDefineProperty: <T extends {},N extends string,V>(p: {
+			maybeDefineProperty: <T extends object,N extends string,V>(p: {
 				name: N
 				descriptor: slime.$api.fp.Partial<T,PropertyDescriptor<V>>
 			}) => (t: T) => T & { [n in N]?: V }
