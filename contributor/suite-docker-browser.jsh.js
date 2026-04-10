@@ -113,6 +113,53 @@
 			}
 		});
 
+
+		suite.add("tools", {
+			initialize: function() {
+				environment.jsh.built.requireTomcat();
+			},
+			parts: {
+				browser: (!jsh.shell.environment.SLIME_TEST_NO_BROWSER) ? {
+					parts: new function() {
+						var debugging = (parameters.options["issue317"]) ? ["-debug:devtools"] : []
+						this.api = {
+							parts: {
+								failure: {
+									execute: function(scope,verify) {
+										if (jsh.shell.browser.chrome) jsh.shell.jsh({
+											shell: environment.jsh.built.home,
+											script: environment.jsh.src.getFile("loader/api/ui/test/browser.jsh.js"),
+											arguments: [].concat(debugging),
+											evaluate: function(result) {
+												verify(result).status.is(0);
+											}
+										})
+									}
+								},
+								success: {
+									execute: function(scope,verify) {
+										if (jsh.shell.browser.chrome) jsh.shell.jsh({
+											shell: environment.jsh.built.home,
+											script: environment.jsh.src.getFile("loader/api/ui/test/browser.jsh.js"),
+											arguments: ["-success"].concat(debugging),
+											evaluate: function(result) {
+												verify(result).status.is(0);
+											}
+										})
+									}
+								}
+							}
+						}
+					}
+				} : {
+					execute: function(scope,verify) {
+						var message = "Skipping tools/browser; browser not present.";
+						verify(message).is(message);
+					}
+				}
+			}
+		});
+
 		jsh.project.suite.run({
 			view: parameters.options.view,
 			port: parameters.options.port,
