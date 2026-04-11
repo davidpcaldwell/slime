@@ -23,7 +23,7 @@
 		//	* `JSH_ENGINE_RHINO_CLASSPATH`: TODO
 		var parameters = jsh.script.getopts({
 			options: {
-				//	undocumented; used by suite.jsh.js
+				//	undocumented; used by jrunscript.jsh.js
 				"shell:built": jsh.file.Pathname,
 
 				//	TODO	currently ignored, was used to configure rhino/ip jsapi tests in the past. Should use new Fifty

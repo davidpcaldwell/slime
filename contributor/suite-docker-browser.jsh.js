@@ -44,6 +44,7 @@
 			arguments: [],
 			//	TODO	most likely obsolete
 			options: {
+				//	TODO	we use issue317 below
 				view: "console",
 				port: void(0),
 				part: void(0)

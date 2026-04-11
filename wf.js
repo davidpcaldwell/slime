@@ -422,7 +422,6 @@
 						arguments: $api.Array.build(function(rv) {
 							rv.push(jsh.shell.jsh.src.getFile("jsh").toString());
 							rv.push($context.base.getRelativePath("contributor/jrunscript.jsh.js"));
-							if (jsh.shell.environment.JSH_TEST_ISSUE317) rv.push("-issue317");
 						})
 					},
 					{

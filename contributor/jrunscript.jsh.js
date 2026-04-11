@@ -27,7 +27,6 @@
 				part: String,
 				//	https://github.com/davidpcaldwell/slime/issues/138
 				issue138: false,
-				issue317: false,
 				//	TODO	Remove the dubious noselfping argument
 				noselfping: false,
 				//	TODO	review below arguments
