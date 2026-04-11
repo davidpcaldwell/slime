@@ -4,8 +4,179 @@
 //
 //	END LICENSE
 
+(
+	function(fifty: slime.fifty.test.Kit) {
+		fifty.tests.exports = fifty.test.Parent();
+		fifty.tests.manual = {};
+	}
+//@ts-ignore
+)(fifty);
+
 interface Function {
 	construct: any
+}
+
+namespace slime.runtime {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.runtime = fifty.test.Parent();
+			fifty.tests.runtime.exports = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+	/**
+	 * An object that gives access to functionality for the current JavaScript engine. Created by combining the `$engine`
+	 * property provided as part of {@link slime.runtime.Scope} with default implementations provided by the SLIME runtime.
+	 */
+	export interface Engine {
+		/**
+		 * A function that can execute JavaScript code with a given script (script name for tools, plus code), scope (to provide to the script), and
+		 * *target* (to provide as the `this` value to the script).
+		 *
+		 * A default implementation is provided by SLIME, but embeddings may provide their own implementations that have
+		 * advantages over SLIME's pure-JavaScript implementation via {@link slime.runtime.scope.Engine.execute scope.Engine}.
+		 *
+		 * @param script An object describing the file to execute.
+		 * @param scope A scope to provide to the object; all the properties of this object must be in scope while the code executes.
+		 * @param target An object that must be provided to the code as `this` while the code is executing.
+		 */
+		execute: (code: runtime.loader.Script, scope: { [x: string]: any }, target: object) => void
+
+		debugger?: {
+			isBreakOnExceptions: () => boolean
+			setBreakOnExceptions: (b: boolean) => void
+		}
+
+		/**
+		 * (conditional; depends on engine support) A metaobject implementation.
+		 *
+		 * @returns An object that uses the given delegate object to supply properties, but uses the given getter and setter if
+		 * the delegate is `null` or the delegate lacks the named property.
+		 */
+		MetaObject?: (p: {
+			/**
+			 * A delegate object that will be used to supply implementations for properties in preference to using the
+			 * meta-object implementations.
+			 */
+			delegate?: object
+
+			/**
+			 * A function that will be called when one of this object's properties that is not defined by the delegate object is
+			 * accessed. This object will be provided as the `this` argument.
+			 *
+			 * @param name A property name
+			 * @returns A value for the named property.
+			 */
+			get: (name: string) => any
+
+			/**
+			 * A function that will be called when one of this object's properties that is not defined by the delegate object is
+			 * set. This object will be provided as the `this` argument.
+			 *
+			 * @param name A property name.
+			 * @param v The value assigned to the named property.
+			 */
+			set?: (name: string, v: any) => void
+		}) => { [name: string]: any }
+	}
+
+	/**
+	 * Provides information about and capabilities of the underlying JavaScript platform; loaded code can use this information
+	 * in its implementation.
+	 */
+	export interface Platform {
+		/**
+		 * @deprecated E4X is deprecated; see [Wikipedia](https://en.wikipedia.org/wiki/ECMAScript_for_XML).
+		 *
+		 * Provides access to the [E4X](https://en.wikipedia.org/wiki/ECMAScript_for_XML) implementation for this engine, if one
+		 * is present.
+		 */
+		e4x?: {
+			XML: slime.external.e4x.XMLConstructor
+			XMLList: slime.external.e4x.XMLListConstructor
+		}
+
+		/**
+		 * If present, an object with properties describing the platform's Java/LiveConnect capabilities.
+		 */
+		java?: {
+			/**
+			 * @param name A Java class name.
+			 * @returns A `JavaClass` object representing the class with the given name, or `null` if no class by that name can
+			 * be loaded.
+			 */
+			getClass: (name: string) => slime.jrunscript.JavaClass
+		}
+
+		/**
+		 * @deprecated Alternate, possibly obsolete, name for the MetaObject implementation provided by the {@link Engine}.
+		 */
+		MetaObject?: Engine["MetaObject"]
+	}
+
+	(
+		function(
+			$platform: Platform,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.runtime.exports.$platform = fifty.test.Parent();
+
+			fifty.tests.runtime.exports.$platform.java = function() {
+				var o: { x: number } = { x: void(0) };
+				o.x = 3;
+				verify(o).x.is(3);
+				o.x = 4;
+				verify(o).x.is(4);
+
+				if (fifty.global.jsh) verify($platform).evaluate.property("java").is.type("object");
+				if (fifty.global.window) verify($platform).evaluate.property("java").is.type("undefined");
+			};
+
+			fifty.tests.runtime.exports.$platform.MetaObject = function() {
+				const test = function(b: boolean) {
+					verify(b).is(true);
+				};
+
+				if ($platform.MetaObject) {
+					var doubler = function(name) {
+						if (isNaN(Number(name))) {
+							return name + name;
+						} else {
+							return Number(name) * 2;
+						}
+					}
+
+					var a = $platform.MetaObject({ get: doubler });
+					test( a[1] == 2 );
+					test( a.name == "namename" );
+
+					var logger = new function() {
+						var log = [];
+
+						this.log = log;
+
+						this.setter = function(name,value) {
+							log.push({ target: this, name: name, value: value });
+
+							this[name] = value;
+						}
+					}
+
+					var $b = {};
+					var b = $platform.MetaObject({ delegate: $b, get: null, set: logger.setter });
+					b.foo = "bar";
+					test( logger.log[0].target == $b );
+					test( logger.log[0].name == "foo" );
+					test( logger.log[0].value == "bar" );
+				}
+			};
+		}
+	//@ts-ignore
+	)($platform,fifty);
 }
 
 /**
@@ -30,14 +201,6 @@ interface Function {
  * `$api`}.
  */
 namespace slime.$api {
-	(
-		function(fifty: slime.fifty.test.Kit) {
-			fifty.tests.exports = fifty.test.Parent();
-			fifty.tests.manual = {};
-		}
-	//@ts-ignore
-	)(fifty);
-
 	export interface Global {
 		engine: slime.runtime.Engine
 	}
@@ -1426,6 +1589,10 @@ namespace slime.$api {
 
 				fifty.run(fifty.tests.jsapi);
 				fifty.run(fifty.tests.exports);
+
+				//	TODO	these should be merged into exports, probably, but were brought over from the runtime so retain some
+				//			of the names they had there
+				fifty.run(fifty.tests.runtime);
 			}
 
 			fifty.test.platforms();
