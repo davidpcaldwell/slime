@@ -46,7 +46,6 @@
 				function(p) {
 					const parameters = {
 						options: $api.Object.compose(
-							p.options,
 							{
 								java: [jsh.shell.java.home.pathname],
 								engine: [""],
@@ -55,7 +54,8 @@
 								view: void(0),
 								part: p.options.part,
 								port: void(0)
-							}
+							},
+							p.options
 						)
 					};
 
