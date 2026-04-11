@@ -857,7 +857,7 @@ namespace slime.$api.jrunscript {
 
 			fifty.load("test/data/2/module.fifty.ts");
 
-			//	TODO	redundant? tested per-engine in contributor/suite.jsh.js
+			//	TODO	redundant? tested per-engine in contributor/jrunscript.jsh.js
 			fifty.load("java.fifty.ts");
 			fifty.load("io.fifty.ts");
 		}

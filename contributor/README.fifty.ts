@@ -42,36 +42,6 @@
  *
  * ## Testing
  *
- * ### Continuous integration
- *
- * Testing is done via GitHub Actions, whose configuration is specified in the `.github` directory.
- *
- * Generally speaking, the test actions cover:
- *
- * * Running platform tests under each supported version of Java (8, 11, 17, 21) on Linux under Docker
- * * Running platform tests under Java 21 on macOS
- * * Running browser tests for Firefox and Chrome on Linux under Docker
- *
- * The test suite should be broken up into better-defined segments; each platform combination should be a separate job, but that
- * would take some reorganization (and simultaneously the project is
- * [being transitioned](https://github.com/users/davidpcaldwell/projects/21) from the older JSAPI framework to the Fifty definition
- * framework, complicating matters.)
- *
- * Generally speaking, the "platform tests," which as stated are too broad, cover:
- *
- * * `./wf check`, which invokes:
- *     * the linter
- *     * the TypeScript compiler
- *     * Rhino installation into the shell
- *     * the test suite at `contributor/suite.jsh.js` (passing through the Docker flag if it was present on `./wf check`)
- * * The test suite:
- *     * Installs Tomcat and TypeScript
- *     * If running in Docker, installs Selenium
- *     * Runs a suite of tests designed to test all available JavaScript engines, implemented in `contributor/jrunscript-engines.jsh.js`
- *     * Runs a suite of tests using a single engine (designed to test the `jrunscript`-based API at `contributor/jrunscript.jsh.js`)
- *     * If on Docker, runs Selenium tests on the Chrome and Firefox browsers
- *     * Runs a very brief set of tests of the Node.js SLIME runtime
- *
  * ### Testing specific scenarios
  *
  * #### Creating fresh "clones" of the current source directory locally

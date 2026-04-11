@@ -8,160 +8,297 @@
 (
 	/**
 	 *
+	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function(jsh) {
-		//	Currently, this script runs the test suite for a specific JRE and JavaScript engine.
-		//
-		//	It receives its configuration through a combination of command-line arguments and environment variables.
-		//
-		//	Some of the environment variables are `jsh`-based variables used to configure the shell in which this script is running.
-		//
-		//	Environment variables recognized by `jsh`:
-		//	* `CATALINA_HOME`: A home to use for Tomcat.
-		//	* `JSH_ENGINE`: The value to use for the JSH_ENGINE environment variable when running tests.
-		//	* `JSH_ENGINE_RHINO_CLASSPATH`: TODO
+	function(Packages,$api,jsh) {
+		jsh.loader.plugins(jsh.script.file.parent);
+
 		var parameters = jsh.script.getopts({
 			options: {
-				//	undocumented; used by suite.jsh.js
-				"shell:built": jsh.file.Pathname,
+				java: jsh.script.getopts.ARRAY(jsh.file.Pathname),
+				engine: jsh.script.getopts.ARRAY(String),
 
-				//	TODO	currently ignored, was used to configure rhino/ip jsapi tests in the past. Should use new Fifty
-				//			mechanism for configuring tests, whatever that is (system properties?)
-				noselfping: false,
-				issue138: false,
-
-				executable: false,
+				//	TODO	browsers should go away, but is used for local testing of all locally installed and detected browsers
+				//	presently
+				browsers: false,
 
 				part: String,
+				//	https://github.com/davidpcaldwell/slime/issues/138
+				issue138: false,
+				//	TODO	Remove the dubious noselfping argument
+				noselfping: false,
+				//	TODO	review below arguments
+				tomcat: jsh.file.Pathname,
+				debug: false,
 				view: "console",
-
-				// TODO: does this work? Is it necessary?
-				"chrome:profile": jsh.file.Pathname
-			}
+				"chrome:profile": jsh.file.Pathname,
+				port: Number
+			},
+			unhandled: jsh.script.getopts.UNEXPECTED_OPTION_PARSER.SKIP
 		});
 
-		/** @type { slime.project.internal.jrunscript_environment.Exports } */
-		var Environment = jsh.script.loader.module("jrunscript-environment.js");
+		jsh.project.suite.initialize({
+			selenium: false
+		});
 
-		var environment = new Environment({
+		jsh.java.Thread.start(
+			/**
+			 * At one point, builds were failing on Docker because `tsc` was not found when attempting to use TypeScript within
+			 * tests. `tsc` would blink in and out of existence in the shell's library directory.
+			 *
+			 * This seems to be no longer happening.
+			 *
+			 * This function runs a thread that monitors the existence of the TypeScript compiler in the test suite shell and
+			 * writes console messages if its status changes (it is removed, it reappears, etc.)
+			 */
+			function addDiagnosticForTscDisappearing() {
+				/** @type { boolean } */
+				var found;
+
+				/** @type { boolean } */
+				var now;
+
+				while(true) {
+					now = jsh.shell.jsh.src.getRelativePath("local/jsh/lib/node/bin/tsc").java.adapt().exists();
+					if (typeof(found) == "undefined") {
+						jsh.shell.console("Initial check: tsc found = " + now);
+					} else if (found && !now) {
+						jsh.shell.console("tsc change: removed");
+						jsh.shell.console("node present? " + jsh.shell.jsh.src.getRelativePath("local/jsh/lib/node").java.adapt().exists());
+					} else if (!found && now) {
+						jsh.shell.console("tsc change: added");
+					} else {
+						//jsh.shell.console("tsc still " + now);
+					}
+					found = now;
+					jsh.java.Thread.sleep(25);
+				}
+			}
+		);
+
+		// TODO: force CoffeeScript for verification?
+
+		if (!parameters.options.java.length) {
+			parameters.options.java = [jsh.shell.java.home.pathname];
+		}
+
+		if (!parameters.options.engine.length) {
+			parameters.options.engine = [""];
+		}
+
+		var hasGit = (
+			function() {
+				if (jsh.shell.environment.SLIME_TEST_NO_GIT) return false;
+				return Boolean(jsh.shell.PATH.getCommand("git"));
+			}
+		)();
+
+		var isGitClone = (function() {
+			var SLIME = jsh.script.file.parent.parent;
+			return Boolean(SLIME.getSubdirectory(".git") || SLIME.getFile(".git"));
+		})();
+
+		var environment = new jsh.project.suite.Environment({
 			src: jsh.script.file.parent.parent,
-			home: parameters.options["shell:built"],
 			noselfping: parameters.options.noselfping,
-			executable: parameters.options.executable
+			tomcat: true,
+			executable: Boolean(jsh.shell.PATH.getCommand("gcc"))
 		});
 
 		var suite = new jsh.unit.html.Suite();
 
-		var SRC = jsh.script.file.parent.parent;
+		parameters.options.java.forEach(function(jre,index,jres) {
+			var JRE = (jres.length > 1) ? String(index) : "jre";
 
-		// TODO: does this require hg be installed?
-		if (jsh.tools.hg.init) suite.add("jrunscript/tools/hg", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/tools/hg/api.html")
-		}));
+			suite.add("jrunscript/" + JRE + "/engines", new jsh.unit.Suite.Fork({
+				run: jsh.shell.jsh,
+				shell: environment.jsh.built.home,
+				script: jsh.script.file.parent.getFile("jrunscript-engines.jsh.js"),
+				arguments: [
+					"-view", "stdio"
+				]
+			}));
 
-		if (!parameters.options.issue138 && jsh.shell.PATH.getCommand("git")) {
-			suite.add(
-				"jrunscript/tools/git",
-				new jsh.unit.html.Part({
-					pathname: SRC.getRelativePath("rhino/tools/git/api.html")
-				})
-			);
-		}
+			parameters.options.engine.forEach(function(engine) {
+				var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin"),jre.directory.getRelativePath("../bin")]);
 
-		suite.add("servlet/resources", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.resources.api.html")
-		}));
+				var launcher = searchpath.getCommand("jrunscript");
+				var launch = (jsh.shell.jsh.home) ? [jsh.shell.jsh.home.getRelativePath("jsh.js").toString()] : [jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js").toString(), "jsh"];
+				(
+					function addNashornBootstrapLibraries() {
+						var names = jsh.internal.bootstrap.nashorn.dependencies.names.concat(["nashorn"]);
+						//	TODO	Should only be used for versions of Java that need it
+						if (jsh.shell.jsh.home && jsh.shell.jsh.home.getFile("lib/nashorn.jar")) {
+							launch = [
+								"-classpath",
+								names.map(function(name) {
+									return jsh.shell.jsh.home.getRelativePath("lib/" + name + ".jar").toString();
+								//	TODO	below is platform-specific
+								}).join(":")
+							].concat(launch)
+						} else if (jsh.shell.jsh.src && jsh.shell.jsh.src.getFile("local/jsh/lib/nashorn.jar")) {
+							//	TODO	Should only be used for versions of Java that need it
+							launch = [
+								"-classpath",
+								names.map(function(name) {
+									return jsh.shell.jsh.src.getRelativePath("local/jsh/lib/" + name + ".jar").toString();
+								//	TODO	below is platform-specific
+								}).join(":")
+							].concat(launch)
+						}
+					}
+				)();
 
-		var withShell = function(p) {
-			// TODO: moved this from integration tests and reproduced current test without much thought; could be that we should not be
-			// using the built shell, or should be using more shells
-			Object.defineProperty(p, "shell", {
-				get: function() {
-					return (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src;
+				var engines = jsh.shell.run({
+					command: launcher,
+					arguments: launch.concat(["-engines"]),
+					stdio: {
+						output: String
+					},
+					evaluate: function(result) {
+						if (result.status) throw new Error("-engines exit status: " + result.status);
+						return eval("(" + result.stdio.output + ")");
+					}
+				});
+
+				if (engine && engines.indexOf(engine) == -1) {
+					jsh.shell.console("Skipping engine " + engine + "; not available under " + launcher);
+				} else {
+					var ENGINE = (engine) ? engine : "engine";
+					jsh.shell.console("Running " + jsh.shell.jsh.home + " with Java " + launcher + " and engine " + engine + " ...");
+
+					suite.add("jrunscript/" + JRE + "/" + ENGINE + "/fifty", jsh.unit.fifty.Part({
+						shell: environment.jsh.unbuilt.src,
+						script: environment.jsh.unbuilt.src.getFile("tools/fifty/test.jsh.js"),
+						file: jsh.script.file.parent.getFile("jrunscript.fifty.ts")
+					}));
+
+					suite.add("jrunscript/" + JRE + "/" + ENGINE + "/jsapi", jsh.unit.Suite.Fork({
+						name: "JSAPI Java tests for JRE " + JRE + " and engine " + ENGINE,
+						run: jsh.shell.jsh,
+						vmarguments: ["-Xms1024m"],
+						shell: environment.jsh.src,
+						script: jsh.script.file.parent.getFile("jrunscript-jsapi.jsh.js"),
+						arguments: [
+							"-shell:built", environment.jsh.built.location,
+							"-view", "stdio"
+						].concat(
+							(parameters.options.noselfping) ? ["-noselfping"] : []
+						).concat(
+							(parameters.options.issue138) ? ["-issue138"] : []
+						),
+						environment: $api.Object.compose(
+							jsh.shell.environment,
+							(parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {},
+							(engine) ? { JSH_ENGINE: engine.toLowerCase() } : {},
+							(jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : {}
+						)
+					}));
 				}
 			});
-			return p;
-		};
+		});
 
-		suite.add("jsh/jsh.shell/jsh", new jsh.unit.Suite.Fork(withShell({
-			run: jsh.shell.jsh,
-			script: SRC.getFile("jrunscript/jsh/shell/test/jsh.shell.jsh.suite.jsh.js"),
-			arguments: ["-view","stdio"]
-		})));
+		(
+			function safariLifecycle() {
+				var getSafariProcess = function() {
+					if (jsh.shell.os.name != "Mac OS X") return null;
+					var processes = jsh.shell.os.process.list();
+					var safaris = processes.filter(function(process) {
+						return process.command == "/Applications/Safari.app/Contents/MacOS/Safari";
+					});
+					return (safaris.length) ? safaris[0] : null;
+				};
 
-		suite.add("jsapi/other", new jsh.unit.html.Part({
-			//	Test cases involving the HTML test runner itself
-			pathname: SRC.getRelativePath("loader/api/old/test/data/1/api.html")
-		}));
+				var safariWas = getSafariProcess();
 
-		suite.add("jsapi/html", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("loader/api/old/api.html")
-		}));
+				if (!safariWas) {
+					jsh.java.addShutdownHook(function() {
+						var safari = getSafariProcess();
+						if (safari) safari.kill();
+					});
+				}
+			}
+		)();
 
-		suite.add("jsapi/jsh.unit/definition", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("loader/api/old/jsh/plugin.jsh.api.html")
-		}));
+		//	TODO	this is probably obsolete at this point, as we move toward a set of GitHub Actions that test various parts of
+		//			the system
+		if (jsh.unit.browser && parameters.options.browsers) suite.add("browsers", new function() {
+			var browsers = jsh.unit.browser.installed;
 
-		suite.add("jsapi/fifty", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("loader/api/old/fifty/api.html")
-		}));
+			this.name = "Browser tests";
 
-		//	TODO	disabling Bitbucket testing to try to get tests to pass after migration to GitHub. Examine to see whether there is
-		//			something still needed, something analogous still needed, or whether this can be discarded
-		if (false) suite.add("testing/jsh.unit/bitbucket", new jsh.unit.Suite.Fork({
-			run: jsh.shell.jsh,
-			shell: (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src,
-			script: SRC.getFile("loader/api/old/jsh/test/bitbucket.jsh.js"),
-			arguments: ["-view", "stdio"]
-		}));
+			this.parts = new function() {
+				this.jsapi = {
+					parts: {}
+				};
 
-		suite.add("jsapi/integration", new function() {
-			var src = SRC;
-			this.parts = {
-				htmlReload: {
-					execute: function(scope,verify) {
-						var result = jsh.shell.jsh({
-							shell: src,
-							script: src.getFile("loader/api/old/jsh/test/fail.jsh.js"),
-							evaluate: function(result) {
-								return result;
-							}
+				this.fifty = {
+					parts: {}
+				};
+
+				browsers.forEach(function(browser) {
+					this.jsapi.parts[browser.id] = jsh.unit.Suite.Fork({
+						name: browser.name + " jsapi",
+						run: jsh.shell.jsh,
+						//	TODO	was environment.jsh.home, but that seemed to be a bug, so replacing with what value actually
+						//			seemed to be.
+						shell: void(0),
+						script: environment.jsh.src.getFile("loader/browser/test/suite.jsh.js"),
+						arguments: [
+							"-suite", environment.jsh.src.getFile("contributor/browser-jsapi-suite.js"),
+							"-browser", browser.id,
+							"-view", "stdio"
+						].concat(parameters.arguments),
+						// TODO: is setting the working directory necessary?
+						directory: environment.jsh.src
+					});
+				},this);
+
+				this.fifty = (
+					/** @returns { { parts: { [x: string]: any } } } */
+					function() {
+						/** @type { { [x: string]: any }} */
+						var parts = {};
+						browsers.forEach(function(browser) {
+							parts[browser.id] = jsh.unit.Suite.Fork({
+								name: "Fifty (" + browser.name + ")",
+								run: jsh.shell.run,
+								command: environment.jsh.src.getFile("fifty"),
+								arguments: [
+									"test.browser",
+									"--browser", browser.id,
+									environment.jsh.src.getFile("contributor/browser.fifty.ts")
+								],
+								directory: environment.jsh.src
+							});
 						});
-						verify(result).status.is(1);
+						return { parts: parts };
 					}
-				},
-				// htmlReload: new ScriptPart({
-				// 	shell: src,
-				// 	script: src.getFile("loader/api/old/jsh/test/fail.jsh.js"),
-				// 	check: function(verify) {
-				// 		verify(this).status.is(1);
-				// 	}
-				// }),
-				suiteWithScenario: new jsh.unit.Suite.Fork({
-					run: jsh.shell.jsh,
-					shell: src,
-					script: src.getFile("loader/api/old/jsh/test/suite.jsh.js"),
-					arguments: [
-						"-view", "stdio"
-					]
-				}),
-				nakedScenario: new jsh.unit.Suite.Fork({
-					run: jsh.shell.jsh,
-					shell: src,
-					script: src.getFile("loader/api/old/jsh/test/scenario.jsh.js"),
-					arguments: [
-						"-view", "stdio"
-					]
-				}),
+				)();
 			}
 		});
 
-		jsh.unit.html.cli({
-			suite: suite,
+		if (hasGit && isGitClone) suite.add(
+			"project",
+			{
+				parts: {
+					wf: jsh.unit.fifty.Part({
+						shell: environment.jsh.unbuilt.src,
+						script: environment.jsh.unbuilt.src.getFile("tools/fifty/test.jsh.js"),
+						file: environment.jsh.unbuilt.src.getFile("wf.fifty.ts")
+					})
+				}
+			}
+		);
+
+		jsh.project.suite.run({
 			view: parameters.options.view,
-			part: parameters.options.part
+			port: parameters.options.port,
+			part: parameters.options.part,
+			suite: suite
 		});
 	}
 //@ts-ignore
-)(jsh);
+)(Packages,$api,jsh);
