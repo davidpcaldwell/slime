@@ -159,7 +159,7 @@
 		var rv = $api.fp.now(
 			{},
 			$api.Object.defineProperty({
-				//	The $api object will be provided to call code loaded by $api, but we provide it to embedders so that it can be
+				//	The $api object will be provided to all code loaded by $api, but we provide it to embedders so that it can be
 				//	used to decorate the runtime in the embedding.
 
 				//	used to allow embeddings to set warnings for deprecate and experimental
