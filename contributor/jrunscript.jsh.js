@@ -170,7 +170,7 @@
 							},
 							evaluate: function(result) {
 								if (result.status) throw new Error("-engines exit status: " + result.status);
-								return eval("(" + result.stdio.output + ")");
+								return JSON.parse(result.stdio.output);
 							}
 						});
 
