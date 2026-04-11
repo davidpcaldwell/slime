@@ -158,7 +158,20 @@
 		/** @type { slime.runtime.Exports } */
 		var rv = $api.fp.now(
 			{},
-			$api.fp.Object.with(oldCodeInterfaces),
+			$api.Object.defineProperty({
+				//	The $api object will be provided to call code loaded by $api, but we provide it to embedders so that it can be
+				//	used to decorate the runtime in the embedding.
+
+				//	used to allow embeddings to set warnings for deprecate and experimental
+				//	TODO	currently used to set deprecation warning in jsh.js
+				//	TODO	currently used by jsapi in loader/api/old/jsh via jsh.js
+				//	TODO	also used by client.html unit tests
+				name: "$api",
+				descriptor: {
+					value: $api,
+					enumerable: true
+				}
+			}),
 			$api.Object.defineProperty({
 				name: "loader",
 				descriptor: {
@@ -166,6 +179,7 @@
 					enumerable: true
 				}
 			}),
+			$api.fp.Object.with(oldCodeInterfaces),
 			$api.Object.defineProperty({
 				name: "namespace",
 				descriptor: {
@@ -213,17 +227,7 @@
 						value: ($api.platform.java) ? $api.platform.java : void(0)
 					};
 				})
-			}),
-			function(it) {
-				return $api.Object.compose(
-					it,
-					//	TODO	currently used to set deprecation warning in jsh.js
-					//	TODO	currently used by jsapi in loader/api/old/jsh via jsh.js
-					//	TODO	also used by client.html unit tests
-					//	used to allow embeddings to set warnings for deprecate and experimental
-					{ $api: $api }
-				)
-			}
+			})
 		);
 		return rv;
 	}
