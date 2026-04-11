@@ -21,10 +21,11 @@
 			 * @returns { slime.jrunscript.runtime.$javahost }
 			 */
 			function() {
+				/** @type { slime.runtime.Engine["MetaObject"] } */
 				var MetaObject = function(p) {
 					var delegate = (p.delegate) ? p.delegate : {};
-					var get = (p.get) ? p.get : function(){};
-					var set = (p.set) ? p.set : function(){};
+					var get = (p.get) ? p.get : function(name){ return void(0); };
+					var set = (p.set) ? p.set : function(name,value){ return void(0); };
 					return Packages.inonit.script.rhino.MetaObject.create(delegate,get,set);
 				};
 

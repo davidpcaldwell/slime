@@ -376,7 +376,7 @@ namespace slime.jrunscript.runtime {
 	export interface $javahost {
 		debugger: slime.runtime.Engine["debugger"]
 		script: any
-		MetaObject: any
+		MetaObject: slime.runtime.Engine["MetaObject"]
 		noEnvironmentAccess: any
 		eval(a: any, b: any, c: any, d: any): any
 	}

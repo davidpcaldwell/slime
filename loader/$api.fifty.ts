@@ -113,7 +113,7 @@ namespace slime.runtime {
 		/**
 		 * @deprecated Alternate, possibly obsolete, name for the MetaObject implementation provided by the {@link Engine}.
 		 */
-		MetaObject: Engine["MetaObject"]
+		MetaObject?: Engine["MetaObject"]
 	}
 
 	(
