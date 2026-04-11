@@ -794,7 +794,7 @@
 
 		var runtime = code.internal.runtime($exports);
 
-		var x = function() {
+		var loader = function() {
 			/** @type { slime.runtime.internal.loader.Script } */
 			var scoped = script("Loader.js");
 
@@ -811,7 +811,7 @@
 			})
 		};
 
-		$exports.loader = x();
+		$exports.loader = loader();
 
 		$exports.scripts.compiler = runtime.compiler.compile;
 

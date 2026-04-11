@@ -5,6 +5,28 @@
 //	END LICENSE
 
 namespace slime {
+	/**
+	 * Generally speaking, the SLIME runtime is responsible for providing basic constructs to SLIME embeddings.
+	 *
+	 * The SLIME runtime (`expression.js`) is an expression that evaluates to an object providing its capabilities to
+	 * the embedder.
+	 *
+	 * Embeddings configure the runtime by configuring the JavaScript scope in which it executes, which must be of type
+	 * {@link slime.runtime.Scope}, and defines how to load the SLIME runtime itself, as well as optionally providing
+	 * additional information about the surrounding JavaScript engine's capabilities and configuration for the runtime itself.
+	 *
+	 * In return, the embedding will be supplied with an {@link Exports} object that the embedding can use to provide its own API
+	 * to applications.
+	 *
+	 * All code loaded by the SLIME runtime has access to the {@link slime.$api.Global} object (as `$api`), providing a standard
+	 * SLIME API that embeddings on all platforms can use.
+	 *
+	 * Code is also provided by a {@link Platform} object (as `$platform`), providing more advanced JavaScript engine capabilities
+	 * that depend on the underlying JavaScript engine, though `$platform` properties are likely to migrate to `$api` in the future.
+	 */
+	export namespace runtime {
+	}
+
 	export namespace runtime {
 		export interface Scope {
 			/**
@@ -44,25 +66,6 @@ namespace slime {
 		}
 	}
 
-	/**
-	 * Generally speaking, the SLIME runtime is responsible for providing basic constructs to SLIME embeddings.
-	 *
-	 * The SLIME runtime (`expression.js`) is an expression that evaluates to an object providing its capabilities to
-	 * the embedder.
-	 *
-	 * Embeddings configure the runtime by configuring the JavaScript scope in which it executes, which must be of type
-	 * {@link slime.runtime.Scope}, and defines how to load the SLIME runtime itself, as well as optionally providing
-	 * additional information about the surrounding JavaScript engine's capabilities and configuration for the runtime itself.
-	 *
-	 * In return, the embedding will be supplied with an {@link Exports} object that the embedding can use to provide its own API
-	 * to applications.
-	 *
-	 * All code loaded by the SLIME runtime has access to the {@link slime.$api.Global} object (as `$api`), providing a standard
-	 * SLIME API that embeddings on all platforms can use.
-	 *
-	 * Code is also provided by a {@link Platform} object (as `$platform`), providing more advanced JavaScript engine capabilities
-	 * that depend on the underlying JavaScript engine, though `$platform` properties are likely to migrate to `$api` in the future.
-	 */
 	export namespace runtime {
 		(
 			function(
@@ -108,10 +111,19 @@ namespace slime {
 
 		export interface Exports {
 			/**
-			 * @deprecated The same object provided to scripts as `$platform`; provided here because there are limited, but likely
-			 * removable, global usages of it.
+			 * An additional way for embedding environments to access the {@link slime.$api.Global | $api} object so that they can
+			 * use it to augment the runtime in their embeddings.
 			 */
-			$platform: Platform
+			$api: slime.$api.Global
+		}
+	}
+
+	export namespace runtime {
+		export interface Exports {
+			/**
+			 * @deprecated Replaced by `$api.loader`.
+			 */
+			loader: slime.runtime.loader.Exports
 		}
 	}
 
@@ -229,6 +241,70 @@ namespace slime {
 	}
 
 	export namespace runtime {
+		export interface Exports {
+			//	TODO	scope and target parameter documentation refers to slime.Loader, but that API does not actually define
+			//			them in Fifty (probably does in JSAPI).
+
+			/**
+			 * Analogous to {@link slime.Loader}'s `run()`, except that the caller specifies a
+			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
+			 *
+			 * @param code A resource to execute. If no MIME type can be determined, the type will be assumed to be
+			 * `application/javascript`.
+			 * `application/javascript` scripts will be executed as
+			 * JavaScript. `application/vnd.coffeescript` will be interpreted as CoffeeScript. The
+			 * `name` property, if provided, may be used by the underlying JavaScript engine when evaluating
+			 * the resource as code (for display in tools, for example).
+			 *
+			 * @param scope See {@link slime.Loader}'s `run()` method.
+			 *
+			 * @param target See {@link slime.Loader}'s `run()` method.
+			 */
+			run: (
+				code: slime.Resource,
+				scope?: { [name: string]: any },
+				target?: object
+			) => void
+
+			//	TODO	could parameterize types here, with C, E; must C and E extend object? any?
+			/**
+			 * Analogous to {@link slime.Loader}'s `file()` method, except that the caller specifies a
+			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
+			 *
+			 * @param code A resource to execute. See the `run()` method for details about this argument.
+			 *
+			 * @param $context See {@link slime.Loader}'s `file()` method.
+			 *
+			 * @param target See {@link slime.Loader}'s `file()` method.
+			 *
+			 * @returns See {@link slime.Loader}'s `file()` method.
+			 */
+			file: (
+				code: slime.Resource,
+				$context?: { [name: string]: any },
+				target?: object
+				//	TODO	return type should probably be { [name: string]: any }, but this causes a compilation failure currently
+			) => any
+
+			/**
+			 * Analogous to {@link slime.Loader}'s `value()` method, except that the caller specifies a
+			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
+			 *
+			 * @param code A resource to execute. See the `run()` method for details about this argument.
+			 *
+			 * @param scope See {@link slime.Loader}'s `value()` method.
+			 *
+			 * @param target See {@link slime.Loader}'s `value()` method.
+			 *
+			 * @returns See {@link slime.Loader}'s `value()` method.
+			 */
+			value: (
+				code: slime.Resource,
+				scope?: { [name: string]: any },
+				target?: object
+			) => { [name: string]: any }
+		}
+
 		export namespace resource {
 			export interface Exports {
 				new (o: slime.resource.Descriptor): slime.Resource
@@ -362,70 +438,6 @@ namespace slime {
 	}
 
 	export namespace runtime {
-		export interface Exports {
-			//	TODO	scope and target parameter documentation refers to slime.Loader, but that API does not actually define
-			//			them in Fifty (probably does in JSAPI).
-
-			/**
-			 * Analogous to {@link slime.Loader}'s `run()`, except that the caller specifies a
-			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
-			 *
-			 * @param code A resource to execute. If no MIME type can be determined, the type will be assumed to be
-			 * `application/javascript`.
-			 * `application/javascript` scripts will be executed as
-			 * JavaScript. `application/vnd.coffeescript` will be interpreted as CoffeeScript. The
-			 * `name` property, if provided, may be used by the underlying JavaScript engine when evaluating
-			 * the resource as code (for display in tools, for example).
-			 *
-			 * @param scope See {@link slime.Loader}'s `run()` method.
-			 *
-			 * @param target See {@link slime.Loader}'s `run()` method.
-			 */
-			run: (
-				code: slime.Resource,
-				scope?: { [name: string]: any },
-				target?: object
-			) => void
-
-			//	TODO	could parameterize types here, with C, E; must C and E extend object? any?
-			/**
-			 * Analogous to {@link slime.Loader}'s `file()` method, except that the caller specifies a
-			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
-			 *
-			 * @param code A resource to execute. See the `run()` method for details about this argument.
-			 *
-			 * @param $context See {@link slime.Loader}'s `file()` method.
-			 *
-			 * @param target See {@link slime.Loader}'s `file()` method.
-			 *
-			 * @returns See {@link slime.Loader}'s `file()` method.
-			 */
-			file: (
-				code: slime.Resource,
-				$context?: { [name: string]: any },
-				target?: object
-				//	TODO	return type should probably be { [name: string]: any }, but this causes a compilation failure currently
-			) => any
-
-			/**
-			 * Analogous to {@link slime.Loader}'s `value()` method, except that the caller specifies a
-			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
-			 *
-			 * @param code A resource to execute. See the `run()` method for details about this argument.
-			 *
-			 * @param scope See {@link slime.Loader}'s `value()` method.
-			 *
-			 * @param target See {@link slime.Loader}'s `value()` method.
-			 *
-			 * @returns See {@link slime.Loader}'s `value()` method.
-			 */
-			value: (
-				code: slime.Resource,
-				scope?: { [name: string]: any },
-				target?: object
-			) => { [name: string]: any }
-		}
-
 		export namespace internal {
 			export type Resource = resource.Exports
 			export type methods = {
@@ -483,9 +495,25 @@ namespace slime {
 
 		export interface Exports {
 			/**
-			 * @deprecated Replaced by `$api.loader`.
+			 * A global script compiler provided by the overall SLIME runtime, which operates on {@link slime.runtime.loader.Code}
+			 * instances and can be updated with additional transpilers that also operate on those instances.
 			 */
-			loader: slime.runtime.loader.Exports
+			compiler: {
+				update: (transform: slime.$api.fp.Transform<slime.runtime.loader.Compiler<slime.runtime.loader.Code>>) => void
+
+				/**
+				 * A `Compiler` which uses the currently configured settings.
+				 */
+				compile: slime.runtime.loader.Compiler<slime.runtime.loader.Code>
+			}
+		}
+
+		export interface Exports {
+			/**
+			 * @deprecated The same object provided to scripts as `$platform`; provided here because there are limited, but likely
+			 * removable, global usages of it.
+			 */
+			$platform: Platform
 		}
 
 		export interface Exports {
@@ -495,11 +523,6 @@ namespace slime {
 			 * The same object as `$platform.java`.
 			 */
 			java?: Platform["java"]
-
-			/**
-			 * An additional way for embedding environments to access the {@link slime.$api.Global | $api} object.
-			 */
-			$api: slime.$api.Global
 		}
 
 		(
@@ -808,7 +831,6 @@ namespace slime {
 
 				fifty.load("$api.fifty.ts");
 
-				fifty.load("Loader.fifty.ts");
 				fifty.load("old-loaders.fifty.ts");
 
 				if (fifty.global.window) {

@@ -33,21 +33,6 @@ namespace slime.runtime {
 			read: () => string
 		}
 	}
-
-	export interface Exports {
-		/**
-		 * A global script compiler provided by the overall SLIME runtime, which operates on {@link slime.runtime.loader.Code}
-		 * instances and can be updated with additional transpilers that also operate on those instances.
-		 */
-		compiler: {
-			update: (transform: slime.$api.fp.Transform<slime.runtime.loader.Compiler<slime.runtime.loader.Code>>) => void
-
-			/**
-			 * A `Compiler` which uses the currently configured settings.
-			 */
-			compile: slime.runtime.loader.Compiler<slime.runtime.loader.Code>
-		}
-	}
 }
 
 namespace slime.$api {
