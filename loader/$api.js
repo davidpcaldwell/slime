@@ -730,16 +730,6 @@
 					}
 				).call($exports);
 
-				try {
-					if (typeof($engine) != "undefined") {
-						if ($engine.MetaObject) {
-							$exports.MetaObject = $engine.MetaObject;
-						}
-					}
-				} catch (e) {
-					//	MetaObject will not be defined
-				}
-
 				return $exports;
 			}
 		)($engine);

@@ -82,6 +82,57 @@ namespace slime.runtime {
 		}) => { [name: string]: any }
 	}
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.runtime.exports.engine = fifty.test.Parent();
+
+			fifty.tests.runtime.exports.engine.MetaObject = function() {
+				const test = function(b: boolean) {
+					verify(b).is(true);
+				};
+
+				if ($api.engine.MetaObject) {
+					var doubler = function(name) {
+						if (isNaN(Number(name))) {
+							return name + name;
+						} else {
+							return Number(name) * 2;
+						}
+					}
+
+					var a = $api.engine.MetaObject({ get: doubler });
+					test( a[1] == 2 );
+					test( a.name == "namename" );
+
+					var logger = new function() {
+						var log = [];
+
+						this.log = log;
+
+						this.setter = function(name,value) {
+							log.push({ target: this, name: name, value: value });
+
+							this[name] = value;
+						}
+					}
+
+					var $b = {};
+					var b = $api.engine.MetaObject({ delegate: $b, get: null, set: logger.setter });
+					b.foo = "bar";
+					test( logger.log[0].target == $b );
+					test( logger.log[0].name == "foo" );
+					test( logger.log[0].value == "bar" );
+				}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
 	/**
 	 * Provides information about and capabilities of the underlying JavaScript platform; loaded code can use this information
 	 * in its implementation.
@@ -109,19 +160,14 @@ namespace slime.runtime {
 			 */
 			getClass: (name: string) => slime.jrunscript.JavaClass
 		}
-
-		/**
-		 * @deprecated Alternate, possibly obsolete, name for the MetaObject implementation provided by the {@link Engine}.
-		 */
-		MetaObject?: Engine["MetaObject"]
 	}
 
 	(
 		function(
-			$platform: Platform,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
+			const { $api } = fifty.global;
 
 			fifty.tests.runtime.exports.$platform = fifty.test.Parent();
 
@@ -132,51 +178,12 @@ namespace slime.runtime {
 				o.x = 4;
 				verify(o).x.is(4);
 
-				if (fifty.global.jsh) verify($platform).evaluate.property("java").is.type("object");
-				if (fifty.global.window) verify($platform).evaluate.property("java").is.type("undefined");
-			};
-
-			fifty.tests.runtime.exports.$platform.MetaObject = function() {
-				const test = function(b: boolean) {
-					verify(b).is(true);
-				};
-
-				if ($platform.MetaObject) {
-					var doubler = function(name) {
-						if (isNaN(Number(name))) {
-							return name + name;
-						} else {
-							return Number(name) * 2;
-						}
-					}
-
-					var a = $platform.MetaObject({ get: doubler });
-					test( a[1] == 2 );
-					test( a.name == "namename" );
-
-					var logger = new function() {
-						var log = [];
-
-						this.log = log;
-
-						this.setter = function(name,value) {
-							log.push({ target: this, name: name, value: value });
-
-							this[name] = value;
-						}
-					}
-
-					var $b = {};
-					var b = $platform.MetaObject({ delegate: $b, get: null, set: logger.setter });
-					b.foo = "bar";
-					test( logger.log[0].target == $b );
-					test( logger.log[0].name == "foo" );
-					test( logger.log[0].value == "bar" );
-				}
+				if (fifty.global.jsh) verify($api.platform).evaluate.property("java").is.type("object");
+				if (fifty.global.window) verify($api.platform).evaluate.property("java").is.type("undefined");
 			};
 		}
 	//@ts-ignore
-	)($platform,fifty);
+	)(fifty);
 }
 
 /**
