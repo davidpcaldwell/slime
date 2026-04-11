@@ -50,7 +50,6 @@
 								java: [jsh.shell.java.home.pathname],
 								engine: [""],
 								tomcat: void(0),
-								browsers: false,
 								view: void(0),
 								part: p.options.part,
 								port: void(0)
@@ -238,7 +237,7 @@
 
 					//	TODO	this is probably obsolete at this point, as we move toward a set of GitHub Actions that test various parts of
 					//			the system
-					if (jsh.unit.browser && parameters.options.browsers) suite.add("browsers", new function() {
+					if (jsh.unit.browser && false) suite.add("browsers", new function() {
 						var browsers = jsh.unit.browser.installed;
 
 						this.name = "Browser tests";
@@ -264,7 +263,7 @@
 										"-suite", environment.jsh.src.getFile("contributor/browser-jsapi-suite.js"),
 										"-browser", browser.id,
 										"-view", "stdio"
-									].concat(parameters.arguments),
+									].concat(p.arguments),
 									// TODO: is setting the working directory necessary?
 									directory: environment.jsh.src
 								});
