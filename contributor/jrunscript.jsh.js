@@ -132,83 +132,84 @@
 
 					var jre = jsh.shell.java.home.pathname;
 
-					parameters.options.engine.forEach(function(engine) {
-						var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin"),jre.directory.getRelativePath("../bin")]);
+					var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin"),jre.directory.getRelativePath("../bin")]);
 
-						var launcher = searchpath.getCommand("jrunscript");
-						var launch = (jsh.shell.jsh.home) ? [jsh.shell.jsh.home.getRelativePath("jsh.js").toString()] : [jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js").toString(), "jsh"];
-						(
-							function addNashornBootstrapLibraries() {
-								var names = jsh.internal.bootstrap.nashorn.dependencies.names.concat(["nashorn"]);
+					var launcher = searchpath.getCommand("jrunscript");
+					var launch = (jsh.shell.jsh.home) ? [jsh.shell.jsh.home.getRelativePath("jsh.js").toString()] : [jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js").toString(), "jsh"];
+					(
+						function addNashornBootstrapLibraries() {
+							var names = jsh.internal.bootstrap.nashorn.dependencies.names.concat(["nashorn"]);
+							//	TODO	Should only be used for versions of Java that need it
+							if (jsh.shell.jsh.home && jsh.shell.jsh.home.getFile("lib/nashorn.jar")) {
+								launch = [
+									"-classpath",
+									names.map(function(name) {
+										return jsh.shell.jsh.home.getRelativePath("lib/" + name + ".jar").toString();
+									//	TODO	below is platform-specific
+									}).join(":")
+								].concat(launch)
+							} else if (jsh.shell.jsh.src && jsh.shell.jsh.src.getFile("local/jsh/lib/nashorn.jar")) {
 								//	TODO	Should only be used for versions of Java that need it
-								if (jsh.shell.jsh.home && jsh.shell.jsh.home.getFile("lib/nashorn.jar")) {
-									launch = [
-										"-classpath",
-										names.map(function(name) {
-											return jsh.shell.jsh.home.getRelativePath("lib/" + name + ".jar").toString();
-										//	TODO	below is platform-specific
-										}).join(":")
-									].concat(launch)
-								} else if (jsh.shell.jsh.src && jsh.shell.jsh.src.getFile("local/jsh/lib/nashorn.jar")) {
-									//	TODO	Should only be used for versions of Java that need it
-									launch = [
-										"-classpath",
-										names.map(function(name) {
-											return jsh.shell.jsh.src.getRelativePath("local/jsh/lib/" + name + ".jar").toString();
-										//	TODO	below is platform-specific
-										}).join(":")
-									].concat(launch)
-								}
+								launch = [
+									"-classpath",
+									names.map(function(name) {
+										return jsh.shell.jsh.src.getRelativePath("local/jsh/lib/" + name + ".jar").toString();
+									//	TODO	below is platform-specific
+									}).join(":")
+								].concat(launch)
 							}
-						)();
-
-						var engines = jsh.shell.run({
-							command: launcher,
-							arguments: launch.concat(["-engines"]),
-							stdio: {
-								output: String
-							},
-							evaluate: function(result) {
-								if (result.status) throw new Error("-engines exit status: " + result.status);
-								return JSON.parse(result.stdio.output);
-							}
-						});
-
-						if (engine && engines.indexOf(engine) == -1) {
-							jsh.shell.console("Skipping engine " + engine + "; not available under " + launcher);
-						} else {
-							var ENGINE = (engine) ? engine : "engine";
-							jsh.shell.console("Running " + jsh.shell.jsh.home + " with Java " + launcher + " and engine " + engine + " ...");
-
-							suite.add("jrunscript/" + ENGINE + "/fifty", jsh.unit.fifty.Part({
-								shell: environment.jsh.unbuilt.src,
-								script: environment.jsh.unbuilt.src.getFile("tools/fifty/test.jsh.js"),
-								file: jsh.script.file.parent.getFile("jrunscript.fifty.ts")
-							}));
-
-							suite.add("jrunscript/" + ENGINE + "/jsapi", jsh.unit.Suite.Fork({
-								name: "JSAPI Java tests for JRE " + jre.toString() + " and engine " + ENGINE,
-								run: jsh.shell.jsh,
-								vmarguments: ["-Xms1024m"],
-								shell: environment.jsh.src,
-								script: jsh.script.file.parent.getFile("jrunscript-jsapi.jsh.js"),
-								arguments: [
-									"-shell:built", environment.jsh.built.location,
-									"-view", "stdio"
-								].concat(
-									(parameters.options.noselfping) ? ["-noselfping"] : []
-								).concat(
-									(parameters.options.issue138) ? ["-issue138"] : []
-								),
-								environment: $api.Object.compose(
-									jsh.shell.environment,
-									(parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {},
-									(engine) ? { JSH_ENGINE: engine.toLowerCase() } : {},
-									(jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : {}
-								)
-							}));
 						}
+					)();
+
+					//	TODO	Potentially valuable building block, but not here and not now, where we are testing a single engine
+					// var engines = jsh.shell.run({
+					// 	command: launcher,
+					// 	arguments: launch.concat(["-engines"]),
+					// 	stdio: {
+					// 		output: String
+					// 	},
+					// 	evaluate: function(result) {
+					// 		if (result.status) throw new Error("-engines exit status: " + result.status);
+					// 		return JSON.parse(result.stdio.output);
+					// 	}
+					// });
+
+					//	TODO	this is kind of clunky and seems to indicate this API should be available
+					var ENGINE = jsh.internal.bootstrap.engine.resolve({
+						rhino: function() { return "rhino"; },
+						nashorn: function() { return "nashorn"; },
+						graal: function() { return "graal"; }
 					});
+					var engine = ENGINE();
+					jsh.shell.console("Running " + jsh.shell.jsh.home + " with Java " + launcher + " and engine " + engine + " ...");
+
+					suite.add("jrunscript/fifty", jsh.unit.fifty.Part({
+						shell: environment.jsh.unbuilt.src,
+						script: environment.jsh.unbuilt.src.getFile("tools/fifty/test.jsh.js"),
+						file: jsh.script.file.parent.getFile("jrunscript.fifty.ts")
+					}));
+
+					suite.add("jrunscript/jsapi", jsh.unit.Suite.Fork({
+						name: "JSAPI Java tests for JRE " + jre.toString() + " and engine " + engine,
+						run: jsh.shell.jsh,
+						vmarguments: ["-Xms1024m"],
+						shell: environment.jsh.src,
+						script: jsh.script.file.parent.getFile("jrunscript-jsapi.jsh.js"),
+						arguments: [
+							"-shell:built", environment.jsh.built.location,
+							"-view", "stdio"
+						].concat(
+							(parameters.options.noselfping) ? ["-noselfping"] : []
+						).concat(
+							(parameters.options.issue138) ? ["-issue138"] : []
+						),
+						environment: $api.Object.compose(
+							jsh.shell.environment,
+							(parameters.options.tomcat) ? { CATALINA_HOME: parameters.options.tomcat.toString() } : {},
+							(engine) ? { JSH_ENGINE: engine.toLowerCase() } : {},
+							(jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : {}
+						)
+					}));
 
 					(
 						function safariLifecycle() {
