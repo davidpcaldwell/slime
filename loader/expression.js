@@ -172,13 +172,6 @@
 					enumerable: true
 				}
 			}),
-			$api.Object.defineProperty({
-				name: "loader",
-				descriptor: {
-					value: $api.loader,
-					enumerable: true
-				}
-			}),
 			$api.fp.Object.with(oldCodeInterfaces),
 			$api.Object.defineProperty({
 				name: "namespace",
