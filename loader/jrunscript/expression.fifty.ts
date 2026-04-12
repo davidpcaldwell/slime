@@ -722,7 +722,7 @@ namespace slime.jrunscript.runtime {
 				verify(getType($slime.loader.synchronous)).type.is("object");
 				verify(getType($slime.loader.synchronous.scripts)).type.is("function");
 
-				fifty.load("../Loader.fifty.ts", "script", loader);
+				fifty.load("../loaders.fifty.ts", "script", loader);
 			}
 		}
 	//@ts-ignore
