@@ -796,7 +796,7 @@
 
 		var loader = function() {
 			/** @type { slime.runtime.internal.loader.Script } */
-			var scoped = script("Loader.js");
+			var scoped = script("loaders.js");
 
 			return scoped({
 				Executor: code.internal.Executor,

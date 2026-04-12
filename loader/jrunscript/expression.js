@@ -1015,7 +1015,7 @@
 				entries: function(p) {
 					return slime.$api.fp.pipe(
 						slime.$api.fp.split({
-							listing: slime.loader.synchronous.resources(p.filter),
+							listing: slime.$api.loader.synchronous.resources(p.filter),
 							loader: slime.$api.fp.identity
 						}),
 						function(inputs) {
@@ -1109,7 +1109,7 @@
 						run: slime.run,
 						old: slime.old,
 						compiler: slime.compiler,
-						loader: slime.loader,
+						loader: slime.$api.loader,
 						file: slime.file,
 						value: slime.value,
 						namespace: slime.namespace,

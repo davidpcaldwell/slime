@@ -8,7 +8,7 @@ namespace slime.runtime.loader {
 	export namespace test {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			const runtime: slime.runtime.Exports = fifty.$loader.module("fixtures.ts").subject(fifty);
-			return runtime.loader;
+			return runtime.$api.loader;
 		//@ts-ignore
 		})(fifty);
 	}

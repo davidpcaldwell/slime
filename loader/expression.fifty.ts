@@ -118,15 +118,6 @@ namespace slime {
 		}
 	}
 
-	export namespace runtime {
-		export interface Exports {
-			/**
-			 * @deprecated Replaced by `$api.loader`.
-			 */
-			loader: slime.runtime.loader.Exports
-		}
-	}
-
 	export namespace mime {
 		/**
 		 * A MIME type.

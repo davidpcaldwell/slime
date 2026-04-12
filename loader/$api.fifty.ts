@@ -1594,7 +1594,7 @@ namespace slime.$api {
 
 				fifty.load("code.fifty.ts");
 
-				fifty.load("Loader.fifty.ts");
+				fifty.load("loaders.fifty.ts");
 
 				fifty.run(fifty.tests.jsapi);
 				fifty.run(fifty.tests.exports);
