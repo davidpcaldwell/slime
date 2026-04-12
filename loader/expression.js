@@ -121,40 +121,6 @@
 
 		var $api = api.exports;
 
-		var oldCodeInterfaces = (
-			function() {
-				/** @type { slime.runtime.internal.old_loaders.Script } */
-				var code = script("old-loaders.js");
-
-				var oldLoaders = code({
-					$api: $api,
-					createScriptScope: api.code.internal.createScriptScope,
-					toExportScope: api.code.internal.old.toExportScope,
-					methods: api.code.runtime.internal.methods
-				});
-
-				return {
-					/** @type { slime.runtime.Exports["run"] } */
-					run: function(code,scope,target) {
-						return api.code.runtime.internal.methods.run.call(target,oldLoaders.Code.from.Resource(code),scope);
-					},
-					/** @type { slime.runtime.Exports["file"] } */
-					file: function(code,context,target) {
-						return api.code.runtime.internal.methods.old.file.call(target,oldLoaders.Code.from.Resource(code),context);
-					},
-					/** @type { slime.runtime.Exports["value"] } */
-					value: function(code,scope,target) {
-						return api.code.runtime.internal.methods.old.value.call(target,oldLoaders.Code.from.Resource(code),scope);
-					},
-					Resource: oldLoaders.Resource,
-					old: {
-						Loader: Object.assign(oldLoaders.constructor, oldLoaders.api, { constructor: null }),
-						loader: oldLoaders.api
-					}
-				}
-			}
-		)();
-
 		/** @type { slime.runtime.Exports } */
 		var rv = $api.fp.now(
 			{},
@@ -172,7 +138,7 @@
 					enumerable: true
 				}
 			}),
-			$api.fp.Object.with(oldCodeInterfaces),
+			$api.fp.Object.with($api.loader.old),
 			$api.Object.defineProperty({
 				name: "namespace",
 				descriptor: {

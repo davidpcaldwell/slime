@@ -221,7 +221,7 @@ namespace slime.loader.old {
 		/**
 		 * Allows the loader to customize the way resource descriptors are turned into resources.
 		 */
-		Resource?: runtime.resource.Exports
+		Resource?: slime.$api.loader.old.resource.Exports
 	}
 
 	export interface Scope {
@@ -253,7 +253,7 @@ namespace slime.loader.old {
 				return { type: typeof value };
 			}
 
-			tests.types.Loader = function(it: slime.runtime.Exports["old"]["Loader"]) {
+			tests.types.Loader = function(it: slime.$api.loader.old.old.Exports["Loader"]) {
 				verify(getType(it)).type.is("function");
 				var tools: { [x: string]: any } = it["tools"];
 				verify(tools).is.type("object");
@@ -264,8 +264,8 @@ namespace slime.loader.old {
 
 			tests.source.object = function() {
 				var api: slime.runtime.Exports = subject;
-				verify(api).evaluate(function(p) { return p.old.loader.source.object; }).is.type("function");
-				var source = api.old.loader.source.object({
+				verify(api).evaluate(function(p) { return p.$api.loader.old.old.loader.source.object; }).is.type("function");
+				var source = api.$api.loader.old.old.loader.source.object({
 					a: {
 						resource: {
 							read: {
@@ -289,7 +289,7 @@ namespace slime.loader.old {
 					if (typeof(p.read) != "function") throw new Error("p.read is " + typeof(p.read));
 					return p.read(String);
 				};
-				var loader = new api.old.Loader(source);
+				var loader = new api.$api.loader.old.old.Loader(source);
 				verify(loader).get("a").evaluate(readString).is("a");
 				verify(loader).get("b/c").evaluate(readString).is("c");
 				verify(loader).list().length.is(2);
@@ -337,7 +337,7 @@ namespace slime.loader.old {
 					}
 				};
 
-				var loader = new subject.old.Loader(source);
+				var loader = new subject.$api.loader.old.old.Loader(source);
 
 				var readString = function(p: Resource): string { return p.read(String); };
 
@@ -442,7 +442,7 @@ namespace slime.loader.old {
 	export type Constructor = new <S>(p: slime.loader.old.Source | S) => slime.loader.old.Loader<S>
 }
 
-namespace slime.runtime.old {
+namespace slime.$api.loader.old.old {
 	export interface Exports {
 		loader: {
 			source: {
@@ -491,22 +491,22 @@ namespace slime.runtime.old {
 }
 
 namespace slime.runtime.internal.old_loaders {
-	export interface Scope {
+	export interface Context {
 		$api: slime.$api.Global
-		toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
+		toExportScope: slime.$api.loader.old.old.Exports["loader"]["tools"]["toExportScope"]
 		methods: slime.runtime.internal.code.GlobalExecutorMethods
 		createScriptScope: code.Exports["internal"]["createScriptScope"]
 	}
 
 	export interface Exports {
-		api: slime.runtime.old.Exports["loader"]
+		api: slime.$api.loader.old.old.Exports["loader"]
 		Code: {
 			from: {
 				Resource: slime.$api.fp.Mapping<slime.Resource,slime.runtime.loader.Code>
 			}
 		}
 		constructor: slime.loader.old.Constructor
-		Resource: slime.runtime.resource.Exports
+		Resource: slime.$api.loader.old.resource.Exports
 	}
 
 	(
@@ -528,5 +528,5 @@ namespace slime.runtime.internal.old_loaders {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.runtime.loader.Scoped<Scope,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

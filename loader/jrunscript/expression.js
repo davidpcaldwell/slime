@@ -862,7 +862,7 @@
 			 */
 			function(was) {
 				/**
-				 * @type { slime.runtime.old.Exports["Loader"] }
+				 * @type { slime.$api.loader.old.old.Exports["Loader"] }
 				 */
 				var rv = Object.assign(
 					/**
