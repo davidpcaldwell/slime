@@ -850,39 +850,6 @@
 			}
 		);
 
-		// var oldCodeInterfaces = (
-		// 	function() {
-		// 		/** @type { slime.runtime.internal.old_loaders.Script } */
-		// 		var exports = script("old-loaders.js");
-
-		// 		var oldLoaders = exports({
-		// 			$api: $exports,
-		// 			createScriptScope: code.internal.createScriptScope,
-		// 			toExportScope: code.internal.old.toExportScope,
-		// 			methods: runtime.internal.methods
-		// 		});
-
-		// 		return {
-		// 			/** @type { slime.runtime.Exports["run"] } */
-		// 			run: function(code,scope,target) {
-		// 				return runtime.internal.methods.run.call(target,oldLoaders.Code.from.Resource(code),scope);
-		// 			},
-		// 			/** @type { slime.runtime.Exports["file"] } */
-		// 			file: function(code,context,target) {
-		// 				return runtime.internal.methods.old.file.call(target,oldLoaders.Code.from.Resource(code),context);
-		// 			},
-		// 			/** @type { slime.runtime.Exports["value"] } */
-		// 			value: function(code,scope,target) {
-		// 				return runtime.internal.methods.old.value.call(target,oldLoaders.Code.from.Resource(code),scope);
-		// 			},
-		// 			Resource: oldLoaders.Resource,
-		// 			old: {
-		// 				Loader: Object.assign(oldLoaders.constructor, oldLoaders.api, { constructor: null }),
-		// 				loader: oldLoaders.api
-		// 			}
-		// 		}
-		// 	}
-		// )();
 
 		$exports.scripts.compiler = runtime.compiler.compile;
 
