@@ -1389,11 +1389,261 @@ namespace slime.$api {
 		}
 	}
 
+	//	TODO	duplicates logic in slime.runtime.test; should unify these
+
+	export namespace test {
+		export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.Kit) {
+			var script: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
+			return script().subject(fifty);
+		//@ts-ignore
+		})(fifty);
+
+		export const fixture = (function(fifty: slime.fifty.test.Kit) {
+			return function(fixture: slime.$api.fp.Transform<slime.runtime.Scope>) {
+				var script: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
+				return script().subject(fifty, fixture);
+			}
+		//@ts-ignore
+		})(fifty);
+	}
+
+	export namespace loader.old {
+		export interface Exports {
+			//	TODO	scope and target parameter documentation refers to slime.Loader, but that API does not actually define
+			//			them in Fifty (probably does in JSAPI).
+
+			/**
+			 * Analogous to {@link slime.Loader}'s `run()`, except that the caller specifies a
+			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
+			 *
+			 * @param code A resource to execute. If no MIME type can be determined, the type will be assumed to be
+			 * `application/javascript`.
+			 * `application/javascript` scripts will be executed as
+			 * JavaScript. `application/vnd.coffeescript` will be interpreted as CoffeeScript. The
+			 * `name` property, if provided, may be used by the underlying JavaScript engine when evaluating
+			 * the resource as code (for display in tools, for example).
+			 *
+			 * @param scope See {@link slime.Loader}'s `run()` method.
+			 *
+			 * @param target See {@link slime.Loader}'s `run()` method.
+			 */
+			run: (
+				code: slime.Resource,
+				scope?: { [name: string]: any },
+				target?: object
+			) => void
+
+			//	TODO	could parameterize types here, with C, E; must C and E extend object? any?
+			/**
+			 * Analogous to {@link slime.Loader}'s `file()` method, except that the caller specifies a
+			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
+			 *
+			 * @param code A resource to execute. See the `run()` method for details about this argument.
+			 *
+			 * @param $context See {@link slime.Loader}'s `file()` method.
+			 *
+			 * @param target See {@link slime.Loader}'s `file()` method.
+			 *
+			 * @returns See {@link slime.Loader}'s `file()` method.
+			 */
+			file: (
+				code: slime.Resource,
+				$context?: { [name: string]: any },
+				target?: object
+				//	TODO	return type should probably be { [name: string]: any }, but this causes a compilation failure currently
+			) => any
+
+			/**
+			 * Analogous to {@link slime.Loader}'s `value()` method, except that the caller specifies a
+			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
+			 *
+			 * @param code A resource to execute. See the `run()` method for details about this argument.
+			 *
+			 * @param scope See {@link slime.Loader}'s `value()` method.
+			 *
+			 * @param target See {@link slime.Loader}'s `value()` method.
+			 *
+			 * @returns See {@link slime.Loader}'s `value()` method.
+			 */
+			value: (
+				code: slime.Resource,
+				scope?: { [name: string]: any },
+				target?: object
+			) => { [name: string]: any }
+		}
+
+		export namespace resource {
+			export interface Exports {
+				new (o: slime.resource.Descriptor): slime.Resource
+
+				ReadInterface: {
+					string: (content: string) => slime.resource.ReadInterface
+				}
+			}
+		}
+
+		export interface Exports {
+			/**
+			 * Creates a {@link slime.Resource | Resource}.
+			 */
+			Resource: resource.Exports
+		}
+
+		(
+			function(
+				$platform: slime.runtime.Platform,
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				var api = test.subject;
+
+				fifty.tests.runtime.exports.Resource = function() {
+					fifty.run(function type() {
+						var toString = function(p): string { return p.toString(); };
+
+						(function() {
+							var resource = new api.$api.loader.old.Resource({});
+							verify(resource).type.is(null);
+						})();
+						(function() {
+							var resource = new api.$api.loader.old.Resource({
+								type: $api.mime.Type.parse("application/json")
+							});
+							verify(resource).type.evaluate(toString).is("application/json");
+						})();
+						(function() {
+							var resource = new api.$api.loader.old.Resource({
+								name: "foo.js"
+							});
+							verify(resource).type.evaluate(toString).is("application/javascript");
+						})();
+						(function() {
+							var resource = new api.$api.loader.old.Resource({
+								name: "foo.x"
+							});
+							verify(resource).type.is(null);
+						})();
+					});
+
+					fifty.run(function name() {
+						(function() {
+							var resource = new api.$api.loader.old.Resource({
+								name: "foo"
+							});
+							verify(resource).name.is("foo");
+						})();
+						(function() {
+							var resource = new api.$api.loader.old.Resource({});
+							verify(resource).evaluate.property("name").is(void(0));
+						})();
+					});
+
+					fifty.run(function read() {
+						var readResource = fifty.evaluate.create(
+							function(resource: slime.Resource): string {
+								return resource.read(String);
+							},
+							"read(String)"
+						);
+
+						var newReadResource = fifty.evaluate.create(
+							function(resource: slime.Resource): string {
+								return resource.read.string();
+							},
+							"read.string()"
+						);
+
+						(function() {
+							var resource = new api.$api.loader.old.Resource({
+								read: api.$api.loader.old.Resource.ReadInterface.string("foo")
+							});
+							verify(resource).evaluate(readResource).is("foo");
+							verify(resource).evaluate(newReadResource).is("foo");
+						})();
+
+						(function() {
+							var resource = new api.$api.loader.old.Resource({
+								read: {
+									string: function() {
+										return "bar";
+									}
+								}
+							});
+							verify(resource).evaluate(readResource).is("bar");
+						})();
+
+						(function() {
+							var resource = new api.$api.loader.old.Resource({
+								read: api.$api.loader.old.Resource.ReadInterface.string(JSON.stringify({ foo: "bar" }))
+							});
+							var json: { foo: string, baz?: any } = resource.read(JSON) as { foo: string, baz?: any };
+							verify(json).foo.is("bar");
+							verify(json).evaluate.property("baz").is(void(0));
+						})();
+
+						if ($platform.e4x) {
+							var global = (function() { return this; })();
+							var XML: slime.external.e4x.XMLConstructor = global["XML"];
+							var XMLList: slime.external.e4x.XMLListConstructor = global["XMLList"];
+							var resource = new api.$api.loader.old.Resource({
+								read: api.$api.loader.old.Resource.ReadInterface.string("<a><b/></a>")
+							});
+							var xml = resource.read(XML);
+							verify(xml).is.type("xml");
+
+							var list = { list: resource.read(XMLList) };
+							verify(list).list.is.type("xml");
+							verify(list).evaluate(function(v): number { return v.list.length(); }).is(1);
+						}
+					})
+				}
+			}
+		//@ts-ignore
+		)($platform,fifty);
+
+		export namespace internal {
+			export type Resource = resource.Exports
+			export type methods = {
+				run: any
+			}
+			export namespace mime {
+				export interface Context {
+					Function: slime.$api.Global["fp"]
+					deprecate: slime.$api.Global["deprecate"]
+				}
+			}
+
+			/**
+			 * A subset of the {@link $slime.Deployment} interface that can load SLIME runtime scripts.
+			 */
+			export interface Code {
+				getRuntimeScript: slime.runtime.scope.Deployment["getRuntimeScript"]
+			}
+		}
+
+		export namespace old {
+			export interface Exports {
+				/**
+				 * Creates a *Loader*. A Loader loads resources from a specified source.
+				 */
+				Loader: slime.loader.old.Constructor & slime.runtime.internal.old_loaders.Exports["api"]
+			}
+		}
+
+		export interface Exports {
+			old: old.Exports
+		}
+	}
+
 	export interface Global {
 		/**
 		 * Provides operations related to loading resources and executing code using {@link slime.runtime.loader} types.
 		 */
-		loader: slime.runtime.loader.Exports
+		loader: slime.runtime.loader.Exports & {
+			old: loader.old.Exports
+		}
 	}
 
 	export interface Scripts {
@@ -1625,12 +1875,9 @@ namespace slime.$api.internal {
 	 * ultimate export to the application level, while using some of the internals itself.
 	 */
 	export interface Exports {
-		code: (
-			Pick<slime.runtime.internal.code.Exports,"internal">
-			& {
-				runtime: slime.runtime.internal.code.Runtime
-			}
-		)
+		code: {
+			runtime: slime.runtime.internal.code.Runtime
+		}
 		exports: slime.$api.Global
 	}
 

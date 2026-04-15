@@ -57,7 +57,7 @@
 			flag: script("$api-flag.js"),
 			/** @type { slime.runtime.loader.Scoped<slime.runtime.internal.events.Context,slime.runtime.internal.events.Exports> } */
 			events: script("events.js"),
-			/** @type { slime.runtime.loader.Scoped<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
+			/** @type { slime.runtime.loader.Scoped<slime.$api.loader.old.internal.mime.Context,slime.$api.mime.Export> } */
 			mime: script("$api-mime.js"),
 			/** @type { slime.$api.fp.internal.Script } */
 			Function: script("$api-Function.js"),
@@ -811,13 +811,51 @@
 			})
 		};
 
-		$exports.loader = loader();
+		$exports.loader = $exports.Object.compose(
+			loader(),
+			{
+				old: (
+					function() {
+						/** @type { slime.runtime.internal.old_loaders.Script } */
+						var exports = script("old-loaders.js");
+
+						var oldLoaders = exports({
+							$api: $exports,
+							createScriptScope: code.internal.createScriptScope,
+							toExportScope: code.internal.old.toExportScope,
+							methods: runtime.internal.methods
+						});
+
+						return {
+							/** @type { slime.$api.loader.old.Exports["run"] } */
+							run: function(code,scope,target) {
+								return runtime.internal.methods.run.call(target,oldLoaders.Code.from.Resource(code),scope);
+							},
+							/** @type { slime.$api.loader.old.Exports["file"] } */
+							file: function(code,context,target) {
+								return runtime.internal.methods.old.file.call(target,oldLoaders.Code.from.Resource(code),context);
+							},
+							/** @type { slime.$api.loader.old.Exports["value"] } */
+							value: function(code,scope,target) {
+								return runtime.internal.methods.old.value.call(target,oldLoaders.Code.from.Resource(code),scope);
+							},
+							Resource: oldLoaders.Resource,
+							old: {
+								Loader: Object.assign(oldLoaders.constructor, oldLoaders.api, { constructor: null }),
+								loader: oldLoaders.api
+							}
+						}
+					}
+				)()
+			}
+		);
+
 
 		$exports.scripts.compiler = runtime.compiler.compile;
 
 		$export({
 			code: {
-				internal: code.internal,
+				//internal: code.internal,
 				runtime: runtime
 			},
 			exports: $exports

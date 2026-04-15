@@ -8,13 +8,15 @@
 (
 	/**
 	 *
-	 * @param { slime.$api.Global } $api
-	 * @param { slime.runtime.internal.old_loaders.Scope["toExportScope"] } toExportScope
-	 * @param { slime.runtime.internal.old_loaders.Scope["createScriptScope"] } createScriptScope
-	 * @param { slime.runtime.internal.old_loaders.Scope["methods"] } methods
+	 * @param { slime.runtime.internal.old_loaders.Context } $context
 	 * @param { slime.loader.Export<slime.runtime.internal.old_loaders.Exports> } $export
 	 */
-	function($api,toExportScope,createScriptScope,methods,$export) {
+	function($context,$export) {
+		var $api = $context.$api;
+		var toExportScope = $context.toExportScope;
+		var createScriptScope = $context.createScriptScope;
+		var methods = $context.methods;
+
 		/**
 		 * @constructor
 		 * @param { slime.resource.Descriptor } o
@@ -67,11 +69,11 @@
 			}
 		}
 
-		/** @type { slime.runtime.resource.Exports } */
+		/** @type { slime.$api.loader.old.resource.Exports } */
 		var ResourceExport = Object.assign(
 			Resource,
 			{
-				/** @type { slime.runtime.resource.Exports["ReadInterface"]} */
+				/** @type { slime.$api.loader.old.resource.Exports["ReadInterface"]} */
 				ReadInterface: {
 					string: function(content) {
 						return {
@@ -411,9 +413,9 @@
 
 		$export({
 			api: {
-				/** @type { slime.runtime.Exports["old"]["loader"]["source"] } */
+				/** @type { slime.$api.loader.old.old.Exports["loader"]["source"] } */
 				source: {
-					/** @type { slime.runtime.Exports["old"]["loader"]["source"]["object"] } */
+					/** @type { slime.$api.loader.old.old.Exports["loader"]["source"]["object"] } */
 					object: function(o) {
 						var getLocation = function(path) {
 							var target = o;
@@ -527,4 +529,4 @@
 		});
 	}
 //@ts-ignore
-)($api,toExportScope,createScriptScope,methods,$export);
+)($context,$export);
