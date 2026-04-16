@@ -24,9 +24,7 @@
 			load: function() {
 				var code = {
 					/** @type { slime.jsh.wf.internal.module.Script } */
-					module: $loader.script("module.js"),
-					/** @type { slime.jsh.wf.standard.Script } */
-					standard: $loader.script("plugin-standard.jsh.js")
+					module: $loader.script("module.js")
 				};
 
 				var library = {
@@ -300,7 +298,7 @@
 					$api.fp.impure.Process.compose
 				);
 
-				/** @type { slime.jsh.wf.ProjectView } */
+				/** @type { Omit<slime.jsh.wf.ProjectView,"initialize"> } */
 				var project = {
 					base: inputs.base,
 					Submodule: {
@@ -458,34 +456,10 @@
 								if (!jsh.shell.environment.IN_GIT_HOOK) initializeSubmodulesProcess()();
 							}
 						}
-					},
-					/**
-					 * @type { slime.jsh.wf.Exports["project"]["initialize"] }
-					 */
-					initialize: code.standard({
-						library: {
-							file: jsh.file,
-							git: jsh.tools.git,
-						},
-						jsh: jsh,
-						api: {
-							checks: function() {
-								return jsh_wf_checks;
-							},
-							git: function() {
-								return jsh_wf_git;
-							},
-							project: function() {
-								//	TODO	weird self-reference indicating this object should be restructured
-								return project;
-							},
-							typescript: function() {
-								return jsh_wf_typescript;
-							}
-						}
-					})
+					}
 				};
 
+				/** @type { Omit<slime.jsh.wf.Exports["cli"],"initialize"> } */
 				var jsh_wf_cli = {
 					$f: {
 						command: {
@@ -565,10 +539,6 @@
 							);
 						}
 					},
-					/**
-					 * @type { slime.jsh.wf.Exports["project"]["initialize"] }
-					 */
-					initialize: $api.deprecate(project.initialize)
 				};
 
 				var guiAsk = function(pp) {
@@ -1477,7 +1447,7 @@
 
 				jsh.wf = {
 					Project: Project,
-					project: project,
+					project: Object.assign(project, { initialize: void(0) }),
 					git: jsh_wf_git,
 					typescript: jsh_wf_typescript,
 					inputs: jsh_wf_inputs,
@@ -1485,9 +1455,49 @@
 					requireGitIdentity: jsh_wf_requireGitIdentity,
 					prohibitUntrackedFiles: jsh_wf_prohibitUntrackedFiles,
 					prohibitModifiedSubmodules: jsh_wf_prohibitModifiedSubmodules,
-					cli: jsh_wf_cli,
+					cli: Object.assign(jsh_wf_cli, { initialize: void(0) } ),
 					error: jsh_wf_error
 				}
+			}
+		});
+
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.wf);
+			},
+			load: function() {
+				var code = {
+					/** @type { slime.jsh.wf.standard.Script } */
+					standard: $loader.script("plugin-standard.jsh.js")
+				};
+
+				jsh.wf.project.initialize = code.standard({
+					library: {
+						file: jsh.file,
+						git: jsh.tools.git,
+					},
+					jsh: jsh,
+					api: {
+						checks: function() {
+							return jsh.wf.checks;
+						},
+						git: function() {
+							return jsh.wf.git;
+						},
+						project: function() {
+							//	TODO	weird self-reference indicating this object should be restructured
+							return jsh.wf.project;
+						},
+						typescript: function() {
+							return jsh.wf.typescript;
+						}
+					}
+				});
+
+				/**
+				 * @type { slime.jsh.wf.Exports["project"]["initialize"] }
+				 */
+				jsh.wf.cli.initialize = $api.deprecate(jsh.wf.project.initialize);
 			}
 		})
 	}

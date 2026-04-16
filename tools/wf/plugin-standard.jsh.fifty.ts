@@ -260,12 +260,6 @@ namespace slime.jsh.wf.standard {
 		)(fifty);
 	}
 
-	export interface Project {
-		lint?: slime.jsh.wf.Lint
-		test?: slime.jsh.wf.Test
-		precommit?: slime.jsh.wf.Precommit
-	}
-
 	export type Options = {};
 
 	/**
@@ -635,6 +629,16 @@ namespace slime.jsh.wf.standard {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Project {
+		lint?: slime.jsh.wf.Lint
+		test?: slime.jsh.wf.Test
+		precommit?: slime.jsh.wf.Precommit
+	}
+
+	/**
+	 * Given the {@link jsh.wf.cli.Context context} provided to wf scripts, a {@link standard.Project project definition}, and an exports object, attaches a set of standard exports
+	 * of type {@link standard.Interface} to the given `$exports`.
+	 */
 	export type Export = (
 		$context: jsh.wf.cli.Context,
 		operations: standard.Project,
