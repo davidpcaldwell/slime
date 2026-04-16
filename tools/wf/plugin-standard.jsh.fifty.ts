@@ -632,7 +632,7 @@ namespace slime.jsh.wf.standard {
 	export interface Project {
 		lint?: slime.jsh.wf.Lint
 		test?: slime.jsh.wf.Test
-		precommit?: slime.jsh.wf.Precommit
+		precommit?: ReturnType<slime.jsh.wf.checks.Exports["precommit"]>
 	}
 
 	/**

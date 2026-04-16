@@ -860,7 +860,7 @@
 					}
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["noUntrackedFiles"] } */
+				/** @type { slime.jsh.wf.checks.Exports["noUntrackedFiles"] } */
 				function noUntrackedFiles(p) {
 					return $api.fp.world.old.ask(function(events) {
 						events.fire("console", "Verifying no untracked files ...");
@@ -875,7 +875,7 @@
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["requireGitIdentity"] } */
+				/** @type { slime.jsh.wf.checks.Exports["requireGitIdentity"] } */
 				function requireGitIdentity(p) {
 					/**
 					 *
@@ -915,7 +915,7 @@
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["noModifiedSubmodules"] } */
+				/** @type { slime.jsh.wf.checks.Exports["noModifiedSubmodules"] } */
 				function noModifiedSubmodules(p) {
 					return $api.fp.world.old.ask(function(events) {
 						events.fire("console", "Verifying submodules unmodified ...")
@@ -988,7 +988,7 @@
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["noDetachedHead"] } */
+				/** @type { slime.jsh.wf.checks.Exports["noDetachedHead"] } */
 				function noDetachedHead(p) {
 					return $api.fp.world.old.ask(function(events) {
 						events.fire("console", "Verifying not a detached HEAD ...");
@@ -1000,7 +1000,7 @@
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["upToDateWithOrigin"] } */
+				/** @type { slime.jsh.wf.checks.Exports["upToDateWithOrigin"] } */
 				function upToDateWiithOrigin(p) {
 					/**
 					 *
@@ -1061,7 +1061,7 @@
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["lint"] } */
+				/** @type { slime.jsh.wf.checks.Exports["lint"] } */
 				function lint(p) {
 					if (!p) p = {};
 					var isText = (p.isText) ? p.isText : jsh.project.code.files.isText;
@@ -1234,7 +1234,7 @@
 					};
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["tsc"] } */
+				/** @type { slime.jsh.wf.checks.Exports["tsc"] } */
 				function tsc() {
 					return function(events) {
 						events.fire("console", "Verifying with TypeScript compiler ...");
@@ -1276,7 +1276,7 @@
 					lint: lint,
 					/** @type { slime.jsh.wf.Exports["checks"]["precommit"] } */
 					precommit: function(p) {
-						return $api.fp.world.old.ask(function(events) {
+						return function(events) {
 							var repository = fetch();
 
 							var success = true;
@@ -1355,7 +1355,7 @@
 							}
 
 							return success;
-						});
+						};
 					}
 				}
 

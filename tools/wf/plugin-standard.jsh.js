@@ -57,12 +57,7 @@
 		$export(
 			function($context,project,$exports) {
 				if (arguments.length == 2) {
-					//	old signature
-					$api.deprecate(function(invocation) {
-						$context = invocation[0];
-						$exports = invocation[1];
-						project = {};
-					})(arguments);
+					throw new TypeError("Old signature of standard plugin export function used. Please update to the new signature, which takes three arguments: context, project, and exports.");
 				}
 
 				//	TODO	the below credentialHelper code also appears to be in tools/wf/plugin.jsh.js
@@ -521,9 +516,12 @@
 				if (project.precommit) {
 					$exports.precommit = function() {
 						var repository = library.git.program({ command: "git" }).repository($context.base.pathname.toString());
-						var success = project.precommit({
-							console: function(e) {
-								jsh.shell.console(e.detail);
+						var success = $api.fp.world.Question.now({
+							question: project.precommit,
+							handlers: {
+								console: function(e) {
+									jsh.shell.console(e.detail);
+								}
 							}
 						});
 						jsh.shell.console("Checks: " + ( (success) ? "passed." : "FAILED!") );
@@ -620,9 +618,12 @@
 						},
 						function(p) {
 							api.project().updateSubmodule({ path: p.options.path });
-							var result = project.precommit({
-								console: function(e) {
-									jsh.shell.console(e.detail);
+							var result = $api.fp.world.Question.now({
+								question: project.precommit,
+								handlers: {
+									console: function(e) {
+										jsh.shell.console(e.detail);
+									}
 								}
 							});
 							if (result) {
@@ -722,9 +723,12 @@
 						if (!p.options.message) throw new Error("No default commit message, and no message given.");
 
 						//	TODO	removed a notest option that could be used here
-						var check = project.precommit({
-							console: function(e) {
-								jsh.shell.console(e.detail);
+						var check = $api.fp.world.Question.now({
+							question: project.precommit,
+							handlers: {
+								console: function(e) {
+									jsh.shell.console(e.detail);
+								}
 							}
 						});
 						if (check) {

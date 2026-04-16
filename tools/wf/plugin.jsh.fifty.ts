@@ -303,17 +303,19 @@ namespace slime.jsh.wf {
 		}
 	}
 
-	export namespace exports {
-		export interface Checks {
+	export namespace checks {
+		export interface Exports {
 		}
+	}
 
-		export interface Inputs {
+	export namespace inputs {
+		export interface Exports {
 		}
 	}
 
 	export interface Exports {
-		checks: exports.Checks
-		inputs: exports.Inputs
+		checks: checks.Exports
+		inputs: inputs.Exports
 	}
 
 	export namespace inputs {
@@ -327,8 +329,8 @@ namespace slime.jsh.wf {
 		}
 	}
 
-	export namespace exports {
-		export interface Inputs {
+	export namespace inputs {
+		export interface Exports {
 			gitIdentityProvider: {
 				/**
 				 * A {@link inputs.GitIdentityProvider} that asks for values for `user.name` and `user.email` via the desktop GUI.
@@ -338,8 +340,8 @@ namespace slime.jsh.wf {
 		}
 	}
 
-	export namespace exports {
-		export interface Checks {
+	export namespace checks {
+		export interface Exports {
 			requireGitIdentity: (p: {
 				repository: slime.jrunscript.tools.git.repository.Local
 				get?: GitIdentityProvider
@@ -452,8 +454,8 @@ namespace slime.jsh.wf {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace exports {
-		export interface Checks {
+	export namespace checks {
+		export interface Exports {
 			noUntrackedFiles: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.world.old.Ask<{
 				console: string
 				untracked: string[]
@@ -468,8 +470,8 @@ namespace slime.jsh.wf {
 		prohibitUntrackedFiles: (p: { repository: slime.jrunscript.tools.git.repository.Local }, events?: $api.event.Function.Receiver) => void
 	}
 
-	export namespace exports {
-		export interface Checks {
+	export namespace checks {
+		export interface Exports {
 			noModifiedSubmodules: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.world.old.Ask<
 				{
 					console: string
@@ -593,8 +595,8 @@ namespace slime.jsh.wf {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace exports {
-		export interface Checks {
+	export namespace checks {
+		export interface Exports {
 			noDetachedHead: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.world.old.Ask<
 				{
 					console: string
@@ -604,8 +606,8 @@ namespace slime.jsh.wf {
 		}
 	}
 
-	export namespace exports {
-		export interface Checks {
+	export namespace checks {
+		export interface Exports {
 			upToDateWithOrigin: (p: { repository: slime.jrunscript.tools.git.repository.Local }) => slime.$api.fp.world.old.Ask<
 				{
 					console: string
@@ -615,14 +617,14 @@ namespace slime.jsh.wf {
 		}
 	}
 
-	export namespace exports {
-		export interface Checks {
+	export namespace checks {
+		export interface Exports {
 			tsc: slime.$api.fp.world.Sensor<void,{ console: string, output: string },boolean>
 		}
 	}
 
-	export namespace exports {
-		export interface Checks {
+	export namespace checks {
+		export interface Exports {
 			lint: (p?: {
 				isText?: slime.tools.code.isText
 				trailingWhitespace?: boolean
@@ -652,19 +654,33 @@ namespace slime.jsh.wf {
 		boolean
 	>
 
-	export type Precommit = slime.$api.fp.world.old.Ask<
-		{
-			console: string
-		},
-		boolean
-	>
-
-	export namespace exports {
-		export interface Checks {
-			precommit: (p?: {
-				lint?: Lint["check"]
-				test?: Test
-			}) => Precommit
+	export namespace checks {
+		export interface Exports {
+			/**
+			 * A world-oriented {@link slime.$api.fp.world.Sensor | Sensor} that takes optional linting and testing implementations
+			 * and returns a world-oriented `Question` that implements standard checks and returns a `boolean` indicating success or
+			 * failure for the set of checks as a whole.
+			 *
+			 * Checks:
+			 * * Local `git` identity (`user.name` and `user.email`) is configured
+			 * * No untracked files in the repository
+			 * * No modified submodules in the repository
+			 * * Not on a detached `HEAD`
+			 * * Up to date with `origin`
+			 * * Linting, if provided, passes
+			 * * TypeScript type checking passes
+			 * * Testing, if provided, passes
+			 */
+			precommit: slime.$api.fp.world.Sensor<
+				{
+					lint?: Lint["check"]
+					test?: Test
+				},
+				{
+					console: string
+				},
+				boolean
+			>
 		}
 	}
 

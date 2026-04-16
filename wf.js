@@ -446,29 +446,6 @@
 			 * @returns { slime.jsh.wf.standard.Project }
 			 */
 			function() {
-				/** @type { slime.jsh.wf.Precommit } */
-				var precommit = $api.fp.world.old.ask(function(events) {
-					var success = true;
-
-					var trunk = getTrunk();
-					var repository = jsh.tools.git.oo.Repository({ directory: $context.base });
-					var branch = repository.status().branch.name;
-					if (branch == trunk) {
-						events.fire("console", "Cannot commit directly to " + trunk);
-						success = false;
-					}
-
-					success = success && jsh.wf.checks.precommit({
-						lint: lint
-					})({
-						console: function(e) {
-							events.fire("console", e.detail);
-						}
-					});
-
-					return success;
-				});
-
 				return {
 					lint: {
 						check: lint,
@@ -476,7 +453,31 @@
 					},
 					//	TODO	arguably this should now run browser tests?
 					test: test(),
-					precommit: precommit
+					precommit: function(events) {
+						var success = true;
+
+						var trunk = getTrunk();
+						var repository = jsh.tools.git.oo.Repository({ directory: $context.base });
+						var branch = repository.status().branch.name;
+						if (branch == trunk) {
+							events.fire("console", "Cannot commit directly to " + trunk);
+							success = false;
+						}
+
+						success = success && $api.fp.world.Sensor.now({
+							sensor: jsh.wf.checks.precommit,
+							subject: {
+								lint: lint
+							},
+							handlers: {
+								console: function(e) {
+									events.fire("console", e.detail);
+								}
+							}
+						});
+
+						return success;
+					}
 				}
 			}
 		)();
