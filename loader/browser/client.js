@@ -431,7 +431,7 @@
 						//	For use in scripts that are loaded directly by the browser rather than via this loader
 						$api: runtime.$api,
 						test: {
-							run: runtime.run
+							run: runtime.$api.loader.old.run
 						},
 						//	(Possibly obsolete comment to follow) Used by loader/browser/tools/offline.html, which may be obsolete
 						$sdk: new function() {

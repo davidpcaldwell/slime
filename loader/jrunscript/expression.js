@@ -1106,7 +1106,6 @@
 			function() {
 				return $api.fp.now(
 					{
-						run: slime.run,
 						old: slime.old,
 						compiler: slime.compiler,
 						loader: slime.$api.loader,
