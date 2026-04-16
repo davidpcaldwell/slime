@@ -168,7 +168,7 @@
 				function(jsh) {
 					/** @type { slime.jsh.internal.loader.plugins.Export } */
 					var exported;
-					$slime.run(
+					$slime.$api.loader.old.run(
 						$slime.loader.getLoaderScript("plugins.js"),
 						{
 							$slime: $slime,
@@ -304,7 +304,7 @@
 						run: function(code,scope,target) {
 							//	TODO	untested
 							if (isNode(code)) code = code.pathname;
-							return $slime.run(getCode(code),scope,target);
+							return $slime.$api.loader.old.run(getCode(code),scope,target);
 						},
 						//	TODO	seems to be undocumented in type system, may be unused
 						value: function(code,scope,target) {
@@ -521,7 +521,7 @@
 			//			$slime
 
 			if ($slime.getSystemProperties().get("inonit.tools.Profiler.args")) {
-				$slime.run($slime.loader.getLoaderScript("profiler.js"), {
+				$slime.$api.loader.old.run($slime.loader.getLoaderScript("profiler.js"), {
 					jsh: this,
 					_properties: $slime.getSystemProperties()
 				});
