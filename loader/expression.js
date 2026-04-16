@@ -138,7 +138,11 @@
 					enumerable: true
 				}
 			}),
-			$api.fp.Object.with($api.loader.old),
+			$api.fp.Object.with({
+				run: $api.loader.old.run,
+				Resource: $api.loader.old.Resource,
+				old: $api.loader.old.old
+			}),
 			$api.Object.defineProperty({
 				name: "namespace",
 				descriptor: {
