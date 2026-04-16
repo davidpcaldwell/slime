@@ -139,7 +139,6 @@
 				}
 			}),
 			$api.fp.Object.with({
-				run: $api.loader.old.run,
 				Resource: $api.loader.old.Resource,
 				old: $api.loader.old.old
 			}),
