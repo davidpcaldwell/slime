@@ -234,8 +234,6 @@ namespace slime {
 	export namespace runtime {
 		export interface Exports {
 			run: slime.$api.loader.old.Exports["run"]
-			file: slime.$api.loader.old.Exports["file"]
-			value: slime.$api.loader.old.Exports["value"]
 			Resource: slime.$api.loader.old.Exports["Resource"]
 			old: slime.$api.loader.old.Exports["old"]
 		}
