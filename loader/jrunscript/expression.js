@@ -154,7 +154,7 @@
 		)();
 
 		/** @type { slime.jrunscript.runtime.java.Exports } */
-		var $exports_java = slime.file(
+		var $exports_java = slime.$api.loader.old.file(
 			new slime.Resource({
 				name: "slime://loader/jrunscript/java.js",
 				read: slime.Resource.ReadInterface.string(String($loader.getLoaderCode("jrunscript/java.js")))
@@ -165,7 +165,7 @@
 		);
 
 		/** @type { slime.jrunscript.runtime.io.Exports } */
-		var $exports_io = slime.file(
+		var $exports_io = slime.$api.loader.old.file(
 			new slime.Resource({
 				name: "slime://loader/jrunscript/io.js",
 				read: slime.Resource.ReadInterface.string(String($loader.getLoaderCode("jrunscript/io.js")))
@@ -1110,8 +1110,6 @@
 						old: slime.old,
 						compiler: slime.compiler,
 						loader: slime.$api.loader,
-						file: slime.file,
-						value: slime.value,
 						namespace: slime.namespace,
 						$platform: slime.$platform,
 						$api: $api,

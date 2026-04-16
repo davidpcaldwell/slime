@@ -310,12 +310,12 @@
 						value: function(code,scope,target) {
 							//	TODO	untested
 							if (isNode(code)) code = code.pathname;
-							return $slime.value(getCode(code),scope,target);
+							return $slime.$api.loader.old.value(getCode(code),scope,target);
 						},
 						file: function(code,$context) {
 							//	TODO	untested
 							if (isNode(code)) code = code.pathname;
-							return $slime.file(getCode(code),$context);
+							return $slime.$api.loader.old.file(getCode(code),$context);
 						},
 						module: function(pathname) {
 							var format = {};
