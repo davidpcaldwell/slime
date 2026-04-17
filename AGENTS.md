@@ -23,7 +23,7 @@ at all (if the module is designed only to be used in `jsh`).
 
 ## Fifty definitions
 
-SLIME uses co-located documention and tests (which it refers to as "definitions").
+SLIME uses co-located documentation and tests (which it refers to as "definitions").
 
 Definition files are typically sibling files of the `.js` implementation file that are written in TypeScript and use the extension
 `.fifty.ts`. The TypeScript files contain both documentation and tests. They typically provide a `Context` type which defines the
@@ -34,6 +34,8 @@ to the `fifty.tests` object. So to determine whether a specific function in an i
 the type definition foor that function in the `.fifty.ts` file. To determine whether it has test coverage, one would look at whether
 it is invoked from within a Fifty test (which typically would be in the same file as the documentation, although of course some
 tests in the project invoke other modules for various reasons).
+
+Typically, the Fifty `.fifty.ts` file provides an `Exports` type which is exported from the `.js` file, usually via an `$export` function call (less often, by assigning to an `$exports` object). So the Fifty file defines the type definition for that set of exports, usually by the `$export` (or `$exports`) argument to the `.js` IIFE being of type `Exports`.
 
 Fifty files heavily use TypeScript declaration merging, so looking at a single file's definition of a type may not capture the
 entire definition.
@@ -84,6 +86,10 @@ Create the issue template in the `local/.github/ISSUE_TEMPLATE` folder, creating
 
 Issues with a strong focus on improving documentation should receive the `documentation` label, while issues focused on test
 coverage should receive the `project` label.
+
+# Developer workflow
+
+When refactoring, always run `./wf tsc` after the refactor to make sure type-checking passed. If it does not, something is wrong.
 
 # Code Quality
 

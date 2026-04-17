@@ -860,7 +860,7 @@
 					}
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["noUntrackedFiles"] } */
+				/** @type { slime.jsh.wf.checks.Exports["noUntrackedFiles"] } */
 				function noUntrackedFiles(p) {
 					return $api.fp.world.old.ask(function(events) {
 						events.fire("console", "Verifying no untracked files ...");
@@ -875,7 +875,7 @@
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["requireGitIdentity"] } */
+				/** @type { slime.jsh.wf.checks.Exports["requireGitIdentity"] } */
 				function requireGitIdentity(p) {
 					/**
 					 *
@@ -915,7 +915,7 @@
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["noModifiedSubmodules"] } */
+				/** @type { slime.jsh.wf.checks.Exports["noModifiedSubmodules"] } */
 				function noModifiedSubmodules(p) {
 					return $api.fp.world.old.ask(function(events) {
 						events.fire("console", "Verifying submodules unmodified ...")
@@ -988,7 +988,7 @@
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["noDetachedHead"] } */
+				/** @type { slime.jsh.wf.checks.Exports["noDetachedHead"] } */
 				function noDetachedHead(p) {
 					return $api.fp.world.old.ask(function(events) {
 						events.fire("console", "Verifying not a detached HEAD ...");
@@ -1000,8 +1000,8 @@
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["upToDateWithOrigin"] } */
-				function upToDateWiithOrigin(p) {
+				/** @type { slime.jsh.wf.checks.Exports["upToDateWithOrigin"] } */
+				function upToDateWithOrigin(p) {
 					/**
 					 *
 					 * @param { string } repository
@@ -1061,7 +1061,7 @@
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["lint"] } */
+				/** @type { slime.jsh.wf.checks.Exports["lint"] } */
 				function lint(p) {
 					if (!p) p = {};
 					var isText = (p.isText) ? p.isText : jsh.project.code.files.isText;
@@ -1234,7 +1234,7 @@
 					};
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["tsc"] } */
+				/** @type { slime.jsh.wf.checks.Exports["tsc"] } */
 				function tsc() {
 					return function(events) {
 						events.fire("console", "Verifying with TypeScript compiler ...");
@@ -1271,12 +1271,12 @@
 					requireGitIdentity: requireGitIdentity,
 					noModifiedSubmodules: noModifiedSubmodules,
 					noDetachedHead: noDetachedHead,
-					upToDateWithOrigin: upToDateWiithOrigin,
+					upToDateWithOrigin: upToDateWithOrigin,
 					tsc: tsc,
 					lint: lint,
 					/** @type { slime.jsh.wf.Exports["checks"]["precommit"] } */
 					precommit: function(p) {
-						return $api.fp.world.old.ask(function(events) {
+						return function(events) {
 							var repository = fetch();
 
 							var success = true;
@@ -1318,7 +1318,7 @@
 
 							//	Without this, we can't merge an updated main branch into a feature branch; this perhaps is a logical
 							//	error in the check itself
-							if (!jsh.shell.environment.WF_PRECOMMIT_ALLOW_OUTDATED_BRANCH) success = success && upToDateWiithOrigin({
+							if (!jsh.shell.environment.WF_PRECOMMIT_ALLOW_OUTDATED_BRANCH) success = success && upToDateWithOrigin({
 								repository: repository
 							})({
 								console: function(e) {
@@ -1355,7 +1355,7 @@
 							}
 
 							return success;
-						});
+						};
 					}
 				}
 
