@@ -383,7 +383,7 @@ namespace slime {
 			loader: slime.loader.old.Loader
 
 			test: {
-				run: slime.runtime.Exports["run"]
+				run: slime.$api.loader.old.Exports["run"]
 			}
 
 			//	(undocumented) According to very old documentation, used to support development-related functions.
