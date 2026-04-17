@@ -1001,7 +1001,7 @@
 				}
 
 				/** @type { slime.jsh.wf.checks.Exports["upToDateWithOrigin"] } */
-				function upToDateWiithOrigin(p) {
+				function upToDateWithOrigin(p) {
 					/**
 					 *
 					 * @param { string } repository
@@ -1271,7 +1271,7 @@
 					requireGitIdentity: requireGitIdentity,
 					noModifiedSubmodules: noModifiedSubmodules,
 					noDetachedHead: noDetachedHead,
-					upToDateWithOrigin: upToDateWiithOrigin,
+					upToDateWithOrigin: upToDateWithOrigin,
 					tsc: tsc,
 					lint: lint,
 					/** @type { slime.jsh.wf.Exports["checks"]["precommit"] } */
@@ -1318,7 +1318,7 @@
 
 							//	Without this, we can't merge an updated main branch into a feature branch; this perhaps is a logical
 							//	error in the check itself
-							if (!jsh.shell.environment.WF_PRECOMMIT_ALLOW_OUTDATED_BRANCH) success = success && upToDateWiithOrigin({
+							if (!jsh.shell.environment.WF_PRECOMMIT_ALLOW_OUTDATED_BRANCH) success = success && upToDateWithOrigin({
 								repository: repository
 							})({
 								console: function(e) {
