@@ -481,13 +481,6 @@ namespace slime.jrunscript.runtime {
 	 * and Java-aware versions of `Resource`, `Loader`, and `mime`.
 	 */
 	export interface Exports extends slime.runtime.Exports {
-		Resource: slime.runtime.Exports["Resource"] & {
-			/**
-			 * Creates a `Resource` which has additional capabilities beyond the SLIME runtime `Resource`.
-			 */
-			new (p: old.resource.HistoricSupportedDescriptor): slime.jrunscript.runtime.old.Resource
-		}
-
 		io: slime.jrunscript.runtime.io.Exports
 		java: slime.jrunscript.runtime.java.Exports
 
@@ -727,15 +720,21 @@ namespace slime.jrunscript.runtime {
 		}
 	//@ts-ignore
 	)(Packages,fifty);
-
-	export interface Exports extends slime.runtime.Exports {
-		$api: slime.$api.jrunscript.Global
-	}
 }
 
 namespace slime.$api.jrunscript {
 	export interface Global extends slime.$api.Global {
 		jrunscript: {
+			loader: {
+				old: {
+					Resource: slime.runtime.Exports["Resource"] & {
+						/**
+						 * Creates a `Resource` which has additional capabilities beyond the SLIME runtime `Resource`.
+						 */
+						new (p: slime.jrunscript.runtime.old.resource.HistoricSupportedDescriptor): slime.jrunscript.runtime.old.Resource
+					}
+				}
+			}
 			java: slime.jrunscript.runtime.java.Exports
 			io: slime.jrunscript.runtime.io.Exports
 			properties: {
@@ -865,7 +864,6 @@ namespace slime.$api.jrunscript {
 //@ts-ignore
 )(Packages,fifty);
 
-
 (
 	function(
 		fifty: slime.fifty.test.Kit
@@ -919,5 +917,15 @@ namespace slime.external.e4x {
 		new (value: any): XMLList
 
 		readonly [tag_XMLList]: "value"
+	}
+}
+
+namespace slime.jrunscript.runtime {
+	export interface Exports extends slime.runtime.Exports {
+		Resource: slime.$api.jrunscript.Global["jrunscript"]["loader"]["old"]["Resource"]
+	}
+
+	export interface Exports extends slime.runtime.Exports {
+		$api: slime.$api.jrunscript.Global
 	}
 }
