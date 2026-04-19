@@ -12,7 +12,7 @@ namespace slime.jrunscript.io.mime {
 		$slime: {
 			$api: {
 				jrunscript: {
-					loader: slime.jsh.plugin.$slime["$api"]["jrunscript"]["loader"]
+					loader: slime.$api.jrunscript.Global["jrunscript"]["loader"]
 				}
 			}
 		}

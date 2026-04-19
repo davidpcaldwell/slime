@@ -255,7 +255,9 @@
 				 */
 				function Resource(p) {
 					if (Object.keys(p).length == 2 && p.type && p.name) {
-						debugger;
+						$api.deprecate(function() {
+							return void(0);
+						})();
 					}
 
 					if (isStreamDescriptor(p)) {
