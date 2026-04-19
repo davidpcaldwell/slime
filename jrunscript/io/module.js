@@ -44,7 +44,11 @@
 			mime: code.mime({
 				nojavamail: $context.nojavamail,
 				$slime: {
-					Resource: $context.$slime.Resource
+					$api: {
+						jrunscript: {
+							loader: $api.jrunscript.loader
+						}
+					}
 				},
 				api: {
 					java: $context.api.java,

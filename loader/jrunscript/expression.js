@@ -246,16 +246,18 @@
 			return (p.read && (p.read["binary"] || p.read["text"])) || p["write"];
 		}
 
-		/** @type { slime.jrunscript.runtime.Exports["Resource"] } */
-		var Resource = (function(was) {
+		/** @type { slime.$api.jrunscript.Global["jrunscript"]["loader"]["old"]["Resource"] } */
+		var $api_jrunscript_loader_old_Resource = (function(was) {
 			var rv = (
 				/**
 				 * @param { slime.jrunscript.runtime.old.resource.HistoricSupportedDescriptor } p
 				 * @constructor
 				 */
-				function(p) {
+				function Resource(p) {
 					if (Object.keys(p).length == 2 && p.type && p.name) {
-						debugger;
+						$api.deprecate(function() {
+							return void(0);
+						})();
 					}
 
 					if (isStreamDescriptor(p)) {
@@ -604,8 +606,6 @@
 			);
 		})(slime.Resource);
 
-		var $exports_Resource = Resource;
-
 		// //	Convert a Java inonit.script.engine.Code.Loader.Resource to a resource
 		// //	TODO	should this logic be pushed into loader.io? Probably
 		// var JavaResource = function(_file,path) {
@@ -721,7 +721,7 @@
 				toString: function() {
 					return "Java loader: " + _source.toString();
 				},
-				Resource: $exports_Resource
+				Resource: $api_jrunscript_loader_old_Resource
 			}
 		}
 
@@ -791,7 +791,7 @@
 						}
 					}
 				},
-				Resource: $exports_Resource
+				Resource: $api_jrunscript_loader_old_Resource
 			}
 		}
 
@@ -811,7 +811,7 @@
 
 			//	TODO	this line was present previously and makes jrunscript file Loaders work, but does not make a lot of sense
 			//			at the moment
-			p.Resource = $exports_Resource;
+			p.Resource = $api_jrunscript_loader_old_Resource;
 			return p;
 		}
 
@@ -1094,6 +1094,11 @@
 			slime.$api,
 			{
 				jrunscript: {
+					loader: {
+						old: {
+							Resource: $api_jrunscript_loader_old_Resource
+						}
+					},
 					java: $exports_java,
 					io: $exports_io,
 					properties: properties
@@ -1114,7 +1119,7 @@
 						$api: $api,
 
 						Loader: $exports_Loader,
-						Resource: $exports_Resource,
+						Resource: $api_jrunscript_loader_old_Resource,
 
 						java: $exports_java,
 						io: $exports_io,
