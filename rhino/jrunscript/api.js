@@ -1930,8 +1930,8 @@
 						);
 					}
 					return SingleJarDownload(
-						"1.8.0",
-						"https://repo1.maven.org/maven2/org/mozilla/rhino-all/1.8.0/rhino-all-1.8.0.jar",
+						"1.9.1",
+						"https://repo1.maven.org/maven2/org/mozilla/rhino-all/1.9.1/rhino-all-1.9.1.jar",
 						"js"
 					);
 				};
