@@ -196,7 +196,7 @@ namespace slime.jrunscript.runtime {
 					var writer = buffer.writeText();
 					writer.write("Buffer");
 					buffer.close();
-					var resource = new module.Resource({
+					var resource = new module.$api.jrunscript.loader.old.Resource({
 						stream: {
 							binary: buffer.readBinary()
 						}
@@ -213,7 +213,7 @@ namespace slime.jrunscript.runtime {
 					var writer = buffer.writeText();
 					writer.write(JSON.stringify({ foo: "bar" }));
 					buffer.close();
-					var resource = new module.Resource({
+					var resource = new module.$api.jrunscript.loader.old.Resource({
 						stream: {
 							binary: buffer.readBinary()
 						}
@@ -228,7 +228,7 @@ namespace slime.jrunscript.runtime {
 					var lines = [
 						"foo.bar=baz"
 					];
-					var resource = new module.Resource({
+					var resource = new module.$api.jrunscript.loader.old.Resource({
 						read: {
 							string: function() { return lines.join("\n"); }
 						}
@@ -257,7 +257,7 @@ namespace slime.jrunscript.runtime {
 					// TODO: writeText() below?
 					buffer.writeBinary().character().write(string);
 					buffer.close();
-					var resource = new module.Resource({
+					var resource = new module.$api.jrunscript.loader.old.Resource({
 						stream: {
 							binary: buffer.readBinary()
 						}
@@ -344,7 +344,7 @@ namespace slime.jrunscript.runtime {
 			export type HistoricSupportedDescriptor = slime.resource.Descriptor | resource.Descriptor | resource.LoadedDescriptor | DeprecatedStreamDescriptor
 
 			/**
-			 * An object representing the mode of operation of {@link old.Resource<any>} `write` operations.
+			 * An object representing the mode of operation of {@link slime.loader.old.Resource<any>} `write` operations.
 			 */
 			export interface WriteMode {
 				/**
@@ -501,7 +501,7 @@ namespace slime.jrunscript.runtime {
 
 			fifty.tests.exports.Resource = function() {
 				var file: slime.jrunscript.runtime.old.resource.Descriptor = fifty.$loader.source.get("expression.fifty.ts") as slime.jrunscript.runtime.old.resource.Descriptor;
-				var resource = new $slime.Resource({
+				var resource = new $slime.$api.jrunscript.loader.old.Resource({
 					type: $api.mime.Type.parse("application/x.typescript"),
 					read: {
 						binary: function() {
@@ -522,7 +522,7 @@ namespace slime.jrunscript.runtime {
 					stream.write(data);
 					stream.close();
 
-					var resource = new $slime.Resource({
+					var resource = new $slime.$api.jrunscript.loader.old.Resource({
 						stream: {
 							binary: buffer.readBinary()
 						}
@@ -727,7 +727,7 @@ namespace slime.$api.jrunscript {
 		jrunscript: {
 			loader: {
 				old: {
-					Resource: slime.runtime.Exports["Resource"] & {
+					Resource: slime.$api.loader.old.Exports["Resource"] & {
 						/**
 						 * Creates a `Resource` which has additional capabilities beyond the SLIME runtime `Resource`.
 						 */
