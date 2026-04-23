@@ -139,7 +139,6 @@
 				}
 			}),
 			$api.fp.Object.with({
-				Resource: $api.loader.old.Resource,
 				old: $api.loader.old.old
 			}),
 			$api.Object.defineProperty({

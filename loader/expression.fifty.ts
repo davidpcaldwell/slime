@@ -233,8 +233,6 @@ namespace slime {
 
 	export namespace runtime {
 		export interface Exports {
-			//	TODO	$api.loader.old.Resource
-			Resource: slime.$api.loader.old.Exports["Resource"]
 			//	TODO	$api.loader.old.old
 			old: slime.$api.loader.old.Exports["old"]
 		}

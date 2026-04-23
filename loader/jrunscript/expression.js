@@ -155,9 +155,9 @@
 
 		/** @type { slime.jrunscript.runtime.java.Exports } */
 		var $exports_java = slime.$api.loader.old.file(
-			new slime.Resource({
+			new slime.$api.loader.old.Resource({
 				name: "slime://loader/jrunscript/java.js",
-				read: slime.Resource.ReadInterface.string(String($loader.getLoaderCode("jrunscript/java.js")))
+				read: slime.$api.loader.old.Resource.ReadInterface.string(String($loader.getLoaderCode("jrunscript/java.js")))
 			}), {
 				engine: $bridge,
 				classpath: $loader.getClasspath()
@@ -166,14 +166,14 @@
 
 		/** @type { slime.jrunscript.runtime.io.Exports } */
 		var $exports_io = slime.$api.loader.old.file(
-			new slime.Resource({
+			new slime.$api.loader.old.Resource({
 				name: "slime://loader/jrunscript/io.js",
-				read: slime.Resource.ReadInterface.string(String($loader.getLoaderCode("jrunscript/io.js")))
+				read: slime.$api.loader.old.Resource.ReadInterface.string(String($loader.getLoaderCode("jrunscript/io.js")))
 			}), {
 				_streams: _streams,
 				api: {
 					java: $exports_java,
-					Resource: slime.Resource
+					Resource: slime.$api.loader.old.Resource
 				}
 			}
 		);
@@ -604,7 +604,7 @@
 					ReadInterface: was.ReadInterface
 				}
 			);
-		})(slime.Resource);
+		})(slime.$api.loader.old.Resource);
 
 		// //	Convert a Java inonit.script.engine.Code.Loader.Resource to a resource
 		// //	TODO	should this logic be pushed into loader.io? Probably

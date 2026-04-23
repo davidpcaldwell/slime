@@ -322,7 +322,7 @@
 									return {
 										type: code.contentType,
 										name: path,
-										read: runtime.Resource.ReadInterface.string(code.responseText)
+										read: runtime.$api.loader.old.Resource.ReadInterface.string(code.responseText)
 									};
 								}
 
