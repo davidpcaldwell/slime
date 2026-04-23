@@ -235,7 +235,7 @@ namespace slime {
 				 */
 				new (p: slime.loader.old.Source): slime.loader.old.Loader
 
-				series: slime.runtime.Exports["old"]["loader"]["series"]
+				series: slime.$api.loader.old.Exports["old"]["loader"]["series"]
 				getCode: any
 				fetch: any
 			}

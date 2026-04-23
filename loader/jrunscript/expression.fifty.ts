@@ -541,7 +541,7 @@ namespace slime.jrunscript.runtime {
 	)(fifty);
 
 	export interface Exports extends slime.runtime.Exports {
-		Loader: slime.runtime.Exports["old"]["Loader"] & {
+		Loader: slime.$api.loader.old.Exports["old"]["Loader"] & {
 			new (p: internal.CustomSource): Loader
 		}
 	}

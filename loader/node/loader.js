@@ -96,7 +96,7 @@
 				}
 				return {
 					Loader: function(p) {
-						return new runtime.old.Loader(toSource(p.base));
+						return new runtime.$api.loader.old.old.Loader(toSource(p.base));
 					}
 				}
 			}

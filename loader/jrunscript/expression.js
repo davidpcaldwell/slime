@@ -857,7 +857,7 @@
 		var $exports_Loader = (
 			/**
 			 *
-			 * @param { slime.runtime.Exports["old"]["Loader"] } was
+			 * @param { slime.$api.loader.old.Exports["old"]["Loader"] } was
 			 * @returns
 			 */
 			function(was) {
@@ -891,7 +891,7 @@
 				);
 				return rv;
 			}
-		)(slime.old.Loader);
+		)(slime.$api.loader.old.old.Loader);
 
 		/** @type { slime.jrunscript.runtime.Exports["classpath"] } */
 		var $exports_classpath = (
@@ -1111,7 +1111,7 @@
 			function() {
 				return $api.fp.now(
 					{
-						old: slime.old,
+						old: slime.$api.loader.old.old,
 						compiler: slime.compiler,
 						loader: slime.$api.loader,
 						namespace: slime.namespace,

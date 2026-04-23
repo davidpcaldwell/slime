@@ -142,7 +142,7 @@ namespace slime.runtime.internal.code {
 			runtime: ($api: slime.$api.internal.Exports["exports"]) => Runtime
 
 			old: {
-				toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
+				toExportScope: slime.$api.loader.old.Exports["old"]["loader"]["tools"]["toExportScope"]
 			}
 		}
 	}

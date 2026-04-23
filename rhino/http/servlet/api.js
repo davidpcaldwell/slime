@@ -376,7 +376,7 @@
 		})($host);
 
 		/** @type { slime.servlet.Scope } */
-		var scope = $context.$slime.old.loader.tools.toExportScope({
+		var scope = $context.$slime.$api.loader.old.old.loader.tools.toExportScope({
 			httpd: (
 				function() {
 					var rv = {
