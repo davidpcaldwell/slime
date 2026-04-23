@@ -56,8 +56,8 @@ namespace slime.jsh.wf.internal.module {
 		})(fifty);
 	}
 
-	export namespace exports {
-		export interface Typescript {
+	export namespace typescript {
+		export interface Exports {
 			typedoc: {
 				invocation: slime.$api.fp.world.Sensor<
 					typedoc.Invocation,
@@ -85,7 +85,7 @@ namespace slime.jsh.wf.internal.module {
 		}
 
 		export namespace project {
-			export interface Typescript {
+			export interface Exports {
 				/**
 				 * Returns the TypeScript version that should be used when processing this project. Defaults to the project version
 				 * indicated in `tsc.version`, if any; falls back to the default TypeScript version declared by SLIME.
@@ -269,8 +269,8 @@ namespace slime.jsh.wf.internal.typescript {
 	}
 
 	export interface Exports {
-		module: slime.jsh.wf.internal.module.exports.Typescript
-		Project: slime.jsh.wf.internal.module.exports.project.Typescript
+		module: slime.jsh.wf.internal.module.typescript.Exports
+		Project: slime.jsh.wf.internal.module.typescript.project.Exports
 	}
 
 	export type Script = slime.runtime.loader.Scoped<Context,Exports>
