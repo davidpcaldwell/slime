@@ -637,7 +637,7 @@ namespace slime.jsh.wf.standard {
 
 	/**
 	 * Given the {@link jsh.wf.cli.Context context} provided to wf scripts, a {@link standard.Project project definition}, and an exports object, attaches a set of standard exports
-	 * of type {@link standard.Interface} to the given `$exports`.
+	 * of type {@link Interface} to the given `$exports`.
 	 */
 	export type Export = (
 		$context: jsh.wf.cli.Context,
