@@ -123,7 +123,7 @@ namespace slime.jrunscript.io {
 		Streams: slime.jrunscript.runtime.io.Exports["Streams"]
 		Buffer: slime.jrunscript.runtime.io.Exports["Buffer"]
 		Loader: slime.jrunscript.runtime.Exports["Loader"]
-		old: slime.jrunscript.runtime.Exports["old"]
+		old: slime.$api.loader.old.Exports["old"]
 		java: {
 			//	JSAPI documentation said this was deprecated, but replaced by what? Calls to `Streams`?
 			/**

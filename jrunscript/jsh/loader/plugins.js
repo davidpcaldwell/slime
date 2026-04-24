@@ -329,10 +329,10 @@
 					new $slime.Loader({ _file: p._file })
 				);
 			} else if (isSynchronousLoaderPlugins(p)) {
-				$slime.old.loader.source.object
+				$slime.$api.loader.old.old.loader.source.object
 				content = getPluginsContent(
 					scope,
-					$slime.old.loader.from.synchronous(p.synchronous)
+					$slime.$api.loader.old.old.loader.from.synchronous(p.synchronous)
 				);
 			} else if (isOldLoaderPlugins(p)) {
 				content = getPluginsContent(
