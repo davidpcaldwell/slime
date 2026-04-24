@@ -93,7 +93,7 @@
 		)();
 
 		/**
-		 * @type { slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"] }
+		 * @type { slime.$api.loader.old.Exports["old"]["loader"]["tools"]["toExportScope"] }
 		 */
 		var toExportScope = function(scope) {
 			var rv = Object.assign(scope, { $exports: void(0), $export: void(0) });

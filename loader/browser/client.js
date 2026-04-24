@@ -360,7 +360,7 @@
 					this.Child = void(0);
 					this.get = void(0);
 					this.toSynchronous = void(0);
-					runtime.old.Loader.apply(this,arguments);
+					runtime.$api.loader.old.old.Loader.apply(this,arguments);
 				};
 
 				var bootstrapper = new Loader(bootstrap.url);
@@ -409,7 +409,7 @@
 						Loader: Object.assign(
 							Loader,
 							{
-								series: runtime.old.loader.series,
+								series: runtime.$api.loader.old.old.loader.series,
 								getCode: fetcher.getCode,
 								fetch: fetcher.fetch
 							}
