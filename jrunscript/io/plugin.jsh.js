@@ -40,7 +40,7 @@
 				jsh.io = $loader.module("module.js", {
 					$slime: {
 						io: $slime.io,
-						old: $slime.old,
+						old: $slime.$api.loader.old.old,
 						mime: $api.mime,
 						Loader: $slime.Loader,
 						Resource: $slime.Resource,

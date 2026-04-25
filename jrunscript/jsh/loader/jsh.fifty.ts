@@ -8,7 +8,7 @@ namespace slime.jsh {
 	export namespace plugin {
 		export interface $slime {
 			loader:
-				slime.jrunscript.runtime.Exports["old"]["loader"]
+				slime.$api.loader.old.Exports["old"]["loader"]
 				& slime.$api.Global["loader"]
 				& {
 					getLoaderScript(path: string): any
