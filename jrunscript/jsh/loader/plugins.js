@@ -329,7 +329,8 @@
 					new $slime.Loader({ _file: p._file })
 				);
 			} else if (isSynchronousLoaderPlugins(p)) {
-				$slime.$api.loader.old.old.loader.source.object
+				//	Copilot suggested removing next line as a no-op, which seems right, but what was it for?
+				//$slime.$api.loader.old.old.loader.source.object
 				content = getPluginsContent(
 					scope,
 					$slime.$api.loader.old.old.loader.from.synchronous(p.synchronous)
