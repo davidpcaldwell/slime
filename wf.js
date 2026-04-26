@@ -436,6 +436,15 @@
 			return result.status == 0;
 		};
 
+		var checks = $api.fp.now(
+			jsh.wf.checks.precommit({ lint: lint }),
+			$api.fp.world.Question.thunk({
+				console: function(e) {
+					jsh.shell.console(e.detail);
+				}
+			})
+		);
+
 		var project = (
 			/**
 			 *
@@ -458,17 +467,7 @@
 							success = false;
 						}
 
-						success = success && $api.fp.world.Sensor.now({
-							sensor: jsh.wf.checks.precommit,
-							subject: {
-								lint: lint
-							},
-							handlers: {
-								console: function(e) {
-									events.fire("console", e.detail);
-								}
-							}
-						});
+						success = success && checks();
 
 						return success;
 					}
@@ -486,11 +485,7 @@
 		);
 
 		$exports.check = $api.fp.pipe(
-			$api.fp.now(project.precommit, $api.fp.world.Question.thunk({
-				console: function(e) {
-					jsh.shell.console(e.detail);
-				}
-			})),
+			checks,
 			function(result) {
 				return (result) ? 0 : 1;
 			}
