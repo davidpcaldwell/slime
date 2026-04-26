@@ -1115,6 +1115,7 @@
 						loader: slime.$api.loader,
 						namespace: slime.namespace,
 						$api: $api,
+						$platform: $api.platform,
 
 						Loader: $exports_Loader,
 						Resource: $api_jrunscript_loader_old_Resource,
