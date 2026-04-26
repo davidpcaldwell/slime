@@ -21,7 +21,7 @@ namespace slime {
 
 		/**
 		 * Executes code in a particular scope with a particular `this` value. The code will automatically contain the
-		 * {@link slime.runtime.Platform | `$platform`} and {@link slime.$api.Global | `$api`} objects described in
+		 * {@link slime.$api.Global | `$api`} object described in
 		 * {@link slime | Using SLIME | APIs for all platforms}.
 		 *
 		 * @param path The path of the code to execute.
@@ -42,7 +42,7 @@ namespace slime {
 		value: (path: string, scope?: any, target?: any) => any
 
 		/**
-		 * Executes a script in a separate scope. The scope will contain the `$platform` and `$api` objects described above. In
+		 * Executes a script in a separate scope. The scope will contain the `$api` object described above. In
 		 * addition, the script will be provided with special objects named `$context` and `$exports`. The `$context` object
 		 * represents an application-specific context to provide to the script; the `$exports` object represents an object to which
 		 * the script can assign properties that will be visible outside the script.
@@ -61,7 +61,7 @@ namespace slime {
 		 *
 		 * The module's main file will be executed with the following variables in scope:
 		 *
-		 * * the `$platform` and `$api` objects specified above,
+		 * * the `$api` object specified above,
 		 * * the `$context` value specified by the second argument,
 		 * * an `$exports` object,
 		 * * a `$loader` object of type {@link Loader} allowing other source files and submodules to be loaded.

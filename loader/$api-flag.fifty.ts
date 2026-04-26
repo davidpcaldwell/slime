@@ -38,7 +38,6 @@ namespace slime.$api {
 		) {
 			const { verify } = fifty;
 			const api = fifty.global.$api;
-			const { $platform } = fifty.global;
 
 			fifty.tests.jsapi = fifty.test.Parent();
 

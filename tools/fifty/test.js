@@ -7,13 +7,12 @@
 //@ts-check
 (
 	/**
-	 * @param { slime.runtime.Platform } $platform
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.fifty.internal.test.Context } $context
 	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.fifty.internal.test.Exports> } $export
 	 */
-	function($platform,$api,$context,$loader,$export) {
+	function($api,$context,$loader,$export) {
 		//	This file has four callers:
 		//	*	fifty / jsh: test.jsh.js
 		//	*	fifty / browser: test-browser.js
@@ -385,7 +384,7 @@
 			$api.Object.defineProperty({
 				name: "$platform",
 				descriptor: {
-					value: $platform
+					value: $api.platform
 				}
 			}),
 			$api.Object.defineProperty({
@@ -857,4 +856,4 @@
 		})
 	}
 //@ts-ignore
-)($platform,$api,$context,$loader,$export);
+)($api,$context,$loader,$export);

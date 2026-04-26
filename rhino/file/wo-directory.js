@@ -9,12 +9,11 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.runtime.Platform } $platform
 	 * @param { slime.jrunscript.file.internal.wo.directory.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.file.internal.wo.directory.Exports> } $export
 	 */
-	function($api,$platform,$context,$loader,$export) {
+	function($api,$context,$loader,$export) {
 		/** @type { (fs: slime.jrunscript.file.world.Filesystem) => slime.$api.fp.Transform<string> } */
 		var canonicalize = function(filesystem) {
 			return function(pathname) {
@@ -380,7 +379,7 @@
 						unsupported: function(code) { return null; },
 						scope: {
 							$api: $api,
-							$platform: $platform
+							$platform: $api.platform
 						}
 					})
 				}
@@ -411,4 +410,4 @@
 		})
 	}
 //@ts-ignore
-)($api,$platform,$context,$loader,$export);
+)($api,$context,$loader,$export);

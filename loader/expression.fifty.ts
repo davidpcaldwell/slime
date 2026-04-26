@@ -20,9 +20,6 @@ namespace slime {
 	 *
 	 * All code loaded by the SLIME runtime has access to the {@link slime.$api.Global} object (as `$api`), providing a standard
 	 * SLIME API that embeddings on all platforms can use.
-	 *
-	 * Code is also provided by a {@link Platform} object (as `$platform`), providing more advanced JavaScript engine capabilities
-	 * that depend on the underlying JavaScript engine, though `$platform` properties are likely to migrate to `$api` in the future.
 	 */
 	export namespace runtime {
 	}

@@ -592,21 +592,7 @@ namespace slime.jrunscript.java.internal.threads {
 					(
 						function(scope) {
 							var $$api = fifty.global.$api;
-							// $jsapi.loader.eval("../../loader/$api.js", {
-							// 	$slime: {
-							// 		getRuntimeScript: function(path) {
-							// 			return {
-							// 				name: path,
-							// 				js: $jsapi.loader.string("../../loader/" + path)
-							// 			}
-							// 		}
-							// 	},
-							// 	//	TODO	dubious; relies on $engine/$platform compatibility
-							// 	$engine: $platform,
-							// 	$export: function(value) {
-							// 		$$api = value;
-							// 	}
-							// });
+
 							scope.$$api = $$api;
 
 							var monitor = new module.Thread.Monitor();
