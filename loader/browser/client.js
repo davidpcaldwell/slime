@@ -441,7 +441,7 @@
 							}
 
 							//	used by unit tests <-- old comment; used in loader/browser/test/api.js somehow
-							this.platform = runtime.$platform;
+							this.platform = runtime.$api.platform;
 						}
 					},
 					loaderMethods

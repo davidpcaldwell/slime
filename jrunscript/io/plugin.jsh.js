@@ -37,19 +37,20 @@
 					addLibDirectory(poi);
 				}
 
-				jsh.io = $loader.module("module.js", {
+				/** @type { slime.jrunscript.io.Script } */
+				var script = $loader.script("module.js");
+
+				jsh.io = script({
 					$slime: {
-						io: $slime.io,
-						old: $slime.$api.loader.old.old,
-						mime: $api.mime,
+						$api: $slime.$api,
 						Loader: $slime.Loader,
 						Resource: $slime.Resource,
 						jrunscript: $slime.jrunscript
 					},
 					api: {
-						js: jsh.js,
 						java: jsh.java
-					}
+					},
+					nojavamail: false
 				})
 			}
 		});

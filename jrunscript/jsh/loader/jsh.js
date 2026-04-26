@@ -97,7 +97,7 @@
 
 								return Object.assign(
 									{},
-									runtime.old.loader,
+									runtime.$api.loader.old.old.loader,
 									runtime.$api.loader,
 									{
 										getLoaderScript: function(/** @type { string }*/path) {
