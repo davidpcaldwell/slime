@@ -1262,6 +1262,7 @@
 								}
 							}
 						);
+						events.fire("console", "tsc.jsh.js exited with status: " + result.status);
 						return (result.status == 0);
 					};
 				}

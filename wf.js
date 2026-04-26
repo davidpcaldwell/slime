@@ -12,7 +12,7 @@
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.wf.cli.Context } $context
 	 * @param { slime.runtime.loader.Store } $loader
-	 * @param { slime.project.wf.Interface } $exports
+	 * @param { Omit<slime.project.wf.Interface,"test"> & { test: { jrunscript: any } } } $exports
 	 */
 	function(Packages,$api,jsh,$context,$loader,$exports) {
 		function synchronizeEclipseSettings() {
@@ -394,50 +394,46 @@
 		/**
 		 * Runs the test suite, first installing Java, and Rhino.
 		 *
-		 * Exits the VM with exit status 1 on failure; otherwise, returns `true`.
-		 *
-		 * @returns { slime.jsh.wf.Test }
+		 * @type { slime.jsh.wf.Test }
 		 */
-		var test = function() {
-			return function(events) {
-				//	This invocation will install the JDK if necessary, and then ensure the version of Rhino is the correct one for
-				//	that JDK
-				jsh.shell.run({
+		var test_jrunscript = function(events) {
+			//	This invocation will install the JDK if necessary, and then ensure the version of Rhino is the correct one for
+			//	that JDK
+			jsh.shell.run({
+				command: "bash",
+				arguments: [
+					$context.base.getRelativePath("jsh"),
+					$context.base.getRelativePath("jrunscript/jsh/tools/install/rhino.jsh.js"),
+					"--replace"
+				]
+			});
+
+			//	Inserted to try to deal with issue #896. May not be needed; TypeScript may be installed when needed anyway. But with
+			//	tsc blipping in and out of existence, it seemed prudent to try simplifying the TypeScript life cycle.
+			jsh.wf.typescript.require();
+
+			var result = $api.fp.world.now.question(
+				jsh.shell.subprocess.question,
+				{
 					command: "bash",
-					arguments: [
-						$context.base.getRelativePath("jsh"),
-						$context.base.getRelativePath("jrunscript/jsh/tools/install/rhino.jsh.js"),
-						"--replace"
-					]
-				});
-
-				//	Inserted to try to deal with issue #896. May not be needed; TypeScript may be installed when needed anyway. But with
-				//	tsc blipping in and out of existence, it seemed prudent to try simplifying the TypeScript life cycle.
-				jsh.wf.typescript.require();
-
-				var result = $api.fp.world.now.question(
-					jsh.shell.subprocess.question,
-					{
-						command: "bash",
-						arguments: $api.Array.build(function(rv) {
-							rv.push(jsh.shell.jsh.src.getFile("jsh").toString());
-							rv.push($context.base.getRelativePath("contributor/jrunscript.jsh.js"));
-						})
+					arguments: $api.Array.build(function(rv) {
+						rv.push(jsh.shell.jsh.src.getFile("jsh").toString());
+						rv.push($context.base.getRelativePath("contributor/jrunscript.jsh.js"));
+					})
+				},
+				{
+					stdout: function(e) {
+						events.fire("output", e.detail.line);
 					},
-					{
-						stdout: function(e) {
-							events.fire("output", e.detail.line);
-						},
-						stderr: function(e) {
-							events.fire("console", e.detail.line);
-						}
+					stderr: function(e) {
+						events.fire("console", e.detail.line);
 					}
-				)
-				if (result.status != 0) {
-					jsh.shell.console("Failing because tests failed.");
 				}
-				return result.status == 0;
+			)
+			if (result.status != 0) {
+				jsh.shell.console("Failing because tests failed.");
 			}
+			return result.status == 0;
 		};
 
 		var project = (
@@ -451,8 +447,6 @@
 						check: lint,
 						fix: jsh.wf.checks.lint().fix
 					},
-					//	TODO	arguably this should now run browser tests?
-					test: test(),
 					precommit: function(events) {
 						var success = true;
 
@@ -464,17 +458,16 @@
 							success = false;
 						}
 
-						success = success && $api.fp.world.Sensor.now({
-							sensor: jsh.wf.checks.precommit,
-							subject: {
-								lint: lint
-							},
-							handlers: {
+						var checks = $api.fp.now(
+							jsh.wf.checks.precommit({ lint: lint }),
+							$api.fp.world.Question.thunk({
 								console: function(e) {
-									events.fire("console", e.detail);
+									jsh.shell.console(e.detail);
 								}
-							}
-						});
+							})
+						);
+
+						success = success && checks();
 
 						return success;
 					}
@@ -485,46 +478,48 @@
 		jsh.wf.project.initialize(
 			$context,
 			project,
+			//	This object ends up having a test.jrunscript property, which $exports does not expect. Can think about better ways
+			//	to fix this, but this seems fine for now.
+			//@ts-ignore
 			$exports
 		);
 
 		$exports.check = $api.fp.pipe(
 			function(p) {
-				jsh.shell.console("Linting ...");
-				var lintingPassed = $api.fp.world.now.ask(lint, {
+				var lint = $api.fp.now(project.lint.check, $api.fp.world.Question.thunk({
 					console: function(e) {
 						jsh.shell.console(e.detail);
 					}
-				});
-				if (!lintingPassed) {
-					jsh.shell.console("Linting failed.");
-					return 1;
-				}
-				jsh.shell.console("Running TypeScript compiler ...");
-				jsh.wf.checks.tsc();
-				jsh.shell.console("Running tests ...");
+				}));
 
-				var runTests = $api.fp.now(test(), $api.fp.world.Question.thunk(
-					{
-						console: function(e) {
-							jsh.shell.console(e.detail);
-						},
-						output: function(e) {
-							jsh.shell.echo(e.detail);
-						}
+				var tsc = $api.fp.now(jsh.wf.checks.tsc(), $api.fp.world.Question.thunk({
+					console: function(e) {
+						jsh.shell.console(e.detail);
 					}
-				));
+				}));
 
-				var testsPassed = runTests();
-
-				if (!testsPassed) {
-					jsh.shell.console("Tests failed.");
-					return 1;
-				}
-
-				jsh.shell.console("Passed.");
+				return lint() && tsc();
+			},
+			function(result) {
+				return (result) ? 0 : 1;
 			}
 		);
+
+		$exports.test = {
+			jrunscript: function() {
+				var runTests = $api.fp.now(test_jrunscript, $api.fp.world.Question.thunk({
+					console: function(e) {
+						jsh.shell.console(e.detail);
+					},
+					output: function(e) {
+						jsh.shell.echo(e.detail);
+					}
+				}));
+				var success = runTests();
+				if (!success) jsh.shell.console("jrunscript tests failed.");
+				return (success) ? 0 : 1;
+			}
+		}
 
 		if (jsh.tools.git.oo.Repository) {
 			(

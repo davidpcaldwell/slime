@@ -287,7 +287,11 @@ namespace slime.jsh.wf.standard {
 
 		prune: slime.jsh.script.cli.Command<Options>
 
-		test: slime.jsh.script.cli.Command<Options>
+		/**
+		 * A command that is present if the provided {@link slime.jsh.wf.standard.Project Project} had a `test` property supplying
+		 * a {@link slime.jsh.wf.Test Test} implementation, in which case it runs the provided implementation.
+		 */
+		test?: slime.jsh.script.cli.Command<Options>
 
 		precommit: slime.jsh.script.cli.Command<Options>
 
