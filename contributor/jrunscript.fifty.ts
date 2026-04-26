@@ -31,7 +31,7 @@
 				if (jsh.shell.os.name == "Linux") return true;
 			})();
 
-			//	TODO	expression.fifty.ts, particuarly in the realm of $platform, has engine-specific stuff; would be good to
+			//	TODO	expression.fifty.ts, particularly in the realm of $api.platform, has engine-specific stuff; would be good to
 			//			test it per-engine
 			fifty.load("../loader/expression.fifty.ts");
 

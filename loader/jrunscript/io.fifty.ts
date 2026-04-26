@@ -446,12 +446,12 @@ namespace slime.jrunscript.runtime.io {
 
 	(
 		function(
-			$platform: slime.runtime.Platform,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
+			const { $api } = fifty.global;
 
-			if ($platform.e4x) {
+			if ($api.platform.e4x) {
 				fifty.tests.E4X = function() {
 					var buffer = new test.subject.Buffer();
 					buffer.writeBinary().character().write("<a><b/></a>");
@@ -462,7 +462,7 @@ namespace slime.jrunscript.runtime.io {
 			}
 		}
 	//@ts-ignore
-	)($platform,fifty);
+	)(fifty);
 
 	export interface Exports {
 		Writer: {

@@ -169,9 +169,9 @@ namespace slime.runtime {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.runtime.exports.$platform = fifty.test.Parent();
+			fifty.tests.runtime.exports.platform = fifty.test.Parent();
 
-			fifty.tests.runtime.exports.$platform.java = function() {
+			fifty.tests.runtime.exports.platform.java = function() {
 				var o: { x: number } = { x: void(0) };
 				o.x = 3;
 				verify(o).x.is(3);
@@ -1491,7 +1491,6 @@ namespace slime.$api {
 
 		(
 			function(
-				$platform: slime.runtime.Platform,
 				fifty: slime.fifty.test.Kit
 			) {
 				const { verify } = fifty;
@@ -1583,7 +1582,7 @@ namespace slime.$api {
 							verify(json).evaluate.property("baz").is(void(0));
 						})();
 
-						if ($platform.e4x) {
+						if ($api.platform.e4x) {
 							var global = (function() { return this; })();
 							var XML: slime.external.e4x.XMLConstructor = global["XML"];
 							var XMLList: slime.external.e4x.XMLListConstructor = global["XMLList"];
@@ -1601,7 +1600,7 @@ namespace slime.$api {
 				}
 			}
 		//@ts-ignore
-		)($platform,fifty);
+		)(fifty);
 
 		export namespace internal {
 			export type Resource = resource.Exports

@@ -8,13 +8,12 @@
 (
 	/**
 	 *
-	 * @param { any } $platform
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.runtime.document.Context } $context
 	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.runtime.document.Exports> } $export
 	 */
-	function($platform,$api,$context,$loader,$export) {
+	function($api,$context,$loader,$export) {
 		var code = {
 			/** @type { slime.runtime.document.internal.source.Script } */
 			source: $loader.script("source.js"),
@@ -365,4 +364,4 @@
 		$export(rv);
 	}
 //@ts-ignore
-)($platform,$api,$context,$loader,$export);
+)($api,$context,$loader,$export);

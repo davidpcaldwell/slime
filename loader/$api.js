@@ -672,7 +672,7 @@
 		})({ Events: Events });
 
 		/** @type { slime.runtime.Platform } */
-		var $platform = (
+		var platform = (
 			/**
 			 *
 			 * @param { slime.runtime.Engine } $engine
@@ -760,7 +760,7 @@
 		/** @type { Parameters<typeof $export>[0]["exports"] } */
 		var $exports = {
 			engine: $engine,
-			platform: $platform,
+			platform: platform,
 			deprecate: flag.deprecate,
 			experimental: flag.experimental,
 			flag: flag.flag,

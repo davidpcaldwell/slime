@@ -8,7 +8,6 @@
 (
 	/**
 	 *
-	 * @param { slime.runtime.Platform } $platform
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
 	 * @param { slime.external.e4x.XMLListConstructor } XMLList
@@ -16,7 +15,7 @@
 	 * @param { slime.jrunscript.runtime.io.Context } $context
 	 * @param { slime.loader.Export<slime.jrunscript.runtime.io.Exports> } $export
 	 */
-	function($platform,Packages,JavaAdapter,XMLList,$api,$context,$export) {
+	function(Packages,JavaAdapter,XMLList,$api,$context,$export) {
 		/** @type { slime.jrunscript.native.inonit.script.runtime.io.Streams } */
 		var _java = $context._streams;
 
@@ -290,7 +289,7 @@
 							}
 						}
 					},
-					($platform.e4x) ? {
+					($api.platform.e4x) ? {
 						asXml: $api.deprecate(function() {
 							var string = this.asString();
 							var resource = new $context.api.Resource({
@@ -327,7 +326,7 @@
 					peer.close();
 				},
 				write: function(string) {
-					if ($platform.e4x && isE4x(string)) {
+					if ($api.platform.e4x && isE4x(string)) {
 						$api.deprecate(function() {
 							peer.write( string.toXMLString() );
 							peer.flush();
@@ -657,4 +656,4 @@
 		});
 	}
 //@ts-ignore
-)($platform, Packages, JavaAdapter, (function() { return this.XMLList })(), $api, $context, $export);
+)(Packages, JavaAdapter, (function() { return this.XMLList })(), $api, $context, $export);
