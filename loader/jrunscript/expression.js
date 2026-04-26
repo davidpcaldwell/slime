@@ -1111,12 +1111,11 @@
 			function() {
 				return $api.fp.now(
 					{
-						old: slime.$api.loader.old.old,
 						compiler: slime.compiler,
 						loader: slime.$api.loader,
 						namespace: slime.namespace,
-						$platform: slime.$platform,
 						$api: $api,
+						$platform: $api.platform,
 
 						Loader: $exports_Loader,
 						Resource: $api_jrunscript_loader_old_Resource,

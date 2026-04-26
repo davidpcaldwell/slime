@@ -81,7 +81,7 @@
 				$context.$slime.jrunscript.Resource
 			),
 			Loader: $context.$slime.Loader,
-			old: $context.$slime.old,
+			old: $context.$slime.$api.loader.old.old,
 			java: {
 				adapt: $api.jrunscript.io.Streams.java.adapt
 			},

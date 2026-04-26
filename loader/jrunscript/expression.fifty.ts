@@ -845,7 +845,7 @@ namespace slime.$api.jrunscript {
 		}
 
 		fifty.tests.suite = function() {
-			verify(fifty.global.jsh.unit.$slime.$platform && typeof fifty.global.jsh.unit.$slime.$platform == "object").is(true);
+			verify(fifty.global.jsh.unit.$slime.$api.platform && typeof fifty.global.jsh.unit.$slime.$api.platform == "object").is(true);
 			//verify(fifty.global.jsh).unit.$slime.$platform.is.type("object");
 
 			fifty.run(fifty.tests.decoration);

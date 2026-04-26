@@ -233,11 +233,6 @@ namespace slime {
 
 	export namespace runtime {
 		export interface Exports {
-			//	TODO	$api.loader.old.old
-			old: slime.$api.loader.old.Exports["old"]
-		}
-
-		export interface Exports {
 			/**
 			 * Creates a *namespace*. A namespace is an object which is globally visible because it is rooted to the global object
 			 * (e.g., `window` in the browser). So, in the browser, the namespace `inonit.foo.bar` would be an object that is the
@@ -272,14 +267,6 @@ namespace slime {
 				 */
 				compile: slime.runtime.loader.Compiler<slime.runtime.loader.Code>
 			}
-		}
-
-		export interface Exports {
-			/**
-			 * @deprecated The same object provided to scripts as `$platform`; provided here because there are limited, but likely
-			 * removable, global usages of it.
-			 */
-			$platform: Platform
 		}
 
 		export interface Exports {
