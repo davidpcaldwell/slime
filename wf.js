@@ -486,7 +486,11 @@
 		);
 
 		$exports.check = $api.fp.pipe(
-			$api.fp.now(project.precommit, $api.fp.world.Question.thunk({})),
+			$api.fp.now(project.precommit, $api.fp.world.Question.thunk({
+				console: function(e) {
+					jsh.shell.console(e.detail);
+				}
+			})),
 			function(result) {
 				return (result) ? 0 : 1;
 			}
@@ -494,7 +498,7 @@
 
 		$exports.test = {
 			jrunscript: function() {
-				var runTeats = $api.fp.now(test_jrunscript, $api.fp.world.Question.thunk({
+				var runTests = $api.fp.now(test_jrunscript, $api.fp.world.Question.thunk({
 					console: function(e) {
 						jsh.shell.console(e.detail);
 					},
@@ -502,7 +506,9 @@
 						jsh.shell.echo(e.detail);
 					}
 				}));
-				return runTeats();
+				var success = runTests();
+				if (!success) jsh.shell.console("jrunscript tests failed.");
+				return (success) ? 0 : 1;
 			}
 		}
 

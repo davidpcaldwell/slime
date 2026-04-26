@@ -4,7 +4,7 @@
 #
 #	END LICENSE
 
-name: test-jdk21
+name: check-jdk21
 on:
   pull_request:
     branches:
@@ -27,7 +27,7 @@ jobs:
           docker-images: true
       - name: Check out repository code
         uses: actions/checkout@v2
-      - name: Use Docker to create image, and then run the linting and tests
+      - name: Use Docker to create image, and then run the linting, type checking, and other checks
         env:
           SLIME_TEST_NO_WF_SUBMODULE_RESET: 1
         run: contributor/test-docker-clean-command 21 /bin/bash /slime/wf check
