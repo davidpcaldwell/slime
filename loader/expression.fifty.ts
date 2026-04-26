@@ -269,15 +269,6 @@ namespace slime {
 			}
 		}
 
-		export interface Exports {
-			/**
-			 * @deprecated Can be replaced by `$platform.java`.
-			 *
-			 * The same object as `$platform.java`.
-			 */
-			java?: Platform["java"]
-		}
-
 		(
 			function(
 				Packages: slime.jrunscript.Packages,
