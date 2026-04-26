@@ -180,14 +180,6 @@
 					value: $api.platform,
 					enumerable: true
 				}
-			}),
-			$api.Object.maybeDefineProperty({
-				name: "java",
-				descriptor: $api.fp.Partial.from.loose(function(it) {
-					return {
-						value: ($api.platform.java) ? $api.platform.java : void(0)
-					};
-				})
 			})
 		);
 		return rv;
