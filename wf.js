@@ -391,51 +391,6 @@
 			return success;
 		};
 
-		/**
-		 * Runs the test suite, first installing Java, and Rhino.
-		 *
-		 * @type { slime.jsh.wf.Test }
-		 */
-		var test_jrunscript = function(events) {
-			//	This invocation will install the JDK if necessary, and then ensure the version of Rhino is the correct one for
-			//	that JDK
-			jsh.shell.run({
-				command: "bash",
-				arguments: [
-					$context.base.getRelativePath("jsh"),
-					$context.base.getRelativePath("jrunscript/jsh/tools/install/rhino.jsh.js"),
-					"--replace"
-				]
-			});
-
-			//	Inserted to try to deal with issue #896. May not be needed; TypeScript may be installed when needed anyway. But with
-			//	tsc blipping in and out of existence, it seemed prudent to try simplifying the TypeScript life cycle.
-			jsh.wf.typescript.require();
-
-			var result = $api.fp.world.now.question(
-				jsh.shell.subprocess.question,
-				{
-					command: "bash",
-					arguments: $api.Array.build(function(rv) {
-						rv.push(jsh.shell.jsh.src.getFile("jsh").toString());
-						rv.push($context.base.getRelativePath("contributor/jrunscript.jsh.js"));
-					})
-				},
-				{
-					stdout: function(e) {
-						events.fire("output", e.detail.line);
-					},
-					stderr: function(e) {
-						events.fire("console", e.detail.line);
-					}
-				}
-			)
-			if (result.status != 0) {
-				jsh.shell.console("Failing because tests failed.");
-			}
-			return result.status == 0;
-		};
-
 		var project = (
 			/**
 			 *
@@ -507,6 +462,51 @@
 
 		$exports.test = {
 			jrunscript: function() {
+				/**
+				 * Runs the test suite, first installing Java, and Rhino.
+				 *
+				 * @type { slime.jsh.wf.Test }
+				 */
+				var test_jrunscript = function(events) {
+					//	This invocation will install the JDK if necessary, and then ensure the version of Rhino is the correct one for
+					//	that JDK
+					jsh.shell.run({
+						command: "bash",
+						arguments: [
+							$context.base.getRelativePath("jsh"),
+							$context.base.getRelativePath("jrunscript/jsh/tools/install/rhino.jsh.js"),
+							"--replace"
+						]
+					});
+
+					//	Inserted to try to deal with issue #896. May not be needed; TypeScript may be installed when needed anyway. But with
+					//	tsc blipping in and out of existence, it seemed prudent to try simplifying the TypeScript life cycle.
+					jsh.wf.typescript.require();
+
+					var result = $api.fp.world.now.question(
+						jsh.shell.subprocess.question,
+						{
+							command: "bash",
+							arguments: $api.Array.build(function(rv) {
+								rv.push(jsh.shell.jsh.src.getFile("jsh").toString());
+								rv.push($context.base.getRelativePath("contributor/jrunscript.jsh.js"));
+							})
+						},
+						{
+							stdout: function(e) {
+								events.fire("output", e.detail.line);
+							},
+							stderr: function(e) {
+								events.fire("console", e.detail.line);
+							}
+						}
+					)
+					if (result.status != 0) {
+						jsh.shell.console("Failing because tests failed.");
+					}
+					return result.status == 0;
+				};
+
 				var runTests = $api.fp.now(test_jrunscript, $api.fp.world.Question.thunk({
 					console: function(e) {
 						jsh.shell.console(e.detail);
