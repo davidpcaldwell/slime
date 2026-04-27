@@ -138,9 +138,6 @@
 					enumerable: true
 				}
 			}),
-			$api.fp.Object.with({
-				old: $api.loader.old.old
-			}),
 			$api.Object.defineProperty({
 				name: "namespace",
 				descriptor: {
