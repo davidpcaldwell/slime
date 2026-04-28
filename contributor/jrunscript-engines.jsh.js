@@ -31,7 +31,7 @@
 
 		var environment = new Environment({
 			src: jsh.script.file.parent.parent,
-			noselfping: parameters.options.noselfping,
+			noselfping: false,
 			tomcat: true,
 			executable: Boolean(jsh.shell.PATH.getCommand("gcc"))
 		});
