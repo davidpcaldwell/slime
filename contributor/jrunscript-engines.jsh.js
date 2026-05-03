@@ -19,12 +19,19 @@
 			}
 		});
 
-		/** @type { slime.project.internal.jrunscript_environment.Exports } */
-		var Environment = jsh.script.loader.module("jrunscript-environment.js");
+		var Environment = (
+			function() {
+				/** @type { slime.project.internal.jrunscript_environment.Script } */
+				var script = jsh.script.loader.script("jrunscript-environment.js");
+				return script({
+					jsh: jsh
+				})
+			}
+		)();
 
 		var environment = new Environment({
 			src: jsh.script.file.parent.parent,
-			noselfping: parameters.options.noselfping,
+			noselfping: false,
 			tomcat: true,
 			executable: Boolean(jsh.shell.PATH.getCommand("gcc"))
 		});
