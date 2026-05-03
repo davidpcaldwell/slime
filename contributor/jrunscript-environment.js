@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { { jsh: slime.jsh.Global } } $context
+	 * @param { slime.project.internal.jrunscript_environment.Context } $context
 	 * @param { slime.loader.Export<slime.project.internal.jrunscript_environment.Exports> } $export
 	 */
 	function(Packages,$api,$context,$export) {

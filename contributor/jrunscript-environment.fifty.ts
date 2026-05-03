@@ -38,8 +38,9 @@ namespace slime.project.internal.jrunscript_environment {
 			src: any
 			unbuilt: any
 		}
-		noselfping: any
 	}
+
+	export type Context = { jsh: Pick<slime.jsh.Global,"java"|"shell"|"internal"|"loader"|"httpd"|"script"|"wf"|"project"|"tools"|"test"|"unit"> };
 
 	export type Exports = new (p: Argument) => Environment
 
@@ -54,5 +55,5 @@ namespace slime.project.internal.jrunscript_environment {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.runtime.loader.Scoped<{ jsh: slime.jsh.Global },Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

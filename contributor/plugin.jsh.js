@@ -12,7 +12,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.plugin.Scope["$loader"] } $loader
 	 * @param { slime.jsh.plugin.Scope["plugin"]} plugin
-	 * @param { Pick<slime.jsh.plugin.Scope["jsh"],"loader"|"java"|"shell"|"file"|"script"|"tools"|"wf"|"unit"|"project"> } jsh
+	 * @param { slime.project.internal.jrunscript_environment.Context["jsh"] } jsh
 	 */
 	function(Packages,$api,$loader,plugin,jsh) {
 		$loader.plugin("code/");
@@ -27,7 +27,6 @@
 				};
 
 				var Environment = code.Environment({
-					//@ts-ignore
 					jsh: jsh
 				});
 
