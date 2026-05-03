@@ -288,8 +288,6 @@
 					}
 				}
 			}
-
-			this.noselfping = p.noselfping;
 		}
 
 		$export(Environment);
