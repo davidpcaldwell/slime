@@ -1619,10 +1619,13 @@ namespace slime.$api.fp.world {
 
 	export interface Exports {
 		now: {
+			/**
+			 * @deprecated Replaced by `Sensor.now()`
+			 */
 			question: <P,E,A>(question: world.Sensor<P,E,A>, argument: P, handler?: slime.$api.event.Handlers<E>) => A
 
 			/**
-			 * @deprecated Replaced by Means.now()
+			 * @deprecated Replaced by `Means.now()`
 			 */
 			action: <P,E>(action: world.Means<P,E>, argument?: P, handler?: slime.$api.event.Handlers<E>) => void
 

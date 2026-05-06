@@ -28,7 +28,7 @@
 		}
 
 		var filename = {
-			isText: function(basename) {
+			isText: $api.fp.Partial.from.loose(function(/** @type { string } */basename) {
 				//	Determines whether a file is text (true) or binary (false) by its name.
 				//	https://fileinfo.com/ is a reasonable resource for checking whether file extensions are well-established.
 				if (basename == ".DS_Store") return false;
@@ -67,7 +67,7 @@
 				if (basename == ".hgignore") return true;
 				if (basename == ".hgsubstate") return false;
 				if (basename == ".hgsub") return true;
-			},
+			}),
 			isVcsGenerated: function(name) {
 				if (name == ".hgtags") return true;
 				if (name == ".git") return true;
@@ -169,15 +169,11 @@
 
 		/**
 		 *
-		 * @param { (p: slime.tools.code.File) => boolean | undefined } oldIsText
+		 * @param { (p: slime.tools.code.File) => slime.$api.fp.Maybe<boolean> } oldIsText
 		 * @returns { (p: slime.tools.code.File) => slime.$api.fp.Maybe<boolean> }
 		 */
 		var updateIsText = function(oldIsText) {
-			return function(file) {
-				var old = oldIsText(file);
-				if (typeof(old) == "boolean") return $api.fp.Maybe.from.some(old);
-				return $api.fp.Maybe.from.nothing();
-			}
+			return oldIsText;
 		};
 
 		/** @type { (p: slime.tools.code.isSource) => slime.tools.code.oldIsSource } */
@@ -233,6 +229,7 @@
 				var rv = [];
 				for (var i=0; i<listed.length; i++) {
 					var fileIsText = p.isSource(listed[i]);
+					if (typeof(fileIsText.present) == "undefined") throw new Error("source = " + p.isSource);
 					if (!fileIsText.present) {
 						events.fire("unknownFileType", listed[i]);
 					} else {
@@ -401,19 +398,19 @@
 		 */
 		var handleGitTrailingWhitespace = function(p) {
 			return function(events) {
-				var files = $api.fp.world.now.question(
-					getGitSourceFiles,
-					{
+				var files = $api.fp.world.Sensor.now({
+					sensor: getGitSourceFiles,
+					subject: {
 						repository: $context.library.file.world.Location.from.os(p.repository),
 						submodules: true,
 						isSource: updateIsText(p.isText)
 					},
-					{
+					handlers: {
 						unknownFileType: function(e) {
 							events.fire("unknownFileType", e.detail);
 						}
 					}
-				);
+				});
 				handleFilesTrailingWhitespace({ nowrite: p.nowrite })(files)(events);
 			}
 		}
@@ -731,7 +728,9 @@
 						return function(events) {
 							var basename = getBasename(file.file);
 							var byExtension = filename.isText(basename);
-							if (typeof(byExtension) == "boolean") return $api.fp.Maybe.from.some(byExtension);
+							if (byExtension.present) {
+								return byExtension;
+							}
 							if (basename.indexOf(".") == -1) {
 								var rv = hasShebang()(file)(events);
 								if (rv.present) return rv;
@@ -748,9 +747,10 @@
 					hasShebang: hasShebang,
 					isText: {
 						world: isText,
-						basic: $api.fp.world.Sensor.old.mapping({
-							sensor: isText()
-						})
+						basic: $api.fp.now(
+							isText(),
+							$api.fp.world.Sensor.mapping()
+						)
 					},
 					isJavascript: isJavascript,
 					isTypescript: function(file) {
