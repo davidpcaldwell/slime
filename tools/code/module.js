@@ -157,7 +157,10 @@
 					type: $context.library.file.list.ENTRY
 				}).map(nodeToSourceFile).filter(
 					$api.fp.series(
-						p.isText,
+						function(file) {
+							var maybe = p.isText(file);
+							if (maybe.present) return maybe.value;
+						},
 						function(file) {
 							events.fire("unknownFileType", file);
 							return void(0);
