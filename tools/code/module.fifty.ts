@@ -195,9 +195,9 @@ namespace slime.tools.code {
 		file: slime.jrunscript.file.Location
 	}
 
-	export type isText = (p: slime.tools.code.File) => boolean | undefined
+	export type isText = slime.$api.fp.Partial<slime.tools.code.File, boolean>
 
-	export type oldIsSource = (p: slime.tools.code.File) => slime.$api.fp.Maybe<boolean>
+	export type oldIsSource = slime.$api.fp.Partial<slime.tools.code.File,boolean>
 
 	export type isSource = slime.$api.fp.Partial<slime.jrunscript.file.Location,boolean>
 
@@ -297,7 +297,7 @@ namespace slime.tools.code {
 
 	export interface Exports {
 		filename: {
-			isText: (name: string) => boolean | undefined
+			isText: (name: string) => slime.$api.fp.Maybe<boolean>
 			isVcsGenerated: (name: string) => boolean
 			isIdeGenerated: (name: string) => boolean
 		}
@@ -382,10 +382,15 @@ namespace slime.tools.code {
 
 			fifty.tests.filename = fifty.test.Parent();
 
+			const maybeToValue = <T>(m: slime.$api.fp.Maybe<T>): T => {
+				if (m.present) return m.value;
+				return void(0);
+			};
+
 			fifty.tests.filename.isText = function() {
-				verify(test).subject.filename.isText("foo.txt").is(true);
-				verify(test).subject.filename.isText("foo.wav").is(false);
-				verify(test).subject.filename.isText("foo").is(void(0));
+				verify(test).subject.filename.isText("foo.txt").evaluate(maybeToValue).is(true);
+				verify(test).subject.filename.isText("foo.wav").evaluate(maybeToValue).is(false);
+				verify(test).subject.filename.isText("foo").evaluate(maybeToValue).is(void(0));
 			}
 
 			fifty.tests.checkSingleFinalNewline = function() {

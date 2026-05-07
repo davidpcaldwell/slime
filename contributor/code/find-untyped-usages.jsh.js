@@ -44,11 +44,14 @@
 							return true;
 						},
 						isSource: function(file) {
-							//	TODO	SLIME-specfic use of jsh.project.code
-							return $api.fp.Maybe.from.some(jsh.project.code.files.isText({
-								path: void(0),
-								file: file
-							}));
+							return $api.fp.now(
+								{
+									path: void(0),
+									file: file
+								},
+								//	TODO	SLIME-specfic use of jsh.project.code
+								jsh.project.code.files.isText
+							);
 						}
 					}
 				});
