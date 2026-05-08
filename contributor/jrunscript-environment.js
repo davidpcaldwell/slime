@@ -163,23 +163,13 @@
 				)();
 
 				this.unbuilt = new function() {
-					this.src = p.src;
-
-					this.lib = p.src.getRelativePath("local/jsh/lib").createDirectory({
+					p.src.getRelativePath("local/jsh/lib").createDirectory({
 						exists: function(dir) {
 							return false;
 						}
 					});
 
-					Object.defineProperty(this, "data", {
-						get: $api.fp.impure.Input.memoized(
-							$api.fp.impure.Input.from.mapping({
-								mapping: getShellData,
-								argument: p.src
-							})
-						),
-						enumerable: true
-					});
+					this.src = p.src;
 				};
 
 				var packagingShell = this.built;
