@@ -7,6 +7,14 @@
 namespace slime.jsh.project {
 	export interface Exports {
 		suite: {
+			/**
+			 * Performs a series of steps to prepare for test suites:
+			 *
+			 * * Installs Rhino
+			 * * Installs Tomcat
+			 * * Installs TypeScript
+			 * * (If indicated) Installs Selenium
+			 */
 			initialize: (p: {
 				selenium: boolean
 			}) => void

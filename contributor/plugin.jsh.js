@@ -12,7 +12,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.plugin.Scope["$loader"] } $loader
 	 * @param { slime.jsh.plugin.Scope["plugin"]} plugin
-	 * @param { slime.project.internal.jrunscript_environment.Context["jsh"] } jsh
+	 * @param { slime.jsh.plugin.Scope["jsh"] } jsh
 	 */
 	function(Packages,$api,$loader,plugin,jsh) {
 		$loader.plugin("code/");
@@ -25,10 +25,6 @@
 					/** @type { slime.project.internal.jrunscript_environment.Script } */
 					Environment: $loader.script("jrunscript-environment.js")
 				};
-
-				var Environment = code.Environment({
-					jsh: jsh
-				});
 
 				jsh.project.suite = {
 					initialize: void(0),
@@ -53,8 +49,8 @@
 							}
 						}
 					}
-					//	TODO	should have a better way of dealing with this, but for now we just reload the plugin that depended on Tomcat
-					//			and it will succeed now.
+					//	TODO	should have a better way of dealing with this, but for now we just reload the plugin that depended
+					// 			on Tomcat and it will succeed now.
 					jsh.loader.plugins(jsh.script.file.parent.parent.getRelativePath("loader/api/old/jsh"));
 
 					jsh.wf.typescript.require();
@@ -121,7 +117,9 @@
 					);
 				};
 
-				jsh.project.suite.Environment = Environment;
+				jsh.project.suite.Environment = code.Environment({
+					jsh: jsh
+				});
 
 				jsh.project.suite.run = function(p) {
 					//	TODO	push below back to plugin

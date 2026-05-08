@@ -63,41 +63,6 @@
 						selenium: false
 					});
 
-					jsh.java.Thread.start(
-						/**
-						 * At one point, builds were failing on Docker because `tsc` was not found when attempting to use TypeScript within
-						 * tests. `tsc` would blink in and out of existence in the shell's library directory.
-						 *
-						 * This seems to be no longer happening.
-						 *
-						 * This function runs a thread that monitors the existence of the TypeScript compiler in the test suite shell and
-						 * writes console messages if its status changes (it is removed, it reappears, etc.)
-						 */
-						function addDiagnosticForTscDisappearing() {
-							/** @type { boolean } */
-							var found;
-
-							/** @type { boolean } */
-							var now;
-
-							while(true) {
-								now = jsh.shell.jsh.src.getRelativePath("local/jsh/lib/node/bin/tsc").java.adapt().exists();
-								if (typeof(found) == "undefined") {
-									jsh.shell.console("Initial check: tsc found = " + now);
-								} else if (found && !now) {
-									jsh.shell.console("tsc change: removed");
-									jsh.shell.console("node present? " + jsh.shell.jsh.src.getRelativePath("local/jsh/lib/node").java.adapt().exists());
-								} else if (!found && now) {
-									jsh.shell.console("tsc change: added");
-								} else {
-									//jsh.shell.console("tsc still " + now);
-								}
-								found = now;
-								jsh.java.Thread.sleep(25);
-							}
-						}
-					);
-
 					// TODO: force CoffeeScript for verification?
 
 					var hasGit = (

@@ -35,8 +35,10 @@ namespace slime.project.internal.jrunscript_environment {
 				readonly data: any;
 				requireTomcat(): void;
 			}
-			src: any
-			unbuilt: any
+			src: slime.jrunscript.file.Directory
+			unbuilt: {
+				src: slime.jrunscript.file.Directory
+			}
 		}
 	}
 
