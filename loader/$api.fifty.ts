@@ -256,6 +256,32 @@ namespace slime.$api {
 	export interface Global {
 		global: {
 			get: <T>(propertyName: string) => T
+
+			/**
+			 * Returns a value rooted to the global object (`globalThis` in modern JavaScript). An optional function can be supplied
+			 * which will create the value if it does not exist; if the value is absent and no function is provided, an empty object
+			 * will be created and returned.
+			 *
+			 * The given path is interpreted as a series of property names. So if the path is `["inonit", "foo", "bar"]`, the object
+			 * will be rooted at `window` (or `globalThis`) and assigned to the `bar` property of the `foo` property of
+			 * `window.inonit`, and so would be available as `window.inonit.foo.bar`, or simply `inonit.foo.bar`, since properties
+			 * of the global object are visible by default.
+			 *
+			 * In the event portions of the sequence of rooting objects do not exist, they will be created. So, for example, in the
+			 * browser-based example above, if the `window.inonit` object exists, but the `window.inonit` object does not have a
+			 * property named `foo`, an object will be created and assigned to the `foo` property of `window.inonit`, and then that
+			 * object will be assigned a `bar` property.
+			 *
+			 * @param path The name/location of the namespace to create (or return if it exists).
+			 * @param create A function that will create the value to attach to the root object if it does not already exist. If
+			 * this parameter is not provided, an empty object will be created and used as the value.
+			 *
+			 * @returns The value given, for convenience.
+			 */
+			at: {
+				<T>(path: string[]): object
+				<T>(path: string[], create: () => T): T
+			}
 		}
 	}
 

@@ -1113,7 +1113,6 @@
 					{
 						compiler: slime.compiler,
 						loader: slime.$api.loader,
-						namespace: slime.namespace,
 						$api: $api,
 						$platform: $api.platform,
 

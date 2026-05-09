@@ -253,11 +253,40 @@
 
 		var fp = functions.fp;
 
+		/** @type { slime.$api.Global["global"] } */
 		var global = {
 			get: function(name) {
 				//	TODO	note  that modern JavaScript also has `globalThis`
 				var global = (function() { return this; })();
 				return global[name];
+			},
+			/**
+			 *
+			 * @param { string[] } path
+			 * @param { () => any } [create]
+			 * @returns
+			 */
+			at: function(path,create) {
+				//	This construct returns the top-level global object, e.g., window in the browser
+				var global = function() { return this; }();
+
+				var rv = global;
+
+				var factory = create || function() { return {}; };
+
+				for (var i=0; i<path.length; i++) {
+					if (i != path.length-1) {
+						if (typeof(rv[path[i]]) == "undefined") {
+							rv[path[i]] = {};
+						}
+					} else {
+						var existing = rv[path[i]];
+						rv[path[i]] = (typeof(existing) == "undefined" ) ? factory() : rv[path[i]];
+					}
+					rv = rv[path[i]];
+				}
+
+				return rv;
 			}
 		};
 
