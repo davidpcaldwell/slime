@@ -168,15 +168,6 @@
 					value: api.code.runtime.compiler,
 					enumerable: true
 				}
-			}),
-			//	TODO	currently only used by jsapi in loader/api/old/jsh via jsh.js
-			//	TODO	also used by client.html unit tests
-			$api.Object.defineProperty({
-				name: "$platform",
-				descriptor: {
-					value: $api.platform,
-					enumerable: true
-				}
 			})
 		);
 		return rv;
