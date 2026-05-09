@@ -34,7 +34,9 @@
 
 			this.apiHtmlScript = (function() {
 				if ($context.api && $context.api.apiHtmlScript) return $context.api.apiHtmlScript;
-				return getLoader().file("api/old/api.html.js");
+				/** @type { slime.definition.api_html.Script } */
+				var script = getLoader().script("api/old/api.html.js");
+				return script();
 			})();
 		};
 

@@ -6,8 +6,15 @@
 
 //	Shared code for unit test harnesses
 
+//@ts-check
 (
-	function() {
+	/**
+	 *
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.definition.api_html.Context } $context
+	 * @param { slime.definition.api_html.Exports } $exports
+	 */
+	function($api,$context,$exports) {
 		var assign = (function() {
 			if ($context.api && $context.api.assign) return $context.api.assign;
 			if (Object.assign) return Object.assign;
@@ -15,10 +22,10 @@
 		})();
 
 		//	TODO	in-progress refactoring of ApiHtmlTests below may make this unneeded as a public variable
-		$exports.MEDIA_TYPE = "application/x.jsapi";
+		var MEDIA_TYPE = "application/x.jsapi";
 
 		//	Returns a path for api.html given a path to a .js file or other file
-		$exports.getApiHtmlPath = function(path) {
+		var getApiHtmlPath = function(path) {
 			if (/\/$/.test(path)) {
 				return path + "api.html";
 			} else {
@@ -50,6 +57,7 @@
 				if (typeof($context) == "object" && $context.run) {
 					$context.run(arguments[0],arguments[1]);
 				} else {
+					//@ts-ignore
 					with(arguments[1]) {
 						eval((function(zero) {
 							if (typeof(zero) == "string") return zero;
@@ -200,6 +208,7 @@
 				var reference = references[i].getJsapiAttribute("reference");
 				var element = (function() {
 					var rv;
+					//@ts-ignore
 					with(referenceScope) {
 						rv = eval(reference);
 					}
@@ -216,7 +225,7 @@
 				references[i].removeJsapiAttribute("reference");
 			}
 
-			var SCRIPT_TYPE_PREFIX = $exports.MEDIA_TYPE + "#";
+			var SCRIPT_TYPE_PREFIX = MEDIA_TYPE + "#";
 
 			var getScriptFilter = function(type) {
 				if (!type) {
@@ -225,7 +234,7 @@
 					};
 				} else {
 					return function(node) {
-						return node.localName == "script" && node.getAttribute("type") == ($exports.MEDIA_TYPE + "#" + type);
+						return node.localName == "script" && node.getAttribute("type") == (MEDIA_TYPE + "#" + type);
 					};
 				}
 			};
@@ -247,7 +256,7 @@
 				return new function() {
 					var createTestScope = function() {
 						var rv = {
-							$platform: $platform,
+							$platform: $api.platform,
 							scope: scope
 						};
 						for (var i=0; i<arguments.length; i++) {
@@ -276,6 +285,7 @@
 						try {
 							run(initializer.getContentString(), createTestScope(relativeScope(initializer)));
 						} catch (e) {
+							/** @type { Error & { code?: string, cause?: any } } */
 							var error = new Error("Error executing scenario initialization.");
 							error.code = initializer.getContentString();
 							error.cause = e;
@@ -372,41 +382,45 @@
 					//	do nothing
 					var breakpiont = 1;
 				} else {
-					var rv = {
-						name: getElementName(element,name),
-						initialize: initialize,
-						destroy: function(s) {
-							var destroys = getScripts(element,"destroy");
-							for (var i=0; i<destroys.length; i++) {
-								run(destroys[i].getContentString(),s);
+					return (
+						function() {
+							var rv = {
+								name: getElementName(element,name),
+								initialize: initialize,
+								destroy: function(s) {
+									var destroys = getScripts(element,"destroy");
+									for (var i=0; i<destroys.length; i++) {
+										run(destroys[i].getContentString(),s);
+									}
+								},
+								parts: {}
 							}
-						},
-						parts: {}
-					}
-					var children = element.getChildren();
-					for (var i=0; i<children.length; i++) {
-						(function(element) {
-							var descend = isScenario(element) || someAreTests(element);
-							//Packages.java.lang.System.err.println("some tests = " + descend + " for " + element);
-							if (descend) {
-								rv.parts[String(i)] = recurse(scope,element);
-								// var child = (scope,element);
-								// if (!child) throw new Error("No child for element " + element);
-								// if (child.scenario) {
-								// 	rv.parts[String(i)] = {
-								// 		create: child.scenario
-								// 	};
-								// 		// SUITE.scenario(String(i), {
-								// 		// 	create: child.scenario
-								// 		// });
-								// } else {
-								// 	rv.parts[String(i)] = child;
-								// 		// SUITE.suite(String(i),child);
-								// }
+							var children = element.getChildren();
+							for (var i=0; i<children.length; i++) {
+								(function(element) {
+									var descend = isScenario(element) || someAreTests(element);
+									//Packages.java.lang.System.err.println("some tests = " + descend + " for " + element);
+									if (descend) {
+										rv.parts[String(i)] = recurse(scope,element);
+										// var child = (scope,element);
+										// if (!child) throw new Error("No child for element " + element);
+										// if (child.scenario) {
+										// 	rv.parts[String(i)] = {
+										// 		create: child.scenario
+										// 	};
+										// 		// SUITE.scenario(String(i), {
+										// 		// 	create: child.scenario
+										// 		// });
+										// } else {
+										// 	rv.parts[String(i)] = child;
+										// 		// SUITE.suite(String(i),child);
+										// }
+									}
+								})(children[i]);
 							}
-						})(children[i]);
-					}
-					return rv;
+							return rv;
+						}
+					)();
 				}
 			}
 
@@ -423,7 +437,7 @@
 						} else if (name) {
 							//	skip
 						} else {
-							var found = recurse(part.parts[x],names,[]);
+							var found = recurse(part.parts[x],names);
 							if (found) return [x].concat(found);
 						}
 					}
@@ -446,10 +460,10 @@
 			}
 		};
 
-		// TODO: What is this used for? May be used for (obsolete?) building of documentation bundles
-		$exports.getCode = function(path) {
-			return $loader.get(path).read(String);
-		};
+		// // TODO: What is this used for? May be used for (obsolete?) building of documentation bundles
+		// $exports.getCode = function(path) {
+		// 	return $loader.get(path).read(String);
+		// };
 
 
 		var Suite = function() {
@@ -495,11 +509,12 @@
 				}
 			};
 
-			this.build = function() {
+			this.build = ($context.Suite) ? function() {
 				return new $context.Suite(definition);
-			};
+			} : void(0);
 		};
 
 		$exports.Suite = Suite;
 	}
-)();
+//@ts-ignore
+)($api,$context,$exports);

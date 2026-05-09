@@ -66,7 +66,14 @@ namespace slime.jsh.plugin {
 			 * @param p Scope objects to use when loading the plugin, and a definition of the plugin itself.
 			 * @returns objects affected by plugin loading, for evaluation
 			 */
-			mock: (p: Partial<Omit<slime.jsh.plugin.Scope,"$loader">> & { $loader: slime.loader.old.Loader, source?: () => string }) => Pick<slime.jsh.plugin.Scope,"global"|"jsh"|"plugins">
+			mock: (p:
+				Partial<Omit<slime.jsh.plugin.Scope,"$loader">>
+				& {
+					$loader: slime.loader.old.Loader,
+					source?: () => string
+				 	toString?: () => string
+				}
+			) => Pick<slime.jsh.plugin.Scope,"global"|"jsh"|"plugins">
 		}
 	}
 

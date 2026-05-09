@@ -10,14 +10,14 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { { test: any, html: any, $slime: any, jsdom: any, jsh: any } } $context
+	 * @param { { test: any, html: any, $slime: slime.jsh.plugin.$slime, jsdom: any, jsh: any } } $context
 	 * @param { { test: any, PartDescriptor: any, Scenario: any, doc: any, documentation: any } } $exports
 	 */
 	function(Packages,$api,$context,$exports) {
 		var jsh = $context.jsh;
 
 		var getApiHtml = function(moduleMainPathname) {
-			//	TODO	logic for this is largely duplicated in loader/api/old/api.html.js getApiHtmlPath method, which is string based while
+			//	TODO	logic for this is largely duplicated in loader/api/old/api.html.js getApiHtmlPath function, which is string based while
 			//			this is pathname- and directory- and file- based
 			if (moduleMainPathname.directory) {
 				return moduleMainPathname.directory.getFile("api.html");
@@ -238,7 +238,8 @@
 					return this.get(name).read(String);
 				};
 
-				delegate.coffee = $context.$slime.coffee;
+				//	Dropping CoffeeScript support, it appears
+				//delegate.coffee = $context.$slime.coffee;
 
 				delegate.plugins = function(path) {
 					if (path) {
@@ -405,7 +406,7 @@
 				}
 			};
 
-			this.$platform = $context.$slime.$platform;
+			this.$platform = $context.$slime.$api.platform;
 			this.$api = $context.$slime.$api;
 		};
 
