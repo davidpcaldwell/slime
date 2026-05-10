@@ -19,7 +19,7 @@
 			/**
 			 *
 			 * @param { slime.runtime.Scope["$engine"] } $engine
-			 * @returns { slime.runtime.Engine }
+			 * @returns { slime.$api.Engine }
 			 */
 			function($engine) {
 				return {

@@ -40,7 +40,7 @@ namespace slime {
 			/**
 			 * An object that overrides properties of {@link slime.runtime.Engine} with embedding-specific replacements.
 			 */
-			$engine?: Partial<slime.runtime.Engine>
+			$engine?: Partial<slime.$api.Engine>
 		}
 
 		export namespace scope {

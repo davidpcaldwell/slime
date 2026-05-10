@@ -700,14 +700,14 @@
 			return $exports;
 		})({ Events: Events });
 
-		/** @type { slime.runtime.Platform } */
+		/** @type { slime.$api.Platform } */
 		var platform = (
 			/**
 			 *
-			 * @param { slime.runtime.Engine } $engine
+			 * @param { slime.$api.Engine } $engine
 			 */
 			function($engine) {
-				/** @type { slime.runtime.Platform } */
+				/** @type { slime.$api.Platform } */
 				var $exports = {};
 
 				var global = (function() { return this; })();
@@ -719,7 +719,7 @@
 
 				(
 					/**
-					 * @this { slime.runtime.Platform }
+					 * @this { slime.$api.Platform }
 					 */
 					function() {
 						var getJavaClass = function(name) {

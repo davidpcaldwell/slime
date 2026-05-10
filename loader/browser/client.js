@@ -416,7 +416,8 @@
 						),
 						script: runtime.$api.deprecate(loaderMethods.file),
 						namespace: function(name) {
-							return runtime.$api.global.at(name.split("."));
+							var tokens = (name) ? name.split(".") : [];
+							return runtime.$api.global.at(tokens);
 						},
 						Base: {
 							script: getCurrentScriptBase,

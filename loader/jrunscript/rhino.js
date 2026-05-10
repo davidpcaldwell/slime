@@ -21,7 +21,7 @@
 			 * @returns { slime.jrunscript.runtime.$javahost }
 			 */
 			function() {
-				/** @type { slime.runtime.Engine["MetaObject"] } */
+				/** @type { slime.$api.Engine["MetaObject"] } */
 				var MetaObject = function(p) {
 					var delegate = (p.delegate) ? p.delegate : {};
 					var get = (p.get) ? p.get : function(name){ return void(0); };

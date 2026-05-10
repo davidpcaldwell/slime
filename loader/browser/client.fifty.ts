@@ -297,6 +297,7 @@ namespace slime {
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
+				const { verify } = fifty;
 				const inonit: Runtime = fifty.global.window["inonit"];
 				const window = fifty.global.window as Window & { testNamespaces: any }
 
@@ -305,6 +306,11 @@ namespace slime {
 				};
 
 				fifty.tests.exports.namespace = fifty.test.Parent();
+
+				fifty.tests.exports.namespace.empty = function() {
+					var top = inonit.loader.namespace("");
+					verify(top).is(window);
+				}
 
 				fifty.tests.exports.namespace.happy = function() {
 					test(typeof(window.testNamespaces) == "undefined");
