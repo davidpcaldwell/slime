@@ -297,6 +297,8 @@ namespace slime.$api {
 
 				var uuid: () => string = (
 					function() {
+						var counter = 0;
+
 						if (global.crypto && global.crypto.randomUUID) {
 							return function() {
 								return global.crypto.randomUUID();
@@ -304,6 +306,11 @@ namespace slime.$api {
 						} else if (fifty.global.jsh) {
 							return function() {
 								return String(Packages.java.util.UUID.randomUUID().toString());
+							}
+						} else {
+							//	TODO	we really need something better than this for anything more than our first test.
+							return function() {
+								return "uuid:" + String(++counter);
 							}
 						}
 					}
