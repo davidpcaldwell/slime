@@ -59,10 +59,10 @@
  *
  * ### Running Fifty tests in both `jsh` and a browser
  *
- * To run a test suite that runs the same definition in both `jsh` and a browser, just invoke the `fifty.test.platforms()` method,
- * which will create a test named `platforms` that runs the `suite` test in both `jsh` and a browser.
+ * To create a test that runs the same definition in both `jsh` and a browser, just invoke the `fifty.test.platforms()` method,
+ * which will create a test for that definition named `platforms` that runs the `suite` test in both `jsh` and a browser.
  *
- * Then, the suite can be run via:
+ * Thus, the suite can be run on both platforms via:
  *
  * `./fifty test.jsh file.fifty.ts --part platforms`.
  *
@@ -106,7 +106,7 @@ namespace slime.fifty.test {
 		 * to a particular custom element name.
 		 */
 		global: {
-			$platform: slime.runtime.Platform
+			$platform: slime.$api.Platform
 			$api: slime.$api.Global
 
 			jsh?: slime.jsh.Global

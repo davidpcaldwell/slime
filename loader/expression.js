@@ -19,7 +19,7 @@
 			/**
 			 *
 			 * @param { slime.runtime.Scope["$engine"] } $engine
-			 * @returns { slime.runtime.Engine }
+			 * @returns { slime.$api.Engine }
 			 */
 			function($engine) {
 				return {
@@ -135,30 +135,6 @@
 				name: "$api",
 				descriptor: {
 					value: $api,
-					enumerable: true
-				}
-			}),
-			$api.Object.defineProperty({
-				name: "namespace",
-				descriptor: {
-					value: function(string) {
-						//	This construct returns the top-level global object, e.g., window in the browser
-						var global = function() {
-							return this;
-						}();
-
-						var scope = global;
-						if (string) {
-							var tokens = string.split(".");
-							for (var i=0; i<tokens.length; i++) {
-								if (typeof(scope[tokens[i]]) == "undefined") {
-									scope[tokens[i]] = {};
-								}
-								scope = scope[tokens[i]];
-							}
-						}
-						return scope;
-					},
 					enumerable: true
 				}
 			}),

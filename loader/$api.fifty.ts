@@ -16,16 +16,28 @@ interface Function {
 	construct: any
 }
 
-namespace slime.runtime {
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.runtime = fifty.test.Parent();
-			fifty.tests.runtime.exports = fifty.test.Parent();
-		}
-	//@ts-ignore
-	)(fifty);
+/**
+ *
+ * The `$api` object is provided to all code loaded by the platform loader. It represents the SLIME APIs available on all platforms.
+ * (Some platform-specific APIs are available through properties of the `$api` object, sucn as `$api.jrunscript` and `$api.browser`.)
+ *
+ * ## Functional programming: {@link slime.$api.fp `$api.fp`}
+ *
+ * The `$api.fp` namespace provides functional programming constructs. See {@link slime.$api.fp}.
+ *
+ * ## Handling content: {@link slime.runtime.content `$api.content`}
+ *
+ * The `$api.content` namespace provides the ability to handle _content_. *Content* is defined in SLIME as a hierarchical structure
+ * with a root and containing paths. It can represent a filesystem, a URL space, a ZIP/TAR file, or any other logically hierarchical
+ * structure.
+ *
+ * ## Handling deprecation and API usage
+ *
+ * Various `$api` methods can "flag" APIs for callers, causing a configurable callback to be executed when they are invoked, to warn
+ * the users that the APIs are deprecated or experimental. See the `deprecate` and `experimental` functions of {@link slime.$api.Global |
+ * `$api`}.
+ */
+namespace slime.$api {
 	/**
 	 * An object that gives access to functionality for the current JavaScript engine. Created by combining the `$engine`
 	 * property provided as part of {@link slime.runtime.Scope} with default implementations provided by the SLIME runtime.
@@ -89,9 +101,9 @@ namespace slime.runtime {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.runtime.exports.engine = fifty.test.Parent();
+			fifty.tests.exports.engine = fifty.test.Parent();
 
-			fifty.tests.runtime.exports.engine.MetaObject = function() {
+			fifty.tests.exports.engine.MetaObject = function() {
 				const test = function(b: boolean) {
 					verify(b).is(true);
 				};
@@ -133,6 +145,11 @@ namespace slime.runtime {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Global {
+		engine: Engine
+	}
+
+
 	/**
 	 * Provides information about and capabilities of the underlying JavaScript platform; loaded code can use this information
 	 * in its implementation.
@@ -162,6 +179,13 @@ namespace slime.runtime {
 		}
 	}
 
+	export interface Global {
+		/**
+		 * Provides information about the underlying JavaScript platform; see the {@link slime.runtime.Platform} type for details.
+		 */
+		platform: Platform
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -169,9 +193,9 @@ namespace slime.runtime {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.runtime.exports.platform = fifty.test.Parent();
+			fifty.tests.exports.platform = fifty.test.Parent();
 
-			fifty.tests.runtime.exports.platform.java = function() {
+			fifty.tests.exports.platform.java = function() {
 				var o: { x: number } = { x: void(0) };
 				o.x = 3;
 				verify(o).x.is(3);
@@ -184,40 +208,6 @@ namespace slime.runtime {
 		}
 	//@ts-ignore
 	)(fifty);
-}
-
-/**
- *
- * The `$api` object is provided to all code loaded by the platform loader. It represents the SLIME APIs available on all platforms.
- * (Some platform-specific APIs are available through properties of the `$api` object, sucn as `$api.jrunscript` and `$api.browser`.)
- *
- * ## Functional programming: {@link slime.$api.fp `$api.fp`}
- *
- * The `$api.fp` namespace provides functional programming constructs. See {@link slime.$api.fp}.
- *
- * ## Handling content: {@link slime.runtime.content `$api.content`}
- *
- * The `$api.content` namespace provides the ability to handle _content_. *Content* is defined in SLIME as a hierarchical structure
- * with a root and containing paths. It can represent a filesystem, a URL space, a ZIP/TAR file, or any other logically hierarchical
- * structure.
- *
- * ## Handling deprecation and API usage
- *
- * Various `$api` methods can "flag" APIs for callers, causing a configurable callback to be executed when they are invoked, to warn
- * the users that the APIs are deprecated or experimental. See the `deprecate` and `experimental` functions of {@link slime.$api.Global |
- * `$api`}.
- */
-namespace slime.$api {
-	export interface Global {
-		engine: slime.runtime.Engine
-	}
-
-	export interface Global {
-		/**
-		 * Provides information about the underlying JavaScript platform; see the {@link slime.runtime.Platform} type for details.
-		 */
-		platform: slime.runtime.Platform
-	}
 
 	export interface Global {
 		/**
@@ -256,8 +246,94 @@ namespace slime.$api {
 	export interface Global {
 		global: {
 			get: <T>(propertyName: string) => T
+
+			/**
+			 * Returns a value rooted to the global object (`globalThis` in modern JavaScript). An optional function can be supplied
+			 * which will create the value if it does not exist; if the value is absent and no function is provided, an empty object
+			 * will be created and returned.
+			 *
+			 * The given path is interpreted as a series of property names. So if the path is `["inonit", "foo", "bar"]`, the object
+			 * will be rooted at `window` (or `globalThis`) and assigned to the `bar` property of the `foo` property of
+			 * `window.inonit`, and so would be available as `window.inonit.foo.bar`, or simply `inonit.foo.bar`, since properties
+			 * of the global object are visible by default.
+			 *
+			 * In the event portions of the sequence of rooting objects do not exist, they will be created. So, for example, in the
+			 * browser-based example above, if the `window.inonit` object exists, but the `window.inonit` object does not have a
+			 * property named `foo`, an object will be created and assigned to the `foo` property of `window.inonit`, and then that
+			 * object will be assigned a `bar` property.
+			 *
+			 * @param path The name/location of the namespace to create (or return if it exists).
+			 * @param create A function that will create the value to attach to the root object if it does not already exist. If
+			 * this parameter is not provided, an empty object will be created and used as the value.
+			 *
+			 * @returns The value given, for convenience.
+			 */
+			at: {
+				(path: string[]): any
+				<T>(path: string[], create: () => T): T
+			}
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.global = fifty.test.Parent();
+
+			fifty.tests.exports.global.at = function() {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				var global: object & { crypto: any, Packages?: slime.jrunscript.Packages } = (function() { return this; })();
+
+				const Packages = (function() {
+					if (global.Packages) return global.Packages;
+					return null;
+				})();
+
+				var empty: object = $api.global.at([]);
+				verify(empty).is(global);
+
+				var uuid: () => string = (
+					function() {
+						var counter = 0;
+
+						if (global.crypto && global.crypto.randomUUID) {
+							return function() {
+								return global.crypto.randomUUID();
+							}
+						} else if (fifty.global.jsh) {
+							return function() {
+								return String(Packages.java.util.UUID.randomUUID().toString());
+							}
+						} else {
+							//	TODO	we really need something better than this for anything more than our first test.
+							return function() {
+								return "uuid:" + String(++counter);
+							}
+						}
+					}
+				)();
+
+				var first = uuid();
+
+				var namespaced = $api.global.at([first]);
+
+				verify(namespaced).is.type("object");
+				verify(global).evaluate.property(first).is(namespaced);
+
+				var second = uuid();
+
+				var namespacedTwo = $api.global.at([second, "foo"]);
+
+				verify(namespacedTwo).is.type("object");
+				verify(global).evaluate.property(second).evaluate.property("foo").is.type("object");
+				verify(global).evaluate.property(second).evaluate.property("bar").is.type("undefined");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Global {
 		debug: {
@@ -1498,7 +1574,7 @@ namespace slime.$api {
 
 				var api = test.subject;
 
-				fifty.tests.runtime.exports.Resource = function() {
+				fifty.tests.exports.Resource = function() {
 					fifty.run(function type() {
 						var toString = function(p): string { return p.toString(); };
 
@@ -1847,10 +1923,6 @@ namespace slime.$api {
 
 				fifty.run(fifty.tests.jsapi);
 				fifty.run(fifty.tests.exports);
-
-				//	TODO	these should be merged into exports, probably, but were brought over from the runtime so retain some
-				//			of the names they had there
-				fifty.run(fifty.tests.runtime);
 			}
 
 			fifty.test.platforms();
@@ -1863,7 +1935,7 @@ namespace slime.$api.internal {
 	export type script = <C,E>(name: string) => slime.runtime.loader.Scoped<C,E>
 
 	export interface Scope {
-		$engine: Pick<slime.runtime.Engine,"execute"|"debugger">
+		$engine: Pick<slime.$api.Engine,"execute"|"debugger">
 		$slime: Pick<slime.runtime.scope.Deployment,"getRuntimeScript">
 		Packages: slime.jrunscript.Packages
 	}

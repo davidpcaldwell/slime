@@ -290,23 +290,27 @@ namespace slime {
 		)(fifty);
 
 		export interface Exports {
-			/**
-			 * See {@link slime.runtime.Exports.namespace}.
-			 */
-			namespace: slime.runtime.Exports["namespace"]
+			namespace: (path: string) => object
 		}
 
 		(
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
+				const { verify } = fifty;
 				const inonit: Runtime = fifty.global.window["inonit"];
 				const window = fifty.global.window as Window & { testNamespaces: any }
-				fifty.tests.exports.namespace = {};
 
 				const test = function(value: boolean) {
 					fifty.verify(value).is(true);
 				};
+
+				fifty.tests.exports.namespace = fifty.test.Parent();
+
+				fifty.tests.exports.namespace.empty = function() {
+					var top = inonit.loader.namespace("");
+					verify(top).is(window);
+				}
 
 				fifty.tests.exports.namespace.happy = function() {
 					test(typeof(window.testNamespaces) == "undefined");
