@@ -1579,23 +1579,23 @@ namespace slime.$api {
 						var toString = function(p): string { return p.toString(); };
 
 						(function() {
-							var resource = new api.$api.loader.old.Resource({});
+							var resource = new api.loader.old.Resource({});
 							verify(resource).type.is(null);
 						})();
 						(function() {
-							var resource = new api.$api.loader.old.Resource({
+							var resource = new api.loader.old.Resource({
 								type: $api.mime.Type.parse("application/json")
 							});
 							verify(resource).type.evaluate(toString).is("application/json");
 						})();
 						(function() {
-							var resource = new api.$api.loader.old.Resource({
+							var resource = new api.loader.old.Resource({
 								name: "foo.js"
 							});
 							verify(resource).type.evaluate(toString).is("application/javascript");
 						})();
 						(function() {
-							var resource = new api.$api.loader.old.Resource({
+							var resource = new api.loader.old.Resource({
 								name: "foo.x"
 							});
 							verify(resource).type.is(null);
@@ -1604,13 +1604,13 @@ namespace slime.$api {
 
 					fifty.run(function name() {
 						(function() {
-							var resource = new api.$api.loader.old.Resource({
+							var resource = new api.loader.old.Resource({
 								name: "foo"
 							});
 							verify(resource).name.is("foo");
 						})();
 						(function() {
-							var resource = new api.$api.loader.old.Resource({});
+							var resource = new api.loader.old.Resource({});
 							verify(resource).evaluate.property("name").is(void(0));
 						})();
 					});
@@ -1631,15 +1631,15 @@ namespace slime.$api {
 						);
 
 						(function() {
-							var resource = new api.$api.loader.old.Resource({
-								read: api.$api.loader.old.Resource.ReadInterface.string("foo")
+							var resource = new api.loader.old.Resource({
+								read: api.loader.old.Resource.ReadInterface.string("foo")
 							});
 							verify(resource).evaluate(readResource).is("foo");
 							verify(resource).evaluate(newReadResource).is("foo");
 						})();
 
 						(function() {
-							var resource = new api.$api.loader.old.Resource({
+							var resource = new api.loader.old.Resource({
 								read: {
 									string: function() {
 										return "bar";
@@ -1650,8 +1650,8 @@ namespace slime.$api {
 						})();
 
 						(function() {
-							var resource = new api.$api.loader.old.Resource({
-								read: api.$api.loader.old.Resource.ReadInterface.string(JSON.stringify({ foo: "bar" }))
+							var resource = new api.loader.old.Resource({
+								read: api.loader.old.Resource.ReadInterface.string(JSON.stringify({ foo: "bar" }))
 							});
 							var json: { foo: string, baz?: any } = resource.read(JSON) as { foo: string, baz?: any };
 							verify(json).foo.is("bar");
@@ -1662,8 +1662,8 @@ namespace slime.$api {
 							var global = (function() { return this; })();
 							var XML: slime.external.e4x.XMLConstructor = global["XML"];
 							var XMLList: slime.external.e4x.XMLListConstructor = global["XMLList"];
-							var resource = new api.$api.loader.old.Resource({
-								read: api.$api.loader.old.Resource.ReadInterface.string("<a><b/></a>")
+							var resource = new api.loader.old.Resource({
+								read: api.loader.old.Resource.ReadInterface.string("<a><b/></a>")
 							});
 							var xml = resource.read(XML);
 							verify(xml).is.type("xml");
@@ -1949,9 +1949,9 @@ namespace slime.$api {
 namespace slime.$api.internal {
 	export type script = <C,E>(name: string) => slime.runtime.loader.Scoped<C,E>
 
-	export interface Scope {
-		$engine: Pick<slime.$api.Engine,"execute"|"debugger">
-		$slime: Pick<slime.runtime.scope.Deployment,"getRuntimeScript">
+	export interface Context {
+		engine: slime.$api.Engine
+		getRuntimeScript: slime.runtime.scope.Deployment["getRuntimeScript"]
 		Packages: slime.jrunscript.Packages
 	}
 
@@ -1960,14 +1960,10 @@ namespace slime.$api.internal {
 	 * passed along to the application level. So this script provides exports for both, and the runtime file rearranges them for
 	 * ultimate export to the application level, while using some of the internals itself.
 	 */
-	export interface Exports {
-		code: {
-			runtime: slime.runtime.internal.code.Runtime
-		}
-		exports: slime.$api.Global
+	export interface Exports extends slime.$api.Global {
 	}
 
-	export type Script = slime.runtime.loader.Scoped<Scope,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }
 
 namespace slime.$api.oo {

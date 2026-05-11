@@ -91,27 +91,7 @@ namespace slime {
 			})(fifty);
 		}
 
-		/**
-		 * An object provided by SLIME to embedders who load its runtime with a suitable {@link slime.runtime.Scope}. Provides
-		 * tools that may be directly provided to callers as APIs, or may be used to build APIs useful for the embedding.
-		 *
-		 * ## Loading code
-		 *
-		 * Note that although there are global `run()`, `file()`, and `value()` methods that
-		 * can be used to execute code, there is no global `module()` method. Since modules themselves load code, in
-		 * order to create a module, code loading capability is needed. For this reason, the loader API exposes the ability to
-		 * load modules via first creating a {@link slime.Loader} implementation and then using the
-		 * `module()` method of the `Loader`.
-		 */
-		export interface Exports {
-		}
-
-		export interface Exports {
-			/**
-			 * An additional way for embedding environments to access the {@link slime.$api.Global | $api} object so that they can
-			 * use it to augment the runtime in their embeddings.
-			 */
-			$api: slime.$api.Global
+		export interface Exports extends slime.$api.Global {
 		}
 	}
 
@@ -278,7 +258,7 @@ namespace slime {
 								}
 							}
 
-							this.loader = new api.$api.loader.old.old.Loader({
+							this.loader = new api.loader.old.old.Loader({
 								get: function(path) {
 									var tokens = path.split("/");
 									if (tokens.length == 1) {
@@ -400,7 +380,7 @@ namespace slime {
 							});
 						};
 						rv._2 = function() {
-							var loader = new api.$api.loader.old.old.Loader({
+							var loader = new api.loader.old.old.Loader({
 								//	TODO	take care of the below; expand type definition or update test
 								//@ts-ignore
 								get: function(path) {
@@ -439,7 +419,7 @@ namespace slime {
 							mock1.add("a", "sa");
 							var mock2 = new Mock();
 							mock2.add("b/c", "sb/c");
-							var series = api.$api.loader.old.old.loader.series([mock1.loader,mock2.loader]);
+							var series = api.loader.old.old.loader.series([mock1.loader,mock2.loader]);
 							verify(series).get("foo").is(null);
 							var x = series.get("a");
 							verify(series).get("a").evaluate(readString).evaluate(String).is("sa");

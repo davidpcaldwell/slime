@@ -480,7 +480,7 @@ namespace slime.jrunscript.runtime {
 	 * to support Java-specific capabilities: a `classpath`, the `jrunscript`, `java` and `io` interfaces,
 	 * and Java-aware versions of `Resource`, `Loader`, and `mime`.
 	 */
-	export interface Exports extends slime.runtime.Exports {
+	export interface Exports {
 		io: slime.jrunscript.runtime.io.Exports
 		java: slime.jrunscript.runtime.java.Exports
 
@@ -540,7 +540,7 @@ namespace slime.jrunscript.runtime {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports extends slime.runtime.Exports {
+	export interface Exports {
 		Loader: slime.$api.loader.old.Exports["old"]["Loader"] & {
 			new (p: internal.CustomSource): Loader
 		}
@@ -654,7 +654,7 @@ namespace slime.jrunscript.runtime {
 		}
 	}
 
-	export interface Exports extends slime.runtime.Exports {
+	export interface Exports {
 		jrunscript: {
 			loader: {
 				from: {
@@ -921,11 +921,11 @@ namespace slime.external.e4x {
 }
 
 namespace slime.jrunscript.runtime {
-	export interface Exports extends slime.runtime.Exports {
+	export interface Exports {
 		Resource: slime.$api.jrunscript.Global["jrunscript"]["loader"]["old"]["Resource"]
 	}
 
-	export interface Exports extends slime.runtime.Exports {
+	export interface Exports {
 		$api: slime.$api.jrunscript.Global
 	}
 }
