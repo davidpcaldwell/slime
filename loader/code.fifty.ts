@@ -67,10 +67,6 @@ namespace slime.$api {
 			}
 		}
 	}
-
-	export interface Global {
-		scripts: Scripts
-	}
 }
 
 namespace slime.runtime.internal.code {
@@ -121,7 +117,7 @@ namespace slime.runtime.internal.code {
 	}
 
 	export interface Runtime {
-		compiler: slime.runtime.Exports["compiler"]
+		compiler: slime.$api.Scripts["compiler"]
 
 		internal: {
 			methods: GlobalExecutorMethods

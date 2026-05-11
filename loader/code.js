@@ -74,7 +74,7 @@
 					var compiler = JavascriptCompiler;
 
 					return {
-						/** @type { slime.runtime.Exports["compiler"]["update"] } */
+						/** @type { slime.$api.Scripts["compiler"]["update"] } */
 						update: function(transform) {
 							compiler = transform(compiler);
 						},

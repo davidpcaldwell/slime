@@ -21,7 +21,7 @@
 			load: function() {
 				var typescript = {
 					compile: function(code) {
-						var maybe = $slime.compiler.compile({
+						var maybe = $slime.$api.scripts.compiler.compile({
 							name: "<jsh.typescript code>",
 							type: function() {
 								return {

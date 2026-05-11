@@ -112,7 +112,7 @@
 				if (_coffeescript) {
 					var target = {};
 					$engine.execute({ name: "coffee-script.js", js: String(_coffeescript) }, {}, target);
-					rv.compiler.update(function(was) {
+					rv.$api.scripts.compiler.update(function(was) {
 						return rv.$api.fp.switch([
 							was,
 							rv.$api.scripts.Compiler.from.simple({
@@ -136,7 +136,7 @@
 
 				var _typescript = $loader.getTypescript();
 				if (_typescript) {
-					rv.compiler.update(function(was) {
+					rv.$api.scripts.compiler.update(function(was) {
 						return rv.$api.fp.switch([
 							was,
 							rv.$api.scripts.Compiler.from.simple({
@@ -1111,7 +1111,7 @@
 			function() {
 				return $api.fp.now(
 					{
-						compiler: slime.compiler,
+						compiler: slime.$api.scripts.compiler,
 						loader: slime.$api.loader,
 						$api: $api,
 						$platform: $api.platform,

@@ -137,13 +137,6 @@
 					value: $api,
 					enumerable: true
 				}
-			}),
-			$api.Object.defineProperty({
-				name: "compiler",
-				descriptor: {
-					value: api.code.runtime.compiler,
-					enumerable: true
-				}
 			})
 		);
 		return rv;

@@ -273,7 +273,7 @@
 						//	Can set breakpoint here to pop into debugger on experimental accesses
 						var breakpoint = null;
 					}
-					rv.compiler.update(function(was) {
+					rv.$api.scripts.compiler.update(function(was) {
 						return rv.$api.fp.switch([
 							was,
 							rv.$api.scripts.Compiler.from.simple({
