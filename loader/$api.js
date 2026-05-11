@@ -880,11 +880,10 @@
 		);
 
 
-		$exports.scripts.compiler = runtime.compiler.compile;
+		$exports.scripts.compiler = runtime.compiler;
 
 		$export({
 			code: {
-				//internal: code.internal,
 				runtime: runtime
 			},
 			exports: $exports

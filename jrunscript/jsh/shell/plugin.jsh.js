@@ -103,7 +103,7 @@
 						compile: api.compile
 					});
 
-					$slime.compiler.update(
+					$slime.$api.scripts.compiler.update(
 						function(was) {
 							return $api.fp.switch([
 								subprocess,

@@ -374,7 +374,7 @@
 						),
 						compiler: function(location) {
 							if (!location.pathname) throw new Error("Not location: keys = " + Object.keys(location));
-							return $api.scripts.compiler(adapt(location))
+							return $api.scripts.compiler.compile(adapt(location))
 						},
 						unsupported: function(code) { return null; },
 						scope: {
