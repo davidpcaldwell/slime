@@ -1111,7 +1111,6 @@
 			function() {
 				return $api.fp.now(
 					{
-						compiler: slime.$api.scripts.compiler,
 						loader: slime.$api.loader,
 						$api: $api,
 						$platform: $api.platform,
