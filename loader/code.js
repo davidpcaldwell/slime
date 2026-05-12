@@ -8,12 +8,13 @@
 (
 	/**
 	 *
-	 * @param { slime.runtime.Scope["Packages"] } Packages
-	 * @param { slime.runtime.internal.code.Scope["$engine"] } $engine
-	 * @param { slime.runtime.internal.code.Scope["fp"] } fp
+	 * @param { slime.runtime.internal.code.Scope } $context
 	 * @param { slime.loader.Export<slime.runtime.internal.code.Exports> } $export
 	 */
-	function(Packages,$engine,fp,$export) {
+	function($context,$export) {
+		var fp = $context.fp;
+		var $engine = $context.$engine;
+
 		/**
 		 * @type { slime.$api.Global["scripts"]["Compiler"]["from"]["simple"] }
 		 */
@@ -251,4 +252,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,$engine,fp,$export);
+)($context,$export);

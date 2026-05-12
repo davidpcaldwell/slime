@@ -1951,7 +1951,7 @@ namespace slime.$api.internal {
 
 	export interface Context {
 		engine: slime.$api.Engine
-		getRuntimeScript: slime.runtime.scope.Deployment["getRuntimeScript"]
+		script: script
 		Packages?: slime.jrunscript.Packages
 	}
 
