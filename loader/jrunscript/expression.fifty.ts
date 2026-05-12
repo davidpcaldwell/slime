@@ -476,8 +476,8 @@ namespace slime.jrunscript.runtime {
 	//	TODO	probably all jrunscript-specific properties should be properties of the `jrunscript` property; all properties added
 	//			for this environment could be consolidated under that property
 	/**
-	 * The SLIME Java runtime supports a Java-based SLIME embedding, and extends the {@link slime.runtime.Exports | SLIME runtime}
-	 * to support Java-specific capabilities: a `classpath`, the `jrunscript`, `java` and `io` interfaces,
+	 * The SLIME Java runtime supports a Java-based SLIME embedding, and provides an `$api` property which extends the
+	 * {@link slime.runtime.Exports | SLIME runtime} to support Java-specific capabilities: a `classpath`, the `jrunscript`, `java` and `io` interfaces,
 	 * and Java-aware versions of `Resource`, `Loader`, and `mime`.
 	 */
 	export interface Exports {

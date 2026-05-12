@@ -1952,7 +1952,7 @@ namespace slime.$api.internal {
 	export interface Context {
 		engine: slime.$api.Engine
 		getRuntimeScript: slime.runtime.scope.Deployment["getRuntimeScript"]
-		Packages: slime.jrunscript.Packages
+		Packages?: slime.jrunscript.Packages
 	}
 
 	/**
