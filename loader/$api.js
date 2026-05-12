@@ -8,17 +8,21 @@
 (
 //	TODO	get rid of the wildcarded properties in $exports by adding all properties to $api.d.ts
 	/**
-	 * @param { slime.$api.internal.Scope["$engine"] } $engine
-	 * @param { slime.$api.internal.Scope["$slime"] } $slime
-	 * @param { slime.$api.internal.Scope["Packages"] } Packages
+	 * @param { slime.$api.internal.Context } $context
 	 * @param { slime.loader.Export<slime.$api.internal.Exports> } $export
 	 */
-	function($engine,$slime,Packages,$export) {
+	function($context,$export) {
+		var $engine = $context.engine;
+		var $script = $context.getRuntimeScript;
+
+		//	TODO	$context.script wraps $context.$slime.getRuntimeScript, and then we wrap it again here, but the caller in
+		//			expression.js also wraps $context.$slime.getRuntimeScript in a different `script` function. We might be able
+		//			to unify all of this and have the expression.js version do the same things this version does.
 		var script = function(name) {
 			var load = function(name,$context) {
 				var $exports = {};
 				$engine.execute(
-					$slime.getRuntimeScript(name),
+					$script(name),
 					{
 						$context: $context,
 						$exports: $exports,
@@ -294,17 +298,17 @@
 			//	TODO	try to get rid of ignore below
 			//@ts-ignore
 			disableBreakOnExceptionsFor: function(f) {
-				if ($engine.debugger) {
+				if ($context.engine.debugger) {
 					var rv = function() {
-						var enabled = $engine.debugger.isBreakOnExceptions();
+						var enabled = $context.engine.debugger.isBreakOnExceptions();
 						if (enabled) {
-							$engine.debugger.setBreakOnExceptions(false);
+							$context.engine.debugger.setBreakOnExceptions(false);
 						}
 						try {
 							return f.apply(this,arguments);
 						} finally {
 							if (enabled) {
-								$engine.debugger.setBreakOnExceptions(true);
+								$context.engine.debugger.setBreakOnExceptions(true);
 							}
 						}
 					}
@@ -692,21 +696,19 @@
 		});
 
 		//	TODO	switch implementation to use load()
-		var threads = (function($context) {
+		var threads = (function($engine,$script,$context) {
 			var $exports = {
 				steps: void(0)
 			};
-			$engine.execute($slime.getRuntimeScript("threads.js"), { $context: $context, $exports: $exports }, null);
+			$engine.execute($script("threads.js"), { $context: $context, $exports: $exports }, null);
 			return $exports;
-		})({ Events: Events });
+		})($context.engine, $context.getRuntimeScript, { Events: Events });
 
 		/** @type { slime.$api.Platform } */
 		var platform = (
 			/**
-			 *
-			 * @param { slime.$api.Engine } $engine
 			 */
-			function($engine) {
+			function() {
 				/** @type { slime.$api.Platform } */
 				var $exports = {};
 
@@ -724,8 +726,8 @@
 					function() {
 						var getJavaClass = function(name) {
 							try {
-								if (typeof(Packages) == "undefined") return null;
-								var rv = Packages[name];
+								if (typeof($context.Packages) == "undefined") return null;
+								var rv = $context.Packages[name];
 								if (typeof(rv) == "function") {
 									//	In the Firefox Java plugin, JavaPackage objects have typeof() == "function". They also have the
 									//	following format for their String values
@@ -761,17 +763,17 @@
 
 				return $exports;
 			}
-		)($engine);
+		)();
 
 		var code = (
 			function() {
 				/** @type { slime.runtime.internal.code.Exports } */
 				var rv;
-				$engine.execute(
-					$slime.getRuntimeScript("code.js"),
+				$context.engine.execute(
+					$context.getRuntimeScript("code.js"),
 					{
-						Packages: Packages,
-						$engine: $engine,
+						Packages: $context.Packages,
+						$engine: $context.engine,
 						fp: fp,
 						apiForScripts: function() {
 							return $exports;
@@ -786,9 +788,9 @@
 			}
 		)();
 
-		/** @type { Parameters<typeof $export>[0]["exports"] } */
+		/** @type { Parameters<typeof $export>[0] } */
 		var $exports = {
-			engine: $engine,
+			engine: $context.engine,
 			platform: platform,
 			deprecate: flag.deprecate,
 			experimental: flag.experimental,
@@ -882,12 +884,7 @@
 
 		$exports.scripts.compiler = runtime.compiler;
 
-		$export({
-			code: {
-				runtime: runtime
-			},
-			exports: $exports
-		});
+		$export($exports);
 	}
 //@ts-ignore
-)($engine,$slime,Packages,$export)
+)($context,$export)

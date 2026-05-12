@@ -135,7 +135,7 @@ namespace slime.runtime.internal.code {
 
 			createScriptScope: <C extends { [x: string]: any },T>($context: C) => ScriptScope<C,T>
 
-			runtime: ($api: slime.$api.internal.Exports["exports"]) => Runtime
+			runtime: ($api: slime.$api.internal.Exports) => Runtime
 
 			old: {
 				toExportScope: slime.$api.loader.old.Exports["old"]["loader"]["tools"]["toExportScope"]

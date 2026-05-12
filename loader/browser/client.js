@@ -263,24 +263,24 @@
 
 				var runtime = (function(scope) {
 					//	TODO	still uses synchronous API
-					/** @type { Omit<slime.runtime.Exports,"$api"> & { $api: slime.$api.browser.Global } } */
+					/** @type { slime.$api.browser.Global } */
 					var rv = eval(fetcher.getCode(bootstrap.relative("expression.js")));
-					rv.$api.deprecate.warning = function(access) {
+					rv.deprecate.warning = function(access) {
 						debugger;
 					}
-					rv.$api.experimental.warning = function(access) {
+					rv.experimental.warning = function(access) {
 						//	TODO	should configure this via property of inonit.loader
 						//	Can set breakpoint here to pop into debugger on experimental accesses
 						var breakpoint = null;
 					}
-					rv.$api.scripts.compiler.update(function(was) {
-						return rv.$api.fp.switch([
+					rv.scripts.compiler.update(function(was) {
+						return rv.fp.switch([
 							was,
-							rv.$api.scripts.Compiler.from.simple({
-								accept: rv.$api.fp.Predicate.and(
-									rv.$api.scripts.Code.isMimeType("application/vnd.coffeescript"),
+							rv.scripts.Compiler.from.simple({
+								accept: rv.fp.Predicate.and(
+									rv.scripts.Code.isMimeType("application/vnd.coffeescript"),
 									//	TODO	is there a way to create a Mapping from a Thunk?
-									rv.$api.fp.Mapping.from.thunk(function() { return Boolean(window.CoffeeScript); })
+									rv.fp.Mapping.from.thunk(function() { return Boolean(window.CoffeeScript); })
 								),
 								name: function(code) { return code.name; },
 								read: function(code) { return code.read(); },
@@ -322,7 +322,7 @@
 									return {
 										type: code.contentType,
 										name: path,
-										read: runtime.$api.loader.old.Resource.ReadInterface.string(code.responseText)
+										read: runtime.loader.old.Resource.ReadInterface.string(code.responseText)
 									};
 								}
 
@@ -360,7 +360,7 @@
 					this.Child = void(0);
 					this.get = void(0);
 					this.toSynchronous = void(0);
-					runtime.$api.loader.old.old.Loader.apply(this,arguments);
+					runtime.loader.old.old.Loader.apply(this,arguments);
 				};
 
 				var bootstrapper = new Loader(bootstrap.url);
@@ -370,7 +370,7 @@
 					browser: bootstrapper.script("browser/$api.js")
 				};
 
-				Object.assign(runtime.$api, code.browser({
+				Object.assign(runtime, code.browser({
 					time: {
 						Date: window.Date,
 						setTimeout: window.setTimeout,
@@ -409,15 +409,15 @@
 						Loader: Object.assign(
 							Loader,
 							{
-								series: runtime.$api.loader.old.old.loader.series,
+								series: runtime.loader.old.old.loader.series,
 								getCode: fetcher.getCode,
 								fetch: fetcher.fetch
 							}
 						),
-						script: runtime.$api.deprecate(loaderMethods.file),
+						script: runtime.deprecate(loaderMethods.file),
 						namespace: function(name) {
 							var tokens = (name) ? name.split(".") : [];
-							return runtime.$api.global.at(tokens);
+							return runtime.global.at(tokens);
 						},
 						Base: {
 							script: getCurrentScriptBase,
@@ -430,9 +430,9 @@
 						//			We could make it the responsibility of the caller to set the 'base' property if this file is loaded another way.
 						base: bootstrap.url,
 						//	For use in scripts that are loaded directly by the browser rather than via this loader
-						$api: runtime.$api,
+						$api: runtime,
 						test: {
-							run: runtime.$api.loader.old.run
+							run: runtime.loader.old.run
 						},
 						//	(Possibly obsolete comment to follow) Used by loader/browser/tools/offline.html, which may be obsolete
 						$sdk: new function() {
@@ -442,7 +442,7 @@
 							}
 
 							//	used by unit tests <-- old comment; used in loader/browser/test/api.js somehow
-							this.platform = runtime.$api.platform;
+							this.platform = runtime.platform;
 						}
 					},
 					loaderMethods

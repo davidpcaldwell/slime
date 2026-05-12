@@ -69,20 +69,21 @@
 			/**
 			 *
 			 * @param { { name: string, js: string } } code
-			 * @param { { [x: string]: any } } scope
+			 * @param { { [x: string]: any } } context
 			 * @returns
 			 */
-			var execute = function(code,scope) {
+			var execute = function(code,context) {
 				/** @type { any } */
 				var exported;
 
 				$engine.execute(
 					code,
-					Object.assign(scope, {
+					{
+						$context: context,
 						$export: function(value) {
 							exported = value;
 						}
-					}),
+					},
 					null
 				);
 
@@ -92,11 +93,11 @@
 			/**
 			 *
 			 * @param { string } path
-			 * @param { { [x: string]: any } } variables
+			 * @param { { [x: string]: any } } context
 			 * @returns
 			 */
-			var load = function(path,variables) {
-				return execute(scope.$slime.getRuntimeScript(path), variables);
+			var load = function(path,context) {
+				return execute(scope.$slime.getRuntimeScript(path), context);
 			};
 
 			return function(scope) {
@@ -104,41 +105,21 @@
 			};
 		};
 
-		var api = (
+		var $api = (
 			function() {
 				/** @type { slime.$api.internal.Script } */
 				var code = script("$api.js");
 
 				return code({
-					$engine: $engine,
-					$slime: {
-						getRuntimeScript: scope.$slime.getRuntimeScript
-					},
+					engine: $engine,
+					getRuntimeScript: scope.$slime.getRuntimeScript,
 					Packages: scope.Packages
 				});
 			}
 		)();
 
-		var $api = api.exports;
-
 		/** @type { slime.runtime.Exports } */
-		var rv = $api.fp.now(
-			{},
-			$api.Object.defineProperty({
-				//	The $api object will be provided to all code loaded by $api, but we provide it to embedders so that it can be
-				//	used to decorate the runtime in the embedding.
-
-				//	used to allow embeddings to set warnings for deprecate and experimental
-				//	TODO	currently used to set deprecation warning in jsh.js
-				//	TODO	currently used by jsapi in loader/api/old/jsh via jsh.js
-				//	TODO	also used by client.html unit tests
-				name: "$api",
-				descriptor: {
-					value: $api,
-					enumerable: true
-				}
-			})
-		);
+		var rv = $api;
 		return rv;
 	}
 //@ts-ignore
