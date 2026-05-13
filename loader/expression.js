@@ -104,16 +104,6 @@
 			return function(context) {
 				return load(path, context || {});
 			};
-
-			// return Object.assign(
-			// 	rv,
-			// 	{
-			// 		thread: function() {
-			// 			//	TODO
-			// 			throw new Error("Unimplemented.");
-			// 		}
-			// 	}
-			// );
 		};
 
 		var $api = (
