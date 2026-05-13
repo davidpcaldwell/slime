@@ -132,7 +132,7 @@ namespace slime.runtime {
 /**
  *
  * The `$api` object is provided to all code loaded by the platform loader. It represents the SLIME APIs available on all platforms.
- * (Some platform-specific APIs are available through properties of the `$api` object, sucn as `$api.jrunscript` and `$api.browser`.)
+ * (Some platform-specific APIs are available through properties of the `$api` object, such as `$api.jrunscript` and `$api.browser`.)
  *
  * ## Functional programming: {@link slime.$api.fp `$api.fp`}
  *

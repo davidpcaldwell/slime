@@ -13,7 +13,7 @@
  * {@link slime.runtime.Scope}, and defines how to load the SLIME runtime itself, as well as optionally providing
  * additional information about the surrounding JavaScript engine's capabilities and configuration for the runtime.
  *
- * All code loaded by the SLIME runtime has access to the {@link slime.$api.Global} object (as `$api`), providing a standard
+ * All code loaded by the SLIME runtime has access to the {@link slime.runtime.Exports} object (as `$api`), providing a standard
  * SLIME API that embeddings and applications on all platforms can use. Platforms may provide extensions to `$api` to expose
  * platform-specific capabilities.
  */

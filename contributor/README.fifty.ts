@@ -9,7 +9,7 @@
  *
  * Embeddings that load the runtime should execute `loader/expression.js` with an appropriate object of type
  * {@link slime.runtime.Scope} in scope with the name `scope`; the expression evaluates to an object of type
- * {@link slime.$api.Global}. See {@link slime.runtime.internal} for details.
+ * {@link slime.runtime.Exports}. See {@link slime.runtime.internal} for details.
  *
  * ## `jsh` documentation
  *
