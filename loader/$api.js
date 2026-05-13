@@ -12,48 +12,6 @@
 	 * @param { slime.loader.Export<slime.$api.internal.Exports> } $export
 	 */
 	function($context,$export) {
-		var $engine = $context.engine;
-
-		// //	TODO	$context.script wraps $context.$slime.getRuntimeScript, and then we wrap it again here, but the caller in
-		// //			expression.js also wraps $context.$slime.getRuntimeScript in a different `script` function. We might be able
-		// //			to unify all of this and have the expression.js version do the same things this version does.
-		// var script = function(name) {
-		// 	var load = function(name,context) {
-		// 		var $exports = {};
-		// 		$engine.execute(
-		// 			$context.getRuntimeScript(name),
-		// 			{
-		// 				$context: context,
-		// 				$exports: $exports,
-		// 				$export: function(v) {
-		// 					$exports = v;
-		// 				}
-		// 			},
-		// 			null
-		// 		);
-		// 		return $exports;
-		// 	};
-
-		// 	/**
-		// 	 *
-		// 	 * @param { any } $context
-		// 	 * @returns { any }
-		// 	 */
-		// 	var rv = function($context) {
-		// 		return load(name, $context);
-		// 	};
-
-		// 	return Object.assign(
-		// 		rv,
-		// 		{
-		// 			thread: function() {
-		// 				//	TODO
-		// 				throw new Error("Unimplemented.");
-		// 			}
-		// 		}
-		// 	);
-		// }
-
 		var script = $context.script;
 
 		var scripts = {
