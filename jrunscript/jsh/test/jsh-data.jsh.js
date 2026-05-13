@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { slime.$api.Global } $api
+	 * @param { slime.runtime.Exports } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(Packages,$api,jsh) {

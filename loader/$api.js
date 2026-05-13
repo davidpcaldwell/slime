@@ -9,7 +9,7 @@
 //	TODO	get rid of the wildcarded properties in $exports by adding all properties to $api.d.ts
 	/**
 	 * @param { slime.$api.internal.Context } $context
-	 * @param { slime.loader.Export<slime.$api.internal.Exports> } $export
+	 * @param { slime.loader.Export<slime.runtime.Exports> } $export
 	 */
 	function($context,$export) {
 		var script = $context.script;

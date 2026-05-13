@@ -107,7 +107,7 @@ namespace slime.fifty.test {
 		 */
 		global: {
 			$platform: slime.$api.Platform
-			$api: slime.$api.Global
+			$api: slime.runtime.Exports
 
 			jsh?: slime.jsh.Global
 			window?: Window

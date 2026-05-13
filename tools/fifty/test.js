@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 * @param { slime.$api.Global } $api
+	 * @param { slime.runtime.Exports } $api
 	 * @param { slime.fifty.internal.test.Context } $context
 	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.fifty.internal.test.Exports> } $export

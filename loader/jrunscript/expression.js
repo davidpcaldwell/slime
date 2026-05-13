@@ -52,7 +52,7 @@
 			 * @returns { slime.runtime.Exports }
 			 */
 			function() {
-				/** @type { slime.$api.Engine } */
+				/** @type { slime.runtime.Engine } */
 				var $engine = {
 					debugger: $javahost.debugger,
 					execute: function(script,scope,target) {
