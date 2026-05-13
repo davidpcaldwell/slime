@@ -12,47 +12,7 @@
 	 * @param { slime.loader.Export<slime.$api.internal.Exports> } $export
 	 */
 	function($context,$export) {
-		var $engine = $context.engine;
-		var $script = $context.getRuntimeScript;
-
-		//	TODO	$context.script wraps $context.$slime.getRuntimeScript, and then we wrap it again here, but the caller in
-		//			expression.js also wraps $context.$slime.getRuntimeScript in a different `script` function. We might be able
-		//			to unify all of this and have the expression.js version do the same things this version does.
-		var script = function(name) {
-			var load = function(name,$context) {
-				var $exports = {};
-				$engine.execute(
-					$script(name),
-					{
-						$context: $context,
-						$exports: $exports,
-						$export: function(v) {
-							$exports = v;
-						}
-					},
-					null
-				);
-				return $exports;
-			};
-
-			/**
-			 *
-			 * @param { any } $context
-			 * @returns { any }
-			 */
-			var rv = function($context) {
-				return load(name, $context);
-			}
-			return Object.assign(
-				rv,
-				{
-					thread: function() {
-						//	TODO
-						throw new Error("Unimplemented.");
-					}
-				}
-			);
-		}
+		var script = $context.script;
 
 		var scripts = {
 			/** @type { slime.runtime.internal.content.Script } */
@@ -695,14 +655,11 @@
 			deprecate: flag.deprecate
 		});
 
-		//	TODO	switch implementation to use load()
-		var threads = (function($engine,$script,$context) {
-			var $exports = {
-				steps: void(0)
-			};
-			$engine.execute($script("threads.js"), { $context: $context, $exports: $exports }, null);
-			return $exports;
-		})($context.engine, $context.getRuntimeScript, { Events: Events });
+		var threads = (function(context) {
+			/** @type { slime.runtime.loader.Scoped<Pick<slime.$api.Global,"Events">,slime.$api.Global["threads"]> } */
+			var code = script("threads.js");
+			return code(context);
+		})({ Events: Events });
 
 		/** @type { slime.$api.Platform } */
 		var platform = (
@@ -767,24 +724,12 @@
 
 		var code = (
 			function() {
-				/** @type { slime.runtime.internal.code.Exports } */
-				var rv;
-				$context.engine.execute(
-					$context.getRuntimeScript("code.js"),
-					{
-						Packages: $context.Packages,
-						$engine: $context.engine,
-						fp: fp,
-						apiForScripts: function() {
-							return $exports;
-						},
-						$export: function(v) {
-							rv = v;
-						}
-					},
-					null
-				);
-				return rv;
+				/** @type { slime.runtime.internal.code.Script } */
+				var code = script("code.js");
+				return code({
+					$engine: $context.engine,
+					fp: fp
+				});
 			}
 		)();
 

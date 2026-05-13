@@ -71,7 +71,6 @@ namespace slime.$api {
 
 namespace slime.runtime.internal.code {
 	export interface Scope {
-		Packages: slime.runtime.Scope["Packages"]
 		$engine: slime.$api.Engine
 		fp: slime.$api.fp.Exports
 	}

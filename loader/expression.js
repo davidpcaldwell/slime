@@ -74,20 +74,21 @@
 			 */
 			var execute = function(code,context) {
 				/** @type { any } */
-				var exported;
+				var exports = {};
 
 				$engine.execute(
 					code,
 					{
 						$context: context,
+						$exports: exports,
 						$export: function(value) {
-							exported = value;
+							exports = value;
 						}
 					},
 					null
 				);
 
-				return exported;
+				return exports;
 			}
 
 			/**
@@ -100,8 +101,8 @@
 				return execute(scope.$slime.getRuntimeScript(path), context);
 			};
 
-			return function(scope) {
-				return load(path, scope || {});
+			return function(context) {
+				return load(path, context || {});
 			};
 		};
 
@@ -112,7 +113,7 @@
 
 				return code({
 					engine: $engine,
-					getRuntimeScript: scope.$slime.getRuntimeScript,
+					script: script,
 					Packages: scope.Packages
 				});
 			}
