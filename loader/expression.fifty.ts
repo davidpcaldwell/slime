@@ -4,23 +4,23 @@
 //
 //	END LICENSE
 
+/**
+ * The SLIME runtime is responsible for providing the SLIME API to SLIME embeddings.
+ *
+ * The runtime (`expression.js`) is an expression that evaluates to an object providing its capabilities.
+ *
+ * Embeddings configure the runtime by configuring the JavaScript scope in which it executes, which must be of type
+ * {@link slime.runtime.Scope}, and defines how to load the SLIME runtime itself, as well as optionally providing
+ * additional information about the surrounding JavaScript engine's capabilities and configuration for the runtime.
+ *
+ * All code loaded by the SLIME runtime has access to the {@link slime.runtime.Exports} object (as `$api`), providing a standard
+ * SLIME API that embeddings and applications on all platforms can use. Platforms may provide extensions to `$api` to expose
+ * platform-specific capabilities.
+ */
+namespace slime.runtime.internal {
+}
+
 namespace slime {
-	/**
-	 * Generally speaking, the SLIME runtime is responsible for providing basic constructs to SLIME embeddings.
-	 *
-	 * The SLIME runtime (`expression.js`) is an expression that evaluates to an object providing its capabilities to
-	 * the embedder.
-	 *
-	 * Embeddings configure the runtime by configuring the JavaScript scope in which it executes, which must be of type
-	 * {@link slime.runtime.Scope}, and defines how to load the SLIME runtime itself, as well as optionally providing
-	 * additional information about the surrounding JavaScript engine's capabilities and configuration for the runtime itself.
-	 *
-	 * In return, the embedding will be supplied with an {@link Exports} object that the embedding can use to provide its own API
-	 * to applications.
-	 *
-	 * All code loaded by the SLIME runtime has access to the {@link slime.$api.Global} object (as `$api`), providing a standard
-	 * SLIME API that embeddings on all platforms can use.
-	 */
 	export namespace runtime {
 	}
 
@@ -40,7 +40,7 @@ namespace slime {
 			/**
 			 * An object that overrides properties of {@link slime.runtime.Engine} with embedding-specific replacements.
 			 */
-			$engine?: Partial<slime.$api.Engine>
+			$engine?: Partial<Engine>
 		}
 
 		export namespace scope {
@@ -89,9 +89,6 @@ namespace slime {
 				}
 			//@ts-ignore
 			})(fifty);
-		}
-
-		export interface Exports extends slime.$api.Global {
 		}
 	}
 

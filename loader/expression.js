@@ -19,7 +19,7 @@
 			/**
 			 *
 			 * @param { slime.runtime.Scope["$engine"] } $engine
-			 * @returns { slime.$api.Engine }
+			 * @returns { slime.runtime.Engine }
 			 */
 			function($engine) {
 				return {
@@ -106,7 +106,7 @@
 			};
 		};
 
-		var $api = (
+		return (
 			function() {
 				/** @type { slime.$api.internal.Script } */
 				var code = script("$api.js");
@@ -118,10 +118,6 @@
 				});
 			}
 		)();
-
-		/** @type { slime.runtime.Exports } */
-		var rv = $api;
-		return rv;
 	}
 //@ts-ignore
 )(scope)

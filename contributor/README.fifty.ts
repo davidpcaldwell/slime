@@ -5,6 +5,12 @@
 //	END LICENSE
 
 /**
+ * ## Runtime
+ *
+ * Embeddings that load the runtime should execute `loader/expression.js` with an appropriate object of type
+ * {@link slime.runtime.Scope} in scope with the name `scope`; the expression evaluates to an object of type
+ * {@link slime.runtime.Exports}. See {@link slime.runtime.internal} for details.
+ *
  * ## `jsh` documentation
  *
  * Documentation about contributing to `jsh` can be browsed at the {@link slime.jsh.internal slime.jsh.internal} TypeScript

@@ -16,28 +16,7 @@ interface Function {
 	construct: any
 }
 
-/**
- *
- * The `$api` object is provided to all code loaded by the platform loader. It represents the SLIME APIs available on all platforms.
- * (Some platform-specific APIs are available through properties of the `$api` object, sucn as `$api.jrunscript` and `$api.browser`.)
- *
- * ## Functional programming: {@link slime.$api.fp `$api.fp`}
- *
- * The `$api.fp` namespace provides functional programming constructs. See {@link slime.$api.fp}.
- *
- * ## Handling content: {@link slime.runtime.content `$api.content`}
- *
- * The `$api.content` namespace provides the ability to handle _content_. *Content* is defined in SLIME as a hierarchical structure
- * with a root and containing paths. It can represent a filesystem, a URL space, a ZIP/TAR file, or any other logically hierarchical
- * structure.
- *
- * ## Handling deprecation and API usage
- *
- * Various `$api` methods can "flag" APIs for callers, causing a configurable callback to be executed when they are invoked, to warn
- * the users that the APIs are deprecated or experimental. See the `deprecate` and `experimental` functions of {@link slime.$api.Global |
- * `$api`}.
- */
-namespace slime.$api {
+namespace slime.runtime {
 	/**
 	 * An object that gives access to functionality for the current JavaScript engine. Created by combining the `$engine`
 	 * property provided as part of {@link slime.runtime.Scope} with default implementations provided by the SLIME runtime.
@@ -145,11 +124,33 @@ namespace slime.$api {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Global {
+	export interface Exports extends slime.$api.Global {
 		engine: Engine
 	}
+}
 
-
+/**
+ *
+ * The `$api` object is provided to all code loaded by the platform loader. It represents the SLIME APIs available on all platforms.
+ * (Some platform-specific APIs are available through properties of the `$api` object, such as `$api.jrunscript` and `$api.browser`.)
+ *
+ * ## Functional programming: {@link slime.$api.fp `$api.fp`}
+ *
+ * The `$api.fp` namespace provides functional programming constructs. See {@link slime.$api.fp}.
+ *
+ * ## Handling content: {@link slime.runtime.content `$api.content`}
+ *
+ * The `$api.content` namespace provides the ability to handle _content_. *Content* is defined in SLIME as a hierarchical structure
+ * with a root and containing paths. It can represent a filesystem, a URL space, a ZIP/TAR file, or any other logically hierarchical
+ * structure.
+ *
+ * ## Handling deprecation and API usage
+ *
+ * Various `$api` methods can "flag" APIs for callers, causing a configurable callback to be executed when they are invoked, to warn
+ * the users that the APIs are deprecated or experimental. See the `deprecate` and `experimental` functions of {@link slime.$api.Global |
+ * `$api`}.
+ */
+namespace slime.$api {
 	/**
 	 * Provides information about and capabilities of the underlying JavaScript platform; loaded code can use this information
 	 * in its implementation.
@@ -1950,20 +1951,12 @@ namespace slime.$api.internal {
 	export type script = <C,E>(name: string) => slime.runtime.loader.Scoped<C,E>
 
 	export interface Context {
-		engine: slime.$api.Engine
+		engine: runtime.Engine
 		script: script
 		Packages?: slime.jrunscript.Packages
 	}
 
-	/**
-	 * Currently, this script exposes a bunch of internals for use within the runtime itself, along with exports designed to be
-	 * passed along to the application level. So this script provides exports for both, and the runtime file rearranges them for
-	 * ultimate export to the application level, while using some of the internals itself.
-	 */
-	export interface Exports extends slime.$api.Global {
-	}
-
-	export type Script = slime.runtime.loader.Scoped<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,slime.runtime.Exports>
 }
 
 namespace slime.$api.oo {

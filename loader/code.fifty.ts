@@ -71,7 +71,7 @@ namespace slime.$api {
 
 namespace slime.runtime.internal.code {
 	export interface Scope {
-		$engine: slime.$api.Engine
+		$engine: Engine
 		fp: slime.$api.fp.Exports
 	}
 
@@ -134,7 +134,7 @@ namespace slime.runtime.internal.code {
 
 			createScriptScope: <C extends { [x: string]: any },T>($context: C) => ScriptScope<C,T>
 
-			runtime: ($api: slime.$api.internal.Exports) => Runtime
+			runtime: ($api: slime.$api.Global) => Runtime
 
 			old: {
 				toExportScope: slime.$api.loader.old.Exports["old"]["loader"]["tools"]["toExportScope"]
