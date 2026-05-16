@@ -609,7 +609,7 @@ namespace slime.jsh.shell.tools {
 
 				var getVersion = function(install: slime.jrunscript.tools.node.Installation) {
 					return $api.fp.world.Sensor.now({
-						sensor: jsh.shell.tools.node.Installation.getVersion,
+						sensor: jsh.shell.tools.node.Installation.getVersion.wo,
 						subject: install
 					});
 				}

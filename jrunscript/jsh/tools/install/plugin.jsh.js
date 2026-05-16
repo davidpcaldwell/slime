@@ -852,9 +852,7 @@
 
 							var exists = jsh.shell.tools.node.Installation.exists.simple
 
-							var getVersion = $api.fp.world.Sensor.old.mapping({
-								sensor: jsh.shell.tools.node.Installation.getVersion
-							});
+							var getVersion = jsh.shell.tools.node.Installation.getVersion.simple;
 
 							//var now = node.object.at({ location: location.toString() });
 							if (exists(now) && getVersion(now) == "v" + VERSION) {
