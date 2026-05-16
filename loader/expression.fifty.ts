@@ -7,7 +7,8 @@
 /**
  * The SLIME runtime is responsible for providing the SLIME API to SLIME embeddings.
  *
- * The runtime (`expression.js`) is an expression that evaluates to an object providing its capabilities.
+ * The SLIME runtime (`loader/expression.js`) is an expression that evaluates to an object providing its platform-independent
+ * capabilities.
  *
  * Embeddings configure the runtime by configuring the JavaScript scope in which it executes, which must be of type
  * {@link slime.runtime.Scope}, and defines how to load the SLIME runtime itself, as well as optionally providing

@@ -16,6 +16,17 @@ interface Function {
 	construct: any
 }
 
+/**
+ * SLIME provides a runtime to all code loaded by the SLIME runtime loader. It is provided to all code loaded by the platform as the
+ * `$api` object. Other embeddings can add properties to the `$api` object to expose additional platform-specific capabilities, such
+ * as `$api.jrunscript` for Java/LiveConnect capabilities and `$api.browser` for browser-specific capabilities.
+ *
+ * ## Handling content: {@link slime.runtime.content `$api.content`}
+ *
+ * The `$api.content` namespace provides the ability to handle _content_. *Content* is defined in SLIME as a hierarchical structure
+ * with a root and containing paths. It can represent a filesystem, a URL space, a ZIP/TAR file, or any other logically hierarchical
+ * structure.
+ */
 namespace slime.runtime {
 	/**
 	 * An object that gives access to functionality for the current JavaScript engine. Created by combining the `$engine`
@@ -130,19 +141,11 @@ namespace slime.runtime {
 }
 
 /**
- *
- * The `$api` object is provided to all code loaded by the platform loader. It represents the SLIME APIs available on all platforms.
- * (Some platform-specific APIs are available through properties of the `$api` object, such as `$api.jrunscript` and `$api.browser`.)
+ * The former namespace used to house the SLIME runtime APIs; now see {@link slime.runtime}.
  *
  * ## Functional programming: {@link slime.$api.fp `$api.fp`}
  *
  * The `$api.fp` namespace provides functional programming constructs. See {@link slime.$api.fp}.
- *
- * ## Handling content: {@link slime.runtime.content `$api.content`}
- *
- * The `$api.content` namespace provides the ability to handle _content_. *Content* is defined in SLIME as a hierarchical structure
- * with a root and containing paths. It can represent a filesystem, a URL space, a ZIP/TAR file, or any other logically hierarchical
- * structure.
  *
  * ## Handling deprecation and API usage
  *
