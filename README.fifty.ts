@@ -75,25 +75,16 @@
  *
  * ### Creating a custom embedding for the SLIME runtime
  *
- * SLIME provides several embeddings of the SLIME runtime, as listed above. The runtime implementation provides an interface
- * embedders can use to create a runtime for a specific platform, but the embedder makes the decision about how to provide access to
- * the runtime interface, and the various SLIME embeddings listed above differ in how they do so. This makes it hard to write
- * cross-platform code that uses constructs from the common runtime, so Work is underway to provide more standard access to the
- * runtime by moving elements of the runtime interface to the shared `$api` object provided to all code loaded by the runtime.
- * (`jsh`, a Java servlet-based embedding, a browser embedding, a JXA embedding for macOS automation), and a simple Node.js
- * embedding.
- *
- * Custom SLIME embeddings may be developed by creating a suitable implementation of {@link slime.runtime.Scope} and putting that
- * object in scope when evaluating `loader/expression.js`, which yields an object of type {@link slime.runtime.Exports}. The
- * embedding can then use the `slime.runtime.Exports` to provide arbitrary APIs for users of the embedding.
+ * Arbitrary SLIME embeddings can be created; the {@link slime.runtime.internal} documentation provides information about how to do
+ * so.
  *
  * ## Using SLIME
  *
  * ### APIs for all platforms
  *
- * SLIME provides its platform-independent {@link slime.$api API} to all code loaded with SLIME via the {@link slime.$api.Global | `$api`}
- * object, which provides a number of general-purpose constructs, including a functional programming module available as
- * {@link slime.$api.fp.Exports | `$api.fp`}.
+ * SLIME provides its platform-independent {@link slime.runtime API} to all code loaded with SLIME via the
+ * {@link slime.runtime.Exports | `$api`} object, which provides a number of general-purpose constructs, including a functional
+ * programming module available as {@link slime.$api.fp.Exports | `$api.fp`}.
  *
  * Similarly, the SLIME runtime also provides some common tools to runtime embedders, for historical reasons. So in some areas,
  * multiple embeddings share implementations and specifications of the same functionality, presented in the same or similar ways.

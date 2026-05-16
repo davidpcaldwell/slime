@@ -96,5 +96,4 @@
  * construct in files without typechecking (where a standard usages search might not find them, in other words).
  */
 namespace slime.internal {
-
 }
