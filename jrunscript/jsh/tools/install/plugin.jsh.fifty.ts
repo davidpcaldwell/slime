@@ -608,10 +608,7 @@ namespace slime.jsh.shell.tools {
 				const { $api, jsh } = fifty.global;
 
 				var getVersion = function(install: slime.jrunscript.tools.node.Installation) {
-					return $api.fp.world.Sensor.now({
-						sensor: jsh.shell.tools.node.Installation.getVersion,
-						subject: install
-					});
+					return jsh.shell.tools.node.Installation.getVersion.simple(install);
 				}
 
 				$api.fp.world.Action.now({

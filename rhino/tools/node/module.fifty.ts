@@ -96,7 +96,11 @@ namespace slime.jrunscript.tools.node {
 				simple: (installation: Installation) => boolean
 			}
 
-			getVersion: slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,void,string>
+			getVersion: slime.$api.fp.world.sensor.api.Maybe<
+				slime.jrunscript.tools.node.Installation,
+				void,
+				string
+			>
 		}
 	}
 
@@ -121,7 +125,7 @@ namespace slime.jrunscript.tools.node {
 			//	TODO	test still directly references world object
 			fifty.tests.sandbox.installation = function() {
 				var exists = $api.fp.now(test.subject.Installation.exists.wo, $api.fp.world.Sensor.mapping());
-				var getVersion = $api.fp.world.mapping(test.subject.Installation.getVersion);
+				var getVersion = test.subject.Installation.getVersion.simple;
 
 				var TMPDIR = fifty.jsh.file.temporary.location();
 				var installation = test.subject.Installation.from.location(TMPDIR);

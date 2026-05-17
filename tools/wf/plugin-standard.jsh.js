@@ -103,7 +103,7 @@
 				}
 
 				if ( (project.lint || project.test) && !project.precommit ) {
-					project.precommit = api.checks().precommit({
+					project.precommit = api.checks.precommit({
 						lint: (project.lint) ? project.lint.check : void(0),
 						test: project.test
 					})
@@ -201,7 +201,7 @@
 						}
 						var formatter = (p.options.vscode) ? formatForVscode : $api.fp.identity;
 						var result = $api.fp.world.now.question(
-							api.checks().tsc,
+							api.checks.tsc,
 							void(0),
 							{
 								console: function(e) {
@@ -222,7 +222,7 @@
 				);
 
 				$exports.typedoc = function() {
-					api.typescript().typedoc.now();
+					api.typescript.typedoc.now();
 				}
 
 				var displayBranchName = function(name) {
@@ -285,7 +285,7 @@
 					};
 
 					//	TODO	add option for offline
-					var oRepository = api.git().fetch();
+					var oRepository = api.git.fetch();
 					var fRepository = library.git.program({ command: "git" }).repository(oRepository.directory.toString());
 					var remote = "origin";
 					var status = fRepository.command(library.git.commands.status).argument().run();
@@ -296,7 +296,7 @@
 						var trunk = origin.head;
 						base = "origin/" + trunk;
 					}
-					var vsRemote = (branch) ? api.git().compareTo(base)(oRepository) : null;
+					var vsRemote = (branch) ? api.git.compareTo(base)(oRepository) : null;
 					jsh.shell.console("Current branch: " + displayBranchName(status.branch));
 					if (vsRemote && vsRemote.ahead.length) jsh.shell.console("ahead of " + base + ": " + vsRemote.ahead.length);
 					if (vsRemote && vsRemote.behind.length) jsh.shell.console("behind " + base + ": " + vsRemote.behind.length);
@@ -341,7 +341,7 @@
 						if (branch.name === null) {
 							return;
 						} else {
-							var compared = api.git().compareTo(branch.name)(oRepository);
+							var compared = api.git.compareTo(branch.name)(oRepository);
 							if (compared.behind.length) {
 								if (first) {
 									jsh.shell.console("");

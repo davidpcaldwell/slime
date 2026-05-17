@@ -109,7 +109,7 @@
 			}
 		)();
 
-		/** @type { slime.jrunscript.tools.node.installation.Exports["getVersion"] } */
+		/** @type { slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,void,slime.$api.fp.Maybe<string>> } */
 		function getVersion(installation) {
 			return function(events) {
 				/** @type { slime.jrunscript.shell.run.Intention } */
@@ -124,7 +124,7 @@
 					$context.library.shell.subprocess.question,
 					intention
 				)
-				return exit.stdio.output.split("\n")[0];
+				return $api.fp.Maybe.from.some(exit.stdio.output.split("\n")[0]);
 			}
 		}
 
@@ -812,7 +812,7 @@
 					};
 				}
 			)(),
-			getVersion: getVersion,
+			getVersion: $api.fp.world.Sensor.api.maybe(getVersion),
 			question: Intention_question,
 			Intention: {
 				shell: function(intention) {

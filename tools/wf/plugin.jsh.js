@@ -666,9 +666,7 @@
 					//	TODO	would this really be required? To serve it, maybe, but to run it?
 					jsh.shell.tools.tomcat.jsh.require.simple();
 
-					var getVersion = $api.fp.world.Sensor.old.mapping({
-						sensor: jsh.shell.tools.node.Installation.getVersion
-					});
+					var getVersion = jsh.shell.tools.node.Installation.getVersion.simple;
 
 					$api.fp.world.Action.now({
 						action: jsh.shell.tools.node.require.action,
@@ -1479,18 +1477,16 @@
 					},
 					jsh: jsh,
 					api: {
-						checks: function() {
-							return jsh.wf.checks;
-						},
-						git: function() {
-							return jsh.wf.git;
-						},
+						checks: jsh.wf.checks,
+						git: jsh.wf.git,
 						project: function() {
 							//	TODO	weird self-reference indicating this object should be restructured
 							return jsh.wf.project;
 						},
-						typescript: function() {
-							return jsh.wf.typescript;
+						typescript: {
+							typedoc: {
+								now: jsh.wf.typescript.typedoc.now
+							}
 						}
 					}
 				});

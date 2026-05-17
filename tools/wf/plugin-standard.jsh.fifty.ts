@@ -17,8 +17,8 @@ namespace slime.jsh.wf.standard {
 		}
 
 		api: {
-			checks: slime.$api.fp.impure.Input<slime.jsh.wf.Exports["checks"]>
-			project: slime.$api.fp.impure.Input<{
+			checks: slime.jsh.wf.Exports["checks"]
+			project: slime.$api.fp.Thunk<{
 				updateSubmodule: slime.jsh.wf.Exports["project"]["updateSubmodule"]
 				submodule: Pick<slime.jsh.wf.Exports["project"]["submodule"],"remove"|"status"|"attach">
 				lint: {
@@ -28,12 +28,12 @@ namespace slime.jsh.wf.standard {
 					construct: slime.jsh.wf.Exports["project"]["Submodule"]["construct"]
 				}
 			}>
-			git: slime.$api.fp.impure.Input<slime.jsh.wf.Exports["git"]>
-			typescript: slime.$api.fp.impure.Input<{
+			git: slime.jsh.wf.Exports["git"]
+			typescript: {
 				typedoc: {
 					now: slime.jsh.wf.Exports["typescript"]["typedoc"]["now"]
 				}
-			}>
+			}
 		}
 	}
 

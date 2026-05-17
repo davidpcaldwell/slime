@@ -205,9 +205,7 @@
 
 						(
 							function core() {
-								var getVersion = $api.fp.world.Sensor.old.mapping({
-									sensor: jsh.shell.tools.node.Installation.getVersion
-								});
+								var getVersion = jsh.shell.tools.node.Installation.getVersion.simple;
 
 								$api.fp.world.now.tell(jsh.shell.tools.node.require.action, {
 									found: function(e) {
