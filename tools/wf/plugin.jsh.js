@@ -694,7 +694,9 @@
 								$api.fp.now(
 									library.module.project.typescript.configurationFile,
 									$api.fp.Partial.impure.exception(function(project) {
-										return new Error("Not found: TypeScript configuration file.");
+										return new Error(
+											"Not found: TypeScript configuration file for project " + project.base + "."
+										);
 									})
 								),
 								$api.fp.property("pathname")
