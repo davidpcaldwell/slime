@@ -693,7 +693,7 @@
 							configuration: $api.fp.pipe(
 								$api.fp.now(
 									library.module.project.typescript.configurationFile,
-									$api.fp.Partial.impure.exception(function(configuration) {
+									$api.fp.Partial.impure.exception(function(project) {
 										return new Error("Not found: TypeScript configuration file.");
 									})
 								),
