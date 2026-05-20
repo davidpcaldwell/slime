@@ -666,42 +666,53 @@
 					//	TODO	would this really be required? To serve it, maybe, but to run it?
 					jsh.shell.tools.tomcat.jsh.require.simple();
 
-					var getVersion = jsh.shell.tools.node.Installation.getVersion.simple;
+					var nodeInstallationToVersion = jsh.shell.tools.node.Installation.getVersion.simple;
 
 					$api.fp.world.Action.now({
 						action: jsh.shell.tools.node.require.action,
 						handlers: {
 							found: function(e) {
-								jsh.shell.console("Found Node.js " + getVersion(e.detail) + ".");
+								jsh.shell.console("Found Node.js " + nodeInstallationToVersion(e.detail) + ".");
 							},
 							removed: function(e) {
 								jsh.shell.console("Removed Node.js " + e.detail.version);
 							},
 							installed: function(e) {
-								jsh.shell.console("Installed Node.js " + getVersion(e.detail) + ".");
+								jsh.shell.console("Installed Node.js " + nodeInstallationToVersion(e.detail) + ".");
 							}
 						}
 					});
 
-					var version = library.module.project.typescript.version(project);
+					/** @type { slime.$api.fp.Identity<slime.jsh.wf.Project> } */
+					var asProject = $api.fp.identity;
 
-					var configuration = library.module.project.typescript.configurationFile(project);
-					if (!configuration.present) throw new Error("Not found: TypeScript configuration file.");
+					var getTypescriptConfiguration = $api.fp.pipe(
+						asProject,
+						$api.fp.Mapping.properties({
+							version: library.module.project.typescript.version,
+							configuration: $api.fp.pipe(
+								$api.fp.now(
+									library.module.project.typescript.configurationFile,
+									$api.fp.Partial.impure.exception(function(configuration) {
+										return new Error("Not found: TypeScript configuration file.");
+									})
+								),
+								$api.fp.property("pathname")
+							)
+						})
+					);
 
 					/** @type { slime.jsh.wf.internal.module.typedoc.Invocation } */
 					var typedocInvocation = {
 						stdio: stdio,
 						configuration: {
-							typescript: {
-								version: version,
-								configuration: configuration.value.pathname
-							}
+							typescript: getTypescriptConfiguration(project)
 						},
 						project: project.base,
 						out: out
 					};
-					var getShellInvocation = library.module.typescript.typedoc.invocation(typedocInvocation);
-					return getShellInvocation;
+
+					return library.module.typescript.typedoc.invocation(typedocInvocation);
 				}
 
 				/** @type { slime.jsh.wf.Exports["typescript"] } */
