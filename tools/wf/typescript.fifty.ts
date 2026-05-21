@@ -253,7 +253,9 @@ namespace slime.jsh.wf.internal.typescript {
 		library: {
 			file: slime.jrunscript.file.Exports
 			shell: slime.jrunscript.shell.Exports
-			node: slime.jsh.shell.tools.node.Exports
+			jsh: {
+				node: slime.jsh.shell.tools.node.Exports
+			}
 		}
 
 		configuration: {

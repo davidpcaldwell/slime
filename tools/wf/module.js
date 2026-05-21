@@ -24,7 +24,9 @@
 				library: {
 					file: $context.library.file,
 					shell: $context.library.shell,
-					node: $context.library.jsh.node
+					jsh: {
+						node: $context.library.jsh.node
+					}
 				},
 				configuration: $context.configuration.typescript,
 				world: {
