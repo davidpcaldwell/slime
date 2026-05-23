@@ -42,11 +42,11 @@
 					}
 				});
 
-				var location = jsh.file.Pathname("/Applications/Docker.app");
 
 				jsh.tools.docker = {
 					engine: module.engine,
 					require: function() {
+						var location = jsh.file.Pathname("/Applications/Docker.app");
 						return module.install({
 							library: {
 								shell: jsh.shell,
