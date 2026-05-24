@@ -434,7 +434,7 @@
 				Authorization: function(p) {
 					return "Basic " + String(
 						Packages.java.util.Base64.getEncoder().encodeToString(
-							new Packages.java.lang.String(p.user + ":" + p.password).getBytes()
+							new Packages.java.lang.String(p.user + ":" + p.password).getBytes("UTF-8")
 						)
 					);
 				}
