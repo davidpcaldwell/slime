@@ -60,7 +60,7 @@ namespace slime.jrunscript.tools.node {
 
 	/**
 	 * A specified installation of Node.js. When determining whether Node.js is installed at a particular location, one can
-	 * create an `Installation` using the `from.location` function, and then check for its existence with `exists`.
+	 * create an `Installation` using the `from.base` function, and then check for its existence with `exists`.
 	 */
 	export interface Installation {
 		executable: string
@@ -83,12 +83,12 @@ namespace slime.jrunscript.tools.node {
 		export interface Exports {
 			from: {
 				/**
-				 * Given a Node installation location, returns the Node `Installation` corresponding to that location.
+				 * Given a Node installation location, returns a Node `Installation` corresponding to that location.
 				 *
 				 * @param home The home directory of the `Installation`.
-				 * @returns
+				 * @returns A {@link slime.$api.fp.Maybe} containing the `Installation` if one can be derived.
 				 */
-				location: (home: slime.jrunscript.file.Location) => slime.jrunscript.tools.node.Installation
+				base: (home: slime.jrunscript.file.Location) => slime.$api.fp.Maybe<slime.jrunscript.tools.node.Installation>
 			}
 
 			exists: {
@@ -124,12 +124,16 @@ namespace slime.jrunscript.tools.node {
 
 			//	TODO	test still directly references world object
 			fifty.tests.sandbox.installation = function() {
-				var exists = $api.fp.now(test.subject.Installation.exists.wo, $api.fp.world.Sensor.mapping());
+				var exists = test.subject.Installation.exists.simple;
 				var getVersion = test.subject.Installation.getVersion.simple;
 
 				var TMPDIR = fifty.jsh.file.temporary.location();
-				var installation = test.subject.Installation.from.location(TMPDIR);
+				var maybeInstallation = test.subject.Installation.from.base(TMPDIR);
+				verify(maybeInstallation).present.is(false);
 
+				var installation: slime.jrunscript.tools.node.Installation = {
+					executable: $api.fp.now(TMPDIR, fifty.global.jsh.file.Location.directory.relativePath("bin/node"), $api.fp.property("pathname"))
+				};
 				var before = exists(installation);
 				verify(before).is(false);
 
@@ -139,6 +143,8 @@ namespace slime.jrunscript.tools.node {
 					})
 				);
 
+				var maybeInstallationAfter = test.subject.Installation.from.base(TMPDIR);
+				verify(maybeInstallationAfter).present.is(true);
 				var after = exists(installation);
 				verify(after).is(true);
 				var version = getVersion(installation);
@@ -194,7 +200,10 @@ namespace slime.jrunscript.tools.node {
 							version: test.subject.test.versions.current
 						})
 					);
-					var installation = test.subject.Installation.from.location(TMPDIR);
+					var maybeInstallation = test.subject.Installation.from.base(TMPDIR);
+					verify(maybeInstallation).present.is(true);
+					if (!maybeInstallation.present) throw new Error("Unable to derive Node installation from base.");
+					var installation = maybeInstallation.value;
 					debugger;
 					var result = $api.fp.world.now.question(
 						test.subject.Installation.Intention.question({
@@ -269,7 +278,10 @@ namespace slime.jrunscript.tools.node {
 						version: test.subject.test.versions.current
 					}
 				);
-				var installation = test.subject.Installation.from.location(TMPDIR);
+				var maybeInstallation = test.subject.Installation.from.base(TMPDIR);
+				verify(maybeInstallation).present.is(true);
+				if (!maybeInstallation.present) throw new Error("Unable to derive Node installation from location.");
+				var installation = maybeInstallation.value;
 
 				var modules = test.subject.Installation.modules(installation);
 
@@ -468,7 +480,7 @@ namespace slime.jrunscript.tools.node {
 
 namespace slime.jrunscript.tools.node.internal {
 	export interface JshPluginInterface {
-		module: (p: { context: Context }) => Exports
+		module: (p: { context: Context }) => slime.$api.fp.Maybe<Exports>
 	}
 
 	//	TODO	this probably has a richer structure when --depth is not 0

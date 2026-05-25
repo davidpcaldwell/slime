@@ -808,7 +808,7 @@
 				/** @type { slime.jrunscript.tools.node.internal.JshPluginInterface } */
 				var helper = plugins.node;
 
-				var node = helper.module({
+				var maybeNode = helper.module({
 					context: {
 						library: {
 							file: jsh.file,
@@ -818,6 +818,9 @@
 					}
 				});
 
+				if (!maybeNode.present) return;
+				var node = maybeNode.value;
+
 				jsh.shell.tools.node = (function integratedNode() {
 					if (!jsh.shell.jsh.lib) return;
 
@@ -825,10 +828,14 @@
 
 					/** @type { slime.jsh.shell.tools.node.Managed } */
 					var managed = {
-						installation: node.Installation.from.location({
-							filesystem: jsh.file.world.filesystems.os,
-							pathname: location.toString()
-						}),
+						installation: (function() {
+							var maybeInstallation = node.Installation.from.base({
+								filesystem: jsh.file.world.filesystems.os,
+								pathname: location.toString()
+							});
+							if (!maybeInstallation.present) throw new Error("Unable to derive managed Node installation from jsh location.");
+							return maybeInstallation.value;
+						})(),
 						installed: void(0),
 						require: void(0)
 					}

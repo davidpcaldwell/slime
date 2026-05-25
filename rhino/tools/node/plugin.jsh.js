@@ -21,7 +21,10 @@
 					module: function(p) {
 						/** @type { slime.jrunscript.tools.node.Script } */
 						var script = $loader.script("module.js");
-						return script(p.context);
+						return {
+							present: true,
+							value: script(p.context)
+						};
 					}
 				};
 			}
