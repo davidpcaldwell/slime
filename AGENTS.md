@@ -77,6 +77,22 @@ To run all tests for a file:
 A module's documentation typically is contained in a primary TypeScript namespace. Namespaces with `internal` in the name are
 designed for internal module or project use.
 
+### Troubleshooting: `./wf documentation` in devcontainers
+
+If serving documentation fails because Chrome reports that the profile is already in use, clear stale Chrome Singleton lock files
+from the project-local documentation profile and retry.
+
+From the project root, run:
+
+```bash
+rm -f local/chrome/documentation/SingletonCookie \
+  local/chrome/documentation/SingletonLock \
+  local/chrome/documentation/SingletonSocket
+./wf documentation
+```
+
+This is safe in a devcontainer when those files are stale lock artifacts from a previous run.
+
 # GitHub integration
 
 When asked to create a GitHub issue, use the format native to the GitHub Pull Requests extension rather than the format native to
