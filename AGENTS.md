@@ -107,6 +107,10 @@ coverage should receive the `project` label.
 
 When refactoring, always run `./wf tsc` after the refactor to make sure type-checking passed. If it does not, something is wrong.
 
+## Branch naming
+
+When naming branches, if working on an issue, respect the convention specified in the [`VSCode githubIssues.issueBranchTitle setting`](.vscode/settings.json). Otherwise, name the branch with the format `<github-username>/<description>`.
+
 # Code Quality
 
 If you are asked for suggestions on how to improve the project, please use the information in this section.
