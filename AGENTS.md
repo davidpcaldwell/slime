@@ -93,7 +93,7 @@ When refactoring, always run `./wf tsc` after the refactor to make sure type-che
 
 ## Branch naming
 
-When naming branches, if working on an issue, respect the convention specified in the [`VSCode githubIssues.issueBranchTitle setting`](.vscode/settings.json). Otherwise, name the branch with the same format ${GitHub username}/{description}.
+When naming branches, if working on an issue, respect the convention specified in the [`VSCode githubIssues.issueBranchTitle setting`](.vscode/settings.json). Otherwise, name the branch with the format `<github-username>/<description>`.
 
 # Code Quality
 
