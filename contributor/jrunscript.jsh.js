@@ -65,18 +65,6 @@
 
 					// TODO: force CoffeeScript for verification?
 
-					var hasGit = (
-						function() {
-							if (jsh.shell.environment.SLIME_TEST_NO_GIT) return false;
-							return Boolean(jsh.shell.PATH.getCommand("git"));
-						}
-					)();
-
-					var isGitClone = (function() {
-						var SLIME = jsh.script.file.parent.parent;
-						return Boolean(SLIME.getSubdirectory(".git") || SLIME.getFile(".git"));
-					})();
-
 					var environment = new jsh.project.suite.Environment({
 						src: jsh.script.file.parent.parent,
 						noselfping: parameters.options.noselfping,
@@ -256,18 +244,33 @@
 						}
 					});
 
-					if (hasGit && isGitClone) suite.add(
-						"project",
-						{
-							parts: {
-								wf: jsh.unit.fifty.Part({
-									shell: environment.jsh.unbuilt.src,
-									script: environment.jsh.unbuilt.src.getFile("tools/fifty/test.jsh.js"),
-									file: environment.jsh.unbuilt.src.getFile("wf.fifty.ts")
-								})
+
+					(function() {
+						var hasGit = (
+							function() {
+								if (jsh.shell.environment.SLIME_TEST_NO_GIT) return false;
+								return Boolean(jsh.shell.PATH.getCommand("git"));
 							}
-						}
-					);
+						)();
+
+						var isGitClone = (function() {
+							var SLIME = jsh.script.file.parent.parent;
+							return Boolean(SLIME.getSubdirectory(".git") || SLIME.getFile(".git"));
+						})();
+
+						if (hasGit && isGitClone) suite.add(
+							"project",
+							{
+								parts: {
+									wf: jsh.unit.fifty.Part({
+										shell: environment.jsh.unbuilt.src,
+										script: environment.jsh.unbuilt.src.getFile("tools/fifty/test.jsh.js"),
+										file: environment.jsh.unbuilt.src.getFile("wf.fifty.ts")
+									})
+								}
+							}
+						);
+					})();
 
 					jsh.project.suite.run({
 						view: parameters.options.view,
