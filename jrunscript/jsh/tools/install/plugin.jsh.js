@@ -829,12 +829,10 @@
 					/** @type { slime.jsh.shell.tools.node.Managed } */
 					var managed = {
 						installation: (function() {
-							var maybeInstallation = node.Installation.from.base({
-								filesystem: jsh.file.world.filesystems.os,
-								pathname: location.toString()
-							});
-							if (!maybeInstallation.present) throw new Error("Unable to derive managed Node installation from jsh location.");
-							return maybeInstallation.value;
+							// TODO: Remove this API and provide a function that returns a Maybe instead.
+							return {
+								executable: jsh.file.Pathname(location.toString() + "/" + "bin/node").toString()
+							}
 						})(),
 						installed: void(0),
 						require: void(0)
