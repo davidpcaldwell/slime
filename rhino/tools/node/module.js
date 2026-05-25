@@ -780,14 +780,17 @@
 
 		$exports.Installation = {
 			from: {
-				location: function(location) {
-					return {
+				base: function(base) {
+					if (!base) throw new TypeError("Required: base directory location for Node.js installation.");
+					var exists = $context.library.file.Location.directory.exists.simple(base);
+					if (!exists) return $api.fp.Maybe.from.nothing();
+					return $api.fp.Maybe.from.some({
 						executable: $api.fp.now.invoke(
-							location,
+							base,
 							$context.library.file.Location.directory.relativePath("bin/node"),
 							$api.fp.property("pathname")
 						)
-					}
+					});
 				}
 			},
 			exists: (
