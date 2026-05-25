@@ -280,7 +280,7 @@ namespace slime.jrunscript.tools.node {
 				);
 				var maybeInstallation = test.subject.Installation.from.base(TMPDIR);
 				verify(maybeInstallation).present.is(true);
-				if (!maybeInstallation.present) throw new Error("Unable to derive Node installation from location.");
+				if (!maybeInstallation.present) throw new Error("Unreachable; just to help type checker.");
 				var installation = maybeInstallation.value;
 
 				var modules = test.subject.Installation.modules(installation);

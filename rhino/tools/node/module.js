@@ -781,7 +781,7 @@
 		$exports.Installation = {
 			from: {
 				base: function(base) {
-					if (!base) throw new TypeError("Required: location.");
+					if (!base) throw new TypeError("Required: base directory location for Node.js installation.");
 					var exists = $context.library.file.Location.directory.exists.simple(base);
 					if (!exists) return $api.fp.Maybe.from.nothing();
 					return $api.fp.Maybe.from.some({
