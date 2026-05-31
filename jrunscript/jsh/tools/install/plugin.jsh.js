@@ -506,7 +506,7 @@
 
 					var fetchCode = function() {
 						return new jsh.http.Client().request({
-							url: "https://raw.githubusercontent.com/nodeca/js-yaml/refs/heads/master/dist/js-yaml.js",
+							url: "https://raw.githubusercontent.com/nodeca/js-yaml/3.14.1/dist/js-yaml.js",
 							evaluate: function(response) {
 								return response.body.stream.character().asString();
 							}
