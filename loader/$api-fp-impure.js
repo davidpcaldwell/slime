@@ -401,6 +401,7 @@
 						},
 						effector: function(handlers) {
 							return function(means) {
+								if (!means) throw new Error("Required: means to map.");
 								return function(output) {
 									$context.events.handle({
 										implementation: means(output),
