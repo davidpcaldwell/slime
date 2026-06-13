@@ -320,7 +320,7 @@
 
 		/** @type { (location: slime.jrunscript.file.Location) => ReturnType<slime.jrunscript.file.location.file.Exports["write"]["open"]>["wo"] } */
 		var Location_write_open_wo = function(location) {
-			if (!location) throw new Error("Required: location to open for writing.");
+			if (location == null) throw new TypeError("Required: location to open for writing.");
 			return function(settings) {
 				return function(events) {
 					var recurse = (settings && settings.recursive) ? $api.fp.now(parts.directory.ensureParent, $api.fp.world.Means.effector({
