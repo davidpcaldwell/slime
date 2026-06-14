@@ -110,6 +110,8 @@
 		homebrew.update();
 
 		// Avoid install+upgrade back-to-back: install when missing, otherwise upgrade.
+		// Assumption: this script bootstraps Homebrew by cloning into local/homebrew,
+		// so local/homebrew is treated as the Homebrew root for Cellar lookups here.
 		if (homebrew.directory.getRelativePath("Cellar/python@3.14").directory) {
 			homebrew.upgrade({
 				formula: "python@3.14"
