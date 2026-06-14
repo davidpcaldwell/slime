@@ -13,6 +13,7 @@
 	function($api,jsh) {
 		var homebrew = (
 			function installLocalHomebrew(base) {
+				var HOMEBREW_GIT_URL = "https://github.com/Homebrew/brew.git";
 				var local = base.getRelativePath("local").createDirectory({
 					exists: function(dir) {
 						return false;
@@ -21,19 +22,27 @@
 
 				var to = local.getRelativePath("homebrew");
 
-				if (!to.directory) {
-					to.createDirectory();
+				var clone = function() {
 					jsh.shell.run({
-						command: "tar",
-						arguments: ["xz", "--strip", "1", "-C", "homebrew"],
-						//	TODO	might not exist
-						directory: local,
-						stdio: {
-							input: new jsh.http.Client().request({
-								url: "https://github.com/Homebrew/brew/tarball/master"
-							}).body.stream
-						}
-					})
+						command: "git",
+						arguments: ["clone", "--depth", "1", HOMEBREW_GIT_URL, "homebrew"],
+						directory: local
+					});
+				};
+
+				var recreateAndClone = function() {
+					if (to.directory) to.directory.remove();
+					clone();
+				};
+
+				if (!to.directory) {
+					clone();
+				} else {
+					try {
+						jsh.shell.run({ command: "git", arguments: ["rev-parse", "--is-inside-work-tree"], directory: to.directory });
+					} catch (e) {
+						recreateAndClone();
+					}
 				}
 
 				var run = $api.fp.now(
@@ -67,6 +76,7 @@
 					}
 
 					return {
+						directory: to.directory,
 						update: function(p) {
 							brew("update")
 						},
@@ -92,17 +102,25 @@
 						}
 					}
 				})(to.directory);
+
 				return homebrew;
 			}
 		)(jsh.script.file.parent.parent);
 
 		homebrew.update();
-		homebrew.install({
-			formula: "python@3.14"
-		});
-		homebrew.upgrade({
-			formula: "python@3.14"
-		});
+
+		// Avoid install+upgrade back-to-back: install when missing, otherwise upgrade.
+		// Assumption: this script bootstraps Homebrew by cloning into local/homebrew,
+		// so local/homebrew is treated as the Homebrew root for Cellar lookups here.
+		if (homebrew.directory.getRelativePath("Cellar/python@3.14").directory) {
+			homebrew.upgrade({
+				formula: "python@3.14"
+			});
+		} else {
+			homebrew.install({
+				formula: "python@3.14"
+			});
+		}
 	}
-//@ts-ignore
-)($api,jsh);
+	//@ts-ignore
+)($api, jsh);
