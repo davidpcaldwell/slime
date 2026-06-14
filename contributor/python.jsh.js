@@ -110,7 +110,10 @@
 		homebrew.update();
 
 		// Avoid install+upgrade back-to-back: install when missing, otherwise upgrade.
-		if (homebrew.directory.getRelativePath("Cellar/python@3.14").directory) {
+		var pythonInRepoCellar = homebrew.directory.getRelativePath("Cellar/python@3.14").directory;
+		var pythonInPrefixCellar = homebrew.directory.parent
+			&& homebrew.directory.parent.getRelativePath("Cellar/python@3.14").directory;
+		if (pythonInRepoCellar || pythonInPrefixCellar) {
 			homebrew.upgrade({
 				formula: "python@3.14"
 			});
