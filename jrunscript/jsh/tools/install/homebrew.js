@@ -35,33 +35,20 @@
 				});
 			};
 
-			var convertTarballToGitCheckout = function() {
-				$context.library.shell.run({ command: "git", arguments: ["init"], directory: location.directory });
-				try {
-					$context.library.shell.run({ command: "git", arguments: ["remote", "remove", "origin"], directory: location.directory });
-				} catch (e) {
-					// Ignore missing origin for first-time conversion.
-				}
-				$context.library.shell.run({ command: "git", arguments: ["remote", "add", "origin", HOMEBREW_GIT_URL], directory: location.directory });
-
-				try {
-					$context.library.shell.run({ command: "git", arguments: ["fetch", "--depth", "1", "origin", "master"], directory: location.directory });
-					$context.library.shell.run({ command: "git", arguments: ["checkout", "-B", "master", "FETCH_HEAD"], directory: location.directory });
-				} catch (e) {
-					$context.library.shell.run({ command: "git", arguments: ["fetch", "--depth", "1", "origin", "main"], directory: location.directory });
-					$context.library.shell.run({ command: "git", arguments: ["checkout", "-B", "main", "FETCH_HEAD"], directory: location.directory });
-				}
+			var recreateAndClone = function() {
+				if (location.directory) location.directory.remove();
+				clone();
 			};
 
 			if (!location.directory.getFile("bin/brew")) {
-				clone();
+				recreateAndClone();
 				return;
 			}
 
 			try {
 				$context.library.shell.run({ command: "git", arguments: ["rev-parse", "--is-inside-work-tree"], directory: location.directory });
 			} catch (e) {
-				convertTarballToGitCheckout();
+				recreateAndClone();
 			}
 		}
 

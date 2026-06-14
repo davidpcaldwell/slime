@@ -30,22 +30,9 @@
 					});
 				};
 
-				var convertTarballToGitCheckout = function() {
-					jsh.shell.run({ command: "git", arguments: ["init"], directory: to.directory });
-					try {
-						jsh.shell.run({ command: "git", arguments: ["remote", "remove", "origin"], directory: to.directory });
-					} catch (e) {
-						// Ignore missing origin for first-time conversion.
-					}
-					jsh.shell.run({ command: "git", arguments: ["remote", "add", "origin", HOMEBREW_GIT_URL], directory: to.directory });
-
-					try {
-						jsh.shell.run({ command: "git", arguments: ["fetch", "--depth", "1", "origin", "master"], directory: to.directory });
-						jsh.shell.run({ command: "git", arguments: ["checkout", "-B", "master", "FETCH_HEAD"], directory: to.directory });
-					} catch (e) {
-						jsh.shell.run({ command: "git", arguments: ["fetch", "--depth", "1", "origin", "main"], directory: to.directory });
-						jsh.shell.run({ command: "git", arguments: ["checkout", "-B", "main", "FETCH_HEAD"], directory: to.directory });
-					}
+				var recreateAndClone = function() {
+					if (to.directory) to.directory.remove();
+					clone();
 				};
 
 				if (!to.directory) {
@@ -54,7 +41,7 @@
 					try {
 						jsh.shell.run({ command: "git", arguments: ["rev-parse", "--is-inside-work-tree"], directory: to.directory });
 					} catch (e) {
-						convertTarballToGitCheckout();
+						recreateAndClone();
 					}
 				}
 
