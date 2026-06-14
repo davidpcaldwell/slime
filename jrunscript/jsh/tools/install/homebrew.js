@@ -12,7 +12,9 @@
 	 * @param { slime.jrunscript.tools.homebrew.Context } $context
 	 * @param { slime.loader.Export<slime.jrunscript.tools.homebrew.Exports> } $export
 	 */
-	function($api,$context,$export) {
+	function($api, $context, $export) {
+		var HOMEBREW_GIT_URL = "https://github.com/Homebrew/brew.git";
+
 		/** @type { (p: slime.jrunscript.tools.homebrew.Installation) => void } */
 		var createLocalHomebrew = function(p) {
 			//	TODO	internally uses older-style file and http calls
@@ -25,21 +27,42 @@
 				recursive: true
 			});
 
-			if (location.directory.getFile("bin/brew")) {
+			var clone = function() {
+				$context.library.shell.run({
+					command: "git",
+					arguments: ["clone", "--depth", "1", HOMEBREW_GIT_URL, location.basename],
+					directory: location.parent.directory
+				});
+			};
+
+			var convertTarballToGitCheckout = function() {
+				$context.library.shell.run({ command: "git", arguments: ["init"], directory: location.directory });
+				try {
+					$context.library.shell.run({ command: "git", arguments: ["remote", "remove", "origin"], directory: location.directory });
+				} catch (e) {
+					// Ignore missing origin for first-time conversion.
+				}
+				$context.library.shell.run({ command: "git", arguments: ["remote", "add", "origin", HOMEBREW_GIT_URL], directory: location.directory });
+
+				try {
+					$context.library.shell.run({ command: "git", arguments: ["fetch", "--depth", "1", "origin", "master"], directory: location.directory });
+					$context.library.shell.run({ command: "git", arguments: ["checkout", "-B", "master", "FETCH_HEAD"], directory: location.directory });
+				} catch (e) {
+					$context.library.shell.run({ command: "git", arguments: ["fetch", "--depth", "1", "origin", "main"], directory: location.directory });
+					$context.library.shell.run({ command: "git", arguments: ["checkout", "-B", "main", "FETCH_HEAD"], directory: location.directory });
+				}
+			};
+
+			if (!location.directory.getFile("bin/brew")) {
+				clone();
 				return;
 			}
 
-			$context.library.shell.run({
-				command: "tar",
-				arguments: ["xz", "--strip", "1", "-C", location.basename],
-				//	TODO	might not exist
-				directory: location.parent.directory,
-				stdio: {
-					input: new $context.library.http.Client().request({
-						url: "https://github.com/Homebrew/brew/tarball/master"
-					}).body.stream
-				}
-			});
+			try {
+				$context.library.shell.run({ command: "git", arguments: ["rev-parse", "--is-inside-work-tree"], directory: location.directory });
+			} catch (e) {
+				convertTarballToGitCheckout();
+			}
 		}
 
 		/**
@@ -61,12 +84,12 @@
 				function(directory) {
 					var program = directory.getFile("bin/brew");
 
-					var brew = function(command,args) {
+					var brew = function(command, args) {
 						$context.library.shell.run({
 							command: program,
 							arguments: (function() {
 								var rv = [command];
-								if (args) rv.push.apply(rv,args);
+								if (args) rv.push.apply(rv, args);
 								return rv;
 							})()
 						})
