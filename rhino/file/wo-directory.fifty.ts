@@ -218,7 +218,8 @@ namespace slime.jrunscript.file.location.directory {
 		 *
 		 * @param mode.recursive If true, parent directories will be created as needed; default `false`.
 		 * @param mode.fresh If true, the directory will be removed if it already exists before being created; default `false`.
-		 * @returns
+		 * @returns A sensor API that, when invoked, will create a directory at the given locaion, emitting appropriate events
+		 * along the way, and return the same location if successful, otherwise returning `Maybe.nothing`.
 		 */
 		require: (mode?: { recursive?: boolean, fresh?: boolean }) => slime.$api.fp.world.sensor.api.Maybe<
 			slime.jrunscript.file.Location,
