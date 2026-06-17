@@ -109,9 +109,13 @@ public class Engine {
 				return this.classes;
 			}
 
-			@Override protected synchronized Context makeContext() {
+			@Override protected Context makeContext() {
 				Context rv = super.makeContext();
-				rv.setApplicationClassLoader(getContextApplicationClassLoader());
+				// Avoid holding ContextFactoryInner's monitor while setApplicationClassLoader
+				// may trigger ClassLoader work. This prevents lock-order inversion with
+				// threads that already hold the application ClassLoader monitor.
+				ClassLoader applicationClassLoader = getContextApplicationClassLoader();
+				rv.setApplicationClassLoader(applicationClassLoader);
 				rv.setErrorReporter(new Errors().getErrorReporter());
 				rv.setOptimizationLevel(getOptimizationLevel());
 				rv.setLanguageVersion(Context.VERSION_ES6);
