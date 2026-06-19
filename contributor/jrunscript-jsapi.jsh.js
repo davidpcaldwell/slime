@@ -80,22 +80,26 @@
 			pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.resources.api.html")
 		}));
 
-		var withShell = function(p) {
-			// TODO: moved this from integration tests and reproduced current test without much thought; could be that we should not be
-			// using the built shell, or should be using more shells
-			Object.defineProperty(p, "shell", {
-				get: function() {
-					return (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src;
-				}
-			});
-			return p;
-		};
+		(
+			function() {
+				var withShell = function(p) {
+					// TODO: moved this from integration tests and reproduced current test without much thought; could be that we should not be
+					// using the built shell, or should be using more shells
+					Object.defineProperty(p, "shell", {
+						get: function() {
+							return (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src;
+						}
+					});
+					return p;
+				};
 
-		suite.add("jsh/jsh.shell/jsh", new jsh.unit.Suite.Fork(withShell({
-			run: jsh.shell.jsh,
-			script: SRC.getFile("jrunscript/jsh/shell/test/jsh.shell.jsh.suite.jsh.js"),
-			arguments: ["-view","stdio"]
-		})));
+				suite.add("jsh/jsh.shell/jsh", new jsh.unit.Suite.Fork(withShell({
+					run: jsh.shell.jsh,
+					script: SRC.getFile("jrunscript/jsh/shell/test/jsh.shell.jsh.suite.jsh.js"),
+					arguments: ["-view","stdio"]
+				})));
+			}
+		)();
 
 		suite.add("jsapi/other", new jsh.unit.html.Part({
 			//	Test cases involving the HTML test runner itself
