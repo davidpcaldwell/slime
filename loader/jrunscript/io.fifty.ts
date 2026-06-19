@@ -167,8 +167,6 @@ namespace slime.jrunscript.runtime.io {
 	 * A stream from which bytes may be read.
 	 */
 	export interface InputStream {
-		//	TODO	rename to read, we have overloaded content to represent a tree
-
 		read: {
 			string: {
 				simple: (charset: Charset) => string
