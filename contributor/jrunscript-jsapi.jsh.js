@@ -41,16 +41,6 @@
 			}
 		});
 
-		var Environment = (
-			function() {
-				/** @type { slime.project.internal.jrunscript_environment.Script } */
-				var script = jsh.script.loader.script("jrunscript-environment.js");
-				return script({
-					jsh: jsh
-				})
-			}
-		)();
-
 		var suite = new jsh.unit.html.Suite();
 
 		var SRC = jsh.script.file.parent.parent;
@@ -75,6 +65,16 @@
 
 		(
 			function() {
+				var Environment = (
+					function() {
+						/** @type { slime.project.internal.jrunscript_environment.Script } */
+						var script = jsh.script.loader.script("jrunscript-environment.js");
+						return script({
+							jsh: jsh
+						})
+					}
+				)();
+
 				var environment = new Environment({
 					src: jsh.script.file.parent.parent,
 					home: parameters.options["shell:built"],
