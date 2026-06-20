@@ -65,7 +65,7 @@ namespace slime.$api.fp.impure {
 	}
 
 
-	/** @deprecated Replaced by `External` and `Thunk` (for non-external operations). */
+	/** @deprecated Replaced by `Reading` (for external operations) and `Thunk` (for non-external operations). */
 	export type Input<T> = () => T
 
 	/**
