@@ -423,10 +423,10 @@
 						var library = $$api.rhino.forJava(javaMajorVersion);
 						return {
 							download: function() {
-								return library.download( new Packages.java.io.File(lib.file, "") )
+								return library.download( new Packages.java.io.File(lib.file, "rhino/" + library.version) )
 							},
 							local: function() {
-								return library.local( new Packages.java.io.File(lib.file, "") )
+								return library.local( new Packages.java.io.File(lib.file, "rhino/" + library.version) )
 							}
 						}
 					}
