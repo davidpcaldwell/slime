@@ -134,6 +134,7 @@
 				read: {
 					string: {
 						simple: function(charset) {
+							if (!charset) charset = Charset.default;
 							var _reader = new Packages.java.io.InputStreamReader(peer, charset.java.adapt());
 							return String(_java.readString(_reader));
 						}
