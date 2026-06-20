@@ -33,8 +33,37 @@ namespace slime.$api.fp {
 namespace slime.$api.fp.impure {
 	/**
 	 * A function capable of observing some kind of external state and obtaining and returning it to the caller.
+	 *
+	 * @deprecated Replaced by {@link Reading}.
 	 */
 	export type External<T> = () => T
+
+	/**
+	 * Represents a value external to the running program's environment that can be retrieved by an invocation. This value may be
+	 * mutated over time by external processes; examples might include the current time, the CPU load on the system, or some
+	 * remotely readable value from a shared filesystem or database.
+	 */
+	export interface Reading<T> {
+		read: () => T
+	}
+
+	/**
+	 * Represents a mutable, non-thread-safe value internal to the running program. After calling `set`, `get` should return the
+	 * value just set under all circumstances.
+	 */
+	export interface Variable<T> {
+		get: () => T
+		set: (t: T) => void
+	}
+
+	/**
+	 * Represents a mutable value external to the running program.
+	 */
+	export interface Persistent<T> {
+		read: () => T
+		write: (t: T) => void
+	}
+
 
 	/** @deprecated Replaced by `External` and `Thunk` (for non-external operations). */
 	export type Input<T> = () => T

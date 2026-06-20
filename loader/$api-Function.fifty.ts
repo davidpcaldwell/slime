@@ -1517,6 +1517,8 @@ namespace slime.$api.fp {
 			prettify: (p: {
 				space: Parameters<slime.external.lib.es5.JSON["stringify"]>[2]
 			}) => (json: string) => string
+
+			parse: <T>(f: (data: slime.$api.fp.Data) => T) => (json: string) => T
 		}
 	}
 
