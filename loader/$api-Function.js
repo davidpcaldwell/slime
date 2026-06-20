@@ -715,6 +715,11 @@
 					return function(v) {
 						return JSON.stringify(JSON.parse(v), void(0), space);
 					}
+				},
+				parse: function(cast) {
+					return function(string) {
+						return cast(JSON.parse(string));
+					}
 				}
 			},
 			RegExp: {
