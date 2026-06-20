@@ -172,7 +172,7 @@ namespace slime.jrunscript.runtime.io {
 				/**
 				 * Reads the entire content of this stream as a single string.
 				 *
-				 * @param charset A charset to use to encode bytes as characters; if omitted, the platform default `Charset` will be
+				 * @param charset A charset to use to decode bytes as characters; if omitted, the platform default `Charset` will be
 				 * used.
 				 * @returns A string.
 				 */
