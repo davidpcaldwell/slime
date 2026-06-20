@@ -12,6 +12,8 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
+		jsh.shell.tools.rhino.require.simple();
+
 		var parameters = jsh.script.getopts({
 			options: {
 				part: String,
@@ -19,26 +21,32 @@
 			}
 		});
 
-		var Environment = (
+		var environment = (
 			function() {
-				/** @type { slime.project.internal.jrunscript_environment.Script } */
-				var script = jsh.script.loader.script("jrunscript-environment.js");
-				return script({
-					jsh: jsh
-				})
+				var Environment = (
+					function() {
+						/** @type { slime.project.internal.jrunscript_environment.Script } */
+						var script = jsh.script.loader.script("jrunscript-environment.js");
+						return script({
+							jsh: jsh
+						})
+					}
+				)();
+
+				var environment = new Environment({
+					src: jsh.script.file.parent.parent,
+					noselfping: false,
+					tomcat: true,
+					executable: Boolean(jsh.shell.PATH.getCommand("gcc"))
+				});
+
+				return environment;
 			}
 		)();
 
-		var environment = new Environment({
-			src: jsh.script.file.parent.parent,
-			noselfping: false,
-			tomcat: true,
-			executable: Boolean(jsh.shell.PATH.getCommand("gcc"))
-		});
-
 		var engines = jsh.shell.run({
 			command: "bash",
-			arguments: [environment.jsh.unbuilt.src.getFile("jsh.bash"),"-engines"],
+			arguments: [environment.jsh.unbuilt.src.getFile("jsh"),"-engines"],
 			stdio: {
 				output: String
 			},

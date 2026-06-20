@@ -74,14 +74,18 @@
 
 					var suite = new jsh.unit.html.Suite();
 
-					suite.add("jrunscript/engines", new jsh.unit.Suite.Fork({
-						run: jsh.shell.jsh,
-						shell: environment.jsh.built.home,
-						script: jsh.script.file.parent.getFile("jrunscript-engines.jsh.js"),
-						arguments: [
-							"-view", "stdio"
-						]
-					}));
+					//	TODO	Potentially valuable building block, but not here and not now, where we are testing a single engine
+					// var engines = jsh.shell.run({
+					// 	command: launcher,
+					// 	arguments: launch.concat(["-engines"]),
+					// 	stdio: {
+					// 		output: String
+					// 	},
+					// 	evaluate: function(result) {
+					// 		if (result.status) throw new Error("-engines exit status: " + result.status);
+					// 		return JSON.parse(result.stdio.output);
+					// 	}
+					// });
 
 					var jre = jsh.shell.java.home.pathname;
 
@@ -114,20 +118,8 @@
 						}
 					)();
 
-					//	TODO	Potentially valuable building block, but not here and not now, where we are testing a single engine
-					// var engines = jsh.shell.run({
-					// 	command: launcher,
-					// 	arguments: launch.concat(["-engines"]),
-					// 	stdio: {
-					// 		output: String
-					// 	},
-					// 	evaluate: function(result) {
-					// 		if (result.status) throw new Error("-engines exit status: " + result.status);
-					// 		return JSON.parse(result.stdio.output);
-					// 	}
-					// });
-
-					//	TODO	this is kind of clunky and seems to indicate this API should be available
+					//	TODO	this is kind of clunky and seems to indicate a less clunky API should be available to get this
+					//			string
 					var ENGINE = jsh.internal.bootstrap.engine.resolve({
 						rhino: function() { return "rhino"; },
 						nashorn: function() { return "nashorn"; },
@@ -163,86 +155,6 @@
 							(jsh.shell.rhino && jsh.shell.rhino.classpath) ? { JSH_ENGINE_RHINO_CLASSPATH: String(jsh.shell.rhino.classpath) } : {}
 						)
 					}));
-
-					(
-						function safariLifecycle() {
-							var getSafariProcess = function() {
-								if (jsh.shell.os.name != "Mac OS X") return null;
-								var processes = jsh.shell.os.process.list();
-								var safaris = processes.filter(function(process) {
-									return process.command == "/Applications/Safari.app/Contents/MacOS/Safari";
-								});
-								return (safaris.length) ? safaris[0] : null;
-							};
-
-							var safariWas = getSafariProcess();
-
-							if (!safariWas) {
-								jsh.java.addShutdownHook(function() {
-									var safari = getSafariProcess();
-									if (safari) safari.kill();
-								});
-							}
-						}
-					)();
-
-					//	TODO	this is probably obsolete at this point, as we move toward a set of GitHub Actions that test various parts of
-					//			the system
-					if (jsh.unit.browser && false) suite.add("browsers", new function() {
-						var browsers = jsh.unit.browser.installed;
-
-						this.name = "Browser tests";
-
-						this.parts = new function() {
-							this.jsapi = {
-								parts: {}
-							};
-
-							this.fifty = {
-								parts: {}
-							};
-
-							browsers.forEach(function(browser) {
-								this.jsapi.parts[browser.id] = jsh.unit.Suite.Fork({
-									name: browser.name + " jsapi",
-									run: jsh.shell.jsh,
-									//	TODO	was environment.jsh.home, but that seemed to be a bug, so replacing with what value actually
-									//			seemed to be.
-									shell: void(0),
-									script: environment.jsh.src.getFile("loader/browser/test/suite.jsh.js"),
-									arguments: [
-										"-suite", environment.jsh.src.getFile("contributor/browser-jsapi-suite.js"),
-										"-browser", browser.id,
-										"-view", "stdio"
-									].concat(p.arguments),
-									// TODO: is setting the working directory necessary?
-									directory: environment.jsh.src
-								});
-							},this);
-
-							this.fifty = (
-								/** @returns { { parts: { [x: string]: any } } } */
-								function() {
-									/** @type { { [x: string]: any }} */
-									var parts = {};
-									browsers.forEach(function(browser) {
-										parts[browser.id] = jsh.unit.Suite.Fork({
-											name: "Fifty (" + browser.name + ")",
-											run: jsh.shell.run,
-											command: environment.jsh.src.getFile("fifty"),
-											arguments: [
-												"test.browser",
-												"--browser", browser.id,
-												environment.jsh.src.getFile("contributor/browser.fifty.ts")
-											],
-											directory: environment.jsh.src
-										});
-									});
-									return { parts: parts };
-								}
-							)();
-						}
-					});
 
 					jsh.project.suite.run({
 						view: parameters.options.view,
