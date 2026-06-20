@@ -10,6 +10,7 @@
 	) {
 		const { verify } = fifty;
 
+		//	TODO	This test problem belongs in the jsh tests, and is currently not invoked anywhere (so needs to be run manually).
 		fifty.tests.suite = function() {
 			const jsh = fifty.jsh.file.relative("../jsh").pathname.toString();
 
