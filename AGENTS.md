@@ -99,9 +99,9 @@ This is safe in a devcontainer when those files are stale lock artifacts from a 
 
 When checking out branches, a hook may print:
 
-`Wrote new dependencies TypeDoc includes to .../ui/gae/slim/slime/local/typedoc/dependencies.md`
+`Wrote new dependencies TypeDoc includes to <repo>/local/typedoc/dependencies.md`
 
-Treat this as a benign informational message. The target path is under `local/` (gitignored), so it does not imply tracked source changes.
+Treat this as a benign informational message. The target path is under `local/` (ignored by Git), so it does not imply tracked source changes.
 
 When asked to create a GitHub issue, use the format native to the GitHub Pull Requests extension rather than the format native to
 the GitHub web interface.
