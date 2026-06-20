@@ -5,11 +5,9 @@
 #	END LICENSE
 
 #	Script takes one argument: the JDK version to use
-if [ -z "$1" ]; then
+if [ "$#" -ne 1 ]; then
 	>&2 echo "One argument required: JDK version to use."
 	exit 1
 fi
 
-#	TODO	should fail with multiple arguments
-
-$(dirname $0)/test-docker-clean-command $1 /bin/bash /slime/jsh /slime/contributor/jrunscript-engines.jsh.js
+"$(dirname "$0")/test-docker-clean-command" "$1" /bin/bash /slime/jsh /slime/contributor/jrunscript-engines.jsh.js

@@ -8,7 +8,29 @@
 	function(
 		fifty: slime.fifty.test.Kit
 	) {
+		const { verify } = fifty;
+
 		fifty.tests.suite = function() {
+			const jsh = fifty.jsh.file.relative("../jsh").pathname.toString();
+
+			const engines = fifty.global.jsh.shell.run({
+				command: "bash",
+				arguments: [jsh, "-engines"],
+				stdio: {
+					output: String
+				},
+				evaluate: function(result) {
+					verify(result).status.is(0);
+					return JSON.parse(result.stdio.output);
+				}
+			});
+
+			verify(engines).evaluate(Array.isArray).is(true);
+			engines.forEach(function(engine) {
+				verify(engine).evaluate(function(value) {
+					return typeof(value);
+				}).is("string");
+			});
 
 		}
 	}
