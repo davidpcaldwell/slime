@@ -74,7 +74,39 @@
 
 					var suite = new jsh.unit.html.Suite();
 
-					//	TODO	Potentially valuable building block, but not here and not now, where we are testing a single engine
+					//	TODO	Potentially valuable building blocks, but not here and not now, where we are testing a single engine
+					// var launch = (
+					// 	function() {
+					// 		var launch = (jsh.shell.jsh.home) ? [jsh.shell.jsh.home.getRelativePath("jsh.js").toString()] : [jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js").toString(), "jsh"];
+					// 		(
+					// 			function addNashornBootstrapLibraries() {
+					// 				var names = jsh.internal.bootstrap.nashorn.dependencies.names.concat(["nashorn"]);
+					// 				//	TODO	Should only be used for versions of Java that need it
+					// 				if (jsh.shell.jsh.home && jsh.shell.jsh.home.getFile("lib/nashorn.jar")) {
+					// 					launch = [
+					// 						"-classpath",
+					// 						names.map(function(name) {
+					// 							return jsh.shell.jsh.home.getRelativePath("lib/" + name + ".jar").toString();
+					// 						//	TODO	below is platform-specific
+					// 						}).join(":")
+					// 					].concat(launch)
+					// 				} else if (jsh.shell.jsh.src && jsh.shell.jsh.src.getFile("local/jsh/lib/nashorn.jar")) {
+					// 					//	TODO	Should only be used for versions of Java that need it
+					// 					launch = [
+					// 						"-classpath",
+					// 						names.map(function(name) {
+					// 							return jsh.shell.jsh.src.getRelativePath("local/jsh/lib/" + name + ".jar").toString();
+					// 						//	TODO	below is platform-specific
+					// 						}).join(":")
+					// 					].concat(launch)
+					// 				}
+					// 			}
+					// 		)();
+					//
+					// 		return launch;
+					// 	}
+					// )();
+					//
 					// var engines = jsh.shell.run({
 					// 	command: launcher,
 					// 	arguments: launch.concat(["-engines"]),
@@ -87,46 +119,30 @@
 					// 	}
 					// });
 
-					var jre = jsh.shell.java.home.pathname;
-
-					var searchpath = jsh.file.Searchpath([jre.directory.getRelativePath("bin"),jre.directory.getRelativePath("../bin")]);
-
-					var launcher = searchpath.getCommand("jrunscript");
-					var launch = (jsh.shell.jsh.home) ? [jsh.shell.jsh.home.getRelativePath("jsh.js").toString()] : [jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js").toString(), "jsh"];
-					(
-						function addNashornBootstrapLibraries() {
-							var names = jsh.internal.bootstrap.nashorn.dependencies.names.concat(["nashorn"]);
-							//	TODO	Should only be used for versions of Java that need it
-							if (jsh.shell.jsh.home && jsh.shell.jsh.home.getFile("lib/nashorn.jar")) {
-								launch = [
-									"-classpath",
-									names.map(function(name) {
-										return jsh.shell.jsh.home.getRelativePath("lib/" + name + ".jar").toString();
-									//	TODO	below is platform-specific
-									}).join(":")
-								].concat(launch)
-							} else if (jsh.shell.jsh.src && jsh.shell.jsh.src.getFile("local/jsh/lib/nashorn.jar")) {
-								//	TODO	Should only be used for versions of Java that need it
-								launch = [
-									"-classpath",
-									names.map(function(name) {
-										return jsh.shell.jsh.src.getRelativePath("local/jsh/lib/" + name + ".jar").toString();
-									//	TODO	below is platform-specific
-									}).join(":")
-								].concat(launch)
-							}
+					var jrunscript = (
+						function() {
+							var jdk = jsh.shell.java.Jdk.from.javaHome();
+							var pathname = jsh.shell.java.Jdk.jrunscript(jdk);
+							if (!pathname.present) throw new Error();
+							return pathname.value;
 						}
 					)();
 
-					//	TODO	this is kind of clunky and seems to indicate a less clunky API should be available to get this
-					//			string
-					var ENGINE = jsh.internal.bootstrap.engine.resolve({
-						rhino: function() { return "rhino"; },
-						nashorn: function() { return "nashorn"; },
-						graal: function() { return "graal"; }
-					});
-					var engine = ENGINE();
-					jsh.shell.console("Running " + jsh.shell.jsh.home + " with Java " + launcher + " and engine " + engine + " ...");
+					var engine = (
+						function() {
+							//	TODO	this is kind of clunky and seems to indicate a less clunky API should be available to get this
+							//			string
+							var ENGINE = jsh.internal.bootstrap.engine.resolve({
+								rhino: function() { return "rhino"; },
+								nashorn: function() { return "nashorn"; },
+								graal: function() { return "graal"; }
+							});
+							var engine = ENGINE();
+							return engine;
+						}
+					)();
+
+					jsh.shell.console("Running " + jsh.shell.jsh.src + " with jrunscript " + jrunscript + " and engine " + engine + " ...");
 
 					suite.add("jrunscript/fifty", jsh.unit.fifty.Part({
 						shell: environment.jsh.unbuilt.src,
@@ -135,7 +151,7 @@
 					}));
 
 					suite.add("jrunscript/jsapi", jsh.unit.Suite.Fork({
-						name: "JSAPI Java tests for JRE " + jre.toString() + " and engine " + engine,
+						name: "JSAPI Java tests for JRE " + jsh.shell.java.home.pathname.toString() + " and engine " + engine,
 						run: jsh.shell.jsh,
 						vmarguments: ["-Xms1024m"],
 						shell: environment.jsh.src,
