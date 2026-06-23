@@ -123,7 +123,7 @@
 						function() {
 							var jdk = jsh.shell.java.Jdk.from.javaHome();
 							var pathname = jsh.shell.java.Jdk.jrunscript(jdk);
-							if (!pathname.present) throw new Error();
+							if (!pathname.present) throw new Error("Could not resolve jrunscript for JDK home: " + jdk.base);
 							return pathname.value;
 						}
 					)();
