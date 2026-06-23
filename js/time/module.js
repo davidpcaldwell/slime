@@ -1112,7 +1112,7 @@
 				}
 			},
 			Month: {
-				/** @type { slime.time.exports.Month["last"] } */
+				/** @type { slime.time.month.Exports["last"] } */
 				last: function(p) {
 					/** @type { slime.time.Month } */
 					var next = (p.month == 12) ? {
@@ -1132,6 +1132,117 @@
 				}
 			},
 			Timezone: zones,
+			zone: {
+				Time: {
+					codec: {
+						rfc3339: function() {
+							var lzpad = function(n,length) {
+								var rv = String(Math.abs(n));
+								while (rv.length < length) {
+									rv = "0" + rv;
+								}
+								return rv;
+							}
+
+							var parseFixedOffset = function(zoneId) {
+								if (zoneId == "Z") {
+									return 0;
+								}
+								var parsed = /^(\+|\-)(\d{2})\:(\d{2})$/.exec(zoneId);
+								if (!parsed) {
+									return void(0);
+								}
+								var absolute = Number(parsed[2]) * 60 + Number(parsed[3]);
+								return (parsed[1] == "-") ? -absolute : absolute;
+							}
+
+							var resolveZone = function(zoneId) {
+								if (zoneId == "Z" || zoneId == "UTC") {
+									return zones.UTC;
+								}
+								if (zones[zoneId]) {
+									return zones[zoneId];
+								}
+								var offsetMinutes = parseFixedOffset(zoneId);
+								if (typeof(offsetMinutes) == "number") {
+									return {
+										local: function(unix) {
+											return zones.UTC.local(unix + offsetMinutes * 60 * 1000);
+										},
+										unix: function(local) {
+											return zones.UTC.unix(local) - offsetMinutes * 60 * 1000;
+										}
+									}
+								}
+								throw new TypeError("Unknown zone: " + zoneId);
+							}
+
+							var offsetToString = function(offsetMinutes) {
+								if (offsetMinutes == 0) {
+									return "Z";
+								}
+								var sign = (offsetMinutes < 0) ? "-" : "+";
+								var absolute = Math.abs(offsetMinutes);
+								var hours = Math.floor(absolute / 60);
+								var minutes = absolute % 60;
+								return sign + lzpad(hours,2) + ":" + lzpad(minutes,2);
+							}
+
+							var formatSecond = function(second) {
+								var whole = Math.floor(second);
+								var milliseconds = Math.round((second - whole) * 1000);
+								var carry = (milliseconds == 1000) ? 1 : 0;
+								whole += carry;
+								milliseconds = (milliseconds == 1000) ? 0 : milliseconds;
+								if (milliseconds == 0) {
+									return lzpad(whole,2);
+								}
+								return lzpad(whole,2) + "." + lzpad(milliseconds,3);
+							}
+
+							return {
+								encode: function(zt) {
+									var zone = resolveZone(zt.zone);
+									var local = {
+										year: zt.year,
+										month: zt.month,
+										day: zt.day,
+										hour: zt.hour,
+										minute: zt.minute,
+										second: zt.second
+									};
+									var unix = zone.unix(local);
+									var utcAsLocal = zones.UTC.unix(local);
+									var offsetMinutes = Math.round((utcAsLocal - unix) / 1000 / 60);
+									return [
+										lzpad(zt.year,4), "-", lzpad(zt.month,2), "-", lzpad(zt.day,2),
+										"T",
+										lzpad(zt.hour,2), ":", lzpad(zt.minute,2), ":", formatSecond(zt.second),
+										offsetToString(offsetMinutes)
+									].join("");
+								},
+								decode: function(string) {
+									var parsed = /^(\d{4})\-(\d{2})\-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})(?:\.(\d+))?(Z|(?:\+|\-)\d{2}\:\d{2})$/.exec(string);
+									if (!parsed) {
+										throw new TypeError("Does not match RFC3339 format: " + string);
+									}
+									var fractional = (parsed[7]) ? Number("0." + parsed[7]) : 0;
+									var zone = (parsed[8] == "Z") ? "UTC" : parsed[8];
+									return {
+										year: Number(parsed[1]),
+										month: Number(parsed[2]),
+										day: Number(parsed[3]),
+										hour: Number(parsed[4]),
+										minute: Number(parsed[5]),
+										second: Number(parsed[6]) + fractional,
+										zone: zone
+									};
+								}
+							}
+						}
+					}
+				}
+			},
 			install: install,
 			Day: Object.assign(
 				Day,

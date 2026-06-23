@@ -111,16 +111,15 @@ namespace slime.time {
 		}
 	}
 
-	export namespace exports {
-		export interface Days {
+	export namespace day {
+		export interface Exports {
 			/**
 			 * @param year Year
 			 * @param month Month (1 = January)
 			 * @param day Day of Month
 			 */
-			 new (year: number, month: number, day: number): old.Day
-			 new (p: Days): old.Day
-			 new (p: any): old.Day
+			new (year: number, month: number, day: number): old.Day
+			new (p: slime.time.Date): old.Day
 
 			 subtract: Function
 
@@ -369,7 +368,7 @@ namespace slime.time {
 
 	export interface Exports {
 		/** @deprecated */
-		Day: exports.Days
+		Day: day.Exports
 	}
 
 	export interface Exports {
@@ -407,8 +406,8 @@ namespace slime.time {
 		}
 	}
 
-	export namespace exports {
-		export interface Time {
+	export namespace time {
+		export interface Exports {
 			/** @deprecated */
 			new (): old.Time
 			/** @deprecated */
@@ -447,12 +446,12 @@ namespace slime.time {
 
 	export interface Exports {
 		/** @deprecated */
-		Time: exports.Time
+		Time: time.Exports
 	}
 
-	export namespace exports {
+	export namespace when {
 		/** @deprecated */
-		export interface When {
+		export interface Exports {
 			/** @deprecated */
 			new (p: { date: slime.external.lib.es5.Date }): old.When
 			/** @deprecated */
@@ -493,7 +492,7 @@ namespace slime.time {
 
 	export interface Exports {
 		/** @deprecated */
-		When: exports.When
+		When: when.Exports
 	}
 
 	export interface Exports {
