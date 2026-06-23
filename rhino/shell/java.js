@@ -26,6 +26,9 @@
 							base: javaHome.toString()
 						};
 					}
+				},
+				jrunscript: function(jdk) {
+					return $context.getJrunscriptPathFromJdk(jdk.base);
 				}
 			}
 		})

@@ -6,6 +6,8 @@
 
 namespace slime.jrunscript.shell.java {
 	export interface Context {
+		getJrunscriptPathFromJdk: (home: string) => slime.$api.fp.Maybe<string>
+
 		home: slime.$api.fp.impure.Input<slime.jrunscript.file.Directory>
 	}
 
@@ -13,6 +15,7 @@ namespace slime.jrunscript.shell.java {
 		export const subject = (function(fifty: slime.fifty.test.Kit) {
 			var script: Script = fifty.$loader.script("java.js");
 			return script({
+				getJrunscriptPathFromJdk: fifty.global.$api.TODO(),
 				home: function() { return fifty.global.jsh.shell.java.home; }
 			})
 		//@ts-ignore
@@ -35,8 +38,13 @@ namespace slime.jrunscript.shell.java {
 	export interface Exports extends Invoke {
 		Jdk: {
 			from: {
+				/**
+				 * Returns a Jdk object based on the value of the `java.home` property.
+				 */
 				javaHome: () => Jdk
 			}
+
+			jrunscript: (jdk: Jdk) => slime.$api.fp.Maybe<string>
 		}
 	}
 

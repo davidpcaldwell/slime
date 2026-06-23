@@ -287,6 +287,17 @@
 			}
 		};
 
+		var getJrunscriptFileFromJdk = function(/** @type { slime.jrunscript.file.Directory } */ home) {
+			return $context.api.file.Searchpath([home.getRelativePath("bin"),home.getRelativePath("../bin")]).getCommand("jrunscript");
+		};
+
+		/** @type { (home: string) => slime.$api.fp.Maybe<string> } */
+		var getJrunscriptPathFromJdk = function(home) {
+			var homedir = $context.api.file.Pathname(home).directory;
+			var rv = getJrunscriptFileFromJdk(homedir);
+			return (rv) ? $api.fp.Maybe.from.value(rv.pathname.toString()) : $api.fp.Maybe.from.nothing();
+		};
+
 		$exports.java = Object.assign(
 			function(p) {
 				//	TODO	check for both p.classpath and p.jar being defined and decide what to do
@@ -326,6 +337,7 @@
 				jrunscript: void(0),
 				home: void(0),
 				Jdk: code.java({
+					getJrunscriptPathFromJdk: getJrunscriptPathFromJdk,
 					home: function() { return properties.directory("java.home"); }
 				}).Jdk
 			}
