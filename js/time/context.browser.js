@@ -54,12 +54,13 @@
 							var otherTimeZoneRendered = inLocalZone.toLocaleString("en-US", { timeZone: zone, timeZoneName: "longOffset"});
 							var otherTimeZoneOffset = (function() {
 								if (otherTimeZoneRendered.substring(otherTimeZoneRendered.length-1) == "Z") return 0;
+								if (otherTimeZoneRendered.substring(otherTimeZoneRendered.length-4) == " GMT") return 0;
 								var otherTimeZoneStringOffset = otherTimeZoneRendered.substring(otherTimeZoneRendered.length - 6);
 								var offsetAbsoluteValueInMinutes = Number(otherTimeZoneStringOffset.substring(1,3)) * 60 + Number(otherTimeZoneStringOffset.substring(4,6));
 								return (function() {
 									if (otherTimeZoneStringOffset.substring(0,1) == "+") return -offsetAbsoluteValueInMinutes;
 									if (otherTimeZoneStringOffset.substring(0,1) == "-") return offsetAbsoluteValueInMinutes;
-									throw new Error();
+									throw new Error("otherTimeZoneStringOffset = " + otherTimeZoneStringOffset);
 								})();
 							})();
 							return inLocalZone.getTime() + (otherTimeZoneOffset - localOffset) * 60000
