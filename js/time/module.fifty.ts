@@ -667,6 +667,38 @@ namespace slime.time {
 				verify(decoded).zone.is("UTC");
 				verify(codec.encode(decoded)).is("2026-06-23T07:08:09.125Z");
 			};
+
+			fifty.tests.exports.zone.Time.zoneTimeCodecFixedOffset = function() {
+				var codec = test.subject.zone.Time.codec.rfc3339();
+				var decoded = codec.decode("2026-06-23T07:08:09+05:30");
+				verify(decoded).zone.is("+05:30");
+				verify(codec.encode(decoded)).is("2026-06-23T07:08:09+05:30");
+			};
+
+			fifty.tests.exports.zone.Time.zoneTimeCodecRejectsInvalidOffset = function() {
+				var codec = test.subject.zone.Time.codec.rfc3339();
+				var rejected = false;
+				try {
+					codec.decode("2026-06-23T07:08:09+25:00");
+				} catch (e) {
+					rejected = true;
+				}
+				verify(rejected).is(true);
+			};
+
+			fifty.tests.exports.zone.Time.zoneTimeCodecEncodeNormalizesRoundedSecond = function() {
+				var codec = test.subject.zone.Time.codec.rfc3339();
+				var encoded = codec.encode({
+					year: 2026,
+					month: 6,
+					day: 23,
+					hour: 7,
+					minute: 8,
+					second: 59.9996,
+					zone: "UTC"
+				});
+				verify(encoded).is("2026-06-23T07:09:00Z");
+			};
 		}
 	//@ts-ignore
 	)(fifty);
