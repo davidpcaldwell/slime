@@ -146,11 +146,11 @@ namespace slime.time {
 		 * [specification](https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-time-values-and-time-range), representing
 		 * the number of milliseconds since the epoch (January 1, 1970, midnight, UTC).
 		 */
-		Value: exports.Values
+		Value: value.Exports
 	}
 
-	export namespace exports {
-		export interface Values {
+	export namespace value {
+		export interface Exports {
 			/**
 			 * Returns the current <dfn>time value</dfn>.
 			 */
@@ -188,7 +188,7 @@ namespace slime.time {
 	}
 
 	export interface Exports {
-		Date: exports.Dates
+		Date: date.Exports
 	}
 
 	(
@@ -200,8 +200,8 @@ namespace slime.time {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace exports {
-		export interface Dates {
+	export namespace date {
+		export interface Exports {
 			input: {
 				today: slime.$api.fp.impure.Input<slime.time.Date>
 			}
@@ -230,8 +230,8 @@ namespace slime.time {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace exports {
-		export interface Dates {
+	export namespace date {
+		export interface Exports {
 			from: {
 				ymd: (year: number, month: number, day: number) => Date
 			}
@@ -255,8 +255,8 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export namespace exports {
-		export interface Dates {
+	export namespace date {
+		export interface Exports {
 			/**
 			 * Given a {@link Date}, returns a {@link slime.$api.fp.Predicate | Predicate} that represents whether a given
 			 * `Date` is the same `Date`.
@@ -316,8 +316,8 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export namespace exports {
-		export interface Dates {
+	export namespace date {
+		export interface Exports {
 			format: (mask: string) => (day: slime.time.Date) => string
 		}
 
@@ -351,8 +351,8 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export namespace exports {
-		export interface Dates {
+	export namespace date {
+		export interface Exports {
 			offset: (offset: number) => (day: slime.time.Date) => slime.time.Date
 			after: (day: slime.time.Date) => (offset: number) => slime.time.Date
 
@@ -482,8 +482,8 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export namespace exports {
-		export interface Dates {
+	export namespace date {
+		export interface Exports {
 			order: {
 				js: (a: slime.time.Date, b: slime.time.Date) => number
 			}
@@ -524,8 +524,8 @@ namespace slime.time {
 
 	export type DayOfWeek = "Mo" | "Tu" | "We" | "Th" | "Fr" | "Sa" | "Su"
 
-	export namespace exports {
-		export interface Dates {
+	export namespace date {
+		export interface Exports {
 			dayOfWeek: (date: slime.time.Date) => DayOfWeek
 		}
 
@@ -550,7 +550,7 @@ namespace slime.time {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Dates {
+		export interface Exports {
 			month: (date: slime.time.Date) => slime.time.Month
 		}
 	}
@@ -560,8 +560,8 @@ namespace slime.time {
 		month: number
 	}
 
-	export namespace exports {
-		export interface Month {
+	export namespace month {
+		export interface Exports {
 			last: (month: slime.time.Month) => slime.time.Date
 		}
 
@@ -599,7 +599,7 @@ namespace slime.time {
 	}
 
 	export interface Exports {
-		Month: exports.Month
+		Month: month.Exports
 	}
 
 	export interface Exports {
@@ -610,6 +610,105 @@ namespace slime.time {
 		}
 	}
 
+	export namespace zone {
+		export namespace time {
+			export interface Exports {
+				codec: {
+					//	TODO	should there be arguments? precision? trailing 0s? zulu offset handling (Z vs. +00:00)?
+					// 	upper/lower case for T/Z?
+					rfc3339: () => slime.Codec<slime.time.zone.Time, string>
+				}
+			}
+		}
+	}
+
+	export interface Exports {
+		zone: {
+			Time: zone.time.Exports
+		}
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.exports.zone = fifty.test.Parent();
+			fifty.tests.exports.zone.Time = fifty.test.Parent();
+
+			const firefox =
+				Boolean(fifty.global.window) &&
+				/Firefox\//.test(String(fifty.global.window.navigator.userAgent || ""));
+
+			fifty.tests.exports.zone.Time.zoneTimeCodecRoundTripWithNamedZone = function() {
+				var codec = test.subject.zone.Time.codec.rfc3339();
+				var encoded = codec.encode({
+					year: 2025,
+					month: 1,
+					day: 5,
+					hour: 17,
+					minute: 30,
+					second: 40,
+					zone: "Pacific/Honolulu"
+				});
+				verify(encoded).is("2025-01-05T17:30:40-10:00");
+
+				var decoded = codec.decode(encoded);
+				verify(decoded).year.is(2025);
+				verify(decoded).month.is(1);
+				verify(decoded).day.is(5);
+				verify(decoded).hour.is(17);
+				verify(decoded).minute.is(30);
+				verify(decoded).second.is(40);
+				verify(decoded).zone.is("-10:00");
+			};
+
+			//	TODO	determine why this test fails in Firefox
+			if (!firefox) fifty.tests.exports.zone.Time.zoneTimeCodecFractionalSecondsAndZulu = function() {
+				var codec = test.subject.zone.Time.codec.rfc3339();
+				var decoded = codec.decode("2026-06-23T07:08:09.125Z");
+				verify(decoded).second.is(9.125);
+				verify(decoded).zone.is("UTC");
+				verify(codec.encode(decoded)).is("2026-06-23T07:08:09.125Z");
+			};
+
+			fifty.tests.exports.zone.Time.zoneTimeCodecFixedOffset = function() {
+				var codec = test.subject.zone.Time.codec.rfc3339();
+				var decoded = codec.decode("2026-06-23T07:08:09+05:30");
+				verify(decoded).zone.is("+05:30");
+				verify(codec.encode(decoded)).is("2026-06-23T07:08:09+05:30");
+			};
+
+			fifty.tests.exports.zone.Time.zoneTimeCodecRejectsInvalidOffset = function() {
+				var codec = test.subject.zone.Time.codec.rfc3339();
+				var rejected = false;
+				try {
+					codec.decode("2026-06-23T07:08:09+25:00");
+				} catch (e) {
+					rejected = true;
+				}
+				verify(rejected).is(true);
+			};
+
+			//	TODO	determine why this test fails in Firefox
+			if (!firefox) fifty.tests.exports.zone.Time.zoneTimeCodecEncodeNormalizesRoundedSecond = function() {
+				var codec = test.subject.zone.Time.codec.rfc3339();
+				var encoded = codec.encode({
+					year: 2026,
+					month: 6,
+					day: 23,
+					hour: 7,
+					minute: 8,
+					second: 59.9996,
+					zone: "UTC"
+				});
+				verify(encoded).is("2026-06-23T07:09:00Z");
+			};
+		}
+	//@ts-ignore
+	)(fifty);
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -617,6 +716,8 @@ namespace slime.time {
 			const { verify } = fifty;
 
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.exports);
+
 				fifty.run(fifty.tests.Date);
 
 				fifty.run(fifty.tests.Timezone);

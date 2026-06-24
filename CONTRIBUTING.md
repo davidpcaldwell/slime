@@ -6,10 +6,10 @@
 
 # Contributing to SLIME
 
-## TypeScript documentation
+## Documentation for contributors
 
-Some contributor documentation has been migrated to TypeScript and is in the `slime.internal`
-[namespace comment](./contributor/README.fifty.ts), and also available when browsing the TypeDoc documentation.
+The main documentation for contributors can be found at the contributor [README](./contributor/README.md). This documentation is
+also available in the TypeDoc documentation in the `slime.internal` namespace.
 
 ## Continuous integration testing
 
@@ -31,4 +31,4 @@ the browser implementation of the JSAPI test framework.
 ## Older contributor documentation
 
 Currently, most contributor information is in [contributor/README.html](contributor/README.html), but it is being migrated to other
-places, including here.
+locations.

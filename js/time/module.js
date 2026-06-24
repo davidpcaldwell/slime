@@ -1112,7 +1112,7 @@
 				}
 			},
 			Month: {
-				/** @type { slime.time.exports.Month["last"] } */
+				/** @type { slime.time.month.Exports["last"] } */
 				last: function(p) {
 					/** @type { slime.time.Month } */
 					var next = (p.month == 12) ? {
@@ -1132,6 +1132,152 @@
 				}
 			},
 			Timezone: zones,
+			zone: {
+				Time: {
+					codec: {
+						rfc3339: function() {
+							/**
+							 * @param { object } object
+							 * @param { string } key
+							 * @returns { boolean }
+							 */
+							var hasOwn = function(object,key) {
+								return Object.prototype.hasOwnProperty.call(object,key);
+							}
+
+							var lzpad = function(n,length) {
+								var rv = String(Math.abs(n));
+								while (rv.length < length) {
+									rv = "0" + rv;
+								}
+								return rv;
+							}
+
+							var parseFixedOffset = function(zoneId) {
+								if (zoneId == "Z") {
+									return 0;
+								}
+								var parsed = /^(\+|\-)(\d{2})\:(\d{2})$/.exec(zoneId);
+								if (!parsed) {
+									return void(0);
+								}
+								var hours = Number(parsed[2]);
+								var minutes = Number(parsed[3]);
+								if (hours > 23 || minutes > 59) {
+									return void(0);
+								}
+								var absolute = Number(parsed[2]) * 60 + Number(parsed[3]);
+								return (parsed[1] == "-") ? -absolute : absolute;
+							}
+
+							var validateLocalDateTime = function(local,string) {
+								var message = "Does not match RFC3339 format: " + string;
+								if (local.month < 1 || local.month > 12) throw new TypeError(message);
+								if (local.day < 1 || local.day > 31) throw new TypeError(message);
+								if (local.hour < 0 || local.hour > 23) throw new TypeError(message);
+								if (local.minute < 0 || local.minute > 59) throw new TypeError(message);
+								if (local.second < 0 || local.second >= 60) throw new TypeError(message);
+
+								var dayCheck = new Date(local.year, local.month-1, local.day);
+								if (dayCheck.getFullYear() != local.year || dayCheck.getMonth() != local.month-1 || dayCheck.getDate() != local.day) {
+									throw new TypeError(message);
+								}
+							}
+
+							var resolveZone = function(zoneId) {
+								if (zoneId == "Z" || zoneId == "UTC") {
+									return zones.UTC;
+								}
+								if (hasOwn(zones,zoneId)) {
+									return zones[zoneId];
+								}
+								var offsetMinutes = parseFixedOffset(zoneId);
+								if (typeof(offsetMinutes) == "number") {
+									return {
+										local: function(unix) {
+											return zones.UTC.local(unix + offsetMinutes * 60 * 1000);
+										},
+										unix: function(local) {
+											return zones.UTC.unix(local) - offsetMinutes * 60 * 1000;
+										}
+									}
+								}
+								throw new TypeError("Unknown zone: " + zoneId);
+							}
+
+							var offsetToString = function(offsetMinutes) {
+								if (offsetMinutes == 0) {
+									return "Z";
+								}
+								var sign = (offsetMinutes < 0) ? "-" : "+";
+								var absolute = Math.abs(offsetMinutes);
+								var hours = Math.floor(absolute / 60);
+								var minutes = absolute % 60;
+								return sign + lzpad(hours,2) + ":" + lzpad(minutes,2);
+							}
+
+							var formatSecond = function(second) {
+								var whole = Math.floor(second);
+								var milliseconds = Math.round((second - whole) * 1000);
+								var carry = (milliseconds == 1000) ? 1 : 0;
+								whole += carry;
+								milliseconds = (milliseconds == 1000) ? 0 : milliseconds;
+								if (milliseconds == 0) {
+									return lzpad(whole,2);
+								}
+								return lzpad(whole,2) + "." + lzpad(milliseconds,3);
+							}
+
+							return {
+								encode: function(zt) {
+									var zone = resolveZone(zt.zone);
+									var requested = {
+										year: zt.year,
+										month: zt.month,
+										day: zt.day,
+										hour: zt.hour,
+										minute: zt.minute,
+										second: zt.second
+									};
+									validateLocalDateTime(requested, String(zt));
+									var unix = zone.unix(requested);
+									var dateTimeInZone = zone.local(unix);
+									var utcAsLocal = zones.UTC.unix(dateTimeInZone);
+									var offsetMinutes = Math.round((utcAsLocal - unix) / 1000 / 60);
+									return [
+										lzpad(dateTimeInZone.year,4), "-", lzpad(dateTimeInZone.month,2), "-", lzpad(dateTimeInZone.day,2),
+										"T",
+										lzpad(dateTimeInZone.hour,2), ":", lzpad(dateTimeInZone.minute,2), ":", formatSecond(dateTimeInZone.second),
+										offsetToString(offsetMinutes)
+									].join("");
+								},
+								decode: function(string) {
+									var parsed = /^(\d{4})\-(\d{2})\-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})(?:\.(\d+))?(Z|(?:\+|\-)\d{2}\:\d{2})$/.exec(string);
+									if (!parsed) {
+										throw new TypeError("Does not match RFC3339 format: " + string);
+									}
+									var fractional = (parsed[7]) ? Number("0." + parsed[7]) : 0;
+									var zone = (parsed[8] == "Z") ? "UTC" : parsed[8];
+									if (zone != "UTC" && typeof(parseFixedOffset(zone)) != "number") {
+										throw new TypeError("Does not match RFC3339 format: " + string);
+									}
+									var rv = {
+										year: Number(parsed[1]),
+										month: Number(parsed[2]),
+										day: Number(parsed[3]),
+										hour: Number(parsed[4]),
+										minute: Number(parsed[5]),
+										second: Number(parsed[6]) + fractional,
+										zone: zone
+									};
+									validateLocalDateTime(rv, string);
+									return rv;
+								}
+							}
+						}
+					}
+				}
+			},
 			install: install,
 			Day: Object.assign(
 				Day,

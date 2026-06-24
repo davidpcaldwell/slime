@@ -4,6 +4,8 @@
 [comment]: # ()
 [comment]: # (	END LICENSE)
 
+# SLIME: Documentation for contributors
+
 ## Runtime
 
 Embeddings that load the runtime should execute `loader/expression.js` with an appropriate object of type
@@ -57,10 +59,10 @@ See {@link slime.jsh.wf.test.Fixtures}, specifically `clone()`, to set up mirror
 
 A new container hosting SLIME can be started via the following commands, with various configurations:
 
-* `test-docker-clean-run`: Starts a new container containing SLIME, with the source code mounted but excluding the `local`
-directory, and logs you into the `local` service.
 * `test-docker-clean-start`: Starts the SLIME development Docker Compose application, with the source code mounted in the
 `local` container but excluding the `local` directory.
+* `test-docker-clean-run`: Starts the SLIME development Docker Compose application, with the source code mounted in the
+`local` container but excluding the `local` directory, and logs you into the `local` service.
 * `test-docker-clean-jsh <jdk-version> <script> [arguments]`: Creates a Docker image with the SLIME source code baked in (and an empty `local/` directory), as is
 done in the CI environment, and runs a `jsh` script using the specified JDK (specified by the `JDK_VERSION` environment variable)
 inside the container.
@@ -73,8 +75,11 @@ command (plus any additional arguments) inside the container.
 The containerized browser tests can be run from within the devcontainer:
 
 * Restart browser-specific container in Docker
-* `./fifty test.browser --browser dockercompose:selenium:chrome contributor/browser.fifty.ts --interactive`
-* Go to appropriate VNC port using HTTP to get a VNC client and use `secret` as the password
+* Ensure Selenium is installed by running `contributor/selenium-install.jsh.js`
+* Run browser-specific Fifty tests:
+  * `./fifty test.browser --browser dockercompose:selenium:chrome contributor/browser.fifty.ts --interactive`
+  * `./fifty test.browser --browser dockercompose:selenium:firefox contributor/browser.fifty.ts --interactive`
+* Go to appropriate VNC port (see `../docker-compose.yaml`) using HTTP to get a VNC client and use `secret` as the password
 
 ### Test suite performance
 
