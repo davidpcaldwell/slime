@@ -195,6 +195,8 @@ namespace slime.time {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			fifty.tests.exports.Date = fifty.test.Parent();
+
 			fifty.tests.Date = fifty.test.Parent();
 		}
 	//@ts-ignore
@@ -317,6 +319,61 @@ namespace slime.time {
 	}
 
 	export namespace date {
+		export interface Exports {
+			codec: {
+				rfc3339: () => slime.Codec<slime.time.Date, string>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.exports.Date.codec = fifty.test.Parent();
+				fifty.tests.exports.Date.codec.rfc3339 = function() {
+					var codec = test.subject.Date.codec.rfc3339();
+
+					var leapDay: slime.time.Date = {
+						year: 2024,
+						month: 2,
+						day: 29
+					};
+
+					var encoded = codec.encode(leapDay);
+					verify(encoded).is("2024-02-29");
+
+					var decoded = codec.decode(encoded);
+					verify(decoded).year.is(2024);
+					verify(decoded).month.is(2);
+					verify(decoded).day.is(29);
+
+					var decodedPadded = codec.decode("1999-07-03");
+					verify(decodedPadded).year.is(1999);
+					verify(decodedPadded).month.is(7);
+					verify(decodedPadded).day.is(3);
+
+					var unpaddedRejected = false;
+					try {
+						codec.decode("1999-7-3");
+					} catch (e) {
+						unpaddedRejected = true;
+					}
+					verify(unpaddedRejected).is(true);
+
+					var invalidDateRejected = false;
+					try {
+						codec.decode("2023-02-29");
+					} catch (e) {
+						invalidDateRejected = true;
+					}
+					verify(invalidDateRejected).is(true);
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+
 		export interface Exports {
 			format: (mask: string) => (day: slime.time.Date) => string
 		}

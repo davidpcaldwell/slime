@@ -1016,6 +1016,14 @@
 			}
 		};
 
+		/** @type { slime.time.date.Exports["format"] } */
+		var format = function(mask) {
+			return function(date) {
+				var dayObject = new Day(date.year, date.month, date.day);
+				return dayObject.format(mask);
+			}
+		};
+
 		$export({
 			Value: $api.fp.methods.pin($context)(Value),
 			Date: {
@@ -1093,14 +1101,66 @@
 						}
 					}
 				},
-				/** @type {slime.time.Exports["Date"]["format"] } */
-				format: function(mask) {
-					/** @type { ReturnType<slime.time.Exports["Date"]["format"]> } */
-					return function(day) {
-						var dayObject = new Day(day.year, day.month, day.day);
-						return dayObject.format(mask);
+				codec: {
+					rfc3339: function() {
+							var isInteger = function(value) {
+								return typeof(value) == "number" && isFinite(value) && Math.floor(value) == value;
+							}
+
+						var lzpad = function(value, length) {
+							var rv = String(value);
+							while (rv.length < length) {
+								rv = "0" + rv;
+							}
+							return rv;
+						}
+
+						var isValidDate = function(year, month, day) {
+								if (!isInteger(year) || !isInteger(month) || !isInteger(day)) return false;
+							if (year < 0 || year > 9999) return false;
+							if (month < 1 || month > 12) return false;
+							if (day < 1 || day > 31) return false;
+
+							var js = new Date(Date.UTC(year, month-1, day));
+							return js.getUTCFullYear() == year && js.getUTCMonth() == month-1 && js.getUTCDate() == day;
+						}
+
+						return {
+							encode: function(date) {
+								var year = date && date.year;
+								var month = date && date.month;
+								var day = date && date.day;
+
+								if (!isValidDate(year, month, day)) {
+									throw new TypeError("Does not match RFC3339 format: " + String(year) + "-" + String(month) + "-" + String(day));
+								}
+
+								return lzpad(year, 4) + "-" + lzpad(month, 2) + "-" + lzpad(day, 2);
+							},
+							decode: function(string) {
+								var parsed = /^(\d{4})-(\d{2})-(\d{2})$/.exec(string);
+								if (!parsed) {
+									throw new TypeError("Does not match RFC3339 format: " + string);
+								}
+
+								var year = Number(parsed[1]);
+								var month = Number(parsed[2]);
+								var day = Number(parsed[3]);
+
+								if (!isValidDate(year, month, day)) {
+									throw new TypeError("Does not match RFC3339 format: " + string);
+								}
+
+								return {
+									year: year,
+									month: month,
+									day: day
+								};
+							}
+						}
 					}
 				},
+				format: format,
 				order: {
 					js: ordering.js
 				},
