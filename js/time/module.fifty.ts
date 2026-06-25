@@ -86,46 +86,6 @@ namespace slime.time {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const { verify } = fifty;
-
-			fifty.tests.Timezone = function() {
-				fifty.run(function zones() {
-					verify(test.subject).Timezone.local.is.type("object");
-					verify(test.subject).Timezone.UTC.is.type("object");
-				});
-
-				verify(Object.keys(test.subject.Timezone).join(" "), "Timezones").is(Object.keys(test.subject.Timezone).join(" "));
-
-				var depart: Datetime = { year: 2025, month: 1, day: 5, hour: 17, minute: 30, second: 40 };
-				var instant = test.subject.Timezone["Pacific/Honolulu"].unix(depart);
-
-				(
-					function(datetime,zone) {
-						var date = new Date(datetime.year, datetime.month-1, datetime.day, datetime.hour, datetime.minute, datetime.second);
-						verify(date,"date").is(date);
-						var stringed = date.toLocaleString("en-US", { timeZone: zone });
-						verify(stringed,"stringed").is(stringed);
-						var rv = new Date(stringed);
-					}
-				)(depart, "Pacific/Honolulu");
-
-				verify(instant, "unix time").is(instant);
-				var converted = test.subject.Timezone["America/New_York"].local(instant);
-				verify(converted).year.is(2025);
-				verify(converted).month.is(1);
-				verify(converted).day.is(5);
-				verify(converted).hour.is(22);
-				verify(converted).minute.is(30);
-				verify(converted).second.is(40);
-			}
-		}
-	//@ts-ignore
-	)(fifty);
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
 			fifty.tests.exports = fifty.test.Parent();
 		}
 	//@ts-ignore
@@ -197,7 +157,7 @@ namespace slime.time {
 		) {
 			fifty.tests.exports.Date = fifty.test.Parent();
 
-			fifty.tests.Date = fifty.test.Parent();
+			fifty.tests.exportsDate = fifty.test.Parent();
 		}
 	//@ts-ignore
 	)(fifty);
@@ -217,7 +177,7 @@ namespace slime.time {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
 
-			fifty.tests.Date.today = function() {
+			fifty.tests.exports.Date.today = function() {
 				var subject = test.load({
 					now: $api.fp.returning(1643907600000)
 				});
@@ -245,7 +205,7 @@ namespace slime.time {
 			) {
 				const { verify } = fifty;
 
-				fifty.tests.Date.from = function() {
+				fifty.tests.exports.Date.from = function() {
 					var leap = test.subject.Date.from.ymd(2024,2,29);
 
 					verify(leap).year.is(2024);
@@ -290,7 +250,7 @@ namespace slime.time {
 				var feb28 = ymd(2024,2,28);
 				var mar1 = ymd(2024,3,1);
 
-				fifty.tests.Date.is = function() {
+				fifty.tests.exports.Date.is = function() {
 					var isLeap = test.subject.Date.is(leap);
 
 					var same = ymd(2024,2,29);
@@ -300,14 +260,14 @@ namespace slime.time {
 					verify(mar1).evaluate(isLeap).is(false);
 				};
 
-				fifty.tests.Date.isAfter = function() {
+				fifty.tests.exports.Date.isAfter = function() {
 					var isAfterLeap = test.subject.Date.isAfter(leap);
 
 					verify(feb28).evaluate(isAfterLeap).is(false);
 					verify(mar1).evaluate(isAfterLeap).is(true);
 				};
 
-				fifty.tests.Date.isBefore = function() {
+				fifty.tests.exports.Date.isBefore = function() {
 					var isBefore = test.subject.Date.isBefore(leap);
 
 					verify(feb28).evaluate(isBefore).is(true);
@@ -384,7 +344,7 @@ namespace slime.time {
 			) {
 				const verify = fifty.verify;
 
-				fifty.tests.Date.format = function() {
+				fifty.tests.exports.Date.format = function() {
 					var mar1: slime.time.Date = {
 						year: 2009,
 						month: 3,
@@ -410,7 +370,58 @@ namespace slime.time {
 
 	export namespace date {
 		export interface Exports {
+			/**
+			 * Returns a function that, given a {@link Date}, returns a new {@link Date} that is the given number of days after
+			 * the given {@link Date}.
+			 *
+			 * @param offset A number of days; may be negative.
+			 * @returns A function that, given a {@link Date}, returns a new {@link Date} that is `offset` days after the given
+			 * {@link Date}.
+			 */
 			offset: (offset: number) => (day: slime.time.Date) => slime.time.Date
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.exports.Date.offset = function() {
+					var start: slime.time.Date = {
+						year: 2020,
+						month: 3,
+						day: 1
+					};
+
+					var previous = test.subject.Date.offset(-1)(start);
+					verify(previous).year.is(2020);
+					verify(previous).month.is(2);
+					verify(previous).day.is(29);
+
+					var nextYear = test.subject.Date.offset(1)({
+						year: 2019,
+						month: 12,
+						day: 31
+					});
+					verify(nextYear).year.is(2020);
+					verify(nextYear).month.is(1);
+					verify(nextYear).day.is(1);
+
+					var unchanged = test.subject.Date.offset(0)(start);
+					verify(unchanged).year.is(2020);
+					verify(unchanged).month.is(3);
+					verify(unchanged).day.is(1);
+
+					verify(start).year.is(2020);
+					verify(start).month.is(3);
+					verify(start).day.is(1);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
 			after: (day: slime.time.Date) => (offset: number) => slime.time.Date
 
 			months: {
@@ -430,7 +441,7 @@ namespace slime.time {
 			) {
 				const { verify } = fifty;
 
-				fifty.tests.Date.add = function() {
+				fifty.tests.exports.Date.add = function() {
 					var day = {
 						year: 2019,
 						month: 11,
@@ -464,7 +475,7 @@ namespace slime.time {
 					verify(plus).day.is(2);
 				};
 
-				fifty.tests.Date.months = function() {
+				fifty.tests.exports.Date.months = function() {
 					var date: slime.time.Date = {
 						year: 2019,
 						month: 1,
@@ -492,7 +503,7 @@ namespace slime.time {
 					verify(before2).day.is(15);
 				};
 
-				fifty.tests.Date.years = function() {
+				fifty.tests.exports.Date.years = function() {
 					var date1: slime.time.Date = {
 						year: 2020,
 						month: 2,
@@ -552,7 +563,7 @@ namespace slime.time {
 			) {
 				const { verify } = fifty;
 
-				fifty.tests.Date.order = function() {
+				fifty.tests.exports.Date.order = function() {
 					var unordered: slime.time.Date[] = [
 						{ year: 2018, month: 2, day: 2 },
 						{ year: 2018, month: 1, day: 1 },
@@ -592,7 +603,7 @@ namespace slime.time {
 			) {
 				const { verify } = fifty;
 
-				fifty.tests.Date.dayOfWeek = function() {
+				fifty.tests.exports.Date.dayOfWeek = function() {
 					var date: slime.time.Date = {
 						year: 2023,
 						month: 3,
@@ -666,6 +677,46 @@ namespace slime.time {
 			[x: string]: Zone
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.exports.Timezone = function() {
+				fifty.run(function zones() {
+					verify(test.subject).Timezone.local.is.type("object");
+					verify(test.subject).Timezone.UTC.is.type("object");
+				});
+
+				verify(Object.keys(test.subject.Timezone).join(" "), "Timezones").is(Object.keys(test.subject.Timezone).join(" "));
+
+				var depart: Datetime = { year: 2025, month: 1, day: 5, hour: 17, minute: 30, second: 40 };
+				var instant = test.subject.Timezone["Pacific/Honolulu"].unix(depart);
+
+				(
+					function(datetime,zone) {
+						var date = new Date(datetime.year, datetime.month-1, datetime.day, datetime.hour, datetime.minute, datetime.second);
+						verify(date,"date").is(date);
+						var stringed = date.toLocaleString("en-US", { timeZone: zone });
+						verify(stringed,"stringed").is(stringed);
+						var rv = new Date(stringed);
+					}
+				)(depart, "Pacific/Honolulu");
+
+				verify(instant, "unix time").is(instant);
+				var converted = test.subject.Timezone["America/New_York"].local(instant);
+				verify(converted).year.is(2025);
+				verify(converted).month.is(1);
+				verify(converted).day.is(5);
+				verify(converted).hour.is(22);
+				verify(converted).minute.is(30);
+				verify(converted).second.is(40);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export namespace zone {
 		export namespace time {
@@ -774,10 +825,6 @@ namespace slime.time {
 
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports);
-
-				fifty.run(fifty.tests.Date);
-
-				fifty.run(fifty.tests.Timezone);
 
 				fifty.load("old.fifty.ts");
 			}
