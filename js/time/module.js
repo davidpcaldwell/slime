@@ -1010,9 +1010,44 @@
 			}
 		}
 
+		var rfc3339Error = function(string) {
+			return new TypeError("Does not match RFC3339 format: " + string);
+		}
+
+		var rfc3339Pad = function(value, length) {
+			var rv = String(value);
+			while (rv.length < length) {
+				rv = "0" + rv;
+			}
+			return rv;
+		}
+
+		var isInteger = function(value) {
+			return typeof(value) == "number" && isFinite(value) && Math.floor(value) == value;
+		}
+
+		var isValidGregorianDate = function(year, month, day) {
+			if (!isInteger(year) || !isInteger(month) || !isInteger(day)) return false;
+			if (month < 1 || month > 12) return false;
+			if (day < 1 || day > 31) return false;
+
+			var js = new Date(0);
+			js.setUTCHours(0,0,0,0);
+			js.setUTCFullYear(year, month-1, day);
+			return js.getUTCFullYear() === year && js.getUTCMonth() === month-1 && js.getUTCDate() === day;
+		}
+
 		var Value = {
 			now: function(context) {
 				return context.now || Date.now;
+			}
+		};
+
+		/** @type { slime.time.date.Exports["format"] } */
+		var format = function(mask) {
+			return function(date) {
+				var dayObject = new Day(date.year, date.month, date.day);
+				return dayObject.format(mask);
 			}
 		};
 
@@ -1093,14 +1128,44 @@
 						}
 					}
 				},
-				/** @type {slime.time.Exports["Date"]["format"] } */
-				format: function(mask) {
-					/** @type { ReturnType<slime.time.Exports["Date"]["format"]> } */
-					return function(day) {
-						var dayObject = new Day(day.year, day.month, day.day);
-						return dayObject.format(mask);
+				codec: {
+					rfc3339: function() {
+						return {
+							encode: function(date) {
+								var year = date && date.year;
+								var month = date && date.month;
+								var day = date && date.day;
+
+								if (year < 0 || year > 9999 || !isValidGregorianDate(year, month, day)) {
+									throw rfc3339Error(String(year) + "-" + String(month) + "-" + String(day));
+								}
+
+								return rfc3339Pad(year, 4) + "-" + rfc3339Pad(month, 2) + "-" + rfc3339Pad(day, 2);
+							},
+							decode: function(string) {
+								var parsed = /^(\d{4})-(\d{2})-(\d{2})$/.exec(string);
+								if (!parsed) {
+									throw rfc3339Error(string);
+								}
+
+								var year = Number(parsed[1]);
+								var month = Number(parsed[2]);
+								var day = Number(parsed[3]);
+
+								if (year < 0 || year > 9999 || !isValidGregorianDate(year, month, day)) {
+									throw rfc3339Error(string);
+								}
+
+								return {
+									year: year,
+									month: month,
+									day: day
+								};
+							}
+						}
 					}
 				},
+				format: format,
 				order: {
 					js: ordering.js
 				},
@@ -1145,14 +1210,6 @@
 								return Object.prototype.hasOwnProperty.call(object,key);
 							}
 
-							var lzpad = function(n,length) {
-								var rv = String(Math.abs(n));
-								while (rv.length < length) {
-									rv = "0" + rv;
-								}
-								return rv;
-							}
-
 							var parseFixedOffset = function(zoneId) {
 								if (zoneId == "Z") {
 									return 0;
@@ -1172,16 +1229,10 @@
 
 							var validateLocalDateTime = function(local,string) {
 								var message = "Does not match RFC3339 format: " + string;
-								if (local.month < 1 || local.month > 12) throw new TypeError(message);
-								if (local.day < 1 || local.day > 31) throw new TypeError(message);
+								if (!isValidGregorianDate(local.year, local.month, local.day)) throw rfc3339Error(string);
 								if (local.hour < 0 || local.hour > 23) throw new TypeError(message);
 								if (local.minute < 0 || local.minute > 59) throw new TypeError(message);
 								if (local.second < 0 || local.second >= 60) throw new TypeError(message);
-
-								var dayCheck = new Date(local.year, local.month-1, local.day);
-								if (dayCheck.getFullYear() != local.year || dayCheck.getMonth() != local.month-1 || dayCheck.getDate() != local.day) {
-									throw new TypeError(message);
-								}
 							}
 
 							var resolveZone = function(zoneId) {
@@ -1213,7 +1264,7 @@
 								var absolute = Math.abs(offsetMinutes);
 								var hours = Math.floor(absolute / 60);
 								var minutes = absolute % 60;
-								return sign + lzpad(hours,2) + ":" + lzpad(minutes,2);
+								return sign + rfc3339Pad(hours,2) + ":" + rfc3339Pad(minutes,2);
 							}
 
 							var formatSecond = function(second) {
@@ -1223,9 +1274,9 @@
 								whole += carry;
 								milliseconds = (milliseconds == 1000) ? 0 : milliseconds;
 								if (milliseconds == 0) {
-									return lzpad(whole,2);
+									return rfc3339Pad(whole,2);
 								}
-								return lzpad(whole,2) + "." + lzpad(milliseconds,3);
+								return rfc3339Pad(whole,2) + "." + rfc3339Pad(milliseconds,3);
 							}
 
 							return {
@@ -1245,21 +1296,21 @@
 									var utcAsLocal = zones.UTC.unix(dateTimeInZone);
 									var offsetMinutes = Math.round((utcAsLocal - unix) / 1000 / 60);
 									return [
-										lzpad(dateTimeInZone.year,4), "-", lzpad(dateTimeInZone.month,2), "-", lzpad(dateTimeInZone.day,2),
+										rfc3339Pad(dateTimeInZone.year,4), "-", rfc3339Pad(dateTimeInZone.month,2), "-", rfc3339Pad(dateTimeInZone.day,2),
 										"T",
-										lzpad(dateTimeInZone.hour,2), ":", lzpad(dateTimeInZone.minute,2), ":", formatSecond(dateTimeInZone.second),
+										rfc3339Pad(dateTimeInZone.hour,2), ":", rfc3339Pad(dateTimeInZone.minute,2), ":", formatSecond(dateTimeInZone.second),
 										offsetToString(offsetMinutes)
 									].join("");
 								},
 								decode: function(string) {
 									var parsed = /^(\d{4})\-(\d{2})\-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})(?:\.(\d+))?(Z|(?:\+|\-)\d{2}\:\d{2})$/.exec(string);
 									if (!parsed) {
-										throw new TypeError("Does not match RFC3339 format: " + string);
+										throw rfc3339Error(string);
 									}
 									var fractional = (parsed[7]) ? Number("0." + parsed[7]) : 0;
 									var zone = (parsed[8] == "Z") ? "UTC" : parsed[8];
 									if (zone != "UTC" && typeof(parseFixedOffset(zone)) != "number") {
-										throw new TypeError("Does not match RFC3339 format: " + string);
+										throw rfc3339Error(string);
 									}
 									var rv = {
 										year: Number(parsed[1]),
