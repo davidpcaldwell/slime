@@ -156,8 +156,6 @@ namespace slime.time {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports.Date = fifty.test.Parent();
-
-			fifty.tests.exportsDate = fifty.test.Parent();
 		}
 	//@ts-ignore
 	)(fifty);

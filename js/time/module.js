@@ -1031,8 +1031,10 @@
 			if (month < 1 || month > 12) return false;
 			if (day < 1 || day > 31) return false;
 
-			var js = new Date(Date.UTC(year, month-1, day));
-			return js.getUTCFullYear() == year && js.getUTCMonth() == month-1 && js.getUTCDate() == day;
+			var js = new Date(0);
+			js.setUTCHours(0,0,0,0);
+			js.setUTCFullYear(year, month-1, day);
+			return js.getUTCFullYear() === year && js.getUTCMonth() === month-1 && js.getUTCDate() === day;
 		}
 
 		var Value = {
