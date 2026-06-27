@@ -13,6 +13,16 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.gcloud.Exports> } $export
 	 */
 	function($api,$context,$export) {
+		var hasOwnProperty = function(object,name) {
+			return Object.prototype.hasOwnProperty.call(object, name);
+		};
+
+		var getMacOsCloudSdkPython = function() {
+			var systemPython = $context.library.file.Location.from.os("/usr/bin/python3");
+			if ($context.library.file.Location.file.exists.simple(systemPython)) return "/usr/bin/python3";
+			return "python3";
+		};
+
 		/**
 		 * Selects a stable default interpreter for gcloud when caller does not
 		 * explicitly provide CLOUDSDK_PYTHON.
@@ -20,8 +30,9 @@
 		 * @param { slime.jrunscript.shell.run.Environment } inherited
 		 */
 		var getDefaultCloudSdkPython = function(inherited) {
-			if (inherited && inherited.CLOUDSDK_PYTHON) return inherited.CLOUDSDK_PYTHON;
-			if ($context.library.shell.os.name == "Mac OS X") return "/usr/bin/python3";
+			var source = inherited || $context.library.shell.environment;
+			if (source && hasOwnProperty(source, "CLOUDSDK_PYTHON")) return source.CLOUDSDK_PYTHON;
+			if ($context.library.shell.os.name == "Mac OS X") return getMacOsCloudSdkPython();
 			return "python3";
 		};
 
@@ -32,7 +43,8 @@
 		 * @param { slime.jrunscript.shell.run.Environment } inherited
 		 */
 		var withCloudSdkPython = function(inherited) {
-			return $api.Object.compose(inherited || {}, {
+			var base = inherited || $context.library.shell.environment || {};
+			return $api.Object.compose(base, {
 				CLOUDSDK_PYTHON: getDefaultCloudSdkPython(inherited)
 			});
 		};

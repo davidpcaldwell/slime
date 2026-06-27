@@ -265,10 +265,18 @@ namespace slime.jrunscript.tools.gcloud {
 
 				var withConfig = subject.cli.Configuration.config("/gcloud/config")(configuration);
 				verify(getIntention(withConfig),"intention", function(it) {
-					debugger;
 					var environment = it.environment({});
-					jsh.shell.console(JSON.stringify(environment));
 					verify(environment).evaluate(function(value) { return value.CLOUDSDK_CONFIG; }).is("/gcloud/config");
+				});
+
+				verify(getIntention(configuration),"intention", function(it) {
+					var environment = it.environment({ CLOUDSDK_PYTHON: "" });
+					verify(environment).evaluate(function(value) { return value.CLOUDSDK_PYTHON; }).is("");
+				});
+
+				verify(getIntention(configuration),"intention", function(it) {
+					var environment = it.environment(void(0));
+					verify(environment).evaluate(function(value) { return Object.prototype.hasOwnProperty.call(value, "CLOUDSDK_PYTHON"); }).is(true);
 				});
 
 				var withProject = subject.cli.Configuration.project("PROJECT")(withAccount);
