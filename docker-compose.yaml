@@ -12,7 +12,7 @@ services:
   #
   # Also used by the devcontainer implementation.
   #
-  # The primary user interface for the container is Webtop (HTTP on 3000 in-container).
+  # The primary user interface for the container is Webtop (HTTP on 3000 and HTTPS on 3001 in-container).
   # The chrome and firefox services are still started so that the container can emulate the CI tests for debugging CI-only failures
   # via the contributor/devcomtainer/check script.
   local:
@@ -20,6 +20,7 @@ services:
     environment:
       PUID: ${PUID:-1000}
       PGID: ${PGID:-1000}
+      DISPLAY: ${DISPLAY:-:1}
       TZ: ${TZ}
     working_dir: /slime
     shm_size: 1gb
@@ -36,6 +37,7 @@ services:
     ports:
       - 8000:8000
       - 3000
+      - 3001
     depends_on:
       - chrome
       - firefox
