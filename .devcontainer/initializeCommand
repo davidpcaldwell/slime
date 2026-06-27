@@ -5,7 +5,17 @@
 #
 #	END LICENSE
 
+set -euo pipefail
+
 HERE=$(readlink -f $(dirname $0))
-#	macOS-only
-osascript -e "tell application \"Terminal\" to do script \"${HERE}/find-desktop-novnc-port && exit\""
-#	TODO: gnome-terminal, konsole, xterm?
+
+# VS Code server updates stage into <commit>_<suffix> temporary directories.
+# If dotfiles remain, devcontainer's internal "mv * && rmdir" can fail because
+# '*' does not include dotfiles. Remove stale temp dirs before startup.
+VSCODE_BIN_DIR="${HERE}/../local/docker/home/.vscode-server/bin"
+if [ -d "${VSCODE_BIN_DIR}" ]; then
+	find "${VSCODE_BIN_DIR}" -mindepth 1 -maxdepth 1 -type d -name '*_*' -exec rm -rf {} +
+fi
+
+# Webtop URL opening is handled by devcontainer port forwarding.
+exit 0
