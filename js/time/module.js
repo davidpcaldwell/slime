@@ -1053,6 +1053,15 @@
 
 		$export({
 			Value: $api.fp.methods.pin($context)(Value),
+			Datetime: {
+				date: function(datetime) {
+					return {
+						year: datetime.year,
+						month: datetime.month,
+						day: datetime.day
+					};
+				}
+			},
 			Date: {
 				input: {
 					today: function() {

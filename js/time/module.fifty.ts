@@ -34,12 +34,12 @@ namespace slime.time {
 		/**
 		 * Given a UNIX time, in milliseconds, returns the corresponding time in this time zone.
 		 */
-		local: (unixMilliseconds: number) => Datetime
+		local: (value: slime.external.lib.es5.TimeValue) => Datetime
 
 		/**
 		 * Returns the UNIX time, in milliseconds, for the given time in this time zone.
 		 */
-		unix: (time: Datetime) => number
+		unix: (time: Datetime) => slime.external.lib.es5.TimeValue
 	}
 
 	export interface Context {
@@ -72,15 +72,6 @@ namespace slime.time {
 		//@ts-ignore
 		})(fifty);
 	}
-
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			fifty.tests.exports = fifty.test.Parent();
-		}
-	//@ts-ignore
-	)(fifty);
 
 	(
 		function(
@@ -142,6 +133,50 @@ namespace slime.time {
 					var now = defaulted.Value.now();
 					verify(now).is(now);
 				};
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export interface Exports {
+		Datetime: datetime.Exports
+	}
+
+	export namespace datetime {
+		export interface Exports {
+			/**
+			 * Given a Datetime, returns the Date to which it pertains.
+			 */
+			date: (datetime: Datetime) => Date
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.exports.Datetime = fifty.test.Parent();
+
+				fifty.tests.exports.Datetime.date = function() {
+					var datetime: slime.time.Datetime = {
+						year: 2026,
+						month: 6,
+						day: 27,
+						hour: 14,
+						minute: 5,
+						second: 12.5
+					};
+
+					var date = test.subject.Datetime.date(datetime);
+
+					verify(date).year.is(2026);
+					verify(date).month.is(6);
+					verify(date).day.is(27);
+					verify(date).evaluate.property("hour").is.type("undefined");
+					verify(date).evaluate.property("minute").is.type("undefined");
+					verify(date).evaluate.property("second").is.type("undefined");
+				}
 			}
 		//@ts-ignore
 		)(fifty);
