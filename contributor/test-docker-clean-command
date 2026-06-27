@@ -40,7 +40,7 @@ docker compose -f docker-compose.yaml -f docker-compose.test.yaml \
 	run \
 	--build \
 	-e DOCKER_HOST_UNAME=$(uname) \
-	-e DISPLAY=:1 \
+	-e SLIME_TEST_REQUIRE_DISPLAY \
 	-e S6_KEEP_ENV=1 \
 	-e SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT=1 \
 	-e SLIME_TEST_NO_WF_SUBMODULE_RESET \
@@ -48,4 +48,4 @@ docker compose -f docker-compose.yaml -f docker-compose.test.yaml \
 	-e JDK_VERSION \
 	-e SLIME_WF_JDK_VERSION=$JDK_VERSION \
 	local \
-	/bin/bash -c 'export DISPLAY="${DISPLAY:-:1}"; echo "CI DEBUG container env: DISPLAY=${DISPLAY:-<unset>} JDK_VERSION=${JDK_VERSION:-<unset>} SLIME_WF_JDK_VERSION=${SLIME_WF_JDK_VERSION:-<unset>} SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT=${SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT:-<unset>}"; env | grep -E "^(DISPLAY|JDK_VERSION|SLIME_WF_JDK_VERSION|SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT)=" | sort || true; ./jsh --install-jdk-$JDK_VERSION; "$@"' -- "$@"
+	/bin/bash -c 'if [ -n "${SLIME_TEST_REQUIRE_DISPLAY:-}" ]; then export DISPLAY="${DISPLAY:-:1}"; fi; echo "CI DEBUG container env: SLIME_TEST_REQUIRE_DISPLAY=${SLIME_TEST_REQUIRE_DISPLAY:-<unset>} DISPLAY=${DISPLAY:-<unset>} JDK_VERSION=${JDK_VERSION:-<unset>} SLIME_WF_JDK_VERSION=${SLIME_WF_JDK_VERSION:-<unset>} SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT=${SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT:-<unset>}"; env | grep -E "^(SLIME_TEST_REQUIRE_DISPLAY|DISPLAY|JDK_VERSION|SLIME_WF_JDK_VERSION|SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT)=" | sort || true; ./jsh --install-jdk-$JDK_VERSION; "$@"' -- "$@"

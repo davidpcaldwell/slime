@@ -20,7 +20,6 @@ services:
     environment:
       PUID: ${PUID:-1000}
       PGID: ${PGID:-1000}
-      DISPLAY: ${DISPLAY:-:1}
       TZ: ${TZ}
     working_dir: /slime
     shm_size: 1gb
