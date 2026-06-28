@@ -31,15 +31,16 @@
 							id: "mozilla/1.7.15"
 						};
 					} else {
+						//	TODO	Also in rhino/jrunscript/api.js; is there a DRYer solution?
 						return {
-							number: "1.8.0",
-							id: "mozilla/1.8.0"
+							number: "1.9.1",
+							id: "mozilla/1.9.1"
 						};
 					}
 				},
 				versions: {
 					jdk8: "1.7.15",
-					default: "1.8.0"
+					default: "1.9.1"
 				},
 				sources: {
 					"mozilla/1.7.13": {
@@ -56,6 +57,10 @@
 					},
 					"mozilla/1.8.0": {
 						url: "https://repo1.maven.org/maven2/org/mozilla/rhino-all/1.8.0/rhino-all-1.8.0.jar",
+						format: "jar"
+					},
+					"mozilla/1.9.1": {
+						url: "https://repo1.maven.org/maven2/org/mozilla/rhino-all/1.9.1/rhino-all-1.9.1.jar",
 						format: "jar"
 					}
 				}
