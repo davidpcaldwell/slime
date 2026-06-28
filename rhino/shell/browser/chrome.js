@@ -186,6 +186,8 @@
 				}
 				var runHeadless = (function() {
 					if (m.debug && m.debug.port) return false;
+					var display = ($context.environment) ? $context.environment.DISPLAY : void(0);
+					if ($context.os.name == "Linux" && !display) return true;
 					if (!($context.environment && $context.environment.SLIME_TEST_BROWSER_HEADLESS)) return false;
 					if (!m.arguments) return true;
 					return !m.arguments.some(function(argument) {
