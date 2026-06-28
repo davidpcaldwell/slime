@@ -900,9 +900,9 @@
 						},
 						result: function(output) {
 							return output.split("\n").reduce(function(rv,line) {
-								var parts = line.split("=");
-								if (parts.length == 2) {
-									rv[parts[0]] = parts[1];
+								var equals = line.indexOf("=");
+								if (equals > -1) {
+									rv[line.substring(0, equals)] = line.substring(equals + 1);
 								}
 								return rv;
 							},{});
@@ -922,17 +922,19 @@
 						var config = git.command(configList).argument().run();
 						if (!config["user.name"] && p.get && p.get.name) {
 							events.fire("console", "Getting user.name for " + p.repository);
-							p.repository.config({
-								arguments: ["user.name", p.get.name({ repository: p.repository })]
-							});
+							git.command(setConfigValue).argument({
+								name: "user.name",
+								value: p.get.name({ repository: p.repository })
+							}).run();
 						} else {
 							events.fire("debug", "Found user.name " + config["user.name"] + " for " + p.repository);
 						}
 						if (!config["user.email"] && p.get && p.get.email) {
 							events.fire("console", "Getting user.email for " + p.repository);
-							p.repository.config({
-								arguments: ["user.email", p.get.email({ repository: p.repository })]
-							});
+							git.command(setConfigValue).argument({
+								name: "user.email",
+								value: p.get.email({ repository: p.repository })
+							}).run();
 						} else {
 							events.fire("debug", "Found user.email " + config["user.email"] + " for " + p.repository);
 						}
