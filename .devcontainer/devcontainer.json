@@ -47,6 +47,9 @@
 	"service": "local",
 	"remoteUser": "abc",
 	"workspaceFolder": "/slime",
+	"forwardPorts": [
+		3000
+	],
 	"portsAttributes": {
 		"3000": {
 			"label": "Webtop desktop",
