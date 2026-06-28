@@ -171,7 +171,7 @@
 					|| jsh.shell.environment.SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT
 				;
 
-				if (jsh.shell.environment.GITHUB_ACTIONS) {
+				if (jsh.shell.environment.GITHUB_ACTIONS && jsh.shell.environment.SLIME_WF_BASH_DEBUG) {
 					jsh.shell.console(
 						"CI DEBUG wf env: SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT="
 						+ jsh.shell.environment.SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT

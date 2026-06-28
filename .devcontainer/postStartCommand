@@ -14,8 +14,19 @@ if [ ! -d /slime/local ]; then
 	exit 0
 fi
 
+run_as_root() {
+	if [ "$(id -u)" = "0" ]; then
+		"$@"
+	elif command -v sudo >/dev/null 2>&1; then
+		sudo -n "$@"
+	else
+		echo "postStartCommand needs root privileges but sudo is unavailable." >&2
+		exit 1
+	fi
+}
+
 # Ensure the mount root itself is writable by the devcontainer user.
-sudo chown "${TARGET_UID}:${TARGET_GID}" /slime/local
+run_as_root chown "${TARGET_UID}:${TARGET_GID}" /slime/local
 
 # Keep startup cost low by only repairing root-owned entries.
-sudo find /slime/local -xdev \( -uid 0 -o -gid 0 \) -exec chown "${TARGET_UID}:${TARGET_GID}" {} +
+run_as_root find /slime/local -xdev \( -uid 0 -o -gid 0 \) -exec chown "${TARGET_UID}:${TARGET_GID}" {} +

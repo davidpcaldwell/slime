@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-HERE=$(readlink -f $(dirname $0))
+HERE="$(cd "$(dirname "$0")" && pwd -P)"
 
 # VS Code server updates stage into <commit>_<suffix> temporary directories.
 # If dotfiles remain, devcontainer's internal "mv * && rmdir" can fail because

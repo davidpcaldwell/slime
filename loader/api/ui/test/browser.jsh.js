@@ -25,6 +25,18 @@
 
 		var lock = new jsh.java.Thread.Monitor();
 
+		/** @param {() => any} reader */
+		var synchronizedRead = function(reader) {
+			var value;
+			lock.Waiter({
+				until: function() { return true; },
+				then: function() {
+					value = reader();
+				}
+			})();
+			return value;
+		};
+
 		/**
 		 * Poll for a condition and fail the test explicitly if it never becomes true.
 		 *
@@ -32,10 +44,16 @@
 		 */
 		var waitForOrFail = function(p) {
 			var started = Date.now();
-			while (!p.until()) {
+			while (!synchronizedRead(p.until)) {
 				if ((Date.now() - started) >= p.timeoutMs) {
 					jsh.shell.console("Timed out waiting for " + p.description + " after " + p.timeoutMs + "ms.");
-					if (p.onTimeout) p.onTimeout();
+					if (p.onTimeout) {
+						try {
+							p.onTimeout();
+						} catch (e) {
+							jsh.shell.console("Timeout cleanup failed: " + e);
+						}
+					}
 					jsh.shell.exit(1);
 				}
 				jsh.java.Thread.sleep(200);
