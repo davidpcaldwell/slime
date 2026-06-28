@@ -1,0 +1,32 @@
+#!/bin/bash
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+set -euo pipefail
+
+TARGET_UID="$(id -u)"
+TARGET_GID="$(id -g)"
+
+if [ ! -d /slime/local ]; then
+	exit 0
+fi
+
+run_as_root() {
+	if [ "$(id -u)" = "0" ]; then
+		"$@"
+	elif command -v sudo >/dev/null 2>&1; then
+		sudo -n "$@"
+	else
+		echo "postStartCommand needs root privileges but sudo is unavailable." >&2
+		exit 1
+	fi
+}
+
+# Ensure the mount root itself is writable by the devcontainer user.
+run_as_root chown "${TARGET_UID}:${TARGET_GID}" /slime/local
+
+# Keep startup cost low by only repairing root-owned entries.
+run_as_root find /slime/local -xdev \( -uid 0 -o -gid 0 \) -exec chown "${TARGET_UID}:${TARGET_GID}" {} +

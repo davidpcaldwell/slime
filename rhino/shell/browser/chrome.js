@@ -176,6 +176,9 @@
 				if (m.arguments) {
 					args.push.apply(args,m.arguments);
 				}
+				var hasHeadlessArgument = args.some(function(argument) {
+					return /^--headless/.test(String(argument));
+				});
 				var isDocker = $api.fp.Thunk.value(
 					"/.dockerenv",
 					$context.api.file.Location.from.os,
@@ -183,6 +186,18 @@
 				)
 				if ($context.USER == "root" || isDocker()) {
 					args.push("--no-sandbox");
+				}
+				var runHeadless = (function() {
+					if (m.debug && m.debug.port) return false;
+					if (hasHeadlessArgument) return false;
+					var display = ($context.environment) ? $context.environment.DISPLAY : void(0);
+					if ($context.os.name == "Linux" && !display) return true;
+					if (!($context.environment && $context.environment.SLIME_TEST_BROWSER_HEADLESS)) return false;
+					return true;
+				})();
+				if (runHeadless) {
+					args.push("--headless");
+					if (args.indexOf("--disable-gpu") == -1) args.push("--disable-gpu");
 				}
 				if (m.app) {
 					if (m.position || m.size) {

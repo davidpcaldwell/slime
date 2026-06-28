@@ -478,9 +478,18 @@ namespace slime.jrunscript.tools {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
+				var dockerEngineAvailable = (function(): boolean {
+					if (!fifty.global.jsh.shell.PATH.getCommand("docker")) return false;
+					try {
+						return Boolean(docker.test.subject.engine.isRunning());
+					} catch (e) {
+						return false;
+					}
+				})();
+
 				fifty.run(fifty.tests.cli.exec);
-				if (fifty.global.jsh.shell.PATH.getCommand("docker")) fifty.run(fifty.tests.lab.cli);
-				if (fifty.global.jsh.tools.docker.engine.api) fifty.run(fifty.tests.lab.api);
+				if (dockerEngineAvailable) fifty.run(fifty.tests.lab.cli);
+				if (dockerEngineAvailable && fifty.global.jsh.tools.docker.engine.api) fifty.run(fifty.tests.lab.api);
 				fifty.load("kubectl.fifty.ts");
 			}
 		}

@@ -18,6 +18,9 @@
 				"github.vscode-pull-request-github"
 			],
 			"settings": {
+				"remote.autoForwardPorts": true,
+				"remote.autoForwardPortsSource": "process",
+				"remote.restoreForwardedPorts": false,
 				"java.jdt.ls.java.home": "/slime/local/jdk/21",
 				"java.configuration.runtimes": [
 					{
@@ -42,8 +45,18 @@
 		}
 	},
 	"service": "local",
+	"remoteUser": "abc",
 	"workspaceFolder": "/slime",
+	"portsAttributes": {
+		"3000": {
+			"label": "Webtop desktop",
+			"protocol": "http",
+			"onAutoForward": "openPreview",
+			"requireLocalPort": false
+		}
+	},
 	"initializeCommand": ".devcontainer/initializeCommand",
 	"postCreateCommand": ".devcontainer/postCreateCommand",
+	"postStartCommand": ".devcontainer/postStartCommand",
 	"shutdownAction": "stopCompose"
 }

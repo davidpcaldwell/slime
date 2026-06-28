@@ -339,7 +339,7 @@
 								world.Sensor.mapping(),
 								$context.Partial.impure.exception(
 									function(p) {
-										return new Error("Maybe is nothing for argument " + String(p));
+										return new Error("In Sensor.api.maybe, when executing simple, maybe is nothing for argument " + String(p));
 									}
 								)
 							)

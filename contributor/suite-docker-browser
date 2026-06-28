@@ -4,4 +4,4 @@
 #
 #	END LICENSE
 
-$(dirname $0)/test-docker-clean-command 21 /bin/bash /slime/jsh /slime/contributor/suite-docker-browser.jsh.js
+SLIME_TEST_REQUIRE_DISPLAY=1 $(dirname $0)/test-docker-clean-command 21 /bin/bash /slime/jsh /slime/contributor/suite-docker-browser.jsh.js
