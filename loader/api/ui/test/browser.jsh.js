@@ -101,11 +101,18 @@
 				uri: "http://" + "127.0.0.1:" + tomcat.port + "/loader/api/ui/test/browser.html" + ((parameters.options.success) ? "?success" : "")
 			});
 		} else {
+			var launchArguments = [];
+			if (!parameters.options["debug:devtools"]) {
+				// Non-interactive test runs should not depend on an X server.
+				launchArguments.push("--headless=new", "--disable-gpu");
+			}
+
 			/** @type { { close: () => void } } */
 			var opened;
 
 			chrome.launch({
 				uri: "http://" + "127.0.0.1:" + tomcat.port + "/loader/api/ui/test/browser.html?unit.run" + ((parameters.options.success) ? "&success" : ""),
+				arguments: launchArguments,
 				on: {
 					start: function(p) {
 						lock.Waiter({
