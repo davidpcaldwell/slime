@@ -25,6 +25,23 @@
 
 		var lock = new jsh.java.Thread.Monitor();
 
+		/**
+		 * Poll for a condition and fail the test explicitly if it never becomes true.
+		 *
+		 * @param {{ description: string, timeoutMs: number, until: () => boolean, onTimeout?: () => void }} p
+		 */
+		var waitForOrFail = function(p) {
+			var started = Date.now();
+			while (!p.until()) {
+				if ((Date.now() - started) >= p.timeoutMs) {
+					jsh.shell.console("Timed out waiting for " + p.description + " after " + p.timeoutMs + "ms.");
+					if (p.onTimeout) p.onTimeout();
+					jsh.shell.exit(1);
+				}
+				jsh.java.Thread.sleep(200);
+			}
+		};
+
 		var result = {
 			success: void(0),
 			received: function(v) {
@@ -84,11 +101,18 @@
 				uri: "http://" + "127.0.0.1:" + tomcat.port + "/loader/api/ui/test/browser.html" + ((parameters.options.success) ? "?success" : "")
 			});
 		} else {
+			var launchArguments = [];
+			if (!parameters.options["debug:devtools"]) {
+				// Non-interactive test runs should not depend on an X server.
+				launchArguments.push("--headless=new", "--disable-gpu");
+			}
+
 			/** @type { { close: () => void } } */
 			var opened;
 
 			chrome.launch({
 				uri: "http://" + "127.0.0.1:" + tomcat.port + "/loader/api/ui/test/browser.html?unit.run" + ((parameters.options.success) ? "&success" : ""),
+				arguments: launchArguments,
 				on: {
 					start: function(p) {
 						lock.Waiter({
@@ -112,12 +136,12 @@
 			jsh.shell.console("Initiated Chrome launch.");
 
 			jsh.shell.console("Waiting for Chrome launch to return process ...");
-			lock.Waiter({
-				until: function() { return Boolean(opened); },
-				then: function() {
-					jsh.shell.console("opened = " + opened);
-				}
-			})();
+			waitForOrFail({
+				description: "Chrome launch callback",
+				timeoutMs: 60 * 1000,
+				until: function() { return Boolean(opened); }
+			});
+			jsh.shell.console("opened = " + opened);
 			//	Since we wait above until opened is truthy, we can now assert it's truthy for TypeScript
 			/** @type { (opened: any) => asserts opened } */
 			var untilOpened = function(opened) {}
@@ -126,11 +150,15 @@
 			jsh.shell.console("Chrome subprocess launched.");
 
 			jsh.shell.console("Waiting for result ...");
-			lock.Waiter({
+			waitForOrFail({
+				description: "browser test result callback",
+				timeoutMs: 5 * 60 * 1000,
 				until: function() { return typeof(result.success) != "undefined" },
-				then: function() {
+				onTimeout: function() {
+					jsh.shell.console("No result callback from browser test; closing launched browser process.");
+					opened.close();
 				}
-			})();
+			});
 
 			jsh.shell.console("Result received; result.success = " + result.success);
 			opened.close();

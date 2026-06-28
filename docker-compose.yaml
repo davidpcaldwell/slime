@@ -7,21 +7,22 @@
 name: slime
 
 services:
-  # Produces a stateful, persistent SLIME container that begins as a blank box with the source directory mounted. Local changes
+  # Produces a stateful, persistent SLIME container with a built-in Webtop desktop and the source directory mounted. Local changes
   # (to the local/ subdirectory, like installing JDKs, Rhino, Tomcat, and so forth) will persist between runs.
   #
   # Also used by the devcontainer implementation.
   #
-  # The primary user interface for the container is the novnc interface, which can be reached at http://localhost:7902/vnc.html.
+  # The primary user interface for the container is Webtop (HTTP on 3000 and HTTPS on 3001 in-container).
   # The chrome and firefox services are still started so that the container can emulate the CI tests for debugging CI-only failures
   # via the contributor/devcomtainer/check script.
   local:
     build: .
     environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
       TZ: ${TZ}
-      DISPLAY: desktop:0.0
-    command: sleep infinity
     working_dir: /slime
+    shm_size: 1gb
     volumes:
       - type: bind
         source: .
@@ -31,11 +32,12 @@ services:
         target: /slime/local
       - type: bind
         source: ./local/docker/home
-        target: /root
+        target: /config
     ports:
       - 8000:8000
+      - 3000
+      - 3001
     depends_on:
-      - desktop
       - chrome
       - firefox
 
@@ -48,17 +50,6 @@ services:
     image: seleniarm/standalone-firefox
     ports:
       - 7901:7900
-
-  desktop:
-    image: theasp/novnc:latest
-    environment:
-      RUN_XTERM: no
-    env_file:
-      # Can specify DISPLAY_WIDTH and DISPLAY_HEIGHT for the desktop in the below file; defaults are 1024 and 768.
-      - path: local/devcontainer/desktop.env
-        required: false
-    ports:
-      - 8080
 
 volumes:
   local:

@@ -7,8 +7,12 @@
 #	Currently, the purpose of this Docker image is to provide facilities for developing SLIME itself; the image is not intended to
 #	support any deployment use cases.
 
-FROM debian
-RUN apt update && apt install -y git chromium curl
+FROM lscr.io/linuxserver/webtop:ubuntu-xfce
+RUN apt update && apt install -y git chromium chromium-sandbox curl socat
+# Chromium in this container runtime needs sandbox-disabled flags to launch reliably.
+RUN printf '%s\n' \
+	'export CHROMIUM_FLAGS="$CHROMIUM_FLAGS --no-sandbox --disable-setuid-sandbox"' \
+	> /etc/chromium.d/slime-container-flags
 #	Why running apt update again is necessary and this needs to be a separate layer is completely unknown as of this writing
 # RUN apt update && apt install -y chromium
 COPY contributor/devcontainer/boot /boot
