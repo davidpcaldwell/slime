@@ -13,6 +13,42 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.gcloud.Exports> } $export
 	 */
 	function($api,$context,$export) {
+		var hasOwnProperty = function(object,name) {
+			return Object.prototype.hasOwnProperty.call(object, name);
+		};
+
+		var getMacOsCloudSdkPython = function() {
+			var systemPython = $context.library.file.Location.from.os("/usr/bin/python3");
+			if ($context.library.file.Location.file.exists.simple(systemPython)) return "/usr/bin/python3";
+			return "python3";
+		};
+
+		/**
+		 * Selects a stable default interpreter for gcloud when caller does not
+		 * explicitly provide CLOUDSDK_PYTHON.
+		 *
+		 * @param { slime.jrunscript.shell.run.Environment } inherited
+		 */
+		var getDefaultCloudSdkPython = function(inherited) {
+			var source = inherited || $context.library.shell.environment;
+			if (source && hasOwnProperty(source, "CLOUDSDK_PYTHON")) return source.CLOUDSDK_PYTHON;
+			if ($context.library.shell.os.name == "Mac OS X") return getMacOsCloudSdkPython();
+			return "python3";
+		};
+
+		/**
+		 * Adds CLOUDSDK_PYTHON to the subprocess environment while preserving
+		 * existing variables.
+		 *
+		 * @param { slime.jrunscript.shell.run.Environment } inherited
+		 */
+		var withCloudSdkPython = function(inherited) {
+			var base = inherited || $context.library.shell.environment || {};
+			return $api.Object.compose(base, {
+				CLOUDSDK_PYTHON: getDefaultCloudSdkPython(inherited)
+			});
+		};
+
 		/**
 		 * @param { string } executable
 		 * @returns { slime.jrunscript.tools.gcloud.cli.Configuration } }
@@ -30,7 +66,7 @@
 								rv.push.apply(rv, invocation.arguments);
 							}),
 							environment: function(inherited) {
-								return inherited;
+								return withCloudSdkPython(inherited);
 							},
 							stdio: {
 								output: "string",
@@ -161,7 +197,11 @@
 												rv.push(invocation.command);
 												rv.push.apply(rv, invocation.arguments);
 											}),
-											environment: (config) ? $api.Object.compose($context.library.shell.environment, { CLOUDSDK_CONFIG: config }) : void(0),
+												environment: withCloudSdkPython(
+													(config)
+														? $api.Object.compose($context.library.shell.environment, { CLOUDSDK_CONFIG: config })
+														: $context.library.shell.environment
+												),
 											stdio: {
 												output: "string",
 												error: "line"
@@ -173,8 +213,12 @@
 											},
 											exit: function(e) {
 												if (e.detail.status != 0) throw new Error("Exit status: " + e.detail.status);
-												var json = JSON.parse(e.detail.stdio.output);
-												result = toResult(json);
+												if (command.result) {
+													var json = JSON.parse(e.detail.stdio.output);
+													result = toResult(json);
+												} else {
+													result = void(0);
+												}
 											}
 										}
 									);
@@ -198,7 +242,7 @@
 
 		/** @type { { [os: string]: { [arch: string ]: string }} } */
 		var INSTALLER = {
-			"Mac OS X": macOsInstallers("437.0.1")
+			"Mac OS X": macOsInstallers("540.0.0")
 		};
 
 		$export({
