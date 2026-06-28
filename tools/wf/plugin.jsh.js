@@ -888,6 +888,27 @@
 
 				/** @type { slime.jsh.wf.checks.Exports["requireGitIdentity"] } */
 				function requireGitIdentity(p) {
+					var git = jsh.tools.git.program({ command: "git" }).repository(p.repository.directory.pathname.toString());
+
+					/** @type { slime.jrunscript.tools.git.Command<void,{ [name: string]: string }> } */
+					var configList = {
+						invocation: function() {
+							return {
+								command: "config",
+								arguments: ["--list"]
+							};
+						},
+						result: function(output) {
+							return output.split("\n").reduce(function(rv,line) {
+								var parts = line.split("=");
+								if (parts.length == 2) {
+									rv[parts[0]] = parts[1];
+								}
+								return rv;
+							},{});
+						}
+					};
+
 					/**
 					 *
 					 * @param { { [name: string]: string } } config
@@ -898,9 +919,7 @@
 
 					return $api.fp.world.old.ask(function(events) {
 						events.fire("debug", "Verifying git identity ...");
-						var config = p.repository.config({
-							arguments: ["--list"]
-						});
+						var config = git.command(configList).argument().run();
 						if (!config["user.name"] && p.get && p.get.name) {
 							events.fire("console", "Getting user.name for " + p.repository);
 							p.repository.config({
@@ -917,11 +936,9 @@
 						} else {
 							events.fire("debug", "Found user.email " + config["user.email"] + " for " + p.repository);
 						}
-						var after = p.repository.config({
-							arguments: ["--list"]
-						});
-						if (!after["user.name"]) events.fire("console", "git repository configuration missing user.name");
-						if (!after["user.email"]) events.fire("console", "git repository configuration missing user.email");
+						var after = git.command(configList).argument().run();
+						if (!after["user.name"]) events.fire("console", "git repository " + p.repository + " configuration missing user.name");
+						if (!after["user.email"]) events.fire("console", "git repository " + p.repository + " configuration missing user.email");
 						return hasGitIdentity(after);
 					});
 				}
