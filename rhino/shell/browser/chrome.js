@@ -184,6 +184,18 @@
 				if ($context.USER == "root" || isDocker()) {
 					args.push("--no-sandbox");
 				}
+				var runHeadless = (function() {
+					if (m.debug && m.debug.port) return false;
+					if (!($context.environment && $context.environment.SLIME_TEST_BROWSER_HEADLESS)) return false;
+					if (!m.arguments) return true;
+					return !m.arguments.some(function(argument) {
+						return /^--headless/.test(String(argument));
+					});
+				})();
+				if (runHeadless) {
+					args.push("--headless");
+					if (args.indexOf("--disable-gpu") == -1) args.push("--disable-gpu");
+				}
 				if (m.app) {
 					if (m.position || m.size) {
 						var script = [];
