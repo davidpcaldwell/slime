@@ -168,12 +168,14 @@
 		/**
 		 *
 		 * @param { string } executable
+		 * @param { string } python
 		 * @param { string } config
 		 * @param { string } account
 		 * @param { string } project
 		 * @returns
 		 */
-		var executeCommand = function(executable,config,account,project) {
+		var executeCommand = function(executable,python,config,account,project) {
+			var creation = "config=" + config + " " + new Error().stack;
 			/** @type { slime.jrunscript.tools.gcloud.cli.OldExecutor } */
 			var rv = function(command) {
 				if (!command) throw new TypeError("Required: arguments[0] (command)");
@@ -185,6 +187,13 @@
 								function(events) {
 									var result;
 									var invocation = command.invocation(argument);
+
+									var environment = $api.Object.compose(
+										$context.library.shell.environment,
+										(python) ? { CLOUDSDK_PYTHON: python } : {},
+										(config) ? { CLOUDSDK_CONFIG: config } : {}
+									);
+
 									$api.fp.world.now.action(
 										$context.library.shell.world.action,
 										$context.library.shell.Invocation.from.argument({
@@ -197,11 +206,7 @@
 												rv.push(invocation.command);
 												rv.push.apply(rv, invocation.arguments);
 											}),
-												environment: withCloudSdkPython(
-													(config)
-														? $api.Object.compose($context.library.shell.environment, { CLOUDSDK_CONFIG: config })
-														: $context.library.shell.environment
-												),
+											environment: environment,
 											stdio: {
 												output: "string",
 												error: "line"
@@ -212,7 +217,10 @@
 												events.fire("console", e.detail.line);
 											},
 											exit: function(e) {
-												if (e.detail.status != 0) throw new Error("Exit status: " + e.detail.status);
+												if (e.detail.status != 0) throw new Error(
+													"Exit status: " + e.detail.status + " stdout: " + e.detail.stdio.output
+													+ "\nCreation:\n" + creation
+												);
 												if (command.result) {
 													var json = JSON.parse(e.detail.stdio.output);
 													result = toResult(json);
@@ -261,26 +269,26 @@
 										return {
 											project: function(project) {
 												return {
-													command: executeCommand(executable,config,account,project)
+													command: executeCommand(executable,void(0),config,account,project)
 												}
 											},
-											command: executeCommand(executable,config,account,void(0))
+											command: executeCommand(executable,void(0),config,account,void(0))
 										}
 									},
-									command: executeCommand(executable,config,void(0),void(0))
+									command: executeCommand(executable,void(0),config,void(0),void(0))
 								}
 							},
 							account: function(account) {
 								return {
 									project: function(project) {
 										return {
-											command: executeCommand(executable,void(0),account,project)
+											command: executeCommand(executable,void(0),void(0),account,project)
 										}
 									},
-									command: executeCommand(executable,void(0),account,void(0))
+									command: executeCommand(executable,void(0),void(0),account,void(0))
 								}
 							},
-							command: executeCommand(executable,void(0),void(0),void(0))
+							command: executeCommand(executable,void(0),void(0),void(0),void(0))
 						}
 					},
 					configuration: function configuration(installation) {
