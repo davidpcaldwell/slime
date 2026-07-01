@@ -43,24 +43,16 @@
 			)
 		};
 
-		//	Experimental FP construct
-
-		//	This approach essentially allows the function argument to be in scope for each stage of the function's pipeline
-		//	Haven't come up with a good name for it, it essentially gives the abilities of an outer scope variable without the
-		//	boilerplate lines of code
-		/** @type { <A,B,C,D>(f: (a: A) => B, g: (a: A) => (b: B) => C, h: (a: A) => (c: C) => D) => (a: A) => D } */
-		var $api_fp_map_create = function(f,g,h) {
+		//	Reader applicative pipeline: distributes a shared argument to each pipeline stage
+		var readerPipe = function(f /*, ...transforms */) {
+			var transforms = Array.prototype.slice.call(arguments, 1);
 			return function(a) {
-				return $api.fp.now.map(
-					f(a),
-					g(a),
-					h(a)
-				)
-			}
+				return $api.fp.now.apply(null, [f(a)].concat(transforms.map(function(t) { return t(a); })));
+			};
 		};
 
 		/** @type { (p: { store: slime.jrunscript.file.Location, host: string, username: string }) => slime.jrunscript.file.Location } */
-		var getTokenLocation = $api_fp_map_create(
+		var getTokenLocation = readerPipe(
 			$api.fp.property("store"),
 			$api.fp.pipe($api.fp.property("host"), relative),
 			$api.fp.pipe($api.fp.property("username"), relative)
@@ -112,18 +104,20 @@
 
 		/** @type { slime.jrunscript.tools.git.credentials.Exports["get"] } */
 		var get = $api.fp.world.Sensor.from.flat(
-			function(p) {
-				var location = getProjectTokenLocation(p.subject);
-				return tryReadString(location);
-			}
+			$api.fp.pipe(
+				$api.fp.property("subject"),
+				getProjectTokenLocation,
+				tryReadString
+			)
 		);
 
 		/** @type { slime.jrunscript.tools.git.credentials.Exports["user"]["get"] } */
 		var userGet = $api.fp.world.Sensor.from.flat(
-			function(p) {
-				var location = getUserTokenLocation(p.subject);
-				return tryReadString(location);
-			}
+			$api.fp.pipe(
+				$api.fp.property("subject"),
+				getUserTokenLocation,
+				tryReadString
+			)
 		);
 
 		/** @type { slime.jrunscript.tools.git.credentials.Exports["update"] } */
@@ -146,21 +140,27 @@
 			])
 		);
 
+		/**
+		 * @param { { debug: slime.$api.fp.impure.Effector<string> } } p
+		 * @returns { (input: slime.jrunscript.runtime.io.InputStream) => slime.jrunscript.tools.git.credentials.Data }
+		 */
+		var read = function(p) {
+			return function(input) {
+				return input.read.string.simple().split("\n").reduce(function(input, line) {
+					var tokens = line.split("=");
+					if (tokens.length >= 2) {
+						input[tokens[0]] = tokens.slice(1).join("=");
+						if (p.debug) p.debug(tokens[0] + "=" + input[tokens[0]]);
+					}
+					return input;
+				}, /** @type { slime.jrunscript.tools.git.credentials.Data } } */({}));
+			}
+		};
+
 		/** @type { slime.jrunscript.tools.git.credentials.Exports["helper"] } */
 		var helper = function(p) {
-			/** @type { { host: string, password: string, username: string } } */
-			var input = {
-				host: void(0),
-				password: void(0),
-				username: void(0)
-			};
-			p.input.character().readLines(function(line) {
-				var tokens = line.split("=");
-				if (tokens.length >= 2) {
-					input[tokens[0]] = tokens.slice(1).join("=");
-					if (p.debug) p.debug(tokens[0] + "=" + input[tokens[0]]);
-				}
-			});
+			var input = read({ debug: p.debug })(p.input);
+
 			if (p.debug) p.debug("input: " + JSON.stringify(input));
 
 			if (p.operation == "get") {
@@ -210,6 +210,21 @@
 			user: {
 				location: getUserTokenLocation,
 				get: userGet
+			},
+			password: function(f) {
+				return function(p) {
+					var input = read({
+						debug: p.debug
+					})(p.input);
+					var output = $api.Object.compose(input);
+					if (p.operation == "get") {
+						var password = f(input)
+						if (password.present) output.password = password.value;
+					}
+					for (var x in output) {
+						p.output(x + "=" + output[x]);
+					}
+				}
 			},
 			helper: helper,
 			update: update,
