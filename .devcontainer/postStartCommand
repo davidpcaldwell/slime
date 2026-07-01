@@ -30,3 +30,31 @@ run_as_root chown "${TARGET_UID}:${TARGET_GID}" /slime/local
 
 # Keep startup cost low by only repairing root-owned entries.
 run_as_root find /slime/local -xdev \( -uid 0 -o -gid 0 \) -exec chown "${TARGET_UID}:${TARGET_GID}" {} +
+
+if command -v gh >/dev/null 2>&1; then
+	GH_SECRETS_DIR=/run/secrets/github.com
+	GH_USER="${GITHUB_USERNAME:-}"
+
+	if [ -z "${GH_USER}" ] && [ -d "${GH_SECRETS_DIR}" ]; then
+		# Best-effort discovery: if the mount is unreadable, skip silently.
+		shopt -s nullglob
+		secret_files=("${GH_SECRETS_DIR}"/*)
+		shopt -u nullglob
+
+		if [ "${#secret_files[@]}" = "1" ] && [ -f "${secret_files[0]}" ]; then
+			GH_USER="$(basename "${secret_files[0]}")"
+		fi
+	fi
+
+	if [ -n "${GH_USER}" ] && [ -r "${GH_SECRETS_DIR}/${GH_USER}" ]; then
+		token="$(tr -d '\r\n' < "${GH_SECRETS_DIR}/${GH_USER}")"
+		if [ -n "${token}" ]; then
+			current="$(gh auth token 2>/dev/null || true)"
+			if [ "${current}" != "${token}" ]; then
+				if ! printf '%s\n' "${token}" | gh auth login --hostname github.com --with-token; then
+					echo "Warning: GitHub token validation failed (likely missing required scopes for gh login, e.g. read:org)." >&2
+				fi
+			fi
+		fi
+	fi
+fi
