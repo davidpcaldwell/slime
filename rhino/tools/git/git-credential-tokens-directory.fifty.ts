@@ -22,6 +22,16 @@ namespace slime.jrunscript.tools.git.credentials {
 		}
 	}
 
+	export type Operation = "get" | "store" | "erase"
+
+	export interface Data {
+		host: string
+		path: string
+		password: string
+
+		[x: string]: string
+	}
+
 	export interface Project {
 		base: slime.jrunscript.file.Location
 	}
@@ -81,6 +91,16 @@ namespace slime.jrunscript.tools.git.credentials {
 			>
 		}
 
+		password: (f:
+			(p: Data) => slime.$api.fp.Maybe<string>
+		) => (p: {
+			operation: string
+			input: slime.jrunscript.runtime.io.InputStream
+			output: slime.$api.fp.impure.Effector<string>
+			console: slime.$api.fp.impure.Effector<string>
+			debug?: slime.$api.fp.impure.Effector<string>
+		}) => void
+
 		/**
 		 * Implements the `git` [credential helper](https://git-scm.com/docs/gitcredentials) interface when the "operation" is
 		 * passed to it as the `operation` property of its input.
@@ -95,9 +115,9 @@ namespace slime.jrunscript.tools.git.credentials {
 			operation: string
 			project: Project
 			input: slime.jrunscript.runtime.io.InputStream
-			output: slime.$api.fp.impure.Output<string>
-			console: slime.$api.fp.impure.Output<string>
-			debug?: slime.$api.fp.impure.Output<string>
+			output: slime.$api.fp.impure.Effector<string>
+			console: slime.$api.fp.impure.Effector<string>
+			debug?: slime.$api.fp.impure.Effector<string>
 		}) => void
 	}
 
