@@ -9,3 +9,8 @@ services:
   local:
     environment:
       GIT_EDITOR=code --wait
+    volumes:
+      - type: bind
+        source: ./local/git/credentials/github.com
+        target: /run/secrets/github.com
+        read_only: true

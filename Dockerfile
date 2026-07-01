@@ -8,7 +8,7 @@
 #	support any deployment use cases.
 
 FROM lscr.io/linuxserver/webtop:ubuntu-xfce
-RUN apt update && apt install -y git chromium chromium-sandbox curl socat
+RUN apt update && apt install -y git gh chromium chromium-sandbox curl socat
 # Chromium in this container runtime needs sandbox-disabled flags to launch reliably.
 RUN mkdir -p /etc/chromium.d && printf '%s\n' \
 	'export CHROMIUM_FLAGS="$CHROMIUM_FLAGS --no-sandbox --disable-setuid-sandbox"' \
