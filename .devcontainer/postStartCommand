@@ -36,13 +36,17 @@ if command -v gh >/dev/null 2>&1; then
 	GH_USER="${GITHUB_USERNAME:-}"
 
 	if [ -z "${GH_USER}" ] && [ -d "${GH_SECRETS_DIR}" ]; then
-		count="$(find "${GH_SECRETS_DIR}" -maxdepth 1 -type f | wc -l | tr -d ' ')"
-		if [ "${count}" = "1" ]; then
-			GH_USER="$(basename "$(find "${GH_SECRETS_DIR}" -maxdepth 1 -type f | head -n 1)")"
+		# Best-effort discovery: if the mount is unreadable, skip silently.
+		shopt -s nullglob
+		secret_files=("${GH_SECRETS_DIR}"/*)
+		shopt -u nullglob
+
+		if [ "${#secret_files[@]}" = "1" ] && [ -f "${secret_files[0]}" ]; then
+			GH_USER="$(basename "${secret_files[0]}")"
 		fi
 	fi
 
-	if [ -n "${GH_USER}" ] && [ -f "${GH_SECRETS_DIR}/${GH_USER}" ]; then
+	if [ -n "${GH_USER}" ] && [ -r "${GH_SECRETS_DIR}/${GH_USER}" ]; then
 		token="$(tr -d '\r\n' < "${GH_SECRETS_DIR}/${GH_USER}")"
 		if [ -n "${token}" ]; then
 			current="$(gh auth token 2>/dev/null || true)"
