@@ -145,6 +145,8 @@ interface Array<T> {
             if (fifty.global.jsh.internal.bootstrap.engine.rhino.running()) {
                 fifty.global.jsh.shell.console("Rhino version " + fifty.global.jsh.internal.bootstrap.engine.rhino.running().getImplementationVersion());
             }
+
+            //  Polyfilled methods; output shows whether they are polyfills or native based on toString()
             console("Object.defineProperty: " + Object.defineProperty);
             console("Object.assign: " + Object.assign);
             console("Object.fromEntries: " + Object.fromEntries);
@@ -154,6 +156,11 @@ interface Array<T> {
             console("Array.prototype.find: " + Array.prototype.find);
             console("Array.prototype.findIndex: " + Array.prototype.findIndex);
             console("Map: " + Map);
+
+            //  Methods not polyfilled yet, so need to conditionally check for their existence on the global object
+            var global = (function() { return this; })();
+            //  See issue #2403, requesting implementation of this polyfill
+            console("URL: " + global.URL);
         }
     }
 //@ts-ignore
