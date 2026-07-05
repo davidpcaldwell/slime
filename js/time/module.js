@@ -1210,15 +1210,6 @@
 				Time: {
 					codec: {
 						rfc3339: function() {
-							/**
-							 * @param { object } object
-							 * @param { string } key
-							 * @returns { boolean }
-							 */
-							var hasOwn = function(object,key) {
-								return Object.prototype.hasOwnProperty.call(object,key);
-							}
-
 							var parseFixedOffset = function(offset) {
 								if (offset == "Z") {
 									return 0;
@@ -1281,9 +1272,18 @@
 								};
 							}
 
+							var validateOffsetMinutes = function(offset,string) {
+								var message = "Does not match RFC3339 format: " + string;
+								if (typeof(offset) != "number" || !isFinite(offset) || Math.floor(offset) != offset) {
+									throw new TypeError(message);
+								}
+								if (offset < -1439 || offset > 1439) {
+									throw new TypeError(message);
+								}
+							}
+
 							return {
 								encode: function(zt) {
-									//var zone = resolveZone(zt.zone);
 									var requested = {
 										year: zt.year,
 										month: zt.month,
@@ -1293,6 +1293,7 @@
 										second: zt.second
 									};
 									validateLocalDateTime(requested, String(zt));
+									validateOffsetMinutes(zt.offset, String(zt));
 									var normalized = normalizeLocalDateTime(requested);
 									return [
 										rfc3339Pad(normalized.year,4), "-", rfc3339Pad(normalized.month,2), "-", rfc3339Pad(normalized.day,2),
