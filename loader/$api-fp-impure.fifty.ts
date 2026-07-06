@@ -34,7 +34,8 @@ namespace slime.$api.fp.impure {
 	/**
 	 * A function capable of observing some kind of external state and obtaining and returning it to the caller.
 	 *
-	 * @deprecated Replaced by {@link Reading}.
+	 * @deprecated Replaced by {@link Reading}. Note that `Reading` is not a drop-in replacement, but requires a `read` method
+	 * instead of the function signature provided by `External`.
 	 */
 	export type External<T> = () => T
 

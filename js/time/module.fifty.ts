@@ -26,7 +26,10 @@ namespace slime.time {
 
 	export namespace zone {
 		export interface Time extends Datetime {
-			zone: string
+			/**
+			 * The timezone offset, in minutes, from UTC.
+			 */
+			offset: number
 		}
 	}
 
@@ -759,6 +762,10 @@ namespace slime.time {
 					// 	upper/lower case for T/Z?
 					rfc3339: () => slime.Codec<slime.time.zone.Time, string>
 				}
+
+				create: {
+					zone: (zone: Zone) => (datetime: Datetime) => slime.time.zone.Time
+				}
 			}
 		}
 	}
@@ -784,15 +791,18 @@ namespace slime.time {
 
 			fifty.tests.exports.zone.Time.zoneTimeCodecRoundTripWithNamedZone = function() {
 				var codec = test.subject.zone.Time.codec.rfc3339();
-				var encoded = codec.encode({
+
+				var created = test.subject.zone.Time.create.zone(test.subject.Timezone["Pacific/Honolulu"])({
 					year: 2025,
 					month: 1,
 					day: 5,
 					hour: 17,
 					minute: 30,
-					second: 40,
-					zone: "Pacific/Honolulu"
+					second: 40
 				});
+
+				var encoded = codec.encode(created);
+
 				verify(encoded).is("2025-01-05T17:30:40-10:00");
 
 				var decoded = codec.decode(encoded);
@@ -802,7 +812,7 @@ namespace slime.time {
 				verify(decoded).hour.is(17);
 				verify(decoded).minute.is(30);
 				verify(decoded).second.is(40);
-				verify(decoded).zone.is("-10:00");
+				verify(decoded).offset.is(-600);
 			};
 
 			//	TODO	determine why this test fails in Firefox
@@ -810,14 +820,14 @@ namespace slime.time {
 				var codec = test.subject.zone.Time.codec.rfc3339();
 				var decoded = codec.decode("2026-06-23T07:08:09.125Z");
 				verify(decoded).second.is(9.125);
-				verify(decoded).zone.is("UTC");
+				verify(decoded).offset.is(0);
 				verify(codec.encode(decoded)).is("2026-06-23T07:08:09.125Z");
 			};
 
 			fifty.tests.exports.zone.Time.zoneTimeCodecFixedOffset = function() {
 				var codec = test.subject.zone.Time.codec.rfc3339();
 				var decoded = codec.decode("2026-06-23T07:08:09+05:30");
-				verify(decoded).zone.is("+05:30");
+				verify(decoded).offset.is(330);
 				verify(codec.encode(decoded)).is("2026-06-23T07:08:09+05:30");
 			};
 
@@ -842,7 +852,7 @@ namespace slime.time {
 					hour: 7,
 					minute: 8,
 					second: 59.9996,
-					zone: "UTC"
+					offset: 0
 				});
 				verify(encoded).is("2026-06-23T07:09:00Z");
 			};
