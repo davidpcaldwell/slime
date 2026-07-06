@@ -163,6 +163,8 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 
 			fifty.tests.getMajorVersion = function() {
 				verify(subject).getMajorVersion({ version: "Google Chrome 96.0.4664.93", program: "/foo" }).is(96);
+				verify(subject).getMajorVersion({ version: "Google Chrome for Testing 116.0.5845.96", program: "/foo" }).is(116);
+				verify(subject).getMajorVersion({ version: "Chromium 149.0.7827.196 built on Ubuntu 26.04 LTS", program: "/foo" }).is(149);
 			}
 		}
 	//@ts-ignore

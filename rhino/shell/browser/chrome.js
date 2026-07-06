@@ -449,12 +449,12 @@
 		}
 
 		function getMajorVersion(chrome) {
-			var pattern = /Google Chrome (\d+)(.*)$/;
+			var pattern = /^(?:Google Chrome(?: for Testing)?|Chromium)\s+(\d+)(?:\..*)?$/;
 			var match = pattern.exec(chrome.version);
 			if (match) {
 				return Number(match[1]);
 			}
-			throw new TypeError("Could not determine Chrome version from version string: " + chrome.version);
+			throw new TypeError("Could not determine Chrome/Chromium major version from version string: " + chrome.version);
 		}
 
 		var installed = (

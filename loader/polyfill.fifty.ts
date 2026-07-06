@@ -141,12 +141,10 @@ interface Array<T> {
         fifty.tests.manual.engine = function() {
             if (fifty.global.jsh) {
                 fifty.global.jsh.shell.console("java version = " + fifty.global.jsh.shell.java.version);
-                if (fifty.global.jsh.internal.bootstrap.engine.rhino.running()) {
-                    fifty.global.jsh.shell.console("Rhino version " + fifty.global.jsh.internal.bootstrap.engine.rhino.running().getImplementationVersion());
-                }
             }
-
-            //  Polyfilled methods; output shows whether they are polyfills or native based on toString()
+            if (fifty.global.jsh.internal.bootstrap.engine.rhino.running()) {
+                fifty.global.jsh.shell.console("Rhino version " + fifty.global.jsh.internal.bootstrap.engine.rhino.running().getImplementationVersion());
+            }
             console("Object.defineProperty: " + Object.defineProperty);
             console("Object.assign: " + Object.assign);
             console("Object.fromEntries: " + Object.fromEntries);
@@ -156,11 +154,10 @@ interface Array<T> {
             console("Array.prototype.find: " + Array.prototype.find);
             console("Array.prototype.findIndex: " + Array.prototype.findIndex);
             console("Map: " + Map);
-
-            //  Methods not polyfilled yet, so need to conditionally check for their existence on the global object
-            var global = (function() { return this; })();
-            //  See issue #2403, requesting implementation of this polyfill
-            console("URL: " + global.URL);
+        //  Methods not polyfilled yet, so log from the runtime-specific global context
+            var global: any = fifty.global;
+        //  Placeholder visibility for issue #2403; implementation will be added separately
+        console("URL: " + global.URL);
         }
     }
 //@ts-ignore
