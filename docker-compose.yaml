@@ -42,12 +42,14 @@ services:
       - firefox
 
   chrome:
-    image: seleniarm/standalone-chromium
+    image: selenium/standalone-chromium:149.0-20260606
+    shm_size: 2gb
     ports:
       - 7900:7900
 
   firefox:
-    image: seleniarm/standalone-firefox
+    image: selenium/standalone-firefox:152.0-20260606
+    shm_size: 2gb
     ports:
       - 7901:7900
 
