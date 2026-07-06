@@ -22,7 +22,7 @@ The Java-based environments support Mozilla [Rhino](https://github.com/mozilla/r
 
 ## Getting started: run a `jsh` script without installing anything
 
-The following script runs the `master` version of the shell remotely and runs the remotely-hosted
+The following script runs the `main` version of the shell remotely and runs the remotely-hosted
 [`jrunscript/jsh/test/jsh-data.jsh.js`](jrunscript/jsh/test/jsh-data.jsh.js) script which emits information about the executed shell:
 
 ### Using `curl` (installed on macOS)
@@ -34,7 +34,7 @@ curl -v -L https://raw.githubusercontent.com/davidpcaldwell/slime/main/jsh | bas
 ### Using `wget` (installed on many Linux distributions lacking `curl`)
 
 ```bash
-wget https://raw.githubusercontent.com/davidpcaldwell/slime/master/jsh -O - | bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/master/jrunscript/jsh/test/jsh-data.jsh.js
+wget https://raw.githubusercontent.com/davidpcaldwell/slime/main/jsh -O - | bash -s https://raw.githubusercontent.com/davidpcaldwell/slime/main/jrunscript/jsh/test/jsh-data.jsh.js
 ```
 
 ## Getting Started: Using SLIME locally
@@ -52,7 +52,7 @@ obtained (or found).
 To be able to work with SLIME locally, you'll want to get the code. SLIME is a scripting platform, and so it is written with the
 philosophy that essentially nothing should be prebuilt; it runs from its own source code. You can clone the source code from
 [GitHub](https://github.com/davidpcaldwell/slime) or
-[download](https://github.com/davidpcaldwell/slime/archive/refs/heads/master.zip) it and unzip it.
+[download](https://github.com/davidpcaldwell/slime/archive/refs/heads/main.zip) it and unzip it.
 
 ### Executing `jsh` scripts
 
