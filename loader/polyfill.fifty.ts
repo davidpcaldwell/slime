@@ -141,8 +141,9 @@ interface Array<T> {
         fifty.tests.manual.engine = function() {
             if (fifty.global.jsh) {
                 fifty.global.jsh.shell.console("java version = " + fifty.global.jsh.shell.java.version);
-                if (fifty.global.jsh.internal.bootstrap.engine.rhino.running()) {
-                    fifty.global.jsh.shell.console("Rhino version " + fifty.global.jsh.internal.bootstrap.engine.rhino.running().getImplementationVersion());
+                var rhino = fifty.global.jsh.internal.bootstrap.engine.rhino.running();
+                if (rhino) {
+                    fifty.global.jsh.shell.console("Rhino version " + rhino.getImplementationVersion());
                 }
             }
 
@@ -157,7 +158,7 @@ interface Array<T> {
             console("Array.prototype.findIndex: " + Array.prototype.findIndex);
             console("Map: " + Map);
 
-            //  Methods not polyfilled yet, so we log the properties of the global object to determine whether they are present
+            //  Methods not polyfilled yet, so we log the implementations by directly accessing properties of the global object.
             var global = (function() { return this; })();
             //  Will be polyfilled; see issue #2403.
             console("URL: " + global.URL);
