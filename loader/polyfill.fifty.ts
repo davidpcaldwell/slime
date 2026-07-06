@@ -154,6 +154,10 @@ interface Array<T> {
             console("Array.prototype.find: " + Array.prototype.find);
             console("Array.prototype.findIndex: " + Array.prototype.findIndex);
             console("Map: " + Map);
+        //  Methods not polyfilled yet, so log from the runtime-specific global context
+            var global: any = fifty.global;
+        //  Placeholder visibility for issue #2403; implementation will be added separately
+        console("URL: " + global.URL);
         }
     }
 //@ts-ignore
