@@ -11,6 +11,27 @@
 The main documentation for contributors can be found at the contributor [README](./contributor/README.md). This documentation is
 also available in the TypeDoc documentation in the `slime.internal` namespace.
 
+## Personal agent instructions in devcontainers
+
+Contributors can configure personal instructions for coding agents via files in the host path:
+
+* `local/docker/home/.agents`
+
+In the devcontainer, this host directory is mounted through `docker-compose.yaml` as:
+
+* Host `./local/docker/home` -> container `/config`
+
+So personal instructions are available in-container at:
+
+* `/config/.agents`
+
+Recommended setup:
+
+* Create `local/docker/home/.agents/README.md` as the primary entry point for your personal instructions
+* Add one or more instruction files in the same directory and reference them from `README.md`
+
+Agent behavior in this repository is configured to read `/config/.agents/README.md` first, then follow references from that file.
+
 ## Continuous integration testing
 
 When code is contributed via a PR, it must pass a series of checks on the server. These checks run by platform and are defined in

@@ -9,6 +9,25 @@
 General information for contributors is in [CONTRIBUTING.md](CONTRIBUTING.md); please read that first and incorporate its
 information into your approach.
 
+# Personal instructions
+
+When running inside a devcontainer, load personal instructions for operating this repository from
+`/config/.agents` before taking substantive action.
+
+The initial source of personal instructions is
+`/config/.agents/README.md`.
+
+## Preflight protocol for agents
+
+Before making code edits, running tests, replying to PR comments, or resolving review threads, do all of the following:
+
+* Read [AGENTS.md](AGENTS.md)
+* Read `/config/.agents/README.md` if it exists
+* Read any personal instruction files referenced by that README
+* Confirm in the next user-facing message what personal instruction sources were loaded, or that none were found
+
+If personal instructions conflict with repository instructions, stop and ask the user how to proceed.
+
 # Modules
 
 SLIME modules are defined by a top-level script, usually called `module.js`. This main module file often loads sibling files to
