@@ -141,9 +141,9 @@ interface Array<T> {
         fifty.tests.manual.engine = function() {
             if (fifty.global.jsh) {
                 fifty.global.jsh.shell.console("java version = " + fifty.global.jsh.shell.java.version);
-            }
-            if (fifty.global.jsh.internal.bootstrap.engine.rhino.running()) {
-                fifty.global.jsh.shell.console("Rhino version " + fifty.global.jsh.internal.bootstrap.engine.rhino.running().getImplementationVersion());
+                if (fifty.global.jsh.internal.bootstrap.engine.rhino.running()) {
+                    fifty.global.jsh.shell.console("Rhino version " + fifty.global.jsh.internal.bootstrap.engine.rhino.running().getImplementationVersion());
+                }
             }
 
             //  Polyfilled methods; output shows whether they are polyfills or native based on toString()
