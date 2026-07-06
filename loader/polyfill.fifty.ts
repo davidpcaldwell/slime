@@ -157,8 +157,8 @@ interface Array<T> {
             console("Array.prototype.findIndex: " + Array.prototype.findIndex);
             console("Map: " + Map);
 
-            //  Methods not polyfilled yet, so need to conditionally check for their existence on the global object
-            var global = (function() { return this; })();
+            //  Methods not polyfilled yet, so log from the runtime-specific global context
+            var global = fifty.global;
             //  See issue #2403, requesting implementation of this polyfill
             console("URL: " + global.URL);
         }
