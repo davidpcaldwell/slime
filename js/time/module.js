@@ -1051,6 +1051,15 @@
 			}
 		};
 
+		var today = function() {
+			var datetime = zones.local.local(now());
+			return {
+				year: datetime.year,
+				month: datetime.month,
+				day: datetime.day
+			}
+		};
+
 		$export({
 			Value: $api.fp.methods.pin($context)(Value),
 			Datetime: {
@@ -1064,14 +1073,10 @@
 			},
 			Date: {
 				input: {
-					today: function() {
-						var datetime = zones.local.local(now());
-						return {
-							year: datetime.year,
-							month: datetime.month,
-							day: datetime.day
-						}
-					}
+					today: $api.deprecate(today)
+				},
+				today: {
+					read: today
 				},
 				from: {
 					ymd: function(y,m,d) {
@@ -1079,6 +1084,18 @@
 							year: y,
 							month: m,
 							day: d
+						}
+					}
+				},
+				at: function(time) {
+					return function(date) {
+						return {
+							year: date.year,
+							month: date.month,
+							day: date.day,
+							hour: time.hour,
+							minute: time.minute,
+							second: time.second
 						}
 					}
 				},
@@ -1341,6 +1358,24 @@
 								}
 							}
 						}
+					},
+					value: function(time) {
+						var message = "Does not match RFC3339 format: " + String(time);
+						if (typeof(time.offset) != "number" || !isFinite(time.offset) || Math.floor(time.offset) != time.offset) {
+							throw new TypeError(message);
+						}
+						if (time.offset < -1439 || time.offset > 1439) {
+							throw new TypeError(message);
+						}
+						var localAsUtc = zones.UTC.unix({
+							year: time.year,
+							month: time.month,
+							day: time.day,
+							hour: time.hour,
+							minute: time.minute,
+							second: time.second
+						});
+						return localAsUtc - time.offset * 60 * 1000;
 					}
 				}
 			},

@@ -32,20 +32,10 @@ namespace slime.$api.fp {
 
 namespace slime.$api.fp.impure {
 	/**
-	 * A function capable of observing some kind of external state and obtaining and returning it to the caller.
 	 *
-	 * @deprecated Replaced by {@link Reading}. Note that `Reading` is not a drop-in replacement, but requires a `read` method
-	 * instead of the function signature provided by `External`.
 	 */
-	export type External<T> = () => T
-
-	/**
-	 * Represents a value external to the running program's environment that can be retrieved by an invocation. This value may be
-	 * mutated over time by external processes; examples might include the current time, the CPU load on the system, or some
-	 * remotely readable value from a shared filesystem or database.
-	 */
-	export interface Reading<T> {
-		read: () => T
+	export interface Value<T> {
+		get: () => T
 	}
 
 	/**
@@ -58,16 +48,32 @@ namespace slime.$api.fp.impure {
 	}
 
 	/**
+	 * Represents a value external to the running program's environment that can be retrieved by an invocation. This value may be
+	 * mutated over time by external processes; examples might include the current time, the CPU load on the system, or some
+	 * remotely readable value from a shared filesystem or database.
+	 */
+	export interface Reading<T> {
+		read: () => T
+	}
+
+	/** @deprecated Replaced by `Reading` (for external operations) and `Thunk` (for non-external operations). */
+	export type Input<T> = () => T
+
+	/**
+	 * A function capable of observing some kind of external state and obtaining and returning it to the caller.
+	 *
+	 * @deprecated Replaced by {@link Reading}. Note that `Reading` is not a drop-in replacement, but requires a `read` method
+	 * instead of the function signature provided by `External`.
+	 */
+	export type External<T> = () => T
+
+	/**
 	 * Represents a mutable value external to the running program.
 	 */
 	export interface Persistent<T> {
 		read: () => T
 		write: (t: T) => void
 	}
-
-
-	/** @deprecated Replaced by `Reading` (for external operations) and `Thunk` (for non-external operations). */
-	export type Input<T> = () => T
 
 	/**
 	 * An impure function, with potential side effects, that is capable of effecting some kind of external outcome. Its argument
