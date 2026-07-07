@@ -176,7 +176,12 @@
 		{
 			"label": "Project: Open my personal agent instructions",
 			"type": "shell",
-			"command": "./jsh contributor/open-personal-agent-instructions.jsh.js --execPath \"${execPath}\"",
+			"command": "./jsh",
+			"args": [
+				"contributor/open-personal-agent-instructions.jsh.js",
+				"--execPath",
+				"${execPath}"
+			],
 			"problemMatcher": []
 		}
 	],

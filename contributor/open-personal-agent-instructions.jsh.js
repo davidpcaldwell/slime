@@ -15,10 +15,7 @@
 			$api.fp.pipe(
 				jsh.script.cli.option.string({ longname: "execPath" }),
 				function(p) {
-					var devcontainerHome = $api.fp.now(
-						jsh.shell.HOME.pathname.os.adapt(),
-						jsh.file.Location.directory.relativePath(".agents")
-					);
+					var devcontainerLocation = jsh.file.Location.from.os("/config/.agents");
 					var hostLocation = $api.fp.now(
 						jsh.script.world.file,
 						jsh.file.Location.parent(),
@@ -30,7 +27,7 @@
 						$api.fp.world.Means.effector()
 					);
 					var readmeLocations = {
-						devcontainer: $api.fp.now(devcontainerHome, jsh.file.Location.directory.relativePath("README.md")),
+						devcontainer: $api.fp.now(devcontainerLocation, jsh.file.Location.directory.relativePath("README.md")),
 						host: $api.fp.now(hostLocation, jsh.file.Location.directory.relativePath("README.md"))
 					};
 					var fileExists = jsh.file.Location.file.exists.simple;
@@ -38,7 +35,7 @@
 						function() {
 							if (fileExists(readmeLocations.host)) {
 								return {
-									program: p.options.execPath,
+									program: p.options.execPath || "code",
 									file: readmeLocations.host.pathname
 								};
 							} else if (fileExists(readmeLocations.devcontainer)) {
