@@ -1360,7 +1360,29 @@
 						}
 					},
 					value: function(time) {
-						var message = "Does not match RFC3339 format: " + String(time);
+						var string = (function(value) {
+							try {
+								return JSON.stringify(value);
+							} catch (e) {
+								return String(value);
+							}
+						})(time);
+						var message = "Does not match RFC3339 format: " + string;
+						if (!time || typeof(time) != "object") {
+							throw rfc3339Error(string);
+						}
+						var local = {
+							year: time.year,
+							month: time.month,
+							day: time.day,
+							hour: time.hour,
+							minute: time.minute,
+							second: time.second
+						};
+						if (!isValidGregorianDate(local.year, local.month, local.day)) throw rfc3339Error(string);
+						if (local.hour < 0 || local.hour > 23) throw new TypeError(message);
+						if (local.minute < 0 || local.minute > 59) throw new TypeError(message);
+						if (local.second < 0 || local.second >= 60) throw new TypeError(message);
 						if (typeof(time.offset) != "number" || !isFinite(time.offset) || Math.floor(time.offset) != time.offset) {
 							throw new TypeError(message);
 						}

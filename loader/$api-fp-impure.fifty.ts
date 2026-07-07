@@ -32,7 +32,8 @@ namespace slime.$api.fp {
 
 namespace slime.$api.fp.impure {
 	/**
-	 *
+	 * Represents a read-only, non-thread-safe value internal to the running program. The value may change over time due to
+	 * internal mutation, but cannot be modified through this interface.
 	 */
 	export interface Value<T> {
 		get: () => T

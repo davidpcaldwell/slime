@@ -186,7 +186,13 @@ namespace slime.time {
 					now: $api.fp.returning(1643907600000)
 				});
 				var today = subject.Date.input.today();
+				var todayReading = subject.Date.today.read();
 				verify(today, "today", function(it) {
+					it.year.is(2022);
+					it.month.is(2);
+					it.day.is(3);
+				});
+				verify(todayReading, "today.read", function(it) {
 					it.year.is(2022);
 					it.month.is(2);
 					it.day.is(3);
@@ -225,6 +231,37 @@ namespace slime.time {
 		export interface Exports {
 			at: (time: slime.time.Time) => (date: slime.time.Date) => slime.time.Datetime
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.exports.Date.at = function() {
+					var date: slime.time.Date = {
+						year: 2026,
+						month: 7,
+						day: 7
+					};
+					var time: slime.time.Time = {
+						hour: 14,
+						minute: 5,
+						second: 12.5
+					};
+
+					var datetime = test.subject.Date.at(time)(date);
+
+					verify(datetime).year.is(2026);
+					verify(datetime).month.is(7);
+					verify(datetime).day.is(7);
+					verify(datetime).hour.is(14);
+					verify(datetime).minute.is(5);
+					verify(datetime).second.is(12.5);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export namespace date {
