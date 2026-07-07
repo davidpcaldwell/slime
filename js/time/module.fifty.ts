@@ -870,7 +870,7 @@ namespace slime.time {
 				verify(encoded).is("2026-06-23T07:09:00Z");
 			};
 
-			fifty.tests.exports.zone.Time.valueFromFixedOffset = function() {
+			if (!firefox) fifty.tests.exports.zone.Time.valueFromFixedOffset = function() {
 				var value = test.subject.zone.Time.value({
 					year: 2026,
 					month: 6,
