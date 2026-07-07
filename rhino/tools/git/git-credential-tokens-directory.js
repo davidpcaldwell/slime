@@ -141,7 +141,7 @@
 		);
 
 		/**
-		 * @param { { debug: slime.$api.fp.impure.Effector<string> } } p
+		 * @param { { debug?: slime.$api.fp.impure.Effector<string> } } p
 		 * @returns { (input: slime.jrunscript.runtime.io.InputStream) => slime.jrunscript.tools.git.credentials.Data }
 		 */
 		var read = function(p) {
@@ -153,7 +153,7 @@
 						if (p.debug) p.debug(tokens[0] + "=" + input[tokens[0]]);
 					}
 					return input;
-				}, /** @type { slime.jrunscript.tools.git.credentials.Data } } */({}));
+				}, /** @type { slime.jrunscript.tools.git.credentials.Data } */({}));
 			}
 		};
 
@@ -216,13 +216,16 @@
 					var input = read({
 						debug: p.debug
 					})(p.input);
-					var output = $api.Object.compose(input);
 					if (p.operation == "get") {
+						var output = $api.Object.compose(input);
 						var password = f(input)
 						if (password.present) output.password = password.value;
-					}
-					for (var x in output) {
-						p.output(x + "=" + output[x]);
+						for (var x in output) {
+							if (typeof(output[x]) != "undefined") {
+								p.output(x + "=" + output[x]);
+							}
+						}
+						p.output("");
 					}
 				}
 			},

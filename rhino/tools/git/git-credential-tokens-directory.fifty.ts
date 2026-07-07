@@ -25,11 +25,11 @@ namespace slime.jrunscript.tools.git.credentials {
 	export type Operation = "get" | "store" | "erase"
 
 	export interface Data {
-		host: string
-		path: string
-		password: string
+		host?: string
+		path?: string
+		password?: string
 
-		[x: string]: string
+		[x: string]: string | undefined
 	}
 
 	export interface Project {
@@ -94,7 +94,7 @@ namespace slime.jrunscript.tools.git.credentials {
 		password: (f:
 			(p: Data) => slime.$api.fp.Maybe<string>
 		) => (p: {
-			operation: string
+			operation: Operation
 			input: slime.jrunscript.runtime.io.InputStream
 			output: slime.$api.fp.impure.Effector<string>
 			console: slime.$api.fp.impure.Effector<string>
@@ -112,7 +112,7 @@ namespace slime.jrunscript.tools.git.credentials {
 		 * @returns
 		 */
 		helper: (p: {
-			operation: string
+			operation: Operation
 			project: Project
 			input: slime.jrunscript.runtime.io.InputStream
 			output: slime.$api.fp.impure.Effector<string>
@@ -274,6 +274,57 @@ namespace slime.jrunscript.tools.git.credentials {
 					});
 					var result = parseOutput(output);
 					verify(result).evaluate.property("password").is(void(0));
+				});
+
+				fifty.run(function passwordGet() {
+					var output = "";
+					var password = forHelper.password(function(input) {
+						if (input.host == "example.com" && input.username == "foo") {
+							return $api.fp.Maybe.from.some("bar");
+						}
+						return $api.fp.Maybe.from.nothing();
+					});
+
+					password({
+						operation: "get",
+						input: jsh.io.InputStream.string.default(
+							$api.Array.build(function(lines) {
+								lines.push("host=example.com");
+								lines.push("username=foo");
+							}).join("\n")
+						),
+						output: function(line) {
+							output += line + "\n";
+						},
+						console: jsh.shell.console
+					});
+
+					var result = parseOutput(output);
+					verify(result).evaluate.property("password").is("bar");
+					if (!output.endsWith("\n\n")) throw new Error("Expected credential helper output to end with a blank line.");
+				});
+
+				fifty.run(function passwordNonGet() {
+					var output = "";
+					var password = forHelper.password(function() {
+						return $api.fp.Maybe.from.some("bar");
+					});
+
+					password({
+						operation: "store",
+						input: jsh.io.InputStream.string.default(
+							$api.Array.build(function(lines) {
+								lines.push("host=example.com");
+								lines.push("username=foo");
+							}).join("\n")
+						),
+						output: function(line) {
+							output += line + "\n";
+						},
+						console: jsh.shell.console
+					});
+
+					verify(output).is("");
 				});
 			}
 		}
