@@ -13,22 +13,15 @@ also available in the TypeDoc documentation in the `slime.internal` namespace.
 
 ## Personal agent instructions in devcontainers
 
-Contributors can configure personal instructions for coding agents via files in the host path:
-
-* `local/docker/home/.agents`
-
-In the devcontainer, this host directory is mounted through `docker-compose.yaml` as:
-
-* Host `./local/docker/home` -> container `/config`
-
-So personal instructions are available in-container at:
-
-* `/config/.agents`
+Contributors can configure personal instructions for coding agents via files in the host path `local/agents`. In the devcontainer,
+this host directory is mounted through `docker-compose.yaml` as `/config/.agents`.
 
 Recommended setup:
 
-* Create `local/docker/home/.agents/README.md` as the primary entry point for your personal instructions
-* Add one or more instruction files in the same directory and reference them from `README.md`
+* Create `local/agents/README.md` as the primary entry point for your personal instructions on the host.
+* In the devcontainer, this same file is available at `/config/.agents/README.md`.
+* Add one or more instruction files in `local/agents` and reference them from `local/agents/README.md`.
+* The VSCode task "Open my personal agent instructions" will bring these instructions up in the editor, if they exist.
 
 Agent behavior in this repository is configured to read `/config/.agents/README.md` first, then follow references from that file.
 

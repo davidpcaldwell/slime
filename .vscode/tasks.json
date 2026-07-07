@@ -174,9 +174,14 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "(Local only) Project: Run all project tests locally",
+			"label": "Project: Open my personal agent instructions",
 			"type": "shell",
-			"command": "./wf test",
+			"command": "./jsh",
+			"args": [
+				"contributor/open-personal-agent-instructions.jsh.js",
+				"--execPath",
+				"${execPath}"
+			],
 			"problemMatcher": []
 		}
 	],
