@@ -833,6 +833,10 @@ namespace slime.$api.fp.world {
 	export namespace sensor {
 		export interface Exports {
 			from: {
+				/**
+				 * Given a single function that takes an argument with `subject` and `events` properties, returns a `Sensor` that
+				 * delegates to that function.
+				 */
 				flat: <S,E,R>(f: (p: { subject: S, events: slime.$api.event.Producer<E> }) => R) => Sensor<S,E,R>
 			}
 		}
