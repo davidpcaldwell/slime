@@ -1051,6 +1051,15 @@
 			}
 		};
 
+		var today = function() {
+			var datetime = zones.local.local(now());
+			return {
+				year: datetime.year,
+				month: datetime.month,
+				day: datetime.day
+			}
+		};
+
 		$export({
 			Value: $api.fp.methods.pin($context)(Value),
 			Datetime: {
@@ -1064,14 +1073,10 @@
 			},
 			Date: {
 				input: {
-					today: function() {
-						var datetime = zones.local.local(now());
-						return {
-							year: datetime.year,
-							month: datetime.month,
-							day: datetime.day
-						}
-					}
+					today: $api.deprecate(today)
+				},
+				today: {
+					read: today
 				},
 				from: {
 					ymd: function(y,m,d) {
@@ -1079,6 +1084,18 @@
 							year: y,
 							month: m,
 							day: d
+						}
+					}
+				},
+				at: function(time) {
+					return function(date) {
+						return {
+							year: date.year,
+							month: date.month,
+							day: date.day,
+							hour: time.hour,
+							minute: time.minute,
+							second: time.second
 						}
 					}
 				},
@@ -1341,6 +1358,46 @@
 								}
 							}
 						}
+					},
+					value: function(time) {
+						var string = (function(value) {
+							try {
+								return JSON.stringify(value);
+							} catch (e) {
+								return String(value);
+							}
+						})(time);
+						var message = "Does not match RFC3339 format: " + string;
+						if (!time || typeof(time) != "object") {
+							throw rfc3339Error(string);
+						}
+						var local = {
+							year: time.year,
+							month: time.month,
+							day: time.day,
+							hour: time.hour,
+							minute: time.minute,
+							second: time.second
+						};
+						if (!isValidGregorianDate(local.year, local.month, local.day)) throw rfc3339Error(string);
+						if (local.hour < 0 || local.hour > 23) throw new TypeError(message);
+						if (local.minute < 0 || local.minute > 59) throw new TypeError(message);
+						if (local.second < 0 || local.second >= 60) throw new TypeError(message);
+						if (typeof(time.offset) != "number" || !isFinite(time.offset) || Math.floor(time.offset) != time.offset) {
+							throw new TypeError(message);
+						}
+						if (time.offset < -1439 || time.offset > 1439) {
+							throw new TypeError(message);
+						}
+						var localAsUtc = zones.UTC.unix({
+							year: time.year,
+							month: time.month,
+							day: time.day,
+							hour: time.hour,
+							minute: time.minute,
+							second: time.second
+						});
+						return localAsUtc - time.offset * 60 * 1000;
 					}
 				}
 			},

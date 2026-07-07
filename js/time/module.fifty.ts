@@ -5,6 +5,11 @@
 //	END LICENSE
 
 namespace slime.time {
+	export interface Month {
+		year: number
+		month: number
+	}
+
 	export interface Date {
 		year: number
 		month: number
@@ -141,49 +146,7 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export interface Exports {
-		Datetime: datetime.Exports
-	}
-
-	export namespace datetime {
-		export interface Exports {
-			/**
-			 * Given a Datetime, returns the Date to which it pertains.
-			 */
-			date: (datetime: Datetime) => Date
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-
-				fifty.tests.exports.Datetime = fifty.test.Parent();
-
-				fifty.tests.exports.Datetime.date = function() {
-					var datetime: slime.time.Datetime = {
-						year: 2026,
-						month: 6,
-						day: 27,
-						hour: 14,
-						minute: 5,
-						second: 12.5
-					};
-
-					var date = test.subject.Datetime.date(datetime);
-
-					verify(date).year.is(2026);
-					verify(date).month.is(6);
-					verify(date).day.is(27);
-					verify(date).evaluate.property("hour").is.type("undefined");
-					verify(date).evaluate.property("minute").is.type("undefined");
-					verify(date).evaluate.property("second").is.type("undefined");
-				}
-			}
-		//@ts-ignore
-		)(fifty);
-	}
+	export type DayOfWeek = "Mo" | "Tu" | "We" | "Th" | "Fr" | "Sa" | "Su"
 
 	export interface Exports {
 		Date: date.Exports
@@ -201,8 +164,13 @@ namespace slime.time {
 	export namespace date {
 		export interface Exports {
 			input: {
+				/**
+				 * @deprecated Replaced by {@link today}.
+				 */
 				today: slime.$api.fp.impure.Input<slime.time.Date>
 			}
+
+			today: slime.$api.fp.impure.Reading<slime.time.Date>
 		}
 	}
 
@@ -218,7 +186,13 @@ namespace slime.time {
 					now: $api.fp.returning(1643907600000)
 				});
 				var today = subject.Date.input.today();
+				var todayReading = subject.Date.today.read();
 				verify(today, "today", function(it) {
+					it.year.is(2022);
+					it.month.is(2);
+					it.day.is(3);
+				});
+				verify(todayReading, "today.read", function(it) {
 					it.year.is(2022);
 					it.month.is(2);
 					it.day.is(3);
@@ -255,23 +229,7 @@ namespace slime.time {
 
 	export namespace date {
 		export interface Exports {
-			/**
-			 * Given a {@link Date}, returns a {@link slime.$api.fp.Predicate | Predicate} that represents whether a given
-			 * `Date` is the same `Date`.
-			 */
-			is: (date: Date) => slime.$api.fp.Predicate<Date>
-
-			/**
-			 * Given a {@link Date}, returns a {@link slime.$api.fp.Predicate | Predicate} that represents whether a given
-			 * `Date` is after that `Date`.
-			 */
-			isAfter: (date: Date) => slime.$api.fp.Predicate<Date>
-
-			/**
-			 * Given a {@link Date}, returns a {@link slime.$api.fp.Predicate | Predicate} that represents whether a given
-			 * `Date` is before that `Date`.
-			 */
-			isBefore: (date: Date) => slime.$api.fp.Predicate<Date>
+			at: (time: slime.time.Time) => (date: slime.time.Date) => slime.time.Datetime
 		}
 
 		(
@@ -280,124 +238,26 @@ namespace slime.time {
 			) {
 				const { verify } = fifty;
 
-				var ymd = test.subject.Date.from.ymd;
-				var leap = ymd(2024,2,29);
-
-				var feb28 = ymd(2024,2,28);
-				var mar1 = ymd(2024,3,1);
-
-				fifty.tests.exports.Date.is = function() {
-					var isLeap = test.subject.Date.is(leap);
-
-					var same = ymd(2024,2,29);
-
-					verify(feb28).evaluate(isLeap).is(false);
-					verify(same).evaluate(isLeap).is(true);
-					verify(mar1).evaluate(isLeap).is(false);
-				};
-
-				fifty.tests.exports.Date.isAfter = function() {
-					var isAfterLeap = test.subject.Date.isAfter(leap);
-
-					verify(feb28).evaluate(isAfterLeap).is(false);
-					verify(mar1).evaluate(isAfterLeap).is(true);
-				};
-
-				fifty.tests.exports.Date.isBefore = function() {
-					var isBefore = test.subject.Date.isBefore(leap);
-
-					verify(feb28).evaluate(isBefore).is(true);
-					verify(mar1).evaluate(isBefore).is(false);
-				}
-			}
-		//@ts-ignore
-		)(fifty);
-	}
-
-	export namespace date {
-		export interface Exports {
-			codec: {
-				rfc3339: () => slime.Codec<slime.time.Date, string>
-			}
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
-
-				fifty.tests.exports.Date.codec = fifty.test.Parent();
-				fifty.tests.exports.Date.codec.rfc3339 = function() {
-					var codec = test.subject.Date.codec.rfc3339();
-
-					var leapDay: slime.time.Date = {
-						year: 2024,
-						month: 2,
-						day: 29
+				fifty.tests.exports.Date.at = function() {
+					var date: slime.time.Date = {
+						year: 2026,
+						month: 7,
+						day: 7
+					};
+					var time: slime.time.Time = {
+						hour: 14,
+						minute: 5,
+						second: 12.5
 					};
 
-					var encoded = codec.encode(leapDay);
-					verify(encoded).is("2024-02-29");
+					var datetime = test.subject.Date.at(time)(date);
 
-					var decoded = codec.decode(encoded);
-					verify(decoded).year.is(2024);
-					verify(decoded).month.is(2);
-					verify(decoded).day.is(29);
-
-					var decodedPadded = codec.decode("1999-07-03");
-					verify(decodedPadded).year.is(1999);
-					verify(decodedPadded).month.is(7);
-					verify(decodedPadded).day.is(3);
-
-					var unpaddedRejected = false;
-					try {
-						codec.decode("1999-7-3");
-					} catch (e) {
-						unpaddedRejected = true;
-					}
-					verify(unpaddedRejected).is(true);
-
-					var invalidDateRejected = false;
-					try {
-						codec.decode("2023-02-29");
-					} catch (e) {
-						invalidDateRejected = true;
-					}
-					verify(invalidDateRejected).is(true);
-				};
-			}
-		//@ts-ignore
-		)(fifty);
-
-		export interface Exports {
-			format: (mask: string) => (day: slime.time.Date) => string
-		}
-
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const verify = fifty.verify;
-
-				fifty.tests.exports.Date.format = function() {
-					var mar1: slime.time.Date = {
-						year: 2009,
-						month: 3,
-						day: 1
-					};
-
-					var format = function(mask) {
-						return test.subject.Date.format(mask)(mar1);
-					}
-
-					verify(format("yyyy mm dd")).is("2009 03 01");
-					verify(format("yyyy/?m/?d")).is("2009/3/1");
-					verify(format("Mmmm ?d, yyyy")).is("March 1, 2009");
-					verify(format("Www Mmmm ?d, yyyy")).is("Sun March 1, 2009");
-					verify(format("WWWWWW Mmmm ?d, yyyy")).is("SUNDAY March 1, 2009");
-					verify(format("Wwwww Mmmm ?d, yyyy")).is("Sun March 1, 2009");
-					verify(format("Wwwww Mmmm dd, yyyy")).is("Sun March 01, 2009");
+					verify(datetime).year.is(2026);
+					verify(datetime).month.is(7);
+					verify(datetime).day.is(7);
+					verify(datetime).hour.is(14);
+					verify(datetime).minute.is(5);
+					verify(datetime).second.is(12.5);
 				}
 			}
 		//@ts-ignore
@@ -588,6 +448,67 @@ namespace slime.time {
 
 	export namespace date {
 		export interface Exports {
+			/**
+			 * Given a {@link Date}, returns a {@link slime.$api.fp.Predicate | Predicate} that represents whether a given
+			 * `Date` is the same `Date`.
+			 */
+			is: (date: Date) => slime.$api.fp.Predicate<Date>
+
+			/**
+			 * Given a {@link Date}, returns a {@link slime.$api.fp.Predicate | Predicate} that represents whether a given
+			 * `Date` is after that `Date`.
+			 */
+			isAfter: (date: Date) => slime.$api.fp.Predicate<Date>
+
+			/**
+			 * Given a {@link Date}, returns a {@link slime.$api.fp.Predicate | Predicate} that represents whether a given
+			 * `Date` is before that `Date`.
+			 */
+			isBefore: (date: Date) => slime.$api.fp.Predicate<Date>
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				var ymd = test.subject.Date.from.ymd;
+				var leap = ymd(2024,2,29);
+
+				var feb28 = ymd(2024,2,28);
+				var mar1 = ymd(2024,3,1);
+
+				fifty.tests.exports.Date.is = function() {
+					var isLeap = test.subject.Date.is(leap);
+
+					var same = ymd(2024,2,29);
+
+					verify(feb28).evaluate(isLeap).is(false);
+					verify(same).evaluate(isLeap).is(true);
+					verify(mar1).evaluate(isLeap).is(false);
+				};
+
+				fifty.tests.exports.Date.isAfter = function() {
+					var isAfterLeap = test.subject.Date.isAfter(leap);
+
+					verify(feb28).evaluate(isAfterLeap).is(false);
+					verify(mar1).evaluate(isAfterLeap).is(true);
+				};
+
+				fifty.tests.exports.Date.isBefore = function() {
+					var isBefore = test.subject.Date.isBefore(leap);
+
+					verify(feb28).evaluate(isBefore).is(true);
+					verify(mar1).evaluate(isBefore).is(false);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
+
+	export namespace date {
+		export interface Exports {
 			order: {
 				js: (a: slime.time.Date, b: slime.time.Date) => number
 			}
@@ -626,7 +547,95 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export type DayOfWeek = "Mo" | "Tu" | "We" | "Th" | "Fr" | "Sa" | "Su"
+	export namespace date {
+		export interface Exports {
+			codec: {
+				rfc3339: () => slime.Codec<slime.time.Date, string>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.exports.Date.codec = fifty.test.Parent();
+				fifty.tests.exports.Date.codec.rfc3339 = function() {
+					var codec = test.subject.Date.codec.rfc3339();
+
+					var leapDay: slime.time.Date = {
+						year: 2024,
+						month: 2,
+						day: 29
+					};
+
+					var encoded = codec.encode(leapDay);
+					verify(encoded).is("2024-02-29");
+
+					var decoded = codec.decode(encoded);
+					verify(decoded).year.is(2024);
+					verify(decoded).month.is(2);
+					verify(decoded).day.is(29);
+
+					var decodedPadded = codec.decode("1999-07-03");
+					verify(decodedPadded).year.is(1999);
+					verify(decodedPadded).month.is(7);
+					verify(decodedPadded).day.is(3);
+
+					var unpaddedRejected = false;
+					try {
+						codec.decode("1999-7-3");
+					} catch (e) {
+						unpaddedRejected = true;
+					}
+					verify(unpaddedRejected).is(true);
+
+					var invalidDateRejected = false;
+					try {
+						codec.decode("2023-02-29");
+					} catch (e) {
+						invalidDateRejected = true;
+					}
+					verify(invalidDateRejected).is(true);
+				};
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
+			format: (mask: string) => (day: slime.time.Date) => string
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const verify = fifty.verify;
+
+				fifty.tests.exports.Date.format = function() {
+					var mar1: slime.time.Date = {
+						year: 2009,
+						month: 3,
+						day: 1
+					};
+
+					var format = function(mask) {
+						return test.subject.Date.format(mask)(mar1);
+					}
+
+					verify(format("yyyy mm dd")).is("2009 03 01");
+					verify(format("yyyy/?m/?d")).is("2009/3/1");
+					verify(format("Mmmm ?d, yyyy")).is("March 1, 2009");
+					verify(format("Www Mmmm ?d, yyyy")).is("Sun March 1, 2009");
+					verify(format("WWWWWW Mmmm ?d, yyyy")).is("SUNDAY March 1, 2009");
+					verify(format("Wwwww Mmmm ?d, yyyy")).is("Sun March 1, 2009");
+					verify(format("Wwwww Mmmm dd, yyyy")).is("Sun March 01, 2009");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+	}
 
 	export namespace date {
 		export interface Exports {
@@ -659,9 +668,48 @@ namespace slime.time {
 		}
 	}
 
-	export interface Month {
-		year: number
-		month: number
+	export interface Exports {
+		Datetime: datetime.Exports
+	}
+
+	export namespace datetime {
+		export interface Exports {
+			/**
+			 * Given a Datetime, returns the Date to which it pertains.
+			 */
+			date: (datetime: Datetime) => Date
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.exports.Datetime = fifty.test.Parent();
+
+				fifty.tests.exports.Datetime.date = function() {
+					var datetime: slime.time.Datetime = {
+						year: 2026,
+						month: 6,
+						day: 27,
+						hour: 14,
+						minute: 5,
+						second: 12.5
+					};
+
+					var date = test.subject.Datetime.date(datetime);
+
+					verify(date).year.is(2026);
+					verify(date).month.is(6);
+					verify(date).day.is(27);
+					verify(date).evaluate.property("hour").is.type("undefined");
+					verify(date).evaluate.property("minute").is.type("undefined");
+					verify(date).evaluate.property("second").is.type("undefined");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export namespace month {
@@ -757,15 +805,17 @@ namespace slime.time {
 	export namespace zone {
 		export namespace time {
 			export interface Exports {
+				create: {
+					zone: (zone: Zone) => (datetime: Datetime) => slime.time.zone.Time
+				}
+
 				codec: {
 					//	TODO	should there be arguments? precision? trailing 0s? zulu offset handling (Z vs. +00:00)?
 					// 	upper/lower case for T/Z?
 					rfc3339: () => slime.Codec<slime.time.zone.Time, string>
 				}
 
-				create: {
-					zone: (zone: Zone) => (datetime: Datetime) => slime.time.zone.Time
-				}
+				value: (time: slime.time.zone.Time) => slime.external.lib.es5.TimeValue
 			}
 		}
 	}
@@ -855,6 +905,37 @@ namespace slime.time {
 					offset: 0
 				});
 				verify(encoded).is("2026-06-23T07:09:00Z");
+			};
+
+			if (!firefox) fifty.tests.exports.zone.Time.valueFromFixedOffset = function() {
+				var value = test.subject.zone.Time.value({
+					year: 2026,
+					month: 6,
+					day: 23,
+					hour: 7,
+					minute: 8,
+					second: 9.125,
+					offset: 330
+				});
+
+				verify(value).is(Date.UTC(2026, 5, 23, 1, 38, 9, 125));
+			};
+
+			fifty.tests.exports.zone.Time.valueMatchesNamedZoneUnix = function() {
+				var datetime: Datetime = {
+					year: 2025,
+					month: 1,
+					day: 5,
+					hour: 17,
+					minute: 30,
+					second: 40
+				};
+
+				var zone = test.subject.Timezone["Pacific/Honolulu"];
+				var zoned = test.subject.zone.Time.create.zone(zone)(datetime);
+				var actual = test.subject.zone.Time.value(zoned);
+
+				verify(actual).is(zone.unix(datetime));
 			};
 		}
 	//@ts-ignore
