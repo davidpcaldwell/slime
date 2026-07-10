@@ -807,6 +807,7 @@ namespace slime.time {
 			export interface Exports {
 				create: {
 					zone: (zone: Zone) => (datetime: Datetime) => slime.time.zone.Time
+					value: (zone: Zone) => (value: slime.external.lib.es5.TimeValue) => slime.time.zone.Time
 				}
 
 				codec: {
