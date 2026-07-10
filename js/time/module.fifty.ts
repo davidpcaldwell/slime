@@ -938,6 +938,24 @@ namespace slime.time {
 
 				verify(actual).is(zone.unix(datetime));
 			};
+
+			fifty.tests.exports.zone.Time.createValueRoundTripsNamedZoneUnix = function() {
+				var zone = test.subject.Timezone["America/New_York"];
+				var instant = Date.UTC(2026, 2, 8, 7, 30, 0);
+				var zoned = test.subject.zone.Time.create.value(zone)(instant);
+
+				verify(test.subject.zone.Time.value(zoned)).is(instant);
+			};
+
+			fifty.tests.exports.zone.Time.createValueMatchesCreateZoneUtc = function() {
+				var zone = test.subject.Timezone["UTC"];
+				var instant = Date.UTC(2026, 5, 23, 7, 8, 9, 125);
+				var fromValue = test.subject.zone.Time.create.value(zone)(instant);
+				var fromZone = test.subject.zone.Time.create.zone(zone)(zone.local(instant));
+
+				verify(test.subject.zone.Time.value(fromValue)).is(instant);
+				verify(fromValue.offset).is(fromZone.offset);
+			};
 		}
 	//@ts-ignore
 	)(fifty);

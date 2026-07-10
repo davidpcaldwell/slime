@@ -1368,7 +1368,7 @@
 									hour: datetime.hour,
 									minute: datetime.minute,
 									second: datetime.second,
-									offset: Math.round((zones.UTC.unix(datetime) - zone.unix(datetime)) / (60 * 1000))
+									offset: Math.round((zones.UTC.unix(datetime) - value) / (60 * 1000))
 								}
 							}
 						}
