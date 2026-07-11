@@ -23,17 +23,9 @@
 
 		var environment = (
 			function() {
-				var Environment = (
-					function() {
-						/** @type { slime.project.internal.jrunscript_environment.Script } */
-						var script = jsh.script.loader.script("jrunscript-environment.js");
-						return script({
-							jsh: jsh
-						})
-					}
-				)();
+				jsh.loader.plugins(jsh.script.file.parent);
 
-				var environment = new Environment({
+				var environment = new jsh.project.suite.Environment({
 					src: jsh.script.file.parent.parent,
 					noselfping: false,
 					tomcat: true,
