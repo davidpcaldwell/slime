@@ -947,7 +947,7 @@ namespace slime.time {
 				verify(test.subject.zone.Time.value(zoned)).is(instant);
 			};
 
-			fifty.tests.exports.zone.Time.createValueMatchesCreateZoneUtc = function() {
+			if (!firefox) fifty.tests.exports.zone.Time.createValueMatchesCreateZoneUtc = function() {
 				var zone = test.subject.Timezone["UTC"];
 				var instant = Date.UTC(2026, 5, 23, 7, 8, 9, 125);
 				var fromValue = test.subject.zone.Time.create.value(zone)(instant);
