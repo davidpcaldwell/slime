@@ -268,13 +268,20 @@
 				)
 			}
 			if (argument == "firefox") {
+				var firefoxProgram = (function() {
+					var linux = jsh.file.Pathname("/usr/bin/firefox").file;
+					if (linux) return linux;
+					var macos = jsh.file.Pathname("/Applications/Firefox.app/Contents/MacOS/firefox").file;
+					if (macos) return macos;
+				})();
+				if (!firefoxProgram) {
+					throw new Error("Firefox not installed; cannot run Firefox browser tests.");
+				}
 				return jshUnitBrowserToBrowser(
 					"Firefox",
 					$api.fp.identity,
 					jsh.unit.browser.local.Firefox({
-						//	TODO	push knowledge of these locations back into rhino/shell
-						program: "/Applications/Firefox.app/Contents/MacOS/firefox"
-						//	Linux: /usr/bin/firefox
+						program: firefoxProgram.toString()
 					})
 				)
 			}

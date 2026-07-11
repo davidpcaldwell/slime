@@ -74,12 +74,11 @@ command (plus any additional arguments) inside the container.
 
 The containerized browser tests can be run from within the devcontainer:
 
-* Restart browser-specific container in Docker
-* Ensure Selenium is installed by running `contributor/selenium-install.jsh.js`
+* Ensure you are in the `local` devcontainer service.
 * Run browser-specific Fifty tests:
-  * `./fifty test.browser --browser dockercompose:selenium:chrome contributor/browser.fifty.ts --interactive`
-  * `./fifty test.browser --browser dockercompose:selenium:firefox contributor/browser.fifty.ts --interactive`
-* Go to appropriate VNC port (see `../docker-compose.yaml`) using HTTP to get a VNC client and use `secret` as the password
+  * `./fifty test.browser --browser chrome contributor/browser.fifty.ts --interactive`
+  * `./fifty test.browser --browser firefox contributor/browser.fifty.ts --interactive`
+* Use the Webtop desktop on port 3000 to observe interactive browser runs.
 
 ### Test suite performance
 

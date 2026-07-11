@@ -14,7 +14,7 @@
 		jsh.loader.plugins(jsh.script.file.parent);
 
 		jsh.project.suite.initialize({
-			selenium: true
+			selenium: false
 		});
 
 		if (!jsh.unit.browser) {
@@ -55,10 +55,8 @@
 
 		suite.add("browsers", new function() {
 			var browsers = $api.Array.build(function(rv) {
-				rv.push({ id: "dockercompose:selenium:chrome", name: "Chrome (Selenium)" });
-				//	TODO	need to debug why this didn't work:
-				//	TypeError: Cannot call method "start" of undefined
-				rv.push({ id: "dockercompose:selenium:firefox", name: "Firefox (Selenium)" });
+				rv.push({ id: "chrome", name: "Chrome" });
+				rv.push({ id: "firefox", name: "Firefox" });
 			});
 
 			this.name = "Browser tests";
