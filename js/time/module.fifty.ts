@@ -707,9 +707,36 @@ namespace slime.time {
 					verify(date).evaluate.property("minute").is.type("undefined");
 					verify(date).evaluate.property("second").is.type("undefined");
 				}
+
+				fifty.tests.exports.Datetime.time = function() {
+					var datetime: slime.time.Datetime = {
+						year: 2026,
+						month: 6,
+						day: 27,
+						hour: 14,
+						minute: 5,
+						second: 12.5
+					};
+
+					var time = test.subject.Datetime.time(datetime);
+
+					verify(time).hour.is(14);
+					verify(time).minute.is(5);
+					verify(time).second.is(12.5);
+					verify(time).evaluate.property("year").is.type("undefined");
+					verify(time).evaluate.property("month").is.type("undefined");
+					verify(time).evaluate.property("day").is.type("undefined");
+				}
 			}
 		//@ts-ignore
 		)(fifty);
+
+		export interface Exports {
+			/**
+			 * Given a Datetime, returns the Time on the Date to which it pertains.
+			 */
+			time: (datetime: Datetime) => Time
+		}
 	}
 
 	export namespace month {

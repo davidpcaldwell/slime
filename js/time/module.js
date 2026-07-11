@@ -1069,6 +1069,13 @@
 						month: datetime.month,
 						day: datetime.day
 					};
+				},
+				time: function(datetime) {
+					return {
+						hour: datetime.hour,
+						minute: datetime.minute,
+						second: datetime.second
+					};
 				}
 			},
 			Date: {
