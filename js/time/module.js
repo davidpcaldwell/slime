@@ -1357,6 +1357,20 @@
 									offset: Math.round((zones.UTC.unix(datetime) - zone.unix(datetime)) / (60 * 1000))
 								}
 							}
+						},
+						value: function(zone) {
+							return function(value) {
+								var datetime = zone.local(value);
+								return {
+									year: datetime.year,
+									month: datetime.month,
+									day: datetime.day,
+									hour: datetime.hour,
+									minute: datetime.minute,
+									second: datetime.second,
+									offset: Math.round((zones.UTC.unix(datetime) - value) / (60 * 1000))
+								}
+							}
 						}
 					},
 					value: function(time) {
