@@ -438,11 +438,18 @@
 
 				var Firefox = function(configuration) {
 					var PROFILE = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					var runHeadless = (function() {
+						if (jsh.shell.os.name != "Linux") return false;
+						if (jsh.shell.USER == "root") return true;
+						if (jsh.shell.environment.CI) return true;
+						return false;
+					})();
 					return Browser({
 						program: "/usr/bin/env",
 						arguments: $api.Array.build(function(rv) {
 							rv.push("HOME=" + PROFILE.toString());
 							rv.push(configuration.program);
+							if (runHeadless) rv.push("-headless");
 							rv.push("-no-remote");
 							rv.push("-profile", PROFILE.toString())
 						})
