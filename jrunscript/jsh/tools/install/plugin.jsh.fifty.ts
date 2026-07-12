@@ -316,8 +316,14 @@ namespace slime.external {
 					fifty.jsh.file.relative("../../../../docker-compose.yaml"),
 					jsh.file.Location.file.read.string.simple
 				)
-			);
-			verify(parsed).evaluate.property("name").is("slime");
+			) as {
+				services: {
+					local: {}
+				}
+			};
+			if (!parsed || !parsed.services || !parsed.services.local) {
+				throw new Error("Expected docker-compose.yaml to define services.local.");
+			}
 		}
 	}
 //@ts-ignore

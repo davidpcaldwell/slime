@@ -4,8 +4,6 @@
 #
 #	END LICENSE
 
-name: slime
-
 services:
   # Produces a stateful, persistent SLIME container with a built-in Webtop desktop and the source directory mounted. Local changes
   # (to the local/ subdirectory, like installing JDKs, Rhino, Tomcat, and so forth) will persist between runs.
@@ -36,9 +34,9 @@ services:
         source: ./local/agents
         target: /config/.agents
     ports:
-      - 8000:8000
-      - 3000:3000
-      - 3001:3001
+      - "8000"
+      - "3000"
+      - "3001"
 
 volumes:
   local:
