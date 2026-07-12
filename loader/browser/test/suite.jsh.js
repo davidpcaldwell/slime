@@ -213,43 +213,6 @@
 		 * @returns { slime.runtime.browser.test.internal.suite.Browser }
 		 */
 		var toBrowser = function(argument) {
-			if (argument == "dockercompose:selenium:chrome") {
-				return jshUnitBrowserToBrowser(
-					"Remote (Selenium Chrome) - slime",
-					function(url) { return url.replace(/127\.0\.0\.1/g, jsh.shell.environment.HOSTNAME) },
-					jsh.unit.browser.selenium.remote.Chrome({
-						host: "chrome",
-						port: 4444
-					})
-				);
-			}
-			if (argument == "dockercompose:selenium:firefox") {
-				return jshUnitBrowserToBrowser(
-					"Remote (Selenium Firefox) - slime",
-					function(url) { return url.replace(/127\.0\.0\.1/g, jsh.shell.environment.HOSTNAME) },
-					jsh.unit.browser.selenium.remote.Firefox({
-						host: "firefox",
-						port: 4444
-					})
-				);
-			}
-			if (argument == "docker:selenium:chrome") {
-				return jshUnitBrowserToBrowser(
-					"Remote (Selenium Chrome) - local",
-					function(url) { return url.replace(/127\.0\.0\.1/g, "host.docker.internal") },
-					jsh.unit.browser.selenium.remote.Chrome({
-						host: "localhost",
-						port: 4444
-					})
-				)
-			}
-			if (argument == "selenium:chrome") {
-				return jshUnitBrowserToBrowser(
-					"Chrome (Selenium)",
-					$api.fp.identity,
-					jsh.unit.browser.selenium.Chrome()
-				);
-			}
 			if (argument == "chrome") {
 				var port = (function() {
 					if (parameters.options["chrome:debug:port"]) return parameters.options["chrome:debug:port"];

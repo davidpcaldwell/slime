@@ -127,12 +127,7 @@
 				});
 				tomcat.start();
 
-				var host = (function() {
-					if (p.options.browser == "dockercompose:selenium:chrome" || p.options.browser == "dockercompose:selenium:firefox") {
-						return jsh.shell.environment.HOSTNAME;
-					}
-					return "127.0.0.1";
-				})();
+				var host = "127.0.0.1";
 
 				try {
 					var browser = (function() {
@@ -181,18 +176,6 @@
 							}
 						} else if (p.options.browser == "safari") {
 							return jsh.unit.browser.local.Safari();
-						} else if (p.options.browser == "selenium:chrome") {
-							return jsh.unit.browser.selenium.Chrome()
-						} else if (p.options.browser == "dockercompose:selenium:chrome") {
-							return jsh.unit.browser.selenium.remote.Chrome({
-								host: "chrome",
-								port: 4444
-							})
-						} else if (p.options.browser == "dockercompose:selenium:firefox") {
-							return jsh.unit.browser.selenium.remote.Firefox({
-								host: "firefox",
-								port: 4444
-							})
 						} else {
 							throw new TypeError("Browser not found: " + p.options.browser);
 						}
