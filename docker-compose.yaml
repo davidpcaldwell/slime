@@ -34,9 +34,9 @@ services:
         source: ./local/agents
         target: /config/.agents
     ports:
-      - 8000
-      - 3000
-      - 3001
+      - "8000"
+      - "3000"
+      - "3001"
 
 volumes:
   local:
