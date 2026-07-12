@@ -9,7 +9,7 @@ set -euo pipefail
 
 usage() {
 	>&2 echo "Usage: $0 [submodule-path]"
-	>&2 echo "If omitted, defaults to the repository containing this script."
+	>&2 echo "If omitted, runs git submodule absorbgitdirs recursively from the repository containing this script."
 	>&2 echo "Example: $0 local/tool/sub/kit/slim/slime"
 }
 
@@ -23,11 +23,23 @@ if [ "$#" -gt 1 ]; then
 	exit 1
 fi
 
-if [ "$#" -eq 1 ]; then
-	submodule_path="$1"
-else
+if [ "$#" -eq 0 ]; then
 	SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-	submodule_path="${SCRIPT_DIR}/.."
+	repository_path="${SCRIPT_DIR}/.."
+
+	[ -d "${repository_path}" ] || fail "Repository path not found: ${repository_path}"
+	[ -d "${repository_path}/.git" ] || fail "Expected repository git dir at ${repository_path}/.git"
+
+	echo "Running absorbgitdirs for top-level submodules in: ${repository_path}"
+	git -C "${repository_path}" submodule absorbgitdirs
+
+	echo "Running absorbgitdirs recursively in nested submodules"
+	git -C "${repository_path}" submodule foreach --recursive 'git submodule absorbgitdirs'
+
+	echo "Finished recursive submodule gitdir absorption in: ${repository_path}"
+	exit 0
+else
+	submodule_path="$1"
 fi
 submodule_git_path="${submodule_path}/.git"
 
@@ -38,7 +50,7 @@ submodule_git_path="${submodule_path}/.git"
 }
 [ -f "${submodule_git_path}" ] || fail "Expected a .git pointer file at ${submodule_git_path}"
 
-git_pointer_line="$(sed -n '1p' "${submodule_git_path}")"
+git_pointer_line="$(sed -n '1p' -- "${submodule_git_path}")"
 git_pointer_line="${git_pointer_line%$'\r'}"
 case "${git_pointer_line}" in
 	"gitdir: "*)
@@ -62,8 +74,17 @@ fi
 [ -d "${source_git_dir}" ] || fail "Submodule git dir not found: ${source_git_dir}"
 [ -f "${source_git_dir}/config" ] || fail "Submodule git config not found: ${source_git_dir}/config"
 
-rm "${submodule_git_path}"
-mv "${source_git_dir}" "${submodule_git_path}"
+gitfile_backup_path="${submodule_git_path}.pre-absorb-backup"
+[ ! -e "${gitfile_backup_path}" ] || fail "Backup path already exists: ${gitfile_backup_path}"
+
+mv "${submodule_git_path}" "${gitfile_backup_path}"
+if ! mv "${source_git_dir}" "${submodule_git_path}"; then
+	if ! mv "${gitfile_backup_path}" "${submodule_git_path}"; then
+		fail "Failed to absorb and failed to restore .git pointer from ${gitfile_backup_path}"
+	fi
+	fail "Failed to move submodule git dir into place: ${source_git_dir} -> ${submodule_git_path}"
+fi
+rm "${gitfile_backup_path}"
 
 submodule_git_config="${submodule_git_path}/config"
 submodule_git_config_cmd=(
