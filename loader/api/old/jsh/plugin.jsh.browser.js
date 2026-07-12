@@ -439,8 +439,10 @@
 				var Firefox = function(configuration) {
 					var PROFILE = jsh.shell.TMPDIR.createTemporary({ directory: true });
 					return Browser({
-						program: configuration.program,
+						program: "/usr/bin/env",
 						arguments: $api.Array.build(function(rv) {
+							rv.push("HOME=" + PROFILE.toString());
+							rv.push(configuration.program);
 							rv.push("-no-remote");
 							rv.push("-profile", PROFILE.toString())
 						})
