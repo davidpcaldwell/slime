@@ -39,7 +39,7 @@ docker compose --project-name <project-name> port local 8000
 ```
 
 For devcontainers, project-name uniqueness is derived from the host workspace path. During
-`.devcontainer/initializeCommand`, the repository path is hashed and written to `/.env`
+`.devcontainer/initializeCommand`, the repository path is hashed and written to the repository-root `.env`
 as `COMPOSE_PROJECT_NAME=slime-<hash>`.
 
 To discover the active project name, use `docker compose ls` on the host, then run the
