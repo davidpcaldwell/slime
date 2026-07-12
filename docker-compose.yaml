@@ -13,8 +13,7 @@ services:
   # Also used by the devcontainer implementation.
   #
   # The primary user interface for the container is Webtop (HTTP on 3000 and HTTPS on 3001 in-container).
-  # The chrome and firefox services are still started so that the container can emulate the CI tests for debugging CI-only failures
-  # via the contributor/devcontainer/check script.
+  # Browser tests run from this service using local browser processes.
   local:
     build: .
     environment:
@@ -40,21 +39,6 @@ services:
       - 8000:8000
       - 3000:3000
       - 3001:3001
-    depends_on:
-      - chrome
-      - firefox
-
-  chrome:
-    image: selenium/standalone-chromium:149.0-20260606
-    shm_size: 2gb
-    ports:
-      - 7900:7900
-
-  firefox:
-    image: selenium/standalone-firefox:152.0-20260606
-    shm_size: 2gb
-    ports:
-      - 7901:7900
 
 volumes:
   local:

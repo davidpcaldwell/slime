@@ -256,6 +256,9 @@
 					if (parameters.options["chrome:debug:vscode"]) return 9222;
 				})();
 				var instance = (parameters.options["chrome:instance"]) || jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+				if (!jsh.shell.browser.installed.chrome) {
+					throw new Error("Chrome not installed; cannot run Chrome browser tests.");
+				}
 				return jshUnitBrowserToBrowser(
 					"Chrome",
 					$api.fp.identity,
@@ -268,13 +271,22 @@
 				)
 			}
 			if (argument == "firefox") {
+				var firefoxProgram = (function() {
+					var command = jsh.shell.PATH.getCommand("firefox") || jsh.shell.PATH.getCommand("firefox-esr");
+					if (command) return command.toString();
+					var linux = jsh.file.Pathname("/usr/bin/firefox").file;
+					if (linux) return linux.toString();
+					var macos = jsh.file.Pathname("/Applications/Firefox.app/Contents/MacOS/firefox").file;
+					if (macos) return macos.toString();
+				})();
+				if (!firefoxProgram) {
+					throw new Error("Firefox not installed; cannot run Firefox browser tests.");
+				}
 				return jshUnitBrowserToBrowser(
 					"Firefox",
 					$api.fp.identity,
 					jsh.unit.browser.local.Firefox({
-						//	TODO	push knowledge of these locations back into rhino/shell
-						program: "/Applications/Firefox.app/Contents/MacOS/firefox"
-						//	Linux: /usr/bin/firefox
+						program: firefoxProgram
 					})
 				)
 			}
