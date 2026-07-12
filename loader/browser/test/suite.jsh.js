@@ -261,6 +261,7 @@
 					return rv;
 				}
 			}
+			throw new TypeError("Browser not found: " + argument);
 		};
 
 		var browser = toBrowser(parameters.options.browser);
