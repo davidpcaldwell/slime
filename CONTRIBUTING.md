@@ -25,6 +25,35 @@ Recommended setup:
 
 Agent behavior in this repository is configured to read `/config/.agents/README.md` first, then follow references from that file.
 
+## Devcontainer Compose ports and project naming
+
+The devcontainer uses Docker Compose with container ports published without fixed host ports. Docker assigns an available host
+port for each published container port.
+
+To discover the host port currently assigned to a service port, run:
+
+```bash
+docker compose --project-name <project-name> port local 3000
+docker compose --project-name <project-name> port local 3001
+docker compose --project-name <project-name> port local 8000
+```
+
+For devcontainers, project-name uniqueness is derived from the host workspace path. During
+`.devcontainer/initializeCommand`, the repository path is hashed and written to `/.env`
+as `COMPOSE_PROJECT_NAME=slime-<hash>`.
+
+To discover the active project name, use `docker compose ls` on the host, then run the
+`docker compose --project-name ... port ...` commands above.
+
+Within the `local` container, these ports are used as follows:
+
+* `3000`: Webtop desktop HTTP interface.
+* `3001`: Webtop desktop HTTPS interface.
+* `8000`: HTTP endpoint used by project-local web tooling, including the documentation server (`./wf documentation` / `./fifty view`).
+
+If you need unique naming for non-devcontainer Compose usage, set `COMPOSE_PROJECT_NAME` (or pass `--project-name`) when invoking
+`docker compose`.
+
 ## Continuous integration testing
 
 When code is contributed via a PR, it must pass a series of checks on the server. These checks run by platform and are defined in

@@ -9,6 +9,15 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd -P)"
 
+# Generate a deterministic Compose project name per workspace path.
+# Write to repository root .env so compose variable resolution picks it up
+# when using docker-compose.yaml from the project root.
+PROJECT_ROOT="$(cd "${HERE}/.." && pwd -P)"
+PROJECT_HASH="$(printf '%s' "${PROJECT_ROOT}" | sha1sum | cut -c1-10)"
+COMPOSE_PROJECT_NAME="slime-${PROJECT_HASH}"
+printf 'COMPOSE_PROJECT_NAME=%s\n' "${COMPOSE_PROJECT_NAME}" > "${PROJECT_ROOT}/.env"
+rm -f "${HERE}/.env"
+
 # VS Code server updates stage into <commit>_<suffix> temporary directories.
 # If dotfiles remain, devcontainer's internal "mv * && rmdir" can fail because
 # '*' does not include dotfiles. Remove stale temp dirs before startup.
