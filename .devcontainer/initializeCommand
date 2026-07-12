@@ -13,7 +13,14 @@ HERE="$(cd "$(dirname "$0")" && pwd -P)"
 # Write to repository root .env so compose variable resolution picks it up
 # when using docker-compose.yaml from the project root.
 PROJECT_ROOT="$(cd "${HERE}/.." && pwd -P)"
-PROJECT_HASH="$(printf '%s' "${PROJECT_ROOT}" | sha1sum | cut -c1-10)"
+if command -v sha1sum >/dev/null 2>&1; then
+	PROJECT_HASH="$(printf '%s' "${PROJECT_ROOT}" | sha1sum | cut -c1-10)"
+elif command -v shasum >/dev/null 2>&1; then
+	PROJECT_HASH="$(printf '%s' "${PROJECT_ROOT}" | shasum -a 1 | cut -c1-10)"
+else
+	echo "initializeCommand requires sha1sum or shasum to derive COMPOSE_PROJECT_NAME." >&2
+	exit 1
+fi
 COMPOSE_PROJECT_NAME="slime-${PROJECT_HASH}"
 printf 'COMPOSE_PROJECT_NAME=%s\n' "${COMPOSE_PROJECT_NAME}" > "${PROJECT_ROOT}/.env"
 rm -f "${HERE}/.env"
