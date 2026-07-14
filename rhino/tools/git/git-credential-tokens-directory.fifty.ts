@@ -91,8 +91,11 @@ namespace slime.jrunscript.tools.git.credentials {
 			>
 		}
 
-		password: (f:
-			(p: Data) => slime.$api.fp.Maybe<string>
+		credentials: (f:
+			(p: Data) => slime.$api.fp.Maybe<{
+				username: string
+				password: string
+			}>
 		) => (p: {
 			operation: Operation
 			input: slime.jrunscript.runtime.io.InputStream
@@ -278,9 +281,12 @@ namespace slime.jrunscript.tools.git.credentials {
 
 				fifty.run(function passwordGet() {
 					var output = "";
-					var password = forHelper.password(function(input) {
-						if (input.host == "example.com" && input.username == "foo") {
-							return $api.fp.Maybe.from.some("bar");
+					var password = forHelper.credentials(function(input) {
+						if (input.host == "example.com") {
+							return $api.fp.Maybe.from.some({
+								username: "foo",
+								password: "bar"
+							});
 						}
 						return $api.fp.Maybe.from.nothing();
 					});
@@ -288,9 +294,11 @@ namespace slime.jrunscript.tools.git.credentials {
 					password({
 						operation: "get",
 						input: jsh.io.InputStream.string.default(
+							//	The input's username deliberately differs from the callback's returned username, so this test
+							//	proves the output username comes from the callback rather than merely echoing the input.
 							$api.Array.build(function(lines) {
 								lines.push("host=example.com");
-								lines.push("username=foo");
+								lines.push("username=input-username");
 							}).join("\n")
 						),
 						output: function(line) {
@@ -300,14 +308,18 @@ namespace slime.jrunscript.tools.git.credentials {
 					});
 
 					var result = parseOutput(output);
+					verify(result).evaluate.property("username").is("foo");
 					verify(result).evaluate.property("password").is("bar");
 					if (!output.endsWith("\n\n")) throw new Error("Expected credential helper output to end with a blank line.");
 				});
 
 				fifty.run(function passwordNonGet() {
 					var output = "";
-					var password = forHelper.password(function() {
-						return $api.fp.Maybe.from.some("bar");
+					var password = forHelper.credentials(function() {
+						return $api.fp.Maybe.from.some({
+							username: "foo",
+							password: "bar"
+						});
 					});
 
 					password({
