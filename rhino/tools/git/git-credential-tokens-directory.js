@@ -211,15 +211,18 @@
 				location: getUserTokenLocation,
 				get: userGet
 			},
-			password: function(f) {
+			credentials: function(f) {
 				return function(p) {
 					var input = read({
 						debug: p.debug
 					})(p.input);
 					if (p.operation == "get") {
 						var output = $api.Object.compose(input);
-						var password = f(input)
-						if (password.present) output.password = password.value;
+						var credentials = f(input)
+						if (credentials.present) {
+							output.username = credentials.value.username;
+							output.password = credentials.value.password;
+						}
 						for (var x in output) {
 							if (typeof(output[x]) != "undefined") {
 								p.output(x + "=" + output[x]);

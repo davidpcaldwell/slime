@@ -91,8 +91,11 @@ namespace slime.jrunscript.tools.git.credentials {
 			>
 		}
 
-		password: (f:
-			(p: Data) => slime.$api.fp.Maybe<string>
+		credentials: (f:
+			(p: Data) => slime.$api.fp.Maybe<{
+				username: string
+				password: string
+			}>
 		) => (p: {
 			operation: Operation
 			input: slime.jrunscript.runtime.io.InputStream
@@ -278,9 +281,12 @@ namespace slime.jrunscript.tools.git.credentials {
 
 				fifty.run(function passwordGet() {
 					var output = "";
-					var password = forHelper.password(function(input) {
-						if (input.host == "example.com" && input.username == "foo") {
-							return $api.fp.Maybe.from.some("bar");
+					var password = forHelper.credentials(function(input) {
+						if (input.host == "example.com") {
+							return $api.fp.Maybe.from.some({
+								username: "foo",
+								password: "bar"
+							});
 						}
 						return $api.fp.Maybe.from.nothing();
 					});
@@ -306,8 +312,11 @@ namespace slime.jrunscript.tools.git.credentials {
 
 				fifty.run(function passwordNonGet() {
 					var output = "";
-					var password = forHelper.password(function() {
-						return $api.fp.Maybe.from.some("bar");
+					var password = forHelper.credentials(function() {
+						return $api.fp.Maybe.from.some({
+							username: "foo",
+							password: "bar"
+						});
 					});
 
 					password({
