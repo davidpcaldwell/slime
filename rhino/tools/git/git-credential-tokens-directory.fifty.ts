@@ -294,9 +294,11 @@ namespace slime.jrunscript.tools.git.credentials {
 					password({
 						operation: "get",
 						input: jsh.io.InputStream.string.default(
+							//	The input's username deliberately differs from the callback's returned username, so this test
+							//	proves the output username comes from the callback rather than merely echoing the input.
 							$api.Array.build(function(lines) {
 								lines.push("host=example.com");
-								lines.push("username=foo");
+								lines.push("username=input-username");
 							}).join("\n")
 						),
 						output: function(line) {
@@ -306,6 +308,7 @@ namespace slime.jrunscript.tools.git.credentials {
 					});
 
 					var result = parseOutput(output);
+					verify(result).evaluate.property("username").is("foo");
 					verify(result).evaluate.property("password").is("bar");
 					if (!output.endsWith("\n\n")) throw new Error("Expected credential helper output to end with a blank line.");
 				});
