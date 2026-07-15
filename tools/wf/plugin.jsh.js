@@ -552,18 +552,12 @@
 				};
 
 				var fetch = $api.fp.impure.Input.memoized(function() {
-					var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/git/git-credential-tokens-directory.bash").toString();
-
 					var repository = jsh.tools.git.oo.Repository({ directory: inputs.base() });
 					jsh.shell.console("Fetching all updates ...");
 					repository.fetch({
 						all: true,
 						prune: true,
-						recurseSubmodules: true,
-						credentialHelpers: [
-							"cache",
-							credentialHelper
-						]
+						recurseSubmodules: true
 					}, {
 						remote: function(e) {
 							var remote = e.detail;
