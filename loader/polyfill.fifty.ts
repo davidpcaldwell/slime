@@ -130,6 +130,43 @@ interface Array<T> {
         const console = (fifty.global.jsh) ? fifty.global.jsh.shell.console : fifty.global.window["console"].log;
 
         fifty.tests.suite = function() {
+            var url = new URL("https://user:pass@example.com:8080/a/b?q=1#frag");
+            fifty.verify(url).protocol.is("https:");
+            fifty.verify(url).username.is("user");
+            fifty.verify(url).password.is("pass");
+            fifty.verify(url).host.is("example.com:8080");
+            fifty.verify(url).hostname.is("example.com");
+            fifty.verify(url).port.is("8080");
+            fifty.verify(url).pathname.is("/a/b");
+            fifty.verify(url).search.is("?q=1");
+            fifty.verify(url).hash.is("#frag");
+            fifty.verify(url).origin.is("https://example.com:8080");
+            fifty.verify(url).href.is("https://user:pass@example.com:8080/a/b?q=1#frag");
+            fifty.verify(url).evaluate(function(p) { return p.toString(); }).is("https://user:pass@example.com:8080/a/b?q=1#frag");
+
+            //  A URL with no explicit path is normalized to "/"
+            fifty.verify(new URL("https://example.com")).pathname.is("/");
+            fifty.verify(new URL("https://example.com")).href.is("https://example.com/");
+
+            //  Relative resolution against a base, per https://tools.ietf.org/html/rfc3986#section-5.3
+            var base = "https://example.com/a/b/c";
+            fifty.verify(new URL("../d", base)).href.is("https://example.com/a/d");
+            fifty.verify(new URL("/d", base)).href.is("https://example.com/d");
+            fifty.verify(new URL("?x=1", base)).href.is("https://example.com/a/b/c?x=1");
+            fifty.verify(new URL("#section", base)).href.is("https://example.com/a/b/c#section");
+            fifty.verify(new URL("//other.example.com/d", base)).href.is("https://other.example.com/d");
+
+            //  Setters re-serialize `href`
+            var mutable = new URL("https://example.com/a");
+            mutable.pathname = "/b";
+            mutable.search = "x=1";
+            mutable.hash = "y";
+            fifty.verify(mutable).href.is("https://example.com/b?x=1#y");
+
+            //  A URL with neither an explicit scheme nor a base is invalid
+            fifty.verify(0).evaluate(function() {
+                return new URL("/a/b");
+            }).threw.type(TypeError);
         }
 
         fifty.tests.manual = {};
@@ -160,7 +197,6 @@ interface Array<T> {
 
             //  Methods not polyfilled yet, so we log the implementations by directly accessing properties of the global object.
             var global = (function() { return this; })();
-            //  Will be polyfilled; see issue #2403.
             console("URL: " + global.URL);
         }
     }

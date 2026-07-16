@@ -183,6 +183,285 @@
 
 			global.Map = Map;
 		}
+
+		if (!global.URL) {
+			//	A minimal polyfill for the `URL` interface defined by the WHATWG URL Standard
+			//	(https://url.spec.whatwg.org/#url). See issue #2403.
+			//
+			//	Intentional limitations, to keep this polyfill small (see issue #2403 for rationale):
+			//	*	Parsing uses a single regular expression based on the generic URI syntax in RFC 3986, rather than the
+			//		specification's state-machine algorithm. It does not implement special-casing for "special schemes" (http,
+			//		https, file, etc.), IDNA/percent-encoding normalization, or validation of most malformed input; it will
+			//		accept many strings the specification would reject, and will not encode/normalize most inputs the way a
+			//		native implementation would.
+			//	*	`searchParams` (the live `URLSearchParams` view of `search`) is not implemented.
+			//	*	Dot-segment (`.` / `..`) removal in paths uses a simple segment-based algorithm, adapted from the one in
+			//		`js/web/module.js`, rather than the specification's buffer-based algorithm, and may disagree with it on
+			//		edge cases (e.g., trailing slashes).
+
+			var URL_PATTERN = /^(?:([a-zA-Z][a-zA-Z0-9+.-]*):)?(\/\/(?:([^:@\/?#]*)(?::([^@\/?#]*))?@)?([^:\/?#]*)(?::(\d*))?)?([^?#]*)(\?[^#]*)?(#.*)?$/;
+
+			var parseUrl = function(string) {
+				var match = URL_PATTERN.exec(string);
+				return {
+					scheme: match[1] || "",
+					hasAuthority: Boolean(match[2]),
+					username: match[3] || "",
+					password: match[4] || "",
+					hostname: match[5] || "",
+					port: match[6] || "",
+					pathname: match[7] || "",
+					search: match[8] || "",
+					hash: match[9] || ""
+				};
+			};
+
+			//	Adapted from the algorithm of the same name in js/web/module.js
+			var removeDotSegments = function(path) {
+				var tokens = path.split("/");
+				var rv = [];
+				for (var i=0; i<tokens.length; i++) {
+					if (tokens[i] == ".") {
+						//	no replacement, just remove
+					} else if (tokens[i] == "..") {
+						rv.splice(rv.length-1,1);
+					} else {
+						rv.push(tokens[i]);
+					}
+				}
+				return rv.join("/");
+			};
+
+			var mergePaths = function(base,relativePath) {
+				if (base.hasAuthority && base.pathname == "") return "/" + relativePath;
+				var dir = base.pathname.substring(0,base.pathname.lastIndexOf("/")+1);
+				return dir + relativePath;
+			};
+
+			//	See https://tools.ietf.org/html/rfc3986#section-5.3, adapted to this file's property names
+			var resolveUrl = function(base,reference) {
+				var rv = {};
+				if (reference.scheme) {
+					rv.scheme = reference.scheme;
+					rv.hasAuthority = reference.hasAuthority;
+					rv.username = reference.username;
+					rv.password = reference.password;
+					rv.hostname = reference.hostname;
+					rv.port = reference.port;
+					rv.pathname = removeDotSegments(reference.pathname);
+					rv.search = reference.search;
+				} else if (reference.hasAuthority) {
+					rv.scheme = base.scheme;
+					rv.hasAuthority = true;
+					rv.username = reference.username;
+					rv.password = reference.password;
+					rv.hostname = reference.hostname;
+					rv.port = reference.port;
+					rv.pathname = removeDotSegments(reference.pathname);
+					rv.search = reference.search;
+				} else {
+					rv.scheme = base.scheme;
+					rv.hasAuthority = base.hasAuthority;
+					rv.username = base.username;
+					rv.password = base.password;
+					rv.hostname = base.hostname;
+					rv.port = base.port;
+					if (reference.pathname == "") {
+						rv.pathname = base.pathname;
+						rv.search = reference.search || base.search;
+					} else if (reference.pathname.charAt(0) == "/") {
+						rv.pathname = removeDotSegments(reference.pathname);
+						rv.search = reference.search;
+					} else {
+						rv.pathname = removeDotSegments(mergePaths(base,reference.pathname));
+						rv.search = reference.search;
+					}
+				}
+				rv.hash = reference.hash;
+				return rv;
+			};
+
+			var normalizeUrl = function(components) {
+				if (components.hasAuthority && components.pathname == "") {
+					components.pathname = "/";
+				}
+				return components;
+			};
+
+			var serializeUrl = function(components) {
+				var rv = components.scheme + ":";
+				if (components.hasAuthority) {
+					rv += "//";
+					if (components.username) {
+						rv += components.username;
+						if (components.password) rv += ":" + components.password;
+						rv += "@";
+					}
+					rv += components.hostname;
+					if (components.port) rv += ":" + components.port;
+				}
+				rv += components.pathname + components.search + components.hash;
+				return rv;
+			};
+
+			function URL(url,base) {
+				var reference = parseUrl(String(url));
+				var resolved;
+				if (typeof(base) != "undefined") {
+					var baseComponents = parseUrl(String(base));
+					if (!baseComponents.scheme) throw new TypeError("Invalid base URL: " + base);
+					resolved = resolveUrl(normalizeUrl(baseComponents),reference);
+				} else {
+					if (!reference.scheme) throw new TypeError("Invalid URL: " + url);
+					resolved = reference;
+				}
+				this._url = normalizeUrl(resolved);
+			}
+
+			Object.defineProperty(URL.prototype, "href", {
+				get: function() {
+					return serializeUrl(this._url);
+				},
+				set: function(value) {
+					var reference = parseUrl(String(value));
+					if (!reference.scheme) throw new TypeError("Invalid URL: " + value);
+					this._url = normalizeUrl(reference);
+				},
+				configurable: true,
+				enumerable: true
+			});
+
+			Object.defineProperty(URL.prototype, "protocol", {
+				get: function() {
+					return this._url.scheme + ":";
+				},
+				set: function(value) {
+					var string = String(value);
+					var scheme = (string.charAt(string.length-1) == ":") ? string.substring(0,string.length-1) : string;
+					if (/^[a-zA-Z][a-zA-Z0-9+.-]*$/.test(scheme)) this._url.scheme = scheme;
+				},
+				configurable: true,
+				enumerable: true
+			});
+
+			Object.defineProperty(URL.prototype, "username", {
+				get: function() {
+					return this._url.username;
+				},
+				set: function(value) {
+					this._url.username = String(value);
+				},
+				configurable: true,
+				enumerable: true
+			});
+
+			Object.defineProperty(URL.prototype, "password", {
+				get: function() {
+					return this._url.password;
+				},
+				set: function(value) {
+					this._url.password = String(value);
+				},
+				configurable: true,
+				enumerable: true
+			});
+
+			Object.defineProperty(URL.prototype, "host", {
+				get: function() {
+					return this._url.hostname + ((this._url.port) ? ":" + this._url.port : "");
+				},
+				set: function(value) {
+					var string = String(value);
+					var index = string.lastIndexOf(":");
+					if (index == -1) {
+						this._url.hostname = string;
+					} else {
+						this._url.hostname = string.substring(0,index);
+						this._url.port = string.substring(index+1);
+					}
+				},
+				configurable: true,
+				enumerable: true
+			});
+
+			Object.defineProperty(URL.prototype, "hostname", {
+				get: function() {
+					return this._url.hostname;
+				},
+				set: function(value) {
+					this._url.hostname = String(value);
+				},
+				configurable: true,
+				enumerable: true
+			});
+
+			Object.defineProperty(URL.prototype, "port", {
+				get: function() {
+					return this._url.port;
+				},
+				set: function(value) {
+					var string = String(value);
+					if (/^\d*$/.test(string)) this._url.port = string;
+				},
+				configurable: true,
+				enumerable: true
+			});
+
+			Object.defineProperty(URL.prototype, "pathname", {
+				get: function() {
+					return this._url.pathname;
+				},
+				set: function(value) {
+					var string = String(value);
+					this._url.pathname = (this._url.hasAuthority && string.charAt(0) != "/") ? "/" + string : string;
+				},
+				configurable: true,
+				enumerable: true
+			});
+
+			Object.defineProperty(URL.prototype, "search", {
+				get: function() {
+					return this._url.search;
+				},
+				set: function(value) {
+					var string = String(value);
+					this._url.search = (string == "" || string.charAt(0) == "?") ? string : "?" + string;
+				},
+				configurable: true,
+				enumerable: true
+			});
+
+			Object.defineProperty(URL.prototype, "hash", {
+				get: function() {
+					return this._url.hash;
+				},
+				set: function(value) {
+					var string = String(value);
+					this._url.hash = (string == "" || string.charAt(0) == "#") ? string : "#" + string;
+				},
+				configurable: true,
+				enumerable: true
+			});
+
+			Object.defineProperty(URL.prototype, "origin", {
+				get: function() {
+					if (!this._url.hasAuthority) return "null";
+					return this._url.scheme + "://" + this._url.hostname + ((this._url.port) ? ":" + this._url.port : "");
+				},
+				configurable: true,
+				enumerable: true
+			});
+
+			URL.prototype.toString = function() {
+				return this.href;
+			};
+
+			URL.prototype.toJSON = function() {
+				return this.href;
+			};
+
+			global.URL = URL;
+		}
 	}
 //@ts-ignore
 )();
