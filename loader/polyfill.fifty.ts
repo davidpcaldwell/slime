@@ -148,7 +148,7 @@ interface Array<T> {
             fifty.verify(new URL("https://example.com")).pathname.is("/");
             fifty.verify(new URL("https://example.com")).href.is("https://example.com/");
 
-            //  Relative resolution against a base, per https://tools.ietf.org/html/rfc3986#section-5.3
+            //  Relative resolution against a base, per https://tools.ietf.org/html/rfc3986#section-5.2.2
             var base = "https://example.com/a/b/c";
             fifty.verify(new URL("../d", base)).href.is("https://example.com/a/d");
             fifty.verify(new URL("/d", base)).href.is("https://example.com/d");
@@ -162,6 +162,20 @@ interface Array<T> {
             mutable.search = "x=1";
             mutable.hash = "y";
             fifty.verify(mutable).href.is("https://example.com/b?x=1#y");
+
+            //  `host` setter: the hostname portion is always applied; the port portion is applied only when it is
+            //  present and consists entirely of digits, and otherwise the existing port is left unchanged.
+            var hostWithoutPort = new URL("https://example.com:8080/a");
+            hostWithoutPort.host = "other.example.com";
+            fifty.verify(hostWithoutPort).href.is("https://other.example.com:8080/a");
+
+            var hostWithPort = new URL("https://example.com:8080/a");
+            hostWithPort.host = "other.example.com:9090";
+            fifty.verify(hostWithPort).href.is("https://other.example.com:9090/a");
+
+            var hostWithInvalidPort = new URL("https://example.com:8080/a");
+            hostWithInvalidPort.host = "other.example.com:notaport";
+            fifty.verify(hostWithInvalidPort).href.is("https://other.example.com:8080/a");
 
             //  A URL with neither an explicit scheme nor a base is invalid
             fifty.verify(0).evaluate(function() {

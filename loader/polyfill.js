@@ -238,7 +238,7 @@
 				return dir + relativePath;
 			};
 
-			//	See https://tools.ietf.org/html/rfc3986#section-5.3, adapted to this file's property names
+			//	See https://tools.ietf.org/html/rfc3986#section-5.2.2, adapted to this file's property names
 			var resolveUrl = function(base,reference) {
 				var rv = {};
 				if (reference.scheme) {
@@ -371,13 +371,17 @@
 					return this._url.hostname + ((this._url.port) ? ":" + this._url.port : "");
 				},
 				set: function(value) {
+					//	Matches observed native behavior: the hostname portion is always applied; the port portion (if any)
+					//	is applied only if it consists entirely of digits, and is otherwise left unchanged (an absent or
+					//	empty port portion, e.g. "host" or "host:", also leaves the existing port unchanged).
 					var string = String(value);
 					var index = string.lastIndexOf(":");
 					if (index == -1) {
 						this._url.hostname = string;
 					} else {
 						this._url.hostname = string.substring(0,index);
-						this._url.port = string.substring(index+1);
+						var port = string.substring(index+1);
+						if (/^\d+$/.test(port)) this._url.port = port;
 					}
 				},
 				configurable: true,
