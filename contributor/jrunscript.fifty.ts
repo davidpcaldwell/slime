@@ -85,10 +85,16 @@
 			//	TODO	For reasons that are baffling, merely loading this file (even though all its tests are conditionally
 			//			disabled) seems to cause issue #896
 			if (false) fifty.load("../tools/wf/plugin.jsh.fifty.ts");
+
 			if (hasGit && isGitClone) fifty.load("../tools/wf/plugin-standard.jsh.fifty.ts");
 			if (hasGit && isGitClone) fifty.load("../wf.fifty.ts");
+
 			//	TODO	below test is probably pointless, probably doesn't run anything. Should we find a way to short-circuit it?
 			if (!jsh.shell.environment.SLIME_TEST_NO_BROWSER) fifty.load("../loader/browser/test/suite.jsh.fifty.ts");
+
+			fifty.load("jrunscript-jsapi.fifty.ts");
+
+			if (jsh.shell.environment.SLIME_TEST_JRUNSCRIPT_FAIL) fifty.verify(1).is(2);
 		}
 	}
 //@ts-ignore
