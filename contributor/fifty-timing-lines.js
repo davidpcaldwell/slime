@@ -5,10 +5,14 @@
 //
 //	END LICENSE
 
+//@ts-check
 "use strict";
 
-const fs = require("fs");
-const path = require("path");
+const globalObj = /** @type {any} */ (Function("return this")());
+const nodeRequire = /** @type {(id: string) => any} */ (globalObj.require);
+const process = /** @type {{ argv: string[]; stdout: { write: (text: string) => void }; exit: (code: number) => never }} */ (globalObj.process);
+const fs = nodeRequire("fs");
+const path = nodeRequire("path");
 
 /**
  * @typedef {{
@@ -38,7 +42,7 @@ function parseArgs(argv) {
 		if (arg === "--threshold-seconds") {
 			if (i + 1 >= argv.length) throw new Error("Missing value for --threshold-seconds");
 			const value = Number(argv[++i]);
-			if (!Number.isFinite(value) || value < 0) {
+			if (!isFinite(value) || value < 0) {
 				throw new Error("--threshold-seconds must be a non-negative number");
 			}
 			thresholdSeconds = value;
@@ -65,9 +69,10 @@ function parseArgs(argv) {
 	};
 }
 
+/** @returns {TreeNode} */
 function makeNode(name, runningLine) {
 	return {
-		type: "node",
+		type: /** @type {"node"} */ ("node"),
 		name,
 		runningLine,
 		completionLine: null,
