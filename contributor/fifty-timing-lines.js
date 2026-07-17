@@ -25,11 +25,12 @@ const path = require("path");
  */
 
 function usage() {
-	console.error("Usage: fifty-timing-lines [--threshold-seconds <number>] <fifty-output-file> <timing-output-file>");
+	console.error("Usage: fifty-timing-lines [--threshold-seconds <number>] [--stdout] <fifty-output-file> [timing-output-file]");
 }
 
 function parseArgs(argv) {
 	let thresholdSeconds = 0;
+	let writeStdout = false;
 	const positional = [];
 
 	for (let i = 0; i < argv.length; i++) {
@@ -41,19 +42,26 @@ function parseArgs(argv) {
 				throw new Error("--threshold-seconds must be a non-negative number");
 			}
 			thresholdSeconds = value;
+		} else if (arg === "--stdout") {
+			writeStdout = true;
 		} else {
 			positional.push(arg);
 		}
 	}
 
-	if (positional.length !== 2) {
-		throw new Error("Expected exactly 2 positional arguments");
+	if (writeStdout) {
+		if (positional.length !== 1 && positional.length !== 2) {
+			throw new Error("When using --stdout, expected 1 or 2 positional arguments");
+		}
+	} else if (positional.length !== 2) {
+		throw new Error("Expected exactly 2 positional arguments unless using --stdout");
 	}
 
 	return {
 		thresholdMs: thresholdSeconds * 1000,
 		inputFile: positional[0],
-		outputFile: positional[1]
+		outputFile: positional[1] || null,
+		writeStdout
 	};
 }
 
@@ -180,9 +188,16 @@ function main() {
 	const outputLines = [];
 	emit(root, outputLines);
 
-	fs.mkdirSync(path.dirname(parsed.outputFile), { recursive: true });
 	const output = outputLines.length ? `${outputLines.join("\n")}\n` : "";
-	fs.writeFileSync(parsed.outputFile, output, "utf8");
+
+	if (parsed.writeStdout) {
+		process.stdout.write(output);
+	}
+
+	if (parsed.outputFile) {
+		fs.mkdirSync(path.dirname(parsed.outputFile), { recursive: true });
+		fs.writeFileSync(parsed.outputFile, output, "utf8");
+	}
 }
 
 main();
