@@ -22,5 +22,5 @@ namespace ${1:__NAMESPACE__} {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.runtime.loader.Store<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }
