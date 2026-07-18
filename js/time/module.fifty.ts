@@ -704,6 +704,15 @@ namespace slime.time {
 
 					verify(codec.encode(fractional)).is("07:08:09.123456789");
 
+					var tinyFraction = codec.decode("00:00:00.000000001");
+					verify(tinyFraction).hour.is(0);
+					verify(tinyFraction).minute.is(0);
+					verify(tinyFraction).second.is(0.000000001);
+					verify(codec.encode(tinyFraction)).is("00:00:00.000000001");
+
+					var trailingZeros = codec.decode("07:08:09.1200");
+					verify(codec.encode(trailingZeros)).is("07:08:09.1200");
+
 					var missingSecondsRejected = false;
 					try {
 						codec.decode("07:08");
