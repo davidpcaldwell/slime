@@ -464,7 +464,16 @@
 				return this.href;
 			};
 
-			global.URL = URL;
+			if (Object.defineProperty) {
+				Object.defineProperty(global, "URL", {
+					value: URL,
+					writable: true,
+					configurable: true,
+					enumerable: false
+				});
+			} else {
+				global.URL = URL;
+			}
 		}
 	}
 //@ts-ignore
