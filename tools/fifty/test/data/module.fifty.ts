@@ -62,21 +62,6 @@ namespace slime.fifty.internal.test.data {
 
 		var run = (jsh) ? $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping()) : void(0);
 
-		var suite = function(part) {
-			return run({
-				command: fifty.jsh.file.relative("../../../../jsh").pathname,
-				arguments: [
-					"contributor/jrunscript.jsh.js",
-					"-part", part
-				],
-				directory: fifty.jsh.file.relative("../../../..").pathname,
-				stdio: {
-					output: "string",
-					error: "string"
-				}
-			});
-		};
-
 		var test = function(environment,file) {
 			return run({
 				command: fifty.jsh.file.relative("../../../../fifty").pathname,
