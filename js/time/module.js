@@ -780,6 +780,97 @@
 				});
 			}
 		}
+		Time.codec.rfc3339 = function() {
+			var decodeFractionProperty = "__slimeTimeRFC3339Fraction";
+			var decodeWholeSecondProperty = "__slimeTimeRFC3339WholeSecond";
+
+			var expandExponential = function(string) {
+				var parsed = /^(-?)(\d+)(?:\.(\d+))?e([+-]\d+)$/i.exec(string);
+				if (!parsed) return string;
+				var sign = parsed[1];
+				var integer = parsed[2];
+				var fraction = parsed[3] || "";
+				var exponent = Number(parsed[4]);
+				var digits = integer + fraction;
+				var decimalIndex = integer.length + exponent;
+
+				if (decimalIndex <= 0) {
+					return sign + "0." + Array(-decimalIndex + 1).join("0") + digits;
+				}
+				if (decimalIndex >= digits.length) {
+					return sign + digits + Array(decimalIndex - digits.length + 1).join("0");
+				}
+				return sign + digits.substring(0, decimalIndex) + "." + digits.substring(decimalIndex);
+			};
+
+			var encodeSecond = function(time, second) {
+				var wholeSecond = Math.floor(second);
+				var preservedFraction = time && time[decodeFractionProperty];
+				var preservedWholeSecond = time && time[decodeWholeSecondProperty];
+
+				if (
+					typeof(preservedFraction) == "string"
+					&& /^\d+$/.test(preservedFraction)
+					&& isInteger(preservedWholeSecond)
+					&& preservedWholeSecond == wholeSecond
+				) {
+					var preservedNumeric = wholeSecond + Number("0." + preservedFraction);
+					if (Math.abs(preservedNumeric - second) < 1e-12) {
+						return rfc3339Pad(wholeSecond, 2) + "." + preservedFraction;
+					}
+				}
+
+				var secondString = String(second);
+				if (/e/i.test(secondString)) secondString = expandExponential(secondString);
+				if (secondString.indexOf(".") == -1) return rfc3339Pad(secondString, 2);
+
+				var split = secondString.split(".");
+				var integerPart = split[0];
+				var fractionPart = split[1].replace(/0+$/, "");
+				if (!fractionPart.length) return rfc3339Pad(integerPart, 2);
+				return rfc3339Pad(integerPart, 2) + "." + fractionPart;
+			};
+
+			return {
+				encode: function(time) {
+					var hour = time && time.hour;
+					var minute = time && time.minute;
+					var second = time && time.second;
+					if (!isInteger(hour) || hour < 0 || hour > 23) throw rfc3339Error(String(time));
+					if (!isInteger(minute) || minute < 0 || minute > 59) throw rfc3339Error(String(time));
+					if (typeof(second) != "number" || !isFinite(second) || second < 0 || second >= 60) throw rfc3339Error(String(time));
+					return rfc3339Pad(hour,2) + ":" + rfc3339Pad(minute,2) + ":" + encodeSecond(time, second);
+				},
+				decode: function(string) {
+					var parsed = /^(\d{2})\:(\d{2})\:(\d{2})(?:\.(\d+))?$/.exec(string);
+					if (!parsed) throw rfc3339Error(string);
+					var hour = Number(parsed[1]);
+					var minute = Number(parsed[2]);
+					var second = Number(parsed[3]) + ((parsed[4]) ? Number("0." + parsed[4]) : 0);
+					if (!isInteger(hour) || hour < 0 || hour > 23) throw rfc3339Error(string);
+					if (!isInteger(minute) || minute < 0 || minute > 59) throw rfc3339Error(string);
+					if (typeof(second) != "number" || !isFinite(second) || second < 0 || second >= 60) throw rfc3339Error(string);
+					var decoded = {
+						hour: hour,
+						minute: minute,
+						second: second
+					};
+					if (parsed[4]) {
+						Object.defineProperty(decoded, decodeWholeSecondProperty, {
+							value: Number(parsed[3]),
+							enumerable: false,
+							configurable: true
+						});
+						Object.defineProperty(decoded, decodeFractionProperty, {
+							value: parsed[4],
+							enumerable: false,
+							configurable: true
+						});
+					}
+					return decoded;
+				}
+			}
+		}
 
 		function When() {
 			var date;
