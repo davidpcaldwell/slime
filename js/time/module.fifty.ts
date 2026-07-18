@@ -152,11 +152,16 @@ namespace slime.time {
 		Date: date.Exports
 	}
 
+	export interface Exports {
+		Time: time.Exports
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.exports.Date = fifty.test.Parent();
+			fifty.tests.exports.Time = fifty.test.Parent();
 		}
 	//@ts-ignore
 	)(fifty);
@@ -666,6 +671,58 @@ namespace slime.time {
 		export interface Exports {
 			month: (date: slime.time.Date) => slime.time.Month
 		}
+	}
+
+	export namespace time {
+		export interface Exports {
+			codec: {
+				rfc3339: () => slime.Codec<slime.time.Time, string>
+			}
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.exports.Time.codec = fifty.test.Parent();
+				fifty.tests.exports.Time.codec.rfc3339 = function() {
+					var codec = test.subject.Time.codec.rfc3339();
+
+					verify(codec.encode({ hour: 7, minute: 8, second: 9 })).is("07:08:09");
+
+					var decoded = codec.decode("07:08:09");
+					verify(decoded).hour.is(7);
+					verify(decoded).minute.is(8);
+					verify(decoded).second.is(9);
+
+					var fractional = codec.decode("07:08:09.123456789");
+					verify(fractional).hour.is(7);
+					verify(fractional).minute.is(8);
+					verify(fractional).second.is(9.123456789);
+
+					verify(codec.encode(fractional)).is("07:08:09.123456789");
+
+					var missingSecondsRejected = false;
+					try {
+						codec.decode("07:08");
+					} catch (e) {
+						missingSecondsRejected = true;
+					}
+					verify(missingSecondsRejected).is(true);
+
+					var invalidSecondRejected = false;
+					try {
+						codec.decode("07:08:60");
+					} catch (e) {
+						invalidSecondRejected = true;
+					}
+					verify(invalidSecondRejected).is(true);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
 	export interface Exports {

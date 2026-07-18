@@ -780,6 +780,39 @@
 				});
 			}
 		}
+		Time.codec.rfc3339 = function() {
+			return {
+				encode: function(time) {
+					var hour = time && time.hour;
+					var minute = time && time.minute;
+					var second = time && time.second;
+					if (!isInteger(hour) || hour < 0 || hour > 23) throw rfc3339Error(String(time));
+					if (!isInteger(minute) || minute < 0 || minute > 59) throw rfc3339Error(String(time));
+					if (typeof(second) != "number" || !isFinite(second) || second < 0 || second >= 60) throw rfc3339Error(String(time));
+					var secondString = String(second);
+					if (secondString.indexOf(".") == -1) {
+						return rfc3339Pad(hour,2) + ":" + rfc3339Pad(minute,2) + ":" + rfc3339Pad(second,2);
+					}
+					var split = secondString.split(".");
+					return rfc3339Pad(hour,2) + ":" + rfc3339Pad(minute,2) + ":" + rfc3339Pad(split[0],2) + "." + split[1];
+				},
+				decode: function(string) {
+					var parsed = /^(\d{2})\:(\d{2})\:(\d{2})(?:\.(\d+))?$/.exec(string);
+					if (!parsed) throw rfc3339Error(string);
+					var hour = Number(parsed[1]);
+					var minute = Number(parsed[2]);
+					var second = Number(parsed[3]) + ((parsed[4]) ? Number("0." + parsed[4]) : 0);
+					if (!isInteger(hour) || hour < 0 || hour > 23) throw rfc3339Error(string);
+					if (!isInteger(minute) || minute < 0 || minute > 59) throw rfc3339Error(string);
+					if (typeof(second) != "number" || !isFinite(second) || second < 0 || second >= 60) throw rfc3339Error(string);
+					return {
+						hour: hour,
+						minute: minute,
+						second: second
+					};
+				}
+			}
+		}
 
 		function When() {
 			var date;
