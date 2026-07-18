@@ -10,6 +10,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 NODE="${SCRIPT_DIR}/../local/jsh/lib/node"
 
+if [[ ! -e "$NODE" ]]; then
+	"${SCRIPT_DIR}/../wf" initialize --test-skip-git-identity-requirement
+fi
+
 if [[ -d "$NODE" ]]; then
 	NODE="${NODE}/bin/node"
 fi

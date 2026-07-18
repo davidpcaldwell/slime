@@ -9,7 +9,9 @@
 "use strict";
 
 const globalObj = /** @type {any} */ (Function("return this")());
-const nodeRequire = /** @type {(id: string) => any} */ (globalObj.require);
+// @ts-ignore Node.js provides require in this runtime, but ambient types are not loaded in this tsconfig.
+const nodeRequire = /** @type {(id: string) => any} */ (require);
+// @ts-ignore Node.js provides process in this runtime, but ambient types are not loaded in this tsconfig.
 const process = /** @type {{ argv: string[]; stdout: { write: (text: string) => void }; exit: (code: number) => never }} */ (globalObj.process);
 const fs = nodeRequire("fs");
 const path = nodeRequire("path");
