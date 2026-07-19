@@ -5,7 +5,7 @@
 //	END LICENSE
 
 (
-	function() {
+	function(parameters) {
 		// TODO: rename to api.suite.js to tie more explicitly to api.html?
 
 		if (parameters.form) {
@@ -34,4 +34,4 @@
 		add("loader/browser/test/", getSlimePart("loader/api/old/browser/api.html"));
 		add("$jsapi.loader.fifty", getSlimePart("loader/api/old/fifty/api.html"));
 	}
-)();
+)(parameters);

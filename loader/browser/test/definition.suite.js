@@ -5,7 +5,7 @@
 //	END LICENSE
 
 (
-	function() {
+	function(parameters) {
 		var form = $api.Object({ properties: parameters.form.controls });
 		var part = getPartDescriptor({
 			definition: form.definition,
@@ -22,4 +22,4 @@
 			setPath(["definition"].concat(path));
 		}
 	}
-)();
+)(parameters);
