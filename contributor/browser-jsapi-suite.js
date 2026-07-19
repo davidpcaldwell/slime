@@ -5,13 +5,15 @@
 //	END LICENSE
 
 (
-	function() {
+	function(parameters) {
 		// TODO: rename to api.suite.js to tie more explicitly to api.html?
 
 		if (parameters.form) {
 			for (var i=0; i<parameters.form.controls.length; i++) {
 				if (parameters.form.controls[i].name == "migrate") {
-					working = false;
+					if (typeof window != "undefined" && typeof window.working != "undefined") {
+						window.working = false;
+					}
 				}
 			}
 		}
@@ -34,4 +36,4 @@
 		add("loader/browser/test/", getSlimePart("loader/api/old/browser/api.html"));
 		add("$jsapi.loader.fifty", getSlimePart("loader/api/old/fifty/api.html"));
 	}
-)();
+)(parameters);
