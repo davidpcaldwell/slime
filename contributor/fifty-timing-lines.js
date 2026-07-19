@@ -12,7 +12,7 @@ const globalObj = /** @type {any} */ (Function("return this")());
 // @ts-ignore Node.js provides require in this runtime, but ambient types are not loaded in this tsconfig.
 const nodeRequire = /** @type {(id: string) => any} */ (require);
 // @ts-ignore Node.js provides process in this runtime, but ambient types are not loaded in this tsconfig.
-const process = /** @type {{ argv: string[]; stdout: { write: (text: string) => void }; exit: (code: number) => never }} */ (globalObj.process);
+const process = /** @type {{ argv: string[]; stdout: { write: (text: string) => void }; stderr: { write: (text: string) => void }; exit: (code: number) => never }} */ (globalObj.process);
 const fs = nodeRequire("fs");
 const path = nodeRequire("path");
 
@@ -88,7 +88,6 @@ function parseLastLineDurationMs(lines) {
 		if (!line) continue;
 		const match = line.match(/\(([0-9]+) ms\)$/);
 		if (match) return Number(match[1]);
-		break;
 	}
 	return null;
 }
@@ -228,6 +227,9 @@ function main() {
 	const text = fs.readFileSync(parsed.inputFile, "utf8");
 	const lines = text.split(/\r?\n/).filter((line) => line.length > 0);
 	const totalMs = parseLastLineDurationMs(lines);
+	if (parsed.thresholdPercentage !== null && totalMs === null) {
+		process.stderr.write("Warning: --threshold-percentage was provided but total duration could not be parsed from input; ignoring percentage threshold.\n");
+	}
 	const thresholdMs = computeThresholdMs(parsed, totalMs);
 	const root = buildTree(lines);
 	markIncluded(root, thresholdMs);
