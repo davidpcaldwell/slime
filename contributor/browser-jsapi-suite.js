@@ -11,7 +11,9 @@
 		if (parameters.form) {
 			for (var i=0; i<parameters.form.controls.length; i++) {
 				if (parameters.form.controls[i].name == "migrate") {
-					working = false;
+					if (typeof window != "undefined" && typeof window.working != "undefined") {
+						window.working = false;
+					}
 				}
 			}
 		}
