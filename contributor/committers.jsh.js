@@ -12,9 +12,6 @@
 	 */
 	function($api,jsh) {
 		var repositoryDirectory = jsh.script.file.parent.parent;
-		if (!(jsh.tools.git.program && jsh.tools.git.commands && jsh.tools.git.commands.log)) {
-			throw new Error("Required git command API is not available.");
-		}
 		var log = jsh.tools.git.program({ command: "git" })
 			.repository(repositoryDirectory.toString())
 			.command(jsh.tools.git.commands.log)

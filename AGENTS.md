@@ -12,17 +12,17 @@ information into your approach.
 # Personal instructions
 
 When running inside a devcontainer, load personal instructions for operating this repository from
-`/config/.agents` before taking substantive action.
+`~/.agents` before taking substantive action.
 
 The initial source of personal instructions is
-`/config/.agents/README.md`.
+`~/.agents/README.md`.
 
 ## Preflight protocol for agents
 
 Before making code edits, running tests, replying to PR comments, or resolving review threads, do all of the following:
 
 * Read [AGENTS.md](AGENTS.md)
-* Read `/config/.agents/README.md` if it exists
+* Read `~/.agents/README.md` if it exists
 * Read any personal instruction files referenced by that README
 * Confirm in the next user-facing message what personal instruction sources were loaded, or that none were found
 
