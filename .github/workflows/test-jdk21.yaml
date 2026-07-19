@@ -34,15 +34,15 @@ jobs:
           mkdir -p local
           set -o pipefail
           contributor/suite-docker-jrunscript 21 2>&1 | tee local/jrunscript.txt
-      - name: Show timing summary in logs (60s+)
+      - name: Show timing summary in logs (60s or 2%+)
         if: success()
         run: |
-          echo "::group::Fifty timing summary (>=60s)"
-          contributor/fifty-timing-lines.bash --threshold-seconds 60 --stdout local/jrunscript.txt | tee local/jrunscript-timing-60s.txt
+          echo "::group::Fifty timing summary (>=60s or >=2% of total)"
+          contributor/fifty-timing-lines.bash --threshold-seconds 60 --threshold-percentage 2 --stdout local/jrunscript.txt | tee local/jrunscript-timing-60s-or-2pct.txt
           echo "::endgroup::"
-      - name: Upload timing artifact (60s+)
+      - name: Upload timing artifact (60s or 2%+)
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: jdk21-fifty-timing-60s
-          path: local/jrunscript-timing-60s.txt
+          name: jdk21-fifty-timing-60s-or-2pct
+          path: local/jrunscript-timing-60s-or-2pct.txt
