@@ -105,37 +105,36 @@ namespace slime.jsh.script {
 				string: string
 			};
 
-			var getShellDataJson: (intention: slime.jrunscript.shell.run.Intention) => { "jsh.script.file": FileJson, "jsh.script.script": FileJson, "jsh.script.url": UrlJson } = $api.fp.pipe(
-				$api.fp.world.Sensor.old.mapping({
-					sensor: jsh.shell.subprocess.question
-				}),
-				$api.fp.impure.tap(function(exit) {
-					if (exit.status) {
-						jsh.shell.console("Exit status: " + exit.status);
-						jsh.shell.console("Standard error:");
-						jsh.shell.console(exit.stdio.error);
-						throw new Error("Exit status: " + exit.status);
-					}
-				}),
-				$api.fp.property("stdio"),
-				$api.fp.property("output"),
-				JSON.parse
-			);
+			type ShellDataJson = {
+				"jsh.script.file": FileJson,
+				"jsh.script.script": FileJson,
+				"jsh.script.url": UrlJson
+			};
 
-			var getJshScriptFile: (intention: slime.jrunscript.shell.run.Intention) => FileJson = $api.fp.pipe(
-				getShellDataJson,
-				$api.fp.property("jsh.script.file")
-			);
+			var getShellDataJson: (intention: slime.jrunscript.shell.run.Intention) => ShellDataJson =
+				$api.fp.pipe(
+					$api.fp.world.Sensor.old.mapping({
+						sensor: jsh.shell.subprocess.question
+					}),
+					$api.fp.impure.tap(function(exit) {
+						if (exit.status) {
+							jsh.shell.console("Exit status: " + exit.status);
+							jsh.shell.console("Standard error:");
+							jsh.shell.console(exit.stdio.error);
+							throw new Error("Exit status: " + exit.status);
+						}
+					}),
+					$api.fp.property("stdio"),
+					$api.fp.property("output"),
+					JSON.parse
+				)
+			;
 
-			var getJshScriptScript: (intention: slime.jrunscript.shell.run.Intention) => FileJson = $api.fp.pipe(
-				getShellDataJson,
-				$api.fp.property("jsh.script.script")
-			);
+			var getJshScriptFile: (data: ShellDataJson) => FileJson = $api.fp.property("jsh.script.file")
 
-			var getJshScriptUrl: (intention: slime.jrunscript.shell.run.Intention) => UrlJson = $api.fp.pipe(
-				getShellDataJson,
-				$api.fp.property("jsh.script.url")
-			);
+			var getJshScriptScript: (data: ShellDataJson) => FileJson = $api.fp.property("jsh.script.script")
+
+			var getJshScriptUrl: (data: ShellDataJson) => UrlJson = $api.fp.property("jsh.script.url");
 
 			fifty.tests.exports.oo = fifty.test.Parent();
 
@@ -151,18 +150,20 @@ namespace slime.jsh.script {
 					}
 				});
 
+				var data = getShellDataJson(run);
+
 				var fileProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptFile
 				);
 
 				var scriptProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptScript
 				);
 
 				var urlProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptUrl
 				);
 
@@ -185,15 +186,17 @@ namespace slime.jsh.script {
 					verify(false).is(true);
 				}
 
+				var data = getShellDataJson(online);
+
 				var fileProperty = $api.fp.now(
-					online,
+					data,
 					getJshScriptFile
 				);
 
-				var scriptProperty = $api.fp.now(online, getJshScriptScript);
+				var scriptProperty = $api.fp.now(data, getJshScriptScript);
 
 				var urlProperty = $api.fp.now(
-					online,
+					data,
 					getJshScriptUrl
 				);
 
@@ -211,18 +214,20 @@ namespace slime.jsh.script {
 					}
 				});
 
+				var data = getShellDataJson(run);
+
 				var fileProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptFile
 				);
 
 				var scriptProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptScript
 				);
 
 				var urlProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptUrl
 				);
 
@@ -242,18 +247,20 @@ namespace slime.jsh.script {
 					}
 				});
 
+				var data = getShellDataJson(run);
+
 				var fileProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptFile
 				);
 
 				var scriptProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptScript
 				);
 
 				var urlProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptUrl
 				);
 
@@ -281,18 +288,20 @@ namespace slime.jsh.script {
 					script: scriptUrl
 				});
 
+				var data = getShellDataJson(run);
+
 				var fileProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptFile
 				);
 
 				var scriptProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptScript
 				);
 
 				var urlProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptUrl
 				);
 
@@ -311,18 +320,20 @@ namespace slime.jsh.script {
 					script: script.pathname
 				});
 
+				var data = getShellDataJson(run);
+
 				var fileProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptFile
 				);
 
 				var scriptProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptScript
 				);
 
 				var urlProperty = $api.fp.now(
-					run,
+					data,
 					getJshScriptUrl
 				);
 
