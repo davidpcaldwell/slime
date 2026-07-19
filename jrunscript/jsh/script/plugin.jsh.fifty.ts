@@ -184,6 +184,7 @@ namespace slime.jsh.script {
 					});
 				} catch (e) {
 					verify(false).is(true);
+					return;
 				}
 
 				var data = getShellDataJson(online);
