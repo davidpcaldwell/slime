@@ -718,7 +718,10 @@ namespace slime.jrunscript.tools.git {
 		credentialHelper: CredentialHelpers
 		installation: slime.jrunscript.tools.git.Installation
 
-		//	Methods essentially copied from the default Installation
+		//	Methods essentially copied from the default Installation.
+		//	Supported for compatibility; for new workflow code, prefer
+		//	`program(...).command(...).argument(...).run()` with
+		//	`jsh.tools.git.commands.*`.
 		oo: {
 			daemon: slime.jrunscript.tools.git.Installation["daemon"]
 			Repository: slime.jrunscript.tools.git.Installation["Repository"]

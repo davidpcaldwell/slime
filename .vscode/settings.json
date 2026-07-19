@@ -48,6 +48,11 @@
             "query": "author:${user} state:open repo:${owner}/${repository} sort:created-desc"
         }
     ],
+	"chat.agentFilesLocations": {
+		".github/agents": false,
+		".claude/agents": false,
+		"contributor/agents": true
+	},
 	"java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx4G -Xms100m",
 	"java.project.referencedLibraries": [
 		// implementation 'javax.servlet:javax.servlet-api:3.0.1'

@@ -98,6 +98,10 @@ namespace slime.jrunscript.tools.git {
 
 	/**
 	 * A local installation of the `git` tool.
+	 *
+	 * The `oo` surface remains supported. For new workflow code, prefer
+	 * `jsh.tools.git.program(...)` with `jsh.tools.git.commands.*`, which reuses
+	 * shared command definitions and aligns with newer project patterns.
 	 */
 	export interface Installation {
 		daemon: (p: {
@@ -336,6 +340,12 @@ namespace slime.jrunscript.tools.git {
 		}
 
 		export interface Local {
+			/**
+			 * Returns parsed commit entries from `git log`.
+			 *
+			 * For new code, prefer `jsh.tools.git.commands.log` executed via
+			 * `jsh.tools.git.program(...)`.
+			 */
 			log: (p?: {
 				author?: string
 				all?: boolean

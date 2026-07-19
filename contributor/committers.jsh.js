@@ -11,8 +11,16 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		var repository = jsh.tools.git.oo.Repository({ directory: jsh.script.file.parent.parent });
-		var log = repository.log();
+		var repositoryDirectory = jsh.script.file.parent.parent;
+		if (!(jsh.tools.git.program && jsh.tools.git.commands && jsh.tools.git.commands.log)) {
+			throw new Error("Required git command API is not available.");
+		}
+		var log = jsh.tools.git.program({ command: "git" })
+			.repository(repositoryDirectory.toString())
+			.command(jsh.tools.git.commands.log)
+			.argument({ revisionRange: "HEAD" })
+			.run()
+		;
 		var byCommitter = $api.fp.Array.groupBy({
 			/**
 			 *
