@@ -75,6 +75,7 @@
 				return !n.directory
 					&& n.pathname.basename != "package.json"
 					&& n.pathname.basename != "package-lock.json"
+					&& n.pathname.basename != ".env"
 					&& n.pathname.basename != ".gitignore"
 					&& n.pathname.basename != ".project"
 					&& n.pathname.basename != ".classpath"
@@ -152,7 +153,6 @@
 			var file = files[i];
 			var extension = getExtension(file);
 			if (files[i].path == "jsh") extension = "bash";
-			if (files[i].path == ".env") extension = "bash";
 			if (files[i].path == ".eslintrc.json") extension = "js";
 			if (files[i].path == "jsconfig.json") extension = "js";
 			if (files[i].path == "jsconfig-fifty-browser-test.json") extension = "js";
