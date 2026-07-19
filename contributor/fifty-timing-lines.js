@@ -31,11 +31,14 @@ const path = nodeRequire("path");
  */
 
 function usage() {
-	console.error("Usage: fifty-timing-lines [--threshold-seconds <number>] [--stdout] <fifty-output-file> [timing-output-file]");
+	console.error("Usage: fifty-timing-lines [--threshold-seconds <number>] [--threshold-percentage <number>] [--stdout] <fifty-output-file> [timing-output-file]");
 }
 
 function parseArgs(argv) {
-	let thresholdSeconds = 0;
+	/** @type {number | null} */
+	let thresholdSeconds = null;
+	/** @type {number | null} */
+	let thresholdPercentage = null;
 	let writeStdout = false;
 	const positional = [];
 
@@ -48,6 +51,13 @@ function parseArgs(argv) {
 				throw new Error("--threshold-seconds must be a non-negative number");
 			}
 			thresholdSeconds = value;
+		} else if (arg === "--threshold-percentage") {
+			if (i + 1 >= argv.length) throw new Error("Missing value for --threshold-percentage");
+			const value = Number(argv[++i]);
+			if (!isFinite(value) || value < 0) {
+				throw new Error("--threshold-percentage must be a non-negative number");
+			}
+			thresholdPercentage = value;
 		} else if (arg === "--stdout") {
 			writeStdout = true;
 		} else {
@@ -64,11 +74,39 @@ function parseArgs(argv) {
 	}
 
 	return {
-		thresholdMs: thresholdSeconds * 1000,
+		thresholdSeconds,
+		thresholdPercentage,
 		inputFile: positional[0],
 		outputFile: positional[1] || null,
 		writeStdout
 	};
+}
+
+function parseLastLineDurationMs(lines) {
+	for (let i = lines.length - 1; i >= 0; i--) {
+		const line = lines[i].trim();
+		if (!line) continue;
+		const match = line.match(/\(([0-9]+) ms\)$/);
+		if (match) return Number(match[1]);
+		break;
+	}
+	return null;
+}
+
+function computeThresholdMs(parsed, totalMs) {
+	/** @type {number[]} */
+	const thresholds = [];
+
+	if (parsed.thresholdSeconds !== null) {
+		thresholds.push(parsed.thresholdSeconds * 1000);
+	}
+
+	if (parsed.thresholdPercentage !== null && totalMs !== null) {
+		thresholds.push((parsed.thresholdPercentage / 100) * totalMs);
+	}
+
+	if (thresholds.length === 0) return 0;
+	return Math.min(...thresholds);
 }
 
 /** @returns {TreeNode} */
@@ -189,8 +227,10 @@ function main() {
 
 	const text = fs.readFileSync(parsed.inputFile, "utf8");
 	const lines = text.split(/\r?\n/).filter((line) => line.length > 0);
+	const totalMs = parseLastLineDurationMs(lines);
+	const thresholdMs = computeThresholdMs(parsed, totalMs);
 	const root = buildTree(lines);
-	markIncluded(root, parsed.thresholdMs);
+	markIncluded(root, thresholdMs);
 
 	const outputLines = [];
 	emit(root, outputLines);
