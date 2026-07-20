@@ -21,6 +21,10 @@
 				"remote.autoForwardPorts": true,
 				"remote.autoForwardPortsSource": "process",
 				"remote.restoreForwardedPorts": false,
+				"chat.agentFilesLocations": {
+					"~/.copilot/agents": false,
+					"~/.agents": true
+				},
 				"java.jdt.ls.java.home": "/slime/local/jdk/21",
 				"java.configuration.runtimes": [
 					{
