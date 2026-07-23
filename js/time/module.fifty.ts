@@ -323,6 +323,61 @@ namespace slime.time {
 		)(fifty);
 
 		export interface Exports {
+			/**
+			 * Returns a function that, given a {@link Date}, returns the number of days by which it differs from `reference`.
+			 *
+			 * Positive values indicate `day` is later than `reference`; negative values indicate it is earlier.
+			 */
+			delta: (reference: slime.time.Date) => (day: slime.time.Date) => number
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+
+				fifty.tests.exports.Date.delta = function() {
+					var reference: slime.time.Date = {
+						year: 2020,
+						month: 3,
+						day: 1
+					};
+
+					var delta = test.subject.Date.delta(reference);
+
+					verify(delta(reference)).is(0);
+
+					var later = delta({
+						year: 2020,
+						month: 3,
+						day: 2
+					});
+					verify(later).is(1);
+
+					var earlier = delta({
+						year: 2020,
+						month: 2,
+						day: 29
+					});
+					verify(earlier).is(-1);
+
+					var acrossYear = delta({
+						year: 2021,
+						month: 3,
+						day: 1
+					});
+					verify(acrossYear).is(365);
+
+					verify(reference).year.is(2020);
+					verify(reference).month.is(3);
+					verify(reference).day.is(1);
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export interface Exports {
 			after: (day: slime.time.Date) => (offset: number) => slime.time.Date
 
 			months: {

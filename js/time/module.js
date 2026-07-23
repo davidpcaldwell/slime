@@ -442,6 +442,17 @@
 		}
 
 		/**
+		 * @param { slime.time.Date } reference
+		 * @param { slime.time.Date } day
+		 * @returns { number }
+		 */
+		var Date_delta = function(reference, day) {
+			var referenceUtc = Date.UTC(reference.year, reference.month - 1, reference.day);
+			var dayUtc = Date.UTC(day.year, day.month - 1, day.day);
+			return Math.round((dayUtc - referenceUtc) / (24 * 60 * 60 * 1000));
+		};
+
+		/**
 		 * @constructor
 		 * @param { any } p
 		 */
@@ -592,6 +603,7 @@
 				var args = arguments[0];
 				if (typeof(args.hours) != "undefined") {
 					hours = between("hours",0,23);
+
 					minutes = between("minutes",0,59);
 					seconds = (args.seconds) ? Number(args.seconds) : 0;
 					if (seconds < 0 || seconds >= 60) {
@@ -1215,6 +1227,11 @@
 				offset: function(offset) {
 					return function(day) {
 						return Date_add(day, offset);
+					}
+				},
+				delta: function(reference) {
+					return function(day) {
+						return Date_delta(reference, day);
 					}
 				},
 				after: function(day) {
