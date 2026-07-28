@@ -134,7 +134,7 @@
 					//	master
 					repository.push({
 						repository: "origin",
-						refspec: status.branch//,
+						refspec: status.branch
 						// config: {
 						// 	"credential.helper": credentialHelper
 						// }
@@ -589,7 +589,7 @@
 					//	master
 					repository.push({
 						repository: "origin",
-						refspec: "HEAD"//,
+						refspec: "HEAD"
 						// config: {
 						// 	"credential.helper": credentialHelper
 						// }
