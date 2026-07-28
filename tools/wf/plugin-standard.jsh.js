@@ -60,10 +60,7 @@
 					throw new TypeError("Old signature of standard plugin export function used. Please update to the new signature, which takes three arguments: context, project, and exports.");
 				}
 
-				//	TODO	the below credentialHelper code also appears to be in tools/wf/plugin.jsh.js
-
 				//	TODO	is this stuff documented anywhere?
-				var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/git/git-credential-tokens-directory.bash").toString();
 
 				/** @type { slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]> } */
 				var getBranches = {
@@ -134,10 +131,7 @@
 					//	master
 					repository.push({
 						repository: "origin",
-						refspec: status.branch,
-						config: {
-							"credential.helper": credentialHelper
-						}
+						refspec: status.branch
 					});
 				}
 
@@ -589,10 +583,7 @@
 					//	master
 					repository.push({
 						repository: "origin",
-						refspec: "HEAD",
-						config: {
-							"credential.helper": credentialHelper
-						}
+						refspec: "HEAD"
 					});
 				}
 

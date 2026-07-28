@@ -1045,7 +1045,6 @@
 						events.fire("console", "Verifying up to date with origin ...");
 						var remote = "origin";
 						var origin = jsh.tools.git.program({ command: "git" })
-							.config({ "credential.helper": jsh.shell.jsh.src.getRelativePath("rhino/tools/git/git-credential-tokens-directory.bash").toString() })
 							.repository(inputs.project())
 							.command(jsh.tools.git.commands.remote.show)
 							.argument(remote)
