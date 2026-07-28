@@ -16,7 +16,9 @@
 			/** @type { slime.$api.fp.internal.stream.Script } */
 			Stream: $context.script("$api-fp-stream.js"),
 			/** @type { slime.$api.fp.internal.impure.Script } */
-			impure: $context.script("$api-fp-impure.js")
+			impure: $context.script("$api-fp-impure.js"),
+			/** @type { slime.$api.fp.internal.world.Script } */
+			wo: $context.script("$api-fp-wo.js"),
 		};
 
 		var identity = function(v) { return v; };
@@ -256,13 +258,17 @@
 		};
 
 		var impure = code.impure({
-			now: now_map,
 			Maybe: Maybe,
-			Partial: Partial,
-			pipe: pipe,
-			events: $context.events,
 			stream: stream.impure
-		});
+		}).impure;
+
+		var wo = code.wo({
+			pipe: pipe,
+			now: now_map,
+			Partial: Partial,
+			events: $context.events,
+			impure: impure
+		})
 
 		$export({
 			identity: identity,
@@ -828,8 +834,8 @@
 			},
 			mutating: $context.old.Function.mutating,
 			value: $context.old.Function.value,
-			impure: impure.impure,
-			world: impure.world
+			impure: impure,
+			world: wo.world
 		});
 	}
 //@ts-ignore

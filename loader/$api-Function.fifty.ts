@@ -2006,6 +2006,7 @@ namespace slime.$api.fp {
 				fifty.load("$api-fp-Mapping.fifty.ts");
 				fifty.load("$api-fp-stream.fifty.ts");
 				fifty.load("$api-fp-impure.fifty.ts");
+				fifty.load("$api-fp-wo.fifty.ts");
 			}
 		}
 	//@ts-ignore

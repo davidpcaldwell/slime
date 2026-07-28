@@ -587,6 +587,33 @@ namespace slime.jrunscript.file {
 	export namespace location {
 		export namespace file {
 			export interface Exports {
+				read: {
+					stream: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {
+						notFound: void
+					}, slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
+
+					string: {
+						world: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {
+							notFound: void
+						}, slime.$api.fp.Maybe<string>>
+
+						maybe: slime.$api.fp.Mapping<slime.jrunscript.file.Location, slime.$api.fp.Maybe<string>>
+
+						simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location, string>
+					}
+
+					properties: {
+						simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location, slime.jrunscript.java.Properties>
+					}
+				}
+			}
+
+		}
+	}
+
+	export namespace location {
+		export namespace file {
+			export interface Exports {
 				size: slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, void, number>
 			}
 
@@ -716,26 +743,6 @@ namespace slime.jrunscript.file {
 				exists: {
 					simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location,boolean>
 					world: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {}, boolean>
-				}
-
-				read: {
-					stream: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {
-						notFound: void
-					}, slime.$api.fp.Maybe<slime.jrunscript.runtime.io.InputStream>>
-
-					string: {
-						world: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {
-							notFound: void
-						}, slime.$api.fp.Maybe<string>>
-
-						maybe: slime.$api.fp.Mapping<slime.jrunscript.file.Location, slime.$api.fp.Maybe<string>>
-
-						simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location, string>
-					}
-
-					properties: {
-						simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location, slime.jrunscript.java.Properties>
-					}
 				}
 
 				write: {
