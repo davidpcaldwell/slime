@@ -134,10 +134,10 @@
 					//	master
 					repository.push({
 						repository: "origin",
-						refspec: status.branch,
-						config: {
-							"credential.helper": credentialHelper
-						}
+						refspec: status.branch//,
+						// config: {
+						// 	"credential.helper": credentialHelper
+						// }
 					});
 				}
 
@@ -589,10 +589,10 @@
 					//	master
 					repository.push({
 						repository: "origin",
-						refspec: "HEAD",
-						config: {
-							"credential.helper": credentialHelper
-						}
+						refspec: "HEAD"//,
+						// config: {
+						// 	"credential.helper": credentialHelper
+						// }
 					});
 				}
 
