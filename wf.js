@@ -516,15 +516,19 @@
 					return result.status == 0;
 				};
 
-				var runTests = $api.fp.now(test_jrunscript, $api.fp.world.Question.thunk({
-					console: function(e) {
-						jsh.shell.console(e.detail);
-					},
-					output: function(e) {
-						jsh.shell.echo(e.detail);
-					}
-				}));
-				var success = runTests();
+				var success = $api.fp.now(
+					test_jrunscript,
+					$api.fp.world.Question.thunk({
+						console: function(e) {
+							jsh.shell.console(e.detail);
+						},
+						output: function(e) {
+							jsh.shell.echo(e.detail);
+						}
+					}),
+					$api.fp.Thunk.force
+				);
+
 				if (!success) jsh.shell.console("jrunscript tests failed.");
 				return (success) ? 0 : 1;
 			}
