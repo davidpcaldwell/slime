@@ -339,6 +339,9 @@
 						return now_map.apply(this, args);
 					}
 				},
+				force: function(thunk) {
+					return thunk();
+				},
 				now: function(thunk) {
 					var maps = Array.prototype.slice.call(arguments, 1);
 					var rv = thunk();
