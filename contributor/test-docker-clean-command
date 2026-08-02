@@ -14,9 +14,9 @@ fi
 export JDK_VERSION="$1"
 shift 1
 
-SLIME="$(dirname $0)/.."
+SLIME="$(dirname "$0")/.."
 
-cd ${SLIME}
+cd "${SLIME}" || exit 1
 
 # Emit the Docker command for visibility
 set -x
