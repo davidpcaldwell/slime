@@ -11,9 +11,14 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
-		jsh.loader.plugins(jsh.script.file.parent);
+		var plugin = (
+			function() {
+				jsh.loader.plugins(jsh.script.file.parent);
+				return jsh.project.suite;
+			}
+		)();
 
-		jsh.project.suite.initialize({
+		plugin.initialize({
 			selenium: false
 		});
 
@@ -22,34 +27,28 @@
 				function(p) {
 					// TODO: force CoffeeScript for verification?
 
-					var jrunscript = (
-						function() {
-							var jdk = jsh.shell.java.Jdk.from.javaHome();
-							var pathname = jsh.shell.java.Jdk.jrunscript(jdk);
-							if (!pathname.present) throw new Error("Could not resolve jrunscript for JDK home: " + jdk.base);
-							return pathname.value;
-						}
-					)();
+					var jrunscript = $api.fp.Thunk.now(
+						jsh.shell.java.Jdk.from.javaHome,
+						//	TODO	below should use $api.fp.build
+						$api.fp.now(
+							jsh.shell.java.Jdk.jrunscript,
+							$api.fp.Partial.impure.exception(function(jdk) {
+								return new Error("Could not resolve jrunscript for JDK home: " + jdk.base);
+							})
+						)
+					);
 
-					var engine = (
-						function() {
-							//	TODO	this is kind of clunky and seems to indicate a less clunky API should be available to get this
-							//			string
-							var ENGINE = jsh.internal.bootstrap.engine.resolve({
-								rhino: function() { return "rhino"; },
-								nashorn: function() { return "nashorn"; },
-								graal: function() { return "graal"; }
-							});
-							var engine = ENGINE();
-							return engine;
-						}
-					)();
-
-					var SLIME = $api.fp.now(jsh.script.world.file, jsh.file.Location.parent(), jsh.file.Location.parent());
+					//	TODO	code smell, this value should be directly accessible
+					var engine = jsh.internal.bootstrap.engine.resolve({
+						rhino: "rhino",
+						nashorn: "nashorn",
+						graal: "graal"
+					});
 
 					var HERE = $api.fp.now(jsh.script.world.file, jsh.file.Location.parent());
+					var SLIME = $api.fp.now(HERE, jsh.file.Location.parent());
 
-					jsh.shell.console("Running " + jsh.shell.jsh.src + " with jrunscript " + jrunscript + " and engine " + engine + " ...");
+					jsh.shell.console("Running " + SLIME.pathname + " with jrunscript " + jrunscript + " and engine " + engine + " ...");
 
 					var run = $api.fp.now(
 						jsh.shell.subprocess.question,
