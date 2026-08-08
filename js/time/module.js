@@ -45,9 +45,13 @@
 			}
 		};
 
-		var now = $context.now || world.now;
+		var now = (function(now) {
+			if (typeof(now) == "function") return { read: now };
+			if (now && typeof(now.read) == "function") return now;
+			return world.now;
+		})($context.now);
 
-		var zones = $api.Object.compose(world.zones, $context.zones);
+		var zones = $api.Object.compose(world.zones, $context.zones || {});
 
 		var harmonize = function(y,m,d) {
 			if (typeof(y) != "number") throw "y not number: " + y;
