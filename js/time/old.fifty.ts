@@ -5,7 +5,7 @@
 //	END LICENSE
 
 namespace slime.time {
-	export interface Context {
+	export interface World {
 		/** @deprecated */
 		old?: {
 			/** @deprecated */
@@ -366,12 +366,12 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export interface Exports {
+	export interface Interface {
 		/** @deprecated */
 		Day: day.Exports
 	}
 
-	export interface Exports {
+	export interface Interface {
 		/** @deprecated */
 		Year: {
 			/** @deprecated */
@@ -444,7 +444,7 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export interface Exports {
+	export interface Interface {
 		/** @deprecated */
 		Time: time.Exports
 	}
@@ -490,12 +490,12 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export interface Exports {
+	export interface Interface {
 		/** @deprecated */
 		When: when.Exports
 	}
 
-	export interface Exports {
+	export interface Interface {
 		/** @deprecated */
 		install: Function
 	}
@@ -515,7 +515,7 @@ namespace slime.time {
 
 				fifty.run(function harvested() {
 					var global = (function() { return this; })();
-					var subject: slime.time.Exports = (global.jsh) ? $loader.module("module.js", $loader.file("context.java.js")) : $loader.module("module.js");
+					var subject: slime.time.Interface = (global.jsh) ? $loader.module("module.js", $loader.file("context.java.js")) : $loader.module("module.js");
 					//var subject: slime.time.Exports = $loader.module("module.js");
 
 					var when = new subject.When({ unix: 1599143670821 });

@@ -700,7 +700,7 @@ namespace slime.jrunscript.tools.git {
 			shell: slime.jrunscript.shell.Exports
 			//	TODO	fix this
 			Error: slime.$api.old.Exports["Error"]
-			time: slime.time.Exports
+			time: slime.time.Interface
 			web: slime.web.Exports
 		}
 		environment: any

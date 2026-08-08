@@ -9,47 +9,45 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.time.Context } $context
-	 * @param { slime.loader.Export<slime.time.Exports> } $export
+	 * @param { slime.loader.Export<slime.time.Interface> } $export
 	 */
 	function($api,$context,$export) {
-		var now = $context.now || function() { return new Date().getTime(); };
-
-		/** @type { { local: slime.time.Zone, UTC: slime.time.Zone, [id: string]: slime.time.Zone } } */
-		var zones = {
-			local: new function() {
-				this.local = function(unix) {
-					var date = new Date(unix);
-					return {
-						year: date.getFullYear(), month: date.getMonth()+1, day: date.getDate(),
-						hour: date.getHours(), minute: date.getMinutes(), second: date.getSeconds() + date.getMilliseconds() / 1000
+		var world = {
+			now: { read: function() { return new Date().getTime(); } },
+			zones: {
+				local: new function() {
+					this.local = function(unix) {
+						var date = new Date(unix);
+						return {
+							year: date.getFullYear(), month: date.getMonth()+1, day: date.getDate(),
+							hour: date.getHours(), minute: date.getMinutes(), second: date.getSeconds() + date.getMilliseconds() / 1000
+						}
 					}
-				}
-				this.unix = function(local) {
-					return new Date(local.year,local.month-1,local.day,local.hour,local.minute,local.second).getTime();
-				}
-			},
-			//	TODO	Should we make this conditional on $context.zones.UTC?
-			UTC: new function() {
-				this.local = function(unix) {
-					var date = new Date(unix);
-					return {
-						year: date.getUTCFullYear(), month: date.getUTCMonth()+1, day: date.getUTCDate(),
-						hour: date.getUTCHours(), minute: date.getUTCMinutes(), second: date.getUTCSeconds() + date.getUTCMilliseconds() / 1000
-					};
-				}
-				this.unix = function(local) {
-					var wholeSeconds = Math.floor(local.second);
-					var milliseconds = Math.round((local.second - Math.floor(local.second)) * 1000);
-					return Date.UTC(local.year,local.month-1,local.day,local.hour,local.minute,wholeSeconds,milliseconds);
+					this.unix = function(local) {
+						return new Date(local.year,local.month-1,local.day,local.hour,local.minute,local.second).getTime();
+					}
+				},
+				//	TODO	Should we make this conditional on $context.zones.UTC?
+				UTC: new function() {
+					this.local = function(unix) {
+						var date = new Date(unix);
+						return {
+							year: date.getUTCFullYear(), month: date.getUTCMonth()+1, day: date.getUTCDate(),
+							hour: date.getUTCHours(), minute: date.getUTCMinutes(), second: date.getUTCSeconds() + date.getUTCMilliseconds() / 1000
+						};
+					}
+					this.unix = function(local) {
+						var wholeSeconds = Math.floor(local.second);
+						var milliseconds = Math.round((local.second - Math.floor(local.second)) * 1000);
+						return Date.UTC(local.year,local.month-1,local.day,local.hour,local.minute,wholeSeconds,milliseconds);
+					}
 				}
 			}
 		};
 
-		if (typeof($context.zones) != "undefined") {
-			for (var x in $context.zones) {
-				zones[x] = $context.zones[x];
-			}
-		}
+		var now = $context.now || world.now;
+
+		var zones = $api.Object.compose(world.zones, $context.zones);
 
 		var harmonize = function(y,m,d) {
 			if (typeof(y) != "number") throw "y not number: " + y;
@@ -1140,9 +1138,10 @@
 			return js.getUTCFullYear() === year && js.getUTCMonth() === month-1 && js.getUTCDate() === day;
 		}
 
+		/** @type { { now: (world: slime.time.World) => () => number }} */
 		var Value = {
-			now: function(context) {
-				return context.now || Date.now;
+			now: function(world) {
+				return world.now.read || Date.now;
 			}
 		};
 
@@ -1155,7 +1154,7 @@
 		};
 
 		var today = function() {
-			var datetime = zones.local.local(now());
+			var datetime = zones.local.local(now.read());
 			return {
 				year: datetime.year,
 				month: datetime.month,
@@ -1164,7 +1163,7 @@
 		};
 
 		$export({
-			Value: $api.fp.methods.pin($context)(Value),
+			Value: $api.fp.methods.pin({ now: now, zones: zones })(Value),
 			Datetime: {
 				date: function(datetime) {
 					return {

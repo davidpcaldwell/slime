@@ -29,15 +29,13 @@ namespace slime.time {
 	export interface Datetime extends Date, Time {
 	}
 
-	export namespace zone {
-		export interface Time extends Datetime {
-			/**
-			 * The timezone offset, in minutes, from UTC.
-			 */
-			offset: number
-		}
-	}
+	//	TODO	the below type should probably be deprecated and replaced with two exported functions, while converting the
+	//			world.Zone type to a set of codecs
 
+	/**
+	 * A time zone definition that can be used by the implementation to convert between ECMAScript time values and local times in
+	 * the given time zone.
+	 */
 	export interface Zone {
 		/**
 		 * Given a UNIX time, in milliseconds, returns the corresponding time in this time zone.
@@ -50,17 +48,23 @@ namespace slime.time {
 		unix: (time: Datetime) => slime.external.lib.es5.TimeValue
 	}
 
-	export interface Context {
+	export namespace world {
+		export type Zone = slime.time.Zone
+	}
+
+	export interface World {
 		/**
 		 * A function that returns the number of milliseconds since the UNIX epoch. If not supplied, the standard JavaScript
 		 * implementation will be used.
 		 */
-		now?: slime.$api.fp.impure.External<number>
+		now: slime.$api.fp.impure.Reading<number>
 
-		zones?: {
-			[id: string]: Zone
+		zones: {
+			[id: string]: world.Zone
 		}
 	}
+
+	export type Context = Partial<World>;
 
 	export namespace test {
 		export const { subject, load } = (function(fifty: slime.fifty.test.Kit) {
@@ -99,7 +103,7 @@ namespace slime.time {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports {
+	export interface Interface {
 		/**
 		 * Functions that pertain to "time values", as defined by the ECMAScript
 		 * [specification](https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-time-values-and-time-range), representing
@@ -125,8 +129,10 @@ namespace slime.time {
 
 				fifty.tests.exports.Value.now = function() {
 					var context: Context = {
-						now: function() {
-							return 1000;
+						now: {
+							read: function() {
+								return 1000;
+							}
 						}
 					};
 
@@ -148,11 +154,11 @@ namespace slime.time {
 
 	export type DayOfWeek = "Mo" | "Tu" | "We" | "Th" | "Fr" | "Sa" | "Su"
 
-	export interface Exports {
+	export interface Interface {
 		Date: date.Exports
 	}
 
-	export interface Exports {
+	export interface Interface {
 		Time: time.Exports
 	}
 
@@ -188,7 +194,9 @@ namespace slime.time {
 
 			fifty.tests.exports.Date.today = function() {
 				var subject = test.load({
-					now: $api.fp.returning(1643907600000)
+					now: {
+						read: $api.fp.Thunk.value(1643907600000)
+					}
 				});
 				var today = subject.Date.input.today();
 				var todayReading = subject.Date.today.read();
@@ -789,7 +797,7 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export interface Exports {
+	export interface Interface {
 		Datetime: datetime.Exports
 	}
 
@@ -898,12 +906,15 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export interface Exports {
+	export interface Interface {
 		Month: month.Exports
 	}
 
-	export interface Exports {
+	export interface Interface {
 		Timezone: {
+			/**
+			 * A timezone that uses the global Date function to handle timezone offsets.
+			 */
 			local: Zone
 			UTC: Zone
 			[x: string]: Zone
@@ -951,6 +962,13 @@ namespace slime.time {
 	)(fifty);
 
 	export namespace zone {
+		export interface Time extends Datetime {
+			/**
+			 * The timezone offset, in minutes, from UTC.
+			 */
+			offset: number
+		}
+
 		export namespace time {
 			export interface Exports {
 				create: {
@@ -969,7 +987,7 @@ namespace slime.time {
 		}
 	}
 
-	export interface Exports {
+	export interface Interface {
 		zone: {
 			Time: zone.time.Exports
 		}
@@ -1124,6 +1142,8 @@ namespace slime.time {
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export type Exports = Interface
 
 	export type Script = slime.runtime.loader.Scoped<Context|void,Exports>
 }
