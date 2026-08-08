@@ -25,6 +25,15 @@ Recommended setup:
 
 Agent behavior in this repository is configured to read `~/.agents/README.md` first, then follow references from that file.
 
+## FP error handling conventions
+
+When adding or refactoring functional APIs, use this rule of thumb for failures:
+
+* Throw JavaScript exceptions only for compile-time contract violations at runtime (for example, a non-string passed where a string is required). In this project, throws are a defensive backstop for runtime type erasure and untyped JavaScript callers.
+* Return `Result` failures for domain-invalid values that are still in the expected representation domain (for example, missing or empty string input).
+
+This split keeps normal validation failures composable through `Result.map` / `Result.flatMap`, while reserving exceptions for clear programmer misuse.
+
 ## Devcontainer Compose ports and project naming
 
 The devcontainer uses Docker Compose with container ports published without fixed host ports. Docker assigns an available host

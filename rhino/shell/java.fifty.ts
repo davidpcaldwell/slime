@@ -35,9 +35,18 @@ namespace slime.jrunscript.shell.java {
 		base: string
 	}
 
+	export type JdkFromBaseError = (
+		| {
+			type: "empty-base"
+			missing: "null" | "undefined" | "empty-string"
+		}
+	)
+
 	export interface Exports extends Invoke {
 		Jdk: {
 			from: {
+				base: (base: string) => slime.$api.fp.Result<JdkFromBaseError,Jdk>
+
 				/**
 				 * Returns a Jdk object based on the value of the `java.home` property.
 				 */
@@ -67,7 +76,41 @@ namespace slime.jrunscript.shell.java {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+			const { subject } = test;
+
+			var asAny: slime.js.Cast<any> = $api.fp.cast.unsafe;
+
 			fifty.tests.suite = function() {
+				var fromEmpty = subject.Jdk.from.base("");
+				verify(fromEmpty).evaluate.property("ok").is(false);
+				if ("error" in fromEmpty) {
+					verify(fromEmpty.error.type).is("empty-base");
+					verify(fromEmpty.error.missing).is("empty-string");
+				}
+
+				var fromNull = subject.Jdk.from.base(asAny(null));
+				verify(fromNull).evaluate.property("ok").is(false);
+				if ("error" in fromNull) {
+					verify(fromNull.error.type).is("empty-base");
+					verify(fromNull.error.missing).is("null");
+				}
+
+				var fromUndefined = subject.Jdk.from.base(asAny(void(0)));
+				verify(fromUndefined).evaluate.property("ok").is(false);
+				if ("error" in fromUndefined) {
+					verify(fromUndefined.error.type).is("empty-base");
+					verify(fromUndefined.error.missing).is("undefined");
+				}
+
+				verify(3).evaluate(function(value) {
+					subject.Jdk.from.base(asAny(value));
+				}).threw.type(TypeError);
+
+				var normalized = subject.Jdk.from.base("  /jdk/home  ");
+				verify(normalized).evaluate.property("ok").is(true);
+				if ("value" in normalized) verify(normalized.value.base).is("/jdk/home");
 			}
 		}
 	//@ts-ignore
