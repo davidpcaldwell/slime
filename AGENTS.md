@@ -9,7 +9,20 @@
 General information for contributors is in [CONTRIBUTING.md](CONTRIBUTING.md); please read that first and incorporate its
 information into your approach.
 
-# Personal instructions
+## Quick start checklist (required for agents)
+
+Before making code edits, running tests, replying to PR comments, or resolving review threads:
+
+* Read [AGENTS.md](AGENTS.md).
+* Read [CONTRIBUTING.md](CONTRIBUTING.md).
+* If `~/.agents/README.md` exists, read it and any personal instruction files it references.
+* Confirm in the next user-facing message what personal instruction sources were loaded, or that none were found.
+* If personal instructions conflict with repository instructions, stop and ask the user how to proceed.
+* Follow the "FP error handling conventions" section in [CONTRIBUTING.md](CONTRIBUTING.md#fp-error-handling-conventions) for when to throw exceptions versus returning `Result` failures.
+
+## Reference guidance
+
+## Personal instructions
 
 When running inside a devcontainer, load personal instructions for operating this repository from
 `~/.agents` before taking substantive action.
@@ -17,7 +30,7 @@ When running inside a devcontainer, load personal instructions for operating thi
 The initial source of personal instructions is
 `~/.agents/README.md`.
 
-## Preflight protocol for agents
+### Preflight protocol for agents
 
 Before making code edits, running tests, replying to PR comments, or resolving review threads, do all of the following:
 
@@ -28,19 +41,19 @@ Before making code edits, running tests, replying to PR comments, or resolving r
 
 If personal instructions conflict with repository instructions, stop and ask the user how to proceed.
 
-# Modules
+## Modules
 
 SLIME modules are defined by a top-level script, usually called `module.js`. This main module file often loads sibling files to
 help implement the module, and sometimes loads files from subfolders if the module is sufficiently complex.
 
-## `jsh` plugins
+### `jsh` plugins
 
 `jsh` plugins use a `plugin.jsh.js` to define their `jsh`-facing interface. Sometimes a `jsh` plugin will have no module interface
 at all (if the module is designed only to be used in `jsh`).
 
-# Testing and Documentation
+## Testing and Documentation
 
-## Fifty definitions
+### Fifty definitions
 
 SLIME uses co-located documentation and tests (which it refers to as "definitions").
 
@@ -59,7 +72,7 @@ Typically, the Fifty `.fifty.ts` file provides an `Exports` type which is export
 Fifty files heavily use TypeScript declaration merging, so looking at a single file's definition of a type may not capture the
 entire definition.
 
-## Older JSAPI definitions
+### Older JSAPI definitions
 
 Some other older modules use documentation using a literate HTML format called "JSAPI." JSAPI files have names like `api.html`
 (for a top-level module definition), and `foo.api.html` (documentation for the `foo.js` script). JSAPI files are being migrated to
@@ -68,7 +81,7 @@ Fifty and should be targeted for refactoring and elimination.
 Often Fifty files will contain tests with `jsapi` in the name. These were migrated from the JSAPI format. Often they could use some
 refactoring, but they are much better than tests still executed via JSAPI.
 
-## Testing
+### Testing
 
 To run tests for a JavaScript (`.js`) file, look for a sibling file named `.fifty.ts` (for example, `run.fifty.ts` for `run.js`). Run the tests by executing the Fifty test tool on the `.fifty.ts` file, not the `.js` file itself.
 
@@ -77,7 +90,7 @@ For example, to run the tests for `rhino/shell/run.js`, use:
 
 This ensures you are running the actual test definitions, not just executing the script file.
 
-### Testing = Modules
+#### Testing = Modules
 
 Typically the main module definition file (`module.fifty.ts`) will invoke the other script files needed to test the module as a whole, and then the test suite will just invoke the module file rather than invoking each script file in the module.
 
@@ -91,12 +104,12 @@ To run all tests for a file:
 * Browser-compatible tests: `./fifty test.browser <test-file>`
 * In both cases, a 0 exit status indicates the tests passed.
 
-## Documentation
+### Documentation
 
 A module's documentation typically is contained in a primary TypeScript namespace. Namespaces with `internal` in the name are
 designed for internal module or project use.
 
-### Troubleshooting: `./wf documentation` in devcontainers
+#### Troubleshooting: `./wf documentation` in devcontainers
 
 If serving documentation fails because Chrome reports that the profile is already in use, clear stale Chrome Singleton lock files
 from the project-local documentation profile and retry.
@@ -112,9 +125,9 @@ rm -f local/chrome/documentation/SingletonCookie \
 
 This is safe in a devcontainer when those files are stale lock artifacts from a previous run.
 
-# GitHub integration
+## GitHub integration
 
-## Benign hook message on checkout
+### Benign hook message on checkout
 
 When checking out branches, a hook may print:
 
@@ -130,15 +143,15 @@ Create the issue template in the `local/.github/ISSUE_TEMPLATE` folder, creating
 Issues with a strong focus on improving documentation should receive the `documentation` label, while issues focused on test
 coverage should receive the `project` label.
 
-# Developer workflow
+## Developer workflow
 
 When refactoring, always run `./wf tsc` after the refactor to make sure type-checking passed. If it does not, something is wrong.
 
-## Branch naming
+### Branch naming
 
 When naming branches, if working on an issue, respect the convention specified in the [`VSCode githubIssues.issueBranchTitle setting`](.vscode/settings.json). Otherwise, name the branch with the format `<github-username>/<description>`.
 
-# Code Quality
+## Code Quality
 
 If you are asked for suggestions on how to improve the project, please use the information in this section.
 
@@ -148,7 +161,7 @@ checking, ESLint errors, and files that need to be split.
 * If modules are deprecated (have the `@deprecated` annotation in the namespace definition, or have `old` in the namespace name,
 they can be deprioritized).
 
-## Metrics you can access for assessing code quality
+### Metrics you can access for assessing code quality
 
 The project contains several `jsh` scripts you can run in order to generate metrics that will help you find targets for improvement.
 

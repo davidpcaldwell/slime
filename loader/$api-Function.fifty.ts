@@ -868,6 +868,10 @@ namespace slime.$api.fp {
 	export type Some<T> = Readonly<{ present: true, value: T }>
 	export type Maybe<T> = Some<T> | Nothing
 
+	export type Success<T> = Readonly<{ ok: true, value: T }>
+	export type Failure<E> = Readonly<{ ok: false, error: E }>
+	export type Result<E,T> = Success<T> | Failure<E>
+
 	export interface Exports {
 		Maybe: {
 			from: {
@@ -898,6 +902,17 @@ namespace slime.$api.fp {
 				): (a: A) => Maybe<C>
 			}
 		}
+
+		Result: {
+			from: {
+				success: <T>(t: T) => Success<T>
+				failure: <E>(e: E) => Failure<E>
+			}
+
+			map: <E,T,R>(f: (t: T) => R) => (r: Result<E,T>) => Result<E,R>
+			flatMap: <E,T,E2,R>(f: (t: T) => Result<E2,R>) => (r: Result<E,T>) => Result<E|E2,R>
+			mapError: <E,E2,T>(f: (e: E) => E2) => (r: Result<E,T>) => Result<E2,T>
+		}
 	}
 
 	(
@@ -927,6 +942,44 @@ namespace slime.$api.fp {
 				if (quarter4.present) verify(quarter4).value.is(1);
 				verify(quarterEvenly(2)).present.is(false);
 				verify(quarterEvenly(1)).present.is(false);
+			}
+
+			fifty.tests.exports.Result = fifty.test.Parent();
+
+			fifty.tests.exports.Result.map = function() {
+				var doubled = $api.fp.now(
+					$api.fp.Result.from.success(2),
+					$api.fp.Result.map(function(n: number) { return n*2; })
+				);
+				verify(doubled).evaluate.property("ok").is(true);
+				if (doubled.ok) verify(doubled).value.is(4);
+
+				var failed = $api.fp.now(
+					$api.fp.Result.from.failure("boom"),
+					$api.fp.Result.map(function(n: number) { return n*2; })
+				);
+				verify(failed).evaluate.property("ok").is(false);
+				if ("error" in failed) verify(failed.error).is("boom");
+			}
+
+			fifty.tests.exports.Result.flatMap = function() {
+				var half = function(n: number): Result<string,number> {
+					if (n%2 == 0) return $api.fp.Result.from.success(n/2);
+					return $api.fp.Result.from.failure("odd");
+				}
+
+				var quarter = $api.fp.pipe(
+					half,
+					$api.fp.Result.flatMap(half)
+				);
+
+				var fromFour = quarter(4);
+				verify(fromFour).evaluate.property("ok").is(true);
+				if (fromFour.ok) verify(fromFour).value.is(1);
+
+				var fromTwo = quarter(2);
+				verify(fromTwo).evaluate.property("ok").is(false);
+				if ("error" in fromTwo) verify(fromTwo.error).is("odd");
 			}
 		}
 	//@ts-ignore

@@ -78,6 +78,46 @@
 			}
 		)();
 
+		var Result = (
+			/** @type { () => slime.$api.fp.Exports["Result"] } */
+			function() {
+				/** @type { slime.$api.fp.Exports["Result"]["from"]["success"] } */
+				var success = function(v) {
+					return { ok: true, value: v };
+				};
+
+				/** @type { slime.$api.fp.Exports["Result"]["from"]["failure"] } */
+				var failure = function(e) {
+					return { ok: false, error: e };
+				};
+
+				return {
+					from: {
+						success: success,
+						failure: failure
+					},
+					map: function(f) {
+						return function(r) {
+							if ("value" in r) return success(f(r.value));
+							return failure(r.error);
+						}
+					},
+					flatMap: function(f) {
+						return function(r) {
+							if ("value" in r) return f(r.value);
+							return failure(r.error);
+						}
+					},
+					mapError: function(f) {
+						return function(r) {
+							if ("error" in r) return failure(f(r.error));
+							return success(r.value);
+						}
+					}
+				}
+			}
+		)();
+
 		/** @type { slime.$api.fp.Exports["Partial"] } */
 		var Partial = {
 			from: {
@@ -549,6 +589,7 @@
 				fromEntries: Object.fromEntries
 			},
 			Maybe: Maybe,
+			Result: Result,
 			Partial: Partial,
 			switch: function(cases) {
 				return function(p) {
