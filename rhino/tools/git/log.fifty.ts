@@ -38,7 +38,7 @@ namespace slime.jrunscript.tools.git {
 namespace slime.jrunscript.tools.git.internal.log {
 	export interface Context {
 		library: {
-			time: slime.time.Exports
+			time: slime.time.Interface
 		}
 	}
 
