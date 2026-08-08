@@ -98,19 +98,24 @@
 					},
 					map: function(f) {
 						return function(r) {
-							if ("value" in r) return success(f(r.value));
-							return failure(r.error);
+							if (r.ok) return success(f(r.value));
+							var notOk = /** @type {{ error: any }} */(r);
+							return failure(notOk.error);
 						}
 					},
 					flatMap: function(f) {
 						return function(r) {
-							if ("value" in r) return f(r.value);
-							return failure(r.error);
+							if (r.ok) return f(r.value);
+							var notOk = /** @type {{ error: any }} */(r);
+							return failure(notOk.error);
 						}
 					},
 					mapError: function(f) {
 						return function(r) {
-							if ("error" in r) return failure(f(r.error));
+							if (!r.ok) {
+								var notOk = /** @type {{ error: any }} */(r);
+								return failure(f(notOk.error));
+							}
 							return success(r.value);
 						}
 					}
