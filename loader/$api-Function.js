@@ -279,6 +279,11 @@
 		var build_map = function() {
 			if (arguments.length < 2) throw new TypeError();
 			if (typeof(arguments[0]) != "function") throw new TypeError("First argument must be a function.");
+			for (var i=1; i<arguments.length; i++) {
+				if (typeof(arguments[i]) != "function") {
+					throw new TypeError("All arguments after index 0 must be functions; index " + i + " is not.");
+				}
+			}
 			return now_map.apply(this, arguments);
 		}
 

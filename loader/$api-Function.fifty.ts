@@ -1740,7 +1740,7 @@ namespace slime.$api.fp {
 
 		/**
 		 * Returns the result of invoking a function on an argument. `now(p, f)` is syntactic sugar for `f(p)`, and
-		 * `now(p, f, g) is syntactic sugar for `g(f(p))`.
+		 * `now(p, f, g)` is syntactic sugar for `g(f(p))`.
 		 */
 		now: NowFunctionFirstDeprecated & Now_map & {
 			/**
@@ -1763,6 +1763,8 @@ namespace slime.$api.fp {
 			const { $api } = fifty.global;
 
 			fifty.tests.exports.build = function() {
+				var buildUntyped = $api.fp.build as any;
+
 				var times2 = function(n: number): number {
 					return n * 2;
 				};
@@ -1775,6 +1777,18 @@ namespace slime.$api.fp {
 
 				var loggedTimes2 = $api.fp.build(times2, logging);
 				verify(loggedTimes2(3)).is(6);
+
+				verify(times2).evaluate(function(f) {
+					return buildUntyped(f);
+				}).threw.type(TypeError);
+
+				verify(3).evaluate(function(n) {
+					return buildUntyped(n, logging);
+				}).threw.type(TypeError);
+
+				verify(times2).evaluate(function(f) {
+					return buildUntyped(f, 42);
+				}).threw.type(TypeError);
 			};
 
 			fifty.tests.exports.now = function() {
