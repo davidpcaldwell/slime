@@ -1663,12 +1663,86 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
+	type BuildStep = (x: unknown) => unknown
+
+	type BuildStepChain<Input, Steps extends readonly BuildStep[]> = (
+		Steps extends readonly [infer S, ...infer Rest]
+			? S extends (x: Input) => infer Next
+				? Rest extends readonly BuildStep[]
+					? [S, ...BuildStepChain<Next, Rest>]
+					: never
+				: never
+			: []
+	)
+
+	type BuildResult<Input, Steps extends readonly BuildStep[]> = (
+		Steps extends readonly [infer S, ...infer Rest]
+			? S extends (x: Input) => infer Next
+				? Rest extends readonly BuildStep[]
+					? BuildResult<Next, Rest>
+					: never
+				: never
+			: Input
+	)
+
+	type NowFunctionFirstDeprecated = {
+		/**
+		 * @deprecated Use {@link Exports.build | `$api.fp.build`} when the first argument to `now` is a function value.
+		 */
+		<
+			F extends slime.external.lib.es5.TypescriptFunction,
+			S1Out
+		>(
+			f: F,
+			s1: (f: F) => S1Out
+		): S1Out
+
+		/**
+		 * @deprecated Use {@link Exports.build | `$api.fp.build`} when the first argument to `now` is a function value.
+		 */
+		<
+			F extends slime.external.lib.es5.TypescriptFunction,
+			S1Out,
+			S1 extends (f: F) => S1Out,
+			SRest extends readonly BuildStep[]
+		>(
+			f: F,
+			s1: S1,
+			...rest: BuildStepChain<S1Out, SRest>
+		): BuildResult<S1Out, SRest>
+	}
+
 	export interface Exports {
 		/**
-		 * Returns the result of invoking a function on an argument. `now(p, f)` is syntactic sugar for `f(p)`, and
-		 * `now(p, f, g) is syntactic sugar for `g(f(p))`.
+		 * Returns the result of transforming a function value through one or more combinators.
+		 * `build(f, g)` is syntactic sugar for `g(f)`, and `build(f, g, h)` is syntactic sugar for `h(g(f))`.
 		 */
-		now: Now_map & {
+		build: {
+			<
+				F extends slime.external.lib.es5.TypescriptFunction,
+				S1Out
+			>(
+				f: F,
+				s1: (f: F) => S1Out
+			): S1Out
+
+			<
+				F extends slime.external.lib.es5.TypescriptFunction,
+				S1Out,
+				S1 extends (f: F) => S1Out,
+				SRest extends readonly BuildStep[]
+			>(
+				f: F,
+				s1: S1,
+				...rest: BuildStepChain<S1Out, SRest>
+			): BuildResult<S1Out, SRest>
+		}
+
+		/**
+		 * Returns the result of invoking a function on an argument. `now(p, f)` is syntactic sugar for `f(p)`, and
+		 * `now(p, f, g)` is syntactic sugar for `g(f(p))`.
+		 */
+		now: NowFunctionFirstDeprecated & Now_map & {
 			/**
 			 * @deprecated Replaced by {@link Exports.now}.
 			 */
@@ -1687,6 +1761,35 @@ namespace slime.$api.fp {
 		) {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
+
+			fifty.tests.exports.build = function() {
+				var buildUntyped = $api.fp.build as any;
+
+				var times2 = function(n: number): number {
+					return n * 2;
+				};
+
+				var logging = function(f: (n: number) => number) {
+					return function(p: number): number {
+						return f(p);
+					};
+				};
+
+				var loggedTimes2 = $api.fp.build(times2, logging);
+				verify(loggedTimes2(3)).is(6);
+
+				verify(times2).evaluate(function(f) {
+					return buildUntyped(f);
+				}).threw.type(TypeError);
+
+				verify(3).evaluate(function(n) {
+					return buildUntyped(n, logging);
+				}).threw.type(TypeError);
+
+				verify(times2).evaluate(function(f) {
+					return buildUntyped(f, 42);
+				}).threw.type(TypeError);
+			};
 
 			fifty.tests.exports.now = function() {
 				var f = function(i: number): string {
