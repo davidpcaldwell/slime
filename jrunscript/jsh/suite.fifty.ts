@@ -81,7 +81,7 @@ namespace slime.jsh.test {
 				var shell = fixtures.shells.built(true);
 				if (ISSUE_2039_RESOLVED && shell) {
 					var home = jsh.file.Pathname(shell.home).directory;
-					var jdk = jsh.shell.java.Jdk.from.javaHome();
+					var jdk = jsh.shell.java.Jdk.from.javaHome;
 					var jdkBin = $api.fp.now(jdk.base, jsh.file.Location.from.os, jsh.file.Location.directory.relativePath("bin"));
 
 					var addJavaToPath = function(existing) {
@@ -282,7 +282,7 @@ namespace slime.jsh.test {
 					environment: function(base) {
 						return fifty.global.$api.Object.compose(
 							base,
-							{ JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome().base },
+							{ JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome.base },
 							{ JSH_ENGINE: engine || null }
 						);
 					},

@@ -62,7 +62,7 @@
 						)
 					);
 
-					var jdk = jsh.shell.java.Jdk.from.javaHome();
+					var jdk = jsh.shell.java.Jdk.from.javaHome;
 
 					if (p.options.archetype) {
 						jsh.shell.console("Generating project from archetype ...");

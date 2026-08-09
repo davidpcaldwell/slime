@@ -36,21 +36,29 @@
 
 		$export({
 			Jdk: {
-				from: {
-					base: fromBase,
-					javaHome: function() {
-						var home = $context.home();
-						var javaHome = home.pathname;
-						//	TODO	workaround for JDK 8. Really, we should figure out a better API for determining Java home directory
-						//			under various versions.
-						if (javaHome.basename == "jre") javaHome = javaHome.parent;
-						var from = fromBase(javaHome.toString());
-						if (from.ok === false) {
-							throw new Error("Could not create Jdk from java.home: " + JSON.stringify(from.error));
+				from: $api.fp.now(
+					{
+						base: fromBase
+					},
+					$api.Object.defineProperty({
+						name: "javaHome",
+						descriptor: {
+							enumerable: true,
+							get: function() {
+								var home = $context.home();
+								var javaHome = home.pathname;
+								//	TODO	workaround for JDK 8. Really, we should figure out a better API for determining Java home directory
+								//			under various versions.
+								if (javaHome.basename == "jre") javaHome = javaHome.parent;
+								var from = fromBase(javaHome.toString());
+								if (from.ok === false) {
+									throw new Error("Could not create Jdk from java.home: " + JSON.stringify(from.error));
+								}
+								return from.value;
+							}
 						}
-						return from.value;
-					}
-				},
+					})
+				),
 				jrunscript: function(jdk) {
 					return $context.getJrunscriptPathFromJdk(jdk.base);
 				}

@@ -145,7 +145,7 @@
 					args.push("--lazy");
 				}
 				var JAVA_HOME = (function() {
-					var h = jsh.shell.java.Jdk.from.javaHome();
+					var h = jsh.shell.java.Jdk.from.javaHome;
 					return jsh.file.Pathname(h.base).directory;
 				})();
 				jsh.shell.run({

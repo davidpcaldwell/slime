@@ -232,7 +232,7 @@ namespace slime.jsh.wf.standard {
 									environment: $api.Object.compose(
 										jsh.shell.environment,
 										{
-											JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome().base
+											JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome.base
 										}
 									)
 								});
@@ -375,7 +375,7 @@ namespace slime.jsh.wf.standard {
 							environment: Object.assign({},
 								jsh.shell.environment,
 								{
-									JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome().base,
+									JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome.base,
 									PROJECT: repository.directory.toString()
 								},
 								environment

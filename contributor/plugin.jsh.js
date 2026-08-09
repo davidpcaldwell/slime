@@ -21,6 +21,8 @@
 		plugin({
 			isReady: function() { return Boolean(jsh.unit) && Boolean(jsh.project); },
 			load: function() {
+				// TODO: force CoffeeScript for verification?
+
 				var code = {
 					/** @type { slime.project.internal.jrunscript_environment.Script } */
 					Environment: $loader.script("jrunscript-environment.js")
