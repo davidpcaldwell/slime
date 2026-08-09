@@ -276,6 +276,12 @@
 			return pipe.apply(this, items.slice(1))(items[0]);
 		}
 
+		var build_map = function() {
+			if (arguments.length < 2) throw new TypeError();
+			if (typeof(arguments[0]) != "function") throw new TypeError("First argument must be a function.");
+			return now_map.apply(this, arguments);
+		}
+
 		/** @type { <T>(ordering: slime.$api.fp.Ordering<T>) => slime.$api.fp.CompareFn<T> } */
 		var orderingToJs = function(ordering) {
 			return function(a,b) {
@@ -802,6 +808,7 @@
 				invoke: now_map,
 				map: now_map
 			}),
+			build: build_map,
 			result: now_map,
 			object: {
 				Update: {
