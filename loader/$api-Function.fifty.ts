@@ -1685,6 +1685,33 @@ namespace slime.$api.fp {
 			: Input
 	)
 
+	type NowFunctionFirstDeprecated = {
+		/**
+		 * @deprecated Use {@link Exports.build | `$api.fp.build`} when the first argument to `now` is a function value.
+		 */
+		<
+			F extends slime.external.lib.es5.TypescriptFunction,
+			S1Out
+		>(
+			f: F,
+			s1: (f: F) => S1Out
+		): S1Out
+
+		/**
+		 * @deprecated Use {@link Exports.build | `$api.fp.build`} when the first argument to `now` is a function value.
+		 */
+		<
+			F extends slime.external.lib.es5.TypescriptFunction,
+			S1Out,
+			S1 extends (f: F) => S1Out,
+			SRest extends readonly BuildStep[]
+		>(
+			f: F,
+			s1: S1,
+			...rest: BuildStepChain<S1Out, SRest>
+		): BuildResult<S1Out, SRest>
+	}
+
 	export interface Exports {
 		/**
 		 * Returns the result of transforming a function value through one or more combinators.
@@ -1715,7 +1742,7 @@ namespace slime.$api.fp {
 		 * Returns the result of invoking a function on an argument. `now(p, f)` is syntactic sugar for `f(p)`, and
 		 * `now(p, f, g) is syntactic sugar for `g(f(p))`.
 		 */
-		now: Now_map & {
+		now: NowFunctionFirstDeprecated & Now_map & {
 			/**
 			 * @deprecated Replaced by {@link Exports.now}.
 			 */

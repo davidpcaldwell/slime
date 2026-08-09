@@ -29,7 +29,7 @@
 						jsh.shell.java.Jdk.from.javaHome,
 						$api.fp.build(
 							jsh.shell.java.Jdk.jrunscript,
-							$api.fp.Partial.impure.exception(function(jdk) {
+							$api.fp.Partial.impure.exception(function(/** @type { slime.jrunscript.shell.java.Jdk } */jdk) {
 								return new Error("Could not resolve jrunscript for JDK home: " + jdk.base);
 							})
 						)
