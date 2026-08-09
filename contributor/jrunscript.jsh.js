@@ -25,9 +25,7 @@
 		jsh.script.cli.main(
 			$api.fp.pipe(
 				function(p) {
-					// TODO: force CoffeeScript for verification?
-
-					var jrunscript = $api.fp.Thunk.now(
+					var jrunscript = $api.fp.now(
 						jsh.shell.java.Jdk.from.javaHome,
 						//	TODO	below should use $api.fp.build
 						$api.fp.now(

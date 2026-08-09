@@ -448,7 +448,7 @@ namespace slime.jsh.shell {
 			};
 
 			var getJavaHome = function() {
-				var h = jsh.shell.java.Jdk.from.javaHome();
+				var h = jsh.shell.java.Jdk.from.javaHome;
 				return jsh.file.Pathname(h.base).directory;
 			}
 
@@ -567,7 +567,7 @@ namespace slime.jsh.shell {
 						environment: function(was) {
 							var PATH = (function() {
 								var now = jsh.shell.PATH.pathnames;
-								var jdk = jsh.shell.java.Jdk.from.javaHome();
+								var jdk = jsh.shell.java.Jdk.from.javaHome;
 								var bin = jsh.file.Pathname(jdk.base + "/" + "bin");
 								now.unshift(bin);
 								return jsh.file.Searchpath(now);
@@ -605,7 +605,7 @@ namespace slime.jsh.shell {
 						environment: function(was) {
 							//	TODO	maybe we should standardize all this to make it easier to work with native executable
 							//			launcher
-							var jdk = jsh.shell.java.Jdk.from.javaHome();
+							var jdk = jsh.shell.java.Jdk.from.javaHome;
 							var PATH = (function() {
 								var now = jsh.shell.PATH.pathnames;
 								var bin = jsh.file.Pathname(jdk.base + "/" + "bin");
@@ -839,7 +839,7 @@ namespace slime.jsh.shell {
 						var pathnames = jsh.shell.PATH.pathnames;
 						pathnames.unshift(
 							jsh.file.Pathname(
-								jsh.shell.java.Jdk.from.javaHome().base
+								jsh.shell.java.Jdk.from.javaHome.base
 							).directory.getRelativePath("bin")
 						);
 						return jsh.file.Searchpath(pathnames).toString();

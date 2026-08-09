@@ -48,9 +48,9 @@ namespace slime.jrunscript.shell.java {
 				base: (base: string) => slime.$api.fp.Result<JdkFromBaseError,Jdk>
 
 				/**
-				 * Returns a Jdk object based on the value of the `java.home` property.
+				 * The Jdk value corresponding to the JDK referenced by the `java.home` property.
 				 */
-				javaHome: () => Jdk
+				javaHome: Jdk
 			}
 
 			jrunscript: (jdk: Jdk) => slime.$api.fp.Maybe<string>
@@ -65,7 +65,7 @@ namespace slime.jrunscript.shell.java {
 			const { subject } = test;
 
 			fifty.tests.manual.Jdk = function() {
-				var jdk = subject.Jdk.from.javaHome();
+				var jdk = subject.Jdk.from.javaHome;
 				jsh.shell.console(jdk.base);
 			}
 		}

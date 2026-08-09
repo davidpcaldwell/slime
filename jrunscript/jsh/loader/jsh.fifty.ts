@@ -380,7 +380,7 @@ namespace slime.jsh {
 
 				const withJava = function(environment: { [name: string]: string }): { [name: string]: string } {
 					var javaBin = $api.fp.now(
-						jsh.shell.java.Jdk.from.javaHome().base,
+						jsh.shell.java.Jdk.from.javaHome.base,
 						jsh.file.Location.from.os,
 						jsh.file.Location.directory.relativePath("bin"),
 						$api.fp.property("pathname")
