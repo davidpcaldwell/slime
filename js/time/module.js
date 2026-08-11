@@ -12,6 +12,11 @@
 	 * @param { slime.loader.Export<slime.time.Interface> } $export
 	 */
 	function($api,$context,$export) {
+		/**
+		 * The default World implementation.
+		 *
+		 * @type { Pick<slime.time.World,"now"> & { zones: slime.time.Interface["Timezone"] } }
+		 */
 		var world = {
 			now: { read: function() { return new Date().getTime(); } },
 			zones: {
@@ -45,13 +50,17 @@
 			}
 		};
 
-		var now = (function(now) {
-			if (typeof(now) == "function") return { read: now };
-			if (now && typeof(now.read) == "function") return now;
-			return world.now;
-		})($context.now);
-
 		var zones = $api.Object.compose(world.zones, $context.zones || {});
+
+		/** @type { slime.time.World } */
+		var context = {
+			now: (function(now) {
+				if (typeof(now) == "function") return { read: now };
+				if (now && typeof(now.read) == "function") return now;
+				return world.now;
+			})($context.now),
+			zones: zones
+		}
 
 		var harmonize = function(y,m,d) {
 			if (typeof(y) != "number") throw "y not number: " + y;
@@ -761,7 +770,7 @@
 			}
 
 			this.local = function(zone) {
-				if (!zone) zone = zones.local;
+				if (!zone) zone = context.zones.local;
 				var unix = zone.unix({
 					year: day.year.value,
 					month: (day.month.id) ? day.month.id.index : day.month.index,
@@ -925,7 +934,7 @@
 			//	Time zone information: http://www.twinsun.com/tz/tz-link.htm
 			/** @type { slime.time.old.When["local"] } */
 			this.local = function(zone) {
-				if (!zone) zone = zones.local;
+				if (!zone) zone = context.zones.local;
 				var zoned = zone.local(date.getTime());
 				return new Time({
 					day: new Day(zoned.year,zoned.month,zoned.day),
@@ -988,7 +997,7 @@
 				} else if (parsedTime[8] == "Z") {
 					offset = 0;
 				}
-				var utc = zones.UTC.unix({
+				var utc = context.zones.UTC.unix({
 					year: Number(parsedTime[1]),
 					month: Number(parsedTime[2]),
 					day: Number(parsedTime[3]),
@@ -1001,7 +1010,7 @@
 			}
 
 			this.encode = function(when) {
-				return when.local(zones.UTC).format("yyyy-mm-ddTHR:mi:sc.###Z");
+				return when.local(context.zones.UTC).format("yyyy-mm-ddTHR:mi:sc.###Z");
 			}
 		}
 		When.codec.Date = new function() {
@@ -1158,7 +1167,7 @@
 		};
 
 		var today = function() {
-			var datetime = zones.local.local(now.read());
+			var datetime = context.zones.local.local(context.now.read());
 			return {
 				year: datetime.year,
 				month: datetime.month,
@@ -1167,7 +1176,7 @@
 		};
 
 		$export({
-			Value: $api.fp.methods.pin({ now: now, zones: zones })(Value),
+			Value: $api.fp.methods.pin({ now: context.now, zones: context.zones })(Value),
 			Datetime: {
 				date: function(datetime) {
 					return {
@@ -1472,7 +1481,7 @@
 									hour: datetime.hour,
 									minute: datetime.minute,
 									second: datetime.second,
-									offset: Math.round((zones.UTC.unix(datetime) - zone.unix(datetime)) / (60 * 1000))
+									offset: Math.round((context.zones.UTC.unix(datetime) - zone.unix(datetime)) / (60 * 1000))
 								}
 							}
 						},
@@ -1486,7 +1495,7 @@
 									hour: datetime.hour,
 									minute: datetime.minute,
 									second: datetime.second,
-									offset: Math.round((zones.UTC.unix(datetime) - value) / (60 * 1000))
+									offset: Math.round((context.zones.UTC.unix(datetime) - value) / (60 * 1000))
 								}
 							}
 						}
@@ -1521,7 +1530,7 @@
 						if (time.offset < -1439 || time.offset > 1439) {
 							throw new TypeError(message);
 						}
-						var localAsUtc = zones.UTC.unix({
+						var localAsUtc = context.zones.UTC.unix({
 							year: time.year,
 							month: time.month,
 							day: time.day,
@@ -1544,7 +1553,7 @@
 			Time: Object.assign(
 				Time,
 				{
-					Zone: zones
+					Zone: context.zones
 				}
 			),
 			Year: Year,
