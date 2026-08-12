@@ -9,7 +9,7 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.time.Context } $context
-	 * @param { slime.loader.Export<slime.time.Interface> } $export
+	 * @param { slime.loader.Export<slime.time.Exports> } $export
 	 */
 	function($api,$context,$export) {
 		// /** @type { never } */
@@ -31,7 +31,6 @@
 							return new Date(local.year,local.month-1,local.day,local.hour,local.minute,local.second).getTime();
 						}
 					},
-					//	TODO	Should we make this conditional on $context.zones.UTC?
 					UTC: {
 						local: function(unix) {
 							var date = new Date(unix);
@@ -51,8 +50,8 @@
 		};
 
 		var context = {
-			now: $context.world.now || world.Date.now,
-			zones: $api.Object.compose(world.Date.zones, $context.world.zones || {})
+			now: ($context.world && $context.world.now) || world.Date.now,
+			zones: $api.Object.compose(world.Date.zones, ($context.world && $context.world.zones) || {})
 		};
 
 		// /**
@@ -1178,6 +1177,7 @@
 		};
 
 		$export({
+			world: world,
 			Value: $api.fp.methods.pin({ now: context.now, zones: context.zones })(Value),
 			Datetime: {
 				date: function(datetime) {
