@@ -256,7 +256,7 @@ namespace slime.jsh {
 		}
 
 		file: slime.jrunscript.file.Plugin
-		time: slime.time.Interface
+		time: slime.time.AdapterExports
 		ip: slime.jrunscript.ip.Exports
 		db: {
 			jdbc: slime.jsh.db.jdbc.Exports
