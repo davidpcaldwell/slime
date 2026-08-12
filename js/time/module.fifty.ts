@@ -64,7 +64,27 @@ namespace slime.time {
 		}
 	}
 
-	export type Context = Partial<World>;
+	export interface Exports {
+		world: {
+			Date: {
+				now: World["now"]
+				zones: {
+					local: world.Zone
+					UTC: world.Zone
+				}
+			}
+		}
+	}
+
+	export interface Context {
+		world?: {
+			now?: World["now"]
+
+			zones?: {
+				[id: string]: world.Zone
+			}
+		}
+	}
 
 	export namespace test {
 		export const { subject, load } = (function(fifty: slime.fifty.test.Kit) {
@@ -129,9 +149,11 @@ namespace slime.time {
 
 				fifty.tests.exports.Value.now = function() {
 					var context: Context = {
-						now: {
-							read: function() {
-								return 1000;
+						world: {
+							now: {
+								read: function() {
+									return 1000;
+								}
 							}
 						}
 					};
@@ -194,8 +216,10 @@ namespace slime.time {
 
 			fifty.tests.exports.Date.today = function() {
 				var subject = test.load({
-					now: {
-						read: $api.fp.Thunk.value(1643907600000)
+					world: {
+						now: {
+							read: $api.fp.Thunk.value(1643907600000)
+						}
 					}
 				});
 				var today = subject.Date.input.today();
@@ -1143,7 +1167,7 @@ namespace slime.time {
 	//@ts-ignore
 	)(fifty);
 
-	export type Exports = Interface
+	export interface Exports extends Interface {}
 
 	export type Script = slime.runtime.loader.Scoped<Context|void,Exports>
 }

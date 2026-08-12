@@ -9,58 +9,59 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.time.Context } $context
-	 * @param { slime.loader.Export<slime.time.Interface> } $export
+	 * @param { slime.loader.Export<slime.time.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		/**
-		 * The default World implementation.
-		 *
-		 * @type { Pick<slime.time.World,"now"> & { zones: slime.time.Interface["Timezone"] } }
-		 */
+		// /** @type { never } */
+		// var Date;
+
 		var world = {
-			now: { read: function() { return new Date().getTime(); } },
-			zones: {
-				local: new function() {
-					this.local = function(unix) {
-						var date = new Date(unix);
-						return {
-							year: date.getFullYear(), month: date.getMonth()+1, day: date.getDate(),
-							hour: date.getHours(), minute: date.getMinutes(), second: date.getSeconds() + date.getMilliseconds() / 1000
+			Date: {
+				now: { read: function() { return new Date().getTime(); } },
+				zones: {
+					local: {
+						local: function(unix) {
+							var date = new Date(unix);
+							return {
+								year: date.getFullYear(), month: date.getMonth()+1, day: date.getDate(),
+								hour: date.getHours(), minute: date.getMinutes(), second: date.getSeconds() + date.getMilliseconds() / 1000
+							}
+						},
+						unix: function(local) {
+							return new Date(local.year,local.month-1,local.day,local.hour,local.minute,local.second).getTime();
 						}
-					}
-					this.unix = function(local) {
-						return new Date(local.year,local.month-1,local.day,local.hour,local.minute,local.second).getTime();
-					}
-				},
-				//	TODO	Should we make this conditional on $context.zones.UTC?
-				UTC: new function() {
-					this.local = function(unix) {
-						var date = new Date(unix);
-						return {
-							year: date.getUTCFullYear(), month: date.getUTCMonth()+1, day: date.getUTCDate(),
-							hour: date.getUTCHours(), minute: date.getUTCMinutes(), second: date.getUTCSeconds() + date.getUTCMilliseconds() / 1000
-						};
-					}
-					this.unix = function(local) {
-						var wholeSeconds = Math.floor(local.second);
-						var milliseconds = Math.round((local.second - Math.floor(local.second)) * 1000);
-						return Date.UTC(local.year,local.month-1,local.day,local.hour,local.minute,wholeSeconds,milliseconds);
+					},
+					UTC: {
+						local: function(unix) {
+							var date = new Date(unix);
+							return {
+								year: date.getUTCFullYear(), month: date.getUTCMonth()+1, day: date.getUTCDate(),
+								hour: date.getUTCHours(), minute: date.getUTCMinutes(), second: date.getUTCSeconds() + date.getUTCMilliseconds() / 1000
+							};
+						},
+						unix: function(local) {
+							var wholeSeconds = Math.floor(local.second);
+							var milliseconds = Math.round((local.second - Math.floor(local.second)) * 1000);
+							return Date.UTC(local.year,local.month-1,local.day,local.hour,local.minute,wholeSeconds,milliseconds);
+						}
 					}
 				}
 			}
 		};
 
-		var zones = $api.Object.compose(world.zones, $context.zones || {});
-
-		/** @type { slime.time.World } */
 		var context = {
-			now: (function(now) {
-				if (typeof(now) == "function") return { read: now };
-				if (now && typeof(now.read) == "function") return now;
-				return world.now;
-			})($context.now),
-			zones: zones
-		}
+			now: ($context.world && $context.world.now) || world.Date.now,
+			zones: $api.Object.compose(world.Date.zones, ($context.world && $context.world.zones) || {})
+		};
+
+		// /**
+		//  * The default World implementation.
+		//  *
+		//  * @type { slime.time.World }
+		//  */
+		// var world = {
+		// 	zones: {}
+		// };
 
 		var harmonize = function(y,m,d) {
 			if (typeof(y) != "number") throw "y not number: " + y;
@@ -1176,6 +1177,7 @@
 		};
 
 		$export({
+			world: world,
 			Value: $api.fp.methods.pin({ now: context.now, zones: context.zones })(Value),
 			Datetime: {
 				date: function(datetime) {
@@ -1349,7 +1351,7 @@
 					return Date_add(first, -1);
 				}
 			},
-			Timezone: zones,
+			Timezone: context.zones,
 			zone: {
 				Time: {
 					codec: {
