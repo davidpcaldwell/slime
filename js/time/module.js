@@ -12,13 +12,11 @@
 	 * @param { slime.loader.Export<slime.time.Exports> } $export
 	 */
 	function($api,$context,$export) {
-		// /** @type { never } */
-		// var Date;
-
-		var world = {
+		/** @type { slime.time.Exports["world"] } */
+		var worlds = {
 			Date: {
 				now: { read: function() { return new Date().getTime(); } },
-				zones: {
+				Zone: {
 					local: {
 						local: function(unix) {
 							var date = new Date(unix);
@@ -49,18 +47,10 @@
 			}
 		};
 
-		var context = {
-			now: ($context.world && $context.world.now) || world.Date.now,
-			zones: $api.Object.compose(world.Date.zones, ($context.world && $context.world.zones) || {})
-		};
-
-		// /**
-		//  * The default World implementation.
-		//  *
-		//  * @type { slime.time.World }
-		//  */
-		// var world = {
-		// 	zones: {}
+		// /** @type { slime.time.World } */
+		// var context = {
+		// 	now: ($context.world && $context.world.now) || { read: function() { return new Date().getTime(); } },
+		// 	zones: $api.Object.compose(worlds.Date.Zone, ($context.world && $context.world.zones) || {})
 		// };
 
 		var harmonize = function(y,m,d) {
@@ -150,24 +140,6 @@
 		months.forEach( function(name,index) {
 			new MonthId(name,index+1);
 		});
-
-		var Month = function(p) {
-			if (arguments.length == 2 && typeof(arguments[0]) == "number" && typeof(arguments[1]) == "number") {
-				return new Month({ year: new Year(arguments[0]), id: MonthId.get(arguments[1]) });
-			}
-			this.year = p.year;
-			this.id = p.id;
-
-			this.day = function(p) {
-				if (typeof(p) == "number") {
-					return new Day({
-						year: this.year,
-						month: this.id,
-						day: p
-					});
-				}
-			}
-		}
 
 		var Week = function() {
 		}
@@ -464,653 +436,8 @@
 			return Math.round((dayUtc - referenceUtc) / (24 * 60 * 60 * 1000));
 		};
 
-		/**
-		 * @constructor
-		 * @param { any } p
-		 */
-		function Day(p) {
-			var year;
-			var month;
-			var day;
-
-			if (typeof(arguments[0]) == "number" && arguments.length == 3) {
-				(function checkArguments() {
-					var asDate = new Date(arguments[0], arguments[1]-1, arguments[2]);
-					if (asDate.getFullYear() != arguments[0] || asDate.getMonth() != (arguments[1]-1) || asDate.getDate() != arguments[2]) {
-						throw new Error("Invalid date arguments: " + Array.prototype.join.apply(arguments, [","]));
-					}
-				}).apply(this,arguments);
-				return new Day({
-					year: new Year(arguments[0]),
-					month: MonthId.get(arguments[1]),
-					day: arguments[2]
-				});
-			}
-
-			if (typeof(arguments[0]) == "object" && arguments[0] && typeof(arguments[0].date) == "object") {
-				var arg = arguments[0];
-				return new Day(
-					arg.date.getFullYear(),
-					arg.date.getMonth()+1,
-					arg.date.getDate()
-				);
-			}
-
-			if (typeof(arguments[0]) == "object" && arguments[0] && typeof(arguments[0].json) == "object") {
-				var arg = arguments[0];
-				return new Day(arg.json.year.value, arg.json.month.index, arg.json.day);
-			}
-
-			if (arguments.length == 1) {
-				var arg = arguments[0];
-				if (typeof(arg.year) == "number" && typeof(arg.month) == "number" && typeof(arg.day) == "number") {
-					year = new Year(arg.year);
-					month = new Month({ year: year, id: MonthId.get(arg.month) });
-					day = arg.day;
-				} else if (typeof(arg.year) != "undefined") {
-					year = Year.cast(arg.year);
-					month = new Month({ year: year, id: MonthId.cast(arg.month) });
-					day = Number(arg.day);
-				} else {
-					throw new Error("Unknown arguments: " + Array.prototype.join.apply(arguments, [","]));
-				}
-			} else {
-				throw new Error("Unknown arguments: " + Array.prototype.join.apply(arguments, [","]));
-			}
-
-			//	TODO	use Date_add
-			var toDate = function(offset) {
-				if (typeof(offset) == "undefined") offset = 0;
-				var base = new Date(
-					year.value,
-					month.id.index-1,
-					day,
-					0,
-					0,
-					0
-				);
-				var time = base.getTime() + (offset + 0.5)*24*60*60*1000;
-				var end = new Date(time);
-				return new Date(end.getFullYear(), end.getMonth(), end.getDate());
-			}
-
-			//	TODO	Use getters on platforms supporting them
-			this.year = year;
-			this.month = ($context.old && $context.old.Day_month) ? month.id : month;
-			this.day = day;
-
-			this.weekday = WeekDayId.get(toDate().getDay());
-			$api.experimental(this,"weekday");
-
-			this.add = function(offset) {
-				return new Day({date: toDate(offset)});
-			}
-
-			this.addMonths = function(offset) {
-				var asDate = harmonize(this.year.value, month.id.index-1+offset, this.day);
-				return new Day({date: asDate});
-			}
-
-			this.addYears = function(offset) {
-				return new Day({date: harmonize(this.year.value+offset, month.id.index-1, this.day)});
-			}
-
-			this.at = function(time) {
-				return new Time({day: this, time: time});
-			}
-
-			this.format = function(mask) {
-				var parser = new Parser();
-				addDayParserChecks(parser,year,month.id,day,toDate());
-				return parser.format(mask);
-			}
-
-			this.isBefore = function(day) {
-				return toGlobalDate(this).getTime() < toGlobalDate(day).getTime();
-			}
-
-			this.isAfter = function(day) {
-				return toGlobalDate(this).getTime() > toGlobalDate(day).getTime();
-			}
-
-			this.is = function(day) {
-				return toGlobalDate(this).getTime() == toGlobalDate(day).getTime();
-			}
-
-			this.adapt = function() {
-				return {
-					year: year.value,
-					month: month.id.index,
-					day: day
-				}
-			}
-
-			return this;
-		}
-		Day.subtract = function(a,b) {
-			var whena = a.at(new Day_Time(0,0)).local();
-			var whenb = b.at(new Day_Time(0,0)).local();
-			return Math.round((whena.unix - whenb.unix) / 1000 / 60 / 60 / 24);
-		}
-		/**
-		 * @constructor
-		 * @param { any } hours
-		 * @param { any } [minutes]
-		 */
-		function Day_Time(hours,minutes) {
-			var Self = arguments.callee;
-			var hours;
-			var minutes;
-			var seconds;
-
-			if (arguments.length == 1) {
-				var between = function(prop,min,max) {
-					if (typeof(args[prop]) == "undefined") throw "Missing: " + prop;
-					var n = Number(args[prop]);
-					if (n < min || n > max) throw "Out of range: " + prop + "=" + n;
-					//	TODO	Check for integer
-					return n;
-				}
-
-				var args = arguments[0];
-				if (typeof(args.hours) != "undefined") {
-					hours = between("hours",0,23);
-
-					minutes = between("minutes",0,59);
-					seconds = (args.seconds) ? Number(args.seconds) : 0;
-					if (seconds < 0 || seconds >= 60) {
-						throw "Illegal seconds: " + seconds;
-					}
-				} else if (typeof(args.json) != "undefined") {
-					return new Day_Time(args.json);
-				} else {
-					throw "Unrecognized arguments.";
-				}
-			} else if (arguments.length == 2) {
-				return new Day_Time({hours: arguments[0], minutes: arguments[1]});
-			} else if (arguments.length == 3) {
-				return new Day_Time({hours: arguments[0], minutes: arguments[1], seconds: arguments[2]});
-			} else {
-				throw "Unrecognized arguments.";
-			}
-
-			//	TODO	Use read only on platforms supporting this
-			this.hours = hours;
-			this.minutes = minutes;
-			this.seconds = seconds;
-
-			//	TODO	horrifying overlap of stuff in addTimeParserChecks
-			this.format = function(mask) {
-				var format = function(n,pad) {
-					var rv = Math.floor(n).toFixed(0);
-					if (pad && rv.length == 1) rv = "0" + rv;
-					return rv;
-				}
-
-				var toampm = function(hours) {
-					if (hours == 0) return 12;
-					if (hours > 12) return hours-12;
-					return hours;
-				}
-
-				var ampm = function(hours) {
-					if (hours < 12) return "am";
-					return "pm";
-				}
-
-				mask = mask.replace(/HR/, format(this.hours, true));
-				mask = mask.replace(/hr/, format(toampm(this.hours), true));
-				mask = mask.replace(/H/, format(this.hours));
-				mask = mask.replace(/h/, format(toampm(this.hours)));
-
-				mask = mask.replace(/mi/, format(this.minutes, true));
-				mask = mask.replace(/sc/, format(this.seconds, true));
-				mask = mask.replace(/am/, "pm");
-				mask = mask.replace(/AM/, "PM");
-				mask = mask.replace(/pm/, ampm(this.hours));
-				mask = mask.replace(/PM/, ampm(this.hours).toUpperCase());
-
-				if (mask.indexOf(".#") != -1) {
-					var mul = function(str,n) {
-						return Array(n+1).join(str);
-					}
-
-					var count = 1;
-					while(mask.indexOf("." + mul("#",count+1)) != -1) {
-						count++;
-					}
-
-					mask = mask.replace("." + mul("#",count), "." + this.seconds.toFixed(count).split(".")[1]);
-				}
-				return mask;
-			}
-
-			return void(0);
-		}
-		Day.today = function() {
-			return new Day({date: new Date()});
-		}
-		Day.codec = {};
-		Day.codec.js = new function() {
-			this.encode = function(o) {
-				var month = (o.month.id) ? o.month.id.index : o.month.index;
-				return { year: o.year.value, month: month, day: o.day };
-			}
-
-			this.decode = function(o) {
-				return new Day(o.year,o.month,o.day);
-			}
-		}
-		Day.codec.json = new function() {
-			this.encode = function(o) {
-				return {
-					year: { value: o.year.value },
-					month: { index: o.month.index },
-					day: o.day
-				};
-			}
-
-			this.decode = function(o) {
-				var month = (o.month.id) ? o.month.id.index : o.month.index;
-				return new Day(o.year.value,month,o.day);
-			}
-		}
-		Day.codec.iso8601 = new function() {
-			this.extended = new function() {
-				this.encode = function(o) {
-					return o.format("yyyy-mm-dd");
-				}
-
-				this.decode = function(string) {
-					var parsed = string.split("-");
-					var rv = new Day(Number(parsed[0]),Number(parsed[1]),Number(parsed[2]));
-					return rv;
-				}
-			}
-		}
-		Day.rehydrate = function(json) {
-			return new Day(json.year.value, json.month.id.index, json.day);
-		};
-
-		function Time() {
-			var day;
-			var time;
-
-			if (arguments.length == 1) {
-				if (arguments[0].json) {
-					day = new Day({ json: arguments[0].json.day });
-					time = new Day_Time({ json: arguments[0].json.time });
-				} else {
-					day = arguments[0].day;
-					time = arguments[0].time;
-				}
-			}
-
-			this.day = day;
-			this.time = time;
-
-			this.addDays = function(days) {
-				return new When({
-					day: day.add(days),
-					time: time
-				});
-			}
-
-			this.addMonths = function(months) {
-				return new When({
-					day: day.addMonths(months),
-					time: time
-				});
-			}
-
-			this.addYears = function(years) {
-				return new When({
-					day: day.addYears(years),
-					time: time
-				});
-			}
-
-			this.local = function(zone) {
-				if (!zone) zone = context.zones.local;
-				var unix = zone.unix({
-					year: day.year.value,
-					month: (day.month.id) ? day.month.id.index : day.month.index,
-					day: day.day,
-					hour: time.hours,
-					minute: time.minutes,
-					second: time.seconds
-				});
-				return new When({unix: unix});
-			}
-
-			this.format = function(mask) {
-				var parser = new Parser();
-				var monthId = (this.day.month.id) ? this.day.month.id : this.day.month;
-				addDayParserChecks(parser,this.day.year,monthId,this.day.day,ToDate(this.day));
-				addTimeParserChecks(parser,this.time.hours,this.time.minutes,this.time.seconds);
-				return parser.format(mask);
-			}
-		}
-		Time.codec = {};
-		Time.codec.js = new function() {
-			this.encode = function(o) {
-				return { day: Day.codec.js.encode(o.day), time: { hours: o.time.hours, minutes: o.time.minutes, seconds: o.time.seconds } };
-			}
-
-			this.decode = function(o) {
-				return new Time({
-					day: Day.codec.js.decode(o.day),
-					time: new Day_Time(o.time)
-				});
-			}
-		}
-		Time.codec.rfc3339 = function() {
-			var decodeFractionProperty = "__slimeTimeRFC3339Fraction";
-			var decodeWholeSecondProperty = "__slimeTimeRFC3339WholeSecond";
-
-			var expandExponential = function(string) {
-				var parsed = /^(-?)(\d+)(?:\.(\d+))?e([+-]\d+)$/i.exec(string);
-				if (!parsed) return string;
-				var sign = parsed[1];
-				var integer = parsed[2];
-				var fraction = parsed[3] || "";
-				var exponent = Number(parsed[4]);
-				var digits = integer + fraction;
-				var decimalIndex = integer.length + exponent;
-
-				if (decimalIndex <= 0) {
-					return sign + "0." + Array(-decimalIndex + 1).join("0") + digits;
-				}
-				if (decimalIndex >= digits.length) {
-					return sign + digits + Array(decimalIndex - digits.length + 1).join("0");
-				}
-				return sign + digits.substring(0, decimalIndex) + "." + digits.substring(decimalIndex);
-			};
-
-			var encodeSecond = function(time, second) {
-				var wholeSecond = Math.floor(second);
-				var preservedFraction = time && time[decodeFractionProperty];
-				var preservedWholeSecond = time && time[decodeWholeSecondProperty];
-
-				if (
-					typeof(preservedFraction) == "string"
-					&& /^\d+$/.test(preservedFraction)
-					&& isInteger(preservedWholeSecond)
-					&& preservedWholeSecond == wholeSecond
-				) {
-					var preservedNumeric = wholeSecond + Number("0." + preservedFraction);
-					if (Math.abs(preservedNumeric - second) < 1e-12) {
-						return rfc3339Pad(wholeSecond, 2) + "." + preservedFraction;
-					}
-				}
-
-				var secondString = String(second);
-				if (/e/i.test(secondString)) secondString = expandExponential(secondString);
-				if (secondString.indexOf(".") == -1) return rfc3339Pad(secondString, 2);
-
-				var split = secondString.split(".");
-				var integerPart = split[0];
-				var fractionPart = split[1].replace(/0+$/, "");
-				if (!fractionPart.length) return rfc3339Pad(integerPart, 2);
-				return rfc3339Pad(integerPart, 2) + "." + fractionPart;
-			};
-
-			return {
-				encode: function(time) {
-					var hour = time && time.hour;
-					var minute = time && time.minute;
-					var second = time && time.second;
-					if (!isInteger(hour) || hour < 0 || hour > 23) throw rfc3339Error(String(time));
-					if (!isInteger(minute) || minute < 0 || minute > 59) throw rfc3339Error(String(time));
-					if (typeof(second) != "number" || !isFinite(second) || second < 0 || second >= 60) throw rfc3339Error(String(time));
-					return rfc3339Pad(hour,2) + ":" + rfc3339Pad(minute,2) + ":" + encodeSecond(time, second);
-				},
-				decode: function(string) {
-					var parsed = /^(\d{2})\:(\d{2})\:(\d{2})(?:\.(\d+))?$/.exec(string);
-					if (!parsed) throw rfc3339Error(string);
-					var hour = Number(parsed[1]);
-					var minute = Number(parsed[2]);
-					var second = Number(parsed[3]) + ((parsed[4]) ? Number("0." + parsed[4]) : 0);
-					if (!isInteger(hour) || hour < 0 || hour > 23) throw rfc3339Error(string);
-					if (!isInteger(minute) || minute < 0 || minute > 59) throw rfc3339Error(string);
-					if (typeof(second) != "number" || !isFinite(second) || second < 0 || second >= 60) throw rfc3339Error(string);
-					var decoded = {
-						hour: hour,
-						minute: minute,
-						second: second
-					};
-					if (parsed[4]) {
-						Object.defineProperty(decoded, decodeWholeSecondProperty, {
-							value: Number(parsed[3]),
-							enumerable: false,
-							configurable: true
-						});
-						Object.defineProperty(decoded, decodeFractionProperty, {
-							value: parsed[4],
-							enumerable: false,
-							configurable: true
-						});
-					}
-					return decoded;
-				}
-			}
-		}
-
-		function When() {
-			var date;
-
-			if (arguments.length == 1) {
-				var args = arguments[0];
-				if (args.getYear && args.getFullYear) {
-					return new When({ date: args });
-				} else if (args.date) {
-					date = new Date(args.date.getTime());
-				} else if (args.unix) {
-					date = new Date(args.unix);
-				} else if (args.day) {
-					date = new Date(
-						args.day.year.value,
-						args.day.month.index-1,
-						args.day.day,
-						args.time.hours,
-						args.time.minutes,
-						Math.floor(args.time.seconds),
-						(args.time.seconds - Math.floor(args.time.seconds)) * 1000
-					);
-				} else if (args.json) {
-					return new When({
-						unix: args.json.unix
-					});
-				} else {
-					throw new TypeError("Unrecognized arguments.");
-				}
-			} else {
-				throw new TypeError("Unrecognized arguments.");
-			}
-
-			this.toString = function() {
-				return date.toString();
-			}
-
-			//	Time zone information: http://www.twinsun.com/tz/tz-link.htm
-			/** @type { slime.time.old.When["local"] } */
-			this.local = function(zone) {
-				if (!zone) zone = context.zones.local;
-				var zoned = zone.local(date.getTime());
-				return new Time({
-					day: new Day(zoned.year,zoned.month,zoned.day),
-					time: new Day_Time(zoned.hour,zoned.minute,zoned.second)
-				});
-			}
-
-			// this.day = new Day({ date: date });
-
-			// this.time = new Day.Time({
-			// 	hours: date.getHours(),
-			// 	minutes: date.getMinutes(),
-			// 	seconds: date.getSeconds() + date.getMilliseconds() / 1000
-			// });
-
-			this.unix = date.getTime();
-
-			this.isBefore = function(other) {
-				return this.unix < other.unix;
-			}
-
-			this.isAfter = function(other) {
-				return this.unix > other.unix;
-			}
-
-			this.is = function(other) {
-				return this.unix == other.unix;
-			}
-			return this;
-		}
-		When.now = function() {
-			return new When({date: new Date()});
-		}
-		When.codec = {};
-		When.codec.js = new function() {
-			this.encode = function(o) {
-				return { unix: o.unix };
-			}
-
-			this.decode = function(o) {
-				return new When({ unix: o.unix });
-			}
-		}
-		When.codec.rfc3339 = new function() {
-			this.decode = function(string) {
-				var parsedTime = /^(\d{4})\-(\d{2})\-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})(?:\.(\d{3}))?(Z|((?:\+|\-)\d{2})\:(\d{2}))$/.exec(string);
-				if (!parsedTime) {
-					throw new TypeError("Does not match RFC3339 format: " + string);
-				}
-				var seconds = parsedTime[6];
-				if (parsedTime[7]) {
-					seconds += "." + parsedTime[7];
-				}
-				var offset;
-				var zone = parsedTime[8];
-				if (parsedTime[9] && parsedTime[10]) {
-					var hh = Number(parsedTime[9]);
-					var mm = Number(parsedTime[10]);
-					offset = hh * 60 + ((hh < 0) ? -mm : mm);
-				} else if (parsedTime[8] == "Z") {
-					offset = 0;
-				}
-				var utc = context.zones.UTC.unix({
-					year: Number(parsedTime[1]),
-					month: Number(parsedTime[2]),
-					day: Number(parsedTime[3]),
-					hour: Number(parsedTime[4]),
-					minute: Number(parsedTime[5]),
-					second: Number(seconds)
-				});
-				var rv = utc - offset * 60 * 1000;
-				return new When({ unix: rv });
-			}
-
-			this.encode = function(when) {
-				return when.local(context.zones.UTC).format("yyyy-mm-ddTHR:mi:sc.###Z");
-			}
-		}
-		When.codec.Date = new function() {
-			this.encode = function(o) {
-				return new Date(o.unix);
-			}
-
-			this.decode = function(o) {
-				return new When(o.getTime());
-			}
-		}
 		var Period = function(args) {
 		}
-
-		/**
-		 * @returns { Date | void }
-		 */
-		var ToDate = function() {
-			var isDay = function(p) {
-				//	It is mysterious why the second part of this OR is necessary, but the first version did not work
-				//	consistently on Google Chrome within an application, so adding this workaround for now, pending future investigation.
-				return p && (p.constructor == Day || p.constructor.toString() == Day.toString());
-			};
-
-			if (arguments.length == 1 && typeof(arguments[0]) == "object" && isDay(arguments[0])) {
-				var monthId = (arguments[0].month.id) ? arguments[0].month.id : arguments[0].month;
-				return new Date(arguments[0].year.value, monthId.index-1, arguments[0].day);
-			} else if (arguments.length == 1 && typeof(arguments[0]) == "object" && arguments[0].constructor == When) {
-				var monthId = (arguments[0].month.id) ? arguments[0].month.id : arguments[0].month;
-				return new Date(arguments[0].day.year.value, monthId.index-1,arguments[0].day.day,
-					arguments[0].time.hours, arguments[0].time.minutes, Math.floor(arguments[0].time.seconds),
-					(arguments[0].time.seconds % 1) * 1000
-				);
-			}
-			return void(0);
-		}
-
-		/**
-		 * @returns { Date }
-		 */
-		var toGlobalDate = function() {
-			var rv = ToDate.apply(this,arguments);
-			if (!rv) throw new Error();
-			return rv;
-		}
-
-		// TODO: this is dumb and should be removed
-		var install = (function() {
-			var called = false;
-			return function callee() {
-				var global = (function(){ return this; })();
-				if (!called) {
-					var oldDate = global.Date;
-					global.Date = function() {
-						if(this.constructor == arguments.callee) {
-							var local = ToDate.apply(null, arguments);
-							if (local) {
-								return local;
-							} else {
-								//	TODO	funky reflective constructor
-								if (arguments.length == 1) {
-									return new oldDate(arguments[0]);
-								} else if (arguments.length == 2) {
-									return new oldDate(arguments[0],arguments[1]);
-								} else if (arguments.length == 3) {
-									return new oldDate(arguments[0],arguments[1],arguments[2]);
-								} else if (arguments.length == 4) {
-									return new oldDate(arguments[0],arguments[1],arguments[2],arguments[3]);
-								} else if (arguments.length == 5) {
-									return new oldDate(arguments[0],arguments[1],arguments[2],arguments[3],arguments[4]);
-								} else if (arguments.length == 6) {
-									return new oldDate(arguments[0],arguments[1],arguments[2],arguments[3],arguments[4],arguments[5]);
-								} else if (arguments.length == 7) {
-									return new oldDate(arguments[0],arguments[1],arguments[2],arguments[3],arguments[4],arguments[5],arguments[6]);
-								} else if (arguments.length == 0) {
-									return new oldDate();
-								} else if (arguments.length > 7) {
-									throw new TypeError("Illegal number of arguments to new Date(...); see ECMA-262 15.9.3");
-								}
-							}
-							return function(){}();
-						} else {
-							return oldDate.apply(this, arguments);
-						}
-					};
-					global.Date.was = oldDate;
-					var members = [];
-					members.push("UTC");
-					for (var x in oldDate) {
-						members.push(x);
-					}
-					members.forEach( function(x) {
-						Date[x] = oldDate[x];
-					});
-					Date.now = oldDate.now;
-					called = true;
-				}
-			}
-		})();
 
 		/** @type { slime.time.DayOfWeek[] } */
 		var daysOfWeek = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
@@ -1159,413 +486,1096 @@
 			}
 		};
 
-		/** @type { slime.time.date.Exports["format"] } */
-		var format = function(mask) {
-			return function(date) {
-				var dayObject = new Day(date.year, date.month, date.day);
-				return dayObject.format(mask);
-			}
-		};
+		/** @type { slime.time.Exports["use"] } */
+		var use = function(world) {
+			/** @type { slime.time.date.Exports["format"] } */
+			var format = function(mask) {
+				return function(date) {
+					var dayObject = new Day(date.year, date.month, date.day);
+					return dayObject.format(mask);
+				}
+			};
 
-		var today = function() {
-			var datetime = context.zones.local.local(context.now.read());
-			return {
-				year: datetime.year,
-				month: datetime.month,
-				day: datetime.day
-			}
-		};
+			/**
+			 * @constructor
+			 * @param { any } p
+			 */
+			function Day(p) {
+				var year;
+				var month;
+				var day;
 
-		$export({
-			world: world,
-			Value: $api.fp.methods.pin({ now: context.now, zones: context.zones })(Value),
-			Datetime: {
-				date: function(datetime) {
+				if (typeof(arguments[0]) == "number" && arguments.length == 3) {
+					(function checkArguments() {
+						var asDate = new Date(arguments[0], arguments[1]-1, arguments[2]);
+						if (asDate.getFullYear() != arguments[0] || asDate.getMonth() != (arguments[1]-1) || asDate.getDate() != arguments[2]) {
+							throw new Error("Invalid date arguments: " + Array.prototype.join.apply(arguments, [","]));
+						}
+					}).apply(this,arguments);
+					return new Day({
+						year: new Year(arguments[0]),
+						month: MonthId.get(arguments[1]),
+						day: arguments[2]
+					});
+				}
+
+				if (typeof(arguments[0]) == "object" && arguments[0] && typeof(arguments[0].date) == "object") {
+					var arg = arguments[0];
+					return new Day(
+						arg.date.getFullYear(),
+						arg.date.getMonth()+1,
+						arg.date.getDate()
+					);
+				}
+
+				if (typeof(arguments[0]) == "object" && arguments[0] && typeof(arguments[0].json) == "object") {
+					var arg = arguments[0];
+					return new Day(arg.json.year.value, arg.json.month.index, arg.json.day);
+				}
+
+				if (arguments.length == 1) {
+					var arg = arguments[0];
+					if (typeof(arg.year) == "number" && typeof(arg.month) == "number" && typeof(arg.day) == "number") {
+						year = new Year(arg.year);
+						month = new Month({ year: year, id: MonthId.get(arg.month) });
+						day = arg.day;
+					} else if (typeof(arg.year) != "undefined") {
+						year = Year.cast(arg.year);
+						month = new Month({ year: year, id: MonthId.cast(arg.month) });
+						day = Number(arg.day);
+					} else {
+						throw new Error("Unknown arguments: " + Array.prototype.join.apply(arguments, [","]));
+					}
+				} else {
+					throw new Error("Unknown arguments: " + Array.prototype.join.apply(arguments, [","]));
+				}
+
+				//	TODO	use Date_add
+				var toDate = function(offset) {
+					if (typeof(offset) == "undefined") offset = 0;
+					var base = new Date(
+						year.value,
+						month.id.index-1,
+						day,
+						0,
+						0,
+						0
+					);
+					var time = base.getTime() + (offset + 0.5)*24*60*60*1000;
+					var end = new Date(time);
+					return new Date(end.getFullYear(), end.getMonth(), end.getDate());
+				}
+
+				//	TODO	Use getters on platforms supporting them
+				this.year = year;
+				this.month = ($context.old && $context.old.Day_month) ? month.id : month;
+				this.day = day;
+
+				this.weekday = WeekDayId.get(toDate().getDay());
+				$api.experimental(this,"weekday");
+
+				this.add = function(offset) {
+					return new Day({date: toDate(offset)});
+				}
+
+				this.addMonths = function(offset) {
+					var asDate = harmonize(this.year.value, month.id.index-1+offset, this.day);
+					return new Day({date: asDate});
+				}
+
+				this.addYears = function(offset) {
+					return new Day({date: harmonize(this.year.value+offset, month.id.index-1, this.day)});
+				}
+
+				this.at = function(time) {
+					return new Time({day: this, time: time});
+				}
+
+				this.format = function(mask) {
+					var parser = new Parser();
+					addDayParserChecks(parser,year,month.id,day,toDate());
+					return parser.format(mask);
+				}
+
+				this.isBefore = function(day) {
+					return toGlobalDate(this).getTime() < toGlobalDate(day).getTime();
+				}
+
+				this.isAfter = function(day) {
+					return toGlobalDate(this).getTime() > toGlobalDate(day).getTime();
+				}
+
+				this.is = function(day) {
+					return toGlobalDate(this).getTime() == toGlobalDate(day).getTime();
+				}
+
+				this.adapt = function() {
 					return {
-						year: datetime.year,
-						month: datetime.month,
-						day: datetime.day
-					};
-				},
-				time: function(datetime) {
+						year: year.value,
+						month: month.id.index,
+						day: day
+					}
+				}
+
+				return this;
+			}
+
+			/**
+			 * @constructor
+			 * @param { any } hours
+			 * @param { any } [minutes]
+			 */
+			function Day_Time(hours,minutes) {
+				var Self = arguments.callee;
+				var hours;
+				var minutes;
+				var seconds;
+
+				if (arguments.length == 1) {
+					var between = function(prop,min,max) {
+						if (typeof(args[prop]) == "undefined") throw "Missing: " + prop;
+						var n = Number(args[prop]);
+						if (n < min || n > max) throw "Out of range: " + prop + "=" + n;
+						//	TODO	Check for integer
+						return n;
+					}
+
+					var args = arguments[0];
+					if (typeof(args.hours) != "undefined") {
+						hours = between("hours",0,23);
+
+						minutes = between("minutes",0,59);
+						seconds = (args.seconds) ? Number(args.seconds) : 0;
+						if (seconds < 0 || seconds >= 60) {
+							throw "Illegal seconds: " + seconds;
+						}
+					} else if (typeof(args.json) != "undefined") {
+						return new Day_Time(args.json);
+					} else {
+						throw "Unrecognized arguments.";
+					}
+				} else if (arguments.length == 2) {
+					return new Day_Time({hours: arguments[0], minutes: arguments[1]});
+				} else if (arguments.length == 3) {
+					return new Day_Time({hours: arguments[0], minutes: arguments[1], seconds: arguments[2]});
+				} else {
+					throw "Unrecognized arguments.";
+				}
+
+				//	TODO	Use read only on platforms supporting this
+				this.hours = hours;
+				this.minutes = minutes;
+				this.seconds = seconds;
+
+				//	TODO	horrifying overlap of stuff in addTimeParserChecks
+				this.format = function(mask) {
+					var format = function(n,pad) {
+						var rv = Math.floor(n).toFixed(0);
+						if (pad && rv.length == 1) rv = "0" + rv;
+						return rv;
+					}
+
+					var toampm = function(hours) {
+						if (hours == 0) return 12;
+						if (hours > 12) return hours-12;
+						return hours;
+					}
+
+					var ampm = function(hours) {
+						if (hours < 12) return "am";
+						return "pm";
+					}
+
+					mask = mask.replace(/HR/, format(this.hours, true));
+					mask = mask.replace(/hr/, format(toampm(this.hours), true));
+					mask = mask.replace(/H/, format(this.hours));
+					mask = mask.replace(/h/, format(toampm(this.hours)));
+
+					mask = mask.replace(/mi/, format(this.minutes, true));
+					mask = mask.replace(/sc/, format(this.seconds, true));
+					mask = mask.replace(/am/, "pm");
+					mask = mask.replace(/AM/, "PM");
+					mask = mask.replace(/pm/, ampm(this.hours));
+					mask = mask.replace(/PM/, ampm(this.hours).toUpperCase());
+
+					if (mask.indexOf(".#") != -1) {
+						var mul = function(str,n) {
+							return Array(n+1).join(str);
+						}
+
+						var count = 1;
+						while(mask.indexOf("." + mul("#",count+1)) != -1) {
+							count++;
+						}
+
+						mask = mask.replace("." + mul("#",count), "." + this.seconds.toFixed(count).split(".")[1]);
+					}
+					return mask;
+				}
+
+				return void(0);
+			}
+			Day.today = function() {
+				return new Day({date: new Date()});
+			}
+			Day.codec = {};
+			Day.codec.js = new function() {
+				this.encode = function(o) {
+					var month = (o.month.id) ? o.month.id.index : o.month.index;
+					return { year: o.year.value, month: month, day: o.day };
+				}
+
+				this.decode = function(o) {
+					return new Day(o.year,o.month,o.day);
+				}
+			}
+			Day.codec.json = new function() {
+				this.encode = function(o) {
 					return {
-						hour: datetime.hour,
-						minute: datetime.minute,
-						second: datetime.second
+						year: { value: o.year.value },
+						month: { index: o.month.index },
+						day: o.day
 					};
 				}
-			},
-			Date: {
-				input: {
-					today: $api.deprecate(today)
-				},
-				today: {
-					read: today
-				},
-				from: {
-					ymd: function(y,m,d) {
-						return {
-							year: y,
-							month: m,
-							day: d
+
+				this.decode = function(o) {
+					var month = (o.month.id) ? o.month.id.index : o.month.index;
+					return new Day(o.year.value,month,o.day);
+				}
+			}
+			Day.codec.iso8601 = new function() {
+				this.extended = new function() {
+					this.encode = function(o) {
+						return o.format("yyyy-mm-dd");
+					}
+
+					this.decode = function(string) {
+						var parsed = string.split("-");
+						var rv = new Day(Number(parsed[0]),Number(parsed[1]),Number(parsed[2]));
+						return rv;
+					}
+				}
+			}
+			Day.rehydrate = function(json) {
+				return new Day(json.year.value, json.month.id.index, json.day);
+			};
+
+			Day.subtract = function(a,b) {
+				var whena = a.at(new Day_Time(0,0)).local();
+				var whenb = b.at(new Day_Time(0,0)).local();
+				return Math.round((whena.unix - whenb.unix) / 1000 / 60 / 60 / 24);
+			}
+
+			var Month = function(p) {
+				if (arguments.length == 2 && typeof(arguments[0]) == "number" && typeof(arguments[1]) == "number") {
+					return new Month({ year: new Year(arguments[0]), id: MonthId.get(arguments[1]) });
+				}
+				this.year = p.year;
+				this.id = p.id;
+
+				this.day = function(p) {
+					if (typeof(p) == "number") {
+						return new Day({
+							year: this.year,
+							month: this.id,
+							day: p
+						});
+					}
+				}
+			}
+
+			/**
+			 * @returns { Date | void }
+			 */
+			var ToDate = function() {
+				var isDay = function(p) {
+					//	It is mysterious why the second part of this OR is necessary, but the first version did not work
+					//	consistently on Google Chrome within an application, so adding this workaround for now, pending future investigation.
+					return p && (p.constructor == Day || p.constructor.toString() == Day.toString());
+				};
+
+				if (arguments.length == 1 && typeof(arguments[0]) == "object" && isDay(arguments[0])) {
+					var monthId = (arguments[0].month.id) ? arguments[0].month.id : arguments[0].month;
+					return new Date(arguments[0].year.value, monthId.index-1, arguments[0].day);
+				} else if (arguments.length == 1 && typeof(arguments[0]) == "object" && arguments[0].constructor == When) {
+					var monthId = (arguments[0].day.month.id) ? arguments[0].day.month.id : arguments[0].day.month;
+					return new Date(arguments[0].day.year.value, monthId.index-1,arguments[0].day.day,
+						arguments[0].time.hours, arguments[0].time.minutes, Math.floor(arguments[0].time.seconds),
+						(arguments[0].time.seconds % 1) * 1000
+					);
+				}
+				return void(0);
+			}
+
+			/**
+			 * @returns { Date }
+			 */
+			var toGlobalDate = function() {
+				var rv = ToDate.apply(this,arguments);
+				if (!rv) throw new Error();
+				return rv;
+			}
+
+			// TODO: this is dumb and should be removed
+			var install = (function() {
+				var called = false;
+				return function callee() {
+					var global = (function(){ return this; })();
+					if (!called) {
+						var oldDate = global.Date;
+						global.Date = function() {
+							if(this.constructor == arguments.callee) {
+								var local = ToDate.apply(null, arguments);
+								if (local) {
+									return local;
+								} else {
+									//	TODO	funky reflective constructor
+									if (arguments.length == 1) {
+										return new oldDate(arguments[0]);
+									} else if (arguments.length == 2) {
+										return new oldDate(arguments[0],arguments[1]);
+									} else if (arguments.length == 3) {
+										return new oldDate(arguments[0],arguments[1],arguments[2]);
+									} else if (arguments.length == 4) {
+										return new oldDate(arguments[0],arguments[1],arguments[2],arguments[3]);
+									} else if (arguments.length == 5) {
+										return new oldDate(arguments[0],arguments[1],arguments[2],arguments[3],arguments[4]);
+									} else if (arguments.length == 6) {
+										return new oldDate(arguments[0],arguments[1],arguments[2],arguments[3],arguments[4],arguments[5]);
+									} else if (arguments.length == 7) {
+										return new oldDate(arguments[0],arguments[1],arguments[2],arguments[3],arguments[4],arguments[5],arguments[6]);
+									} else if (arguments.length == 0) {
+										return new oldDate();
+									} else if (arguments.length > 7) {
+										throw new TypeError("Illegal number of arguments to new Date(...); see ECMA-262 15.9.3");
+									}
+								}
+								return function(){}();
+							} else {
+								return oldDate.apply(this, arguments);
+							}
+						};
+						global.Date.was = oldDate;
+						var members = [];
+						members.push("UTC");
+						for (var x in oldDate) {
+							members.push(x);
+						}
+						members.forEach( function(x) {
+							Date[x] = oldDate[x];
+						});
+						Date.now = oldDate.now;
+						called = true;
+					}
+				}
+			})();
+
+
+			function Time() {
+				var day;
+				var time;
+
+				if (arguments.length == 1) {
+					if (arguments[0].json) {
+						day = new Day({ json: arguments[0].json.day });
+						time = new Day_Time({ json: arguments[0].json.time });
+					} else {
+						day = arguments[0].day;
+						time = arguments[0].time;
+					}
+				}
+
+				this.day = day;
+				this.time = time;
+
+				this.addDays = function(days) {
+					return new When({
+						day: day.add(days),
+						time: time
+					});
+				}
+
+				this.addMonths = function(months) {
+					return new When({
+						day: day.addMonths(months),
+						time: time
+					});
+				}
+
+				this.addYears = function(years) {
+					return new When({
+						day: day.addYears(years),
+						time: time
+					});
+				}
+
+				this.local = function(zone) {
+					if (!zone) zone = world.zones.local;
+					var unix = zone.unix({
+						year: day.year.value,
+						month: (day.month.id) ? day.month.id.index : day.month.index,
+						day: day.day,
+						hour: time.hours,
+						minute: time.minutes,
+						second: time.seconds
+					});
+					return new When({unix: unix});
+				}
+
+				this.format = function(mask) {
+					var parser = new Parser();
+					var monthId = (this.day.month.id) ? this.day.month.id : this.day.month;
+					addDayParserChecks(parser,this.day.year,monthId,this.day.day,ToDate(this.day));
+					addTimeParserChecks(parser,this.time.hours,this.time.minutes,this.time.seconds);
+					return parser.format(mask);
+				}
+			}
+			Time.codec = {};
+			Time.codec.js = new function() {
+				this.encode = function(o) {
+					return { day: Day.codec.js.encode(o.day), time: { hours: o.time.hours, minutes: o.time.minutes, seconds: o.time.seconds } };
+				}
+
+				this.decode = function(o) {
+					return new Time({
+						day: Day.codec.js.decode(o.day),
+						time: new Day_Time(o.time)
+					});
+				}
+			}
+			Time.codec.rfc3339 = function() {
+				var decodeFractionProperty = "__slimeTimeRFC3339Fraction";
+				var decodeWholeSecondProperty = "__slimeTimeRFC3339WholeSecond";
+
+				var expandExponential = function(string) {
+					var parsed = /^(-?)(\d+)(?:\.(\d+))?e([+-]\d+)$/i.exec(string);
+					if (!parsed) return string;
+					var sign = parsed[1];
+					var integer = parsed[2];
+					var fraction = parsed[3] || "";
+					var exponent = Number(parsed[4]);
+					var digits = integer + fraction;
+					var decimalIndex = integer.length + exponent;
+
+					if (decimalIndex <= 0) {
+						return sign + "0." + Array(-decimalIndex + 1).join("0") + digits;
+					}
+					if (decimalIndex >= digits.length) {
+						return sign + digits + Array(decimalIndex - digits.length + 1).join("0");
+					}
+					return sign + digits.substring(0, decimalIndex) + "." + digits.substring(decimalIndex);
+				};
+
+				var encodeSecond = function(time, second) {
+					var wholeSecond = Math.floor(second);
+					var preservedFraction = time && time[decodeFractionProperty];
+					var preservedWholeSecond = time && time[decodeWholeSecondProperty];
+
+					if (
+						typeof(preservedFraction) == "string"
+						&& /^\d+$/.test(preservedFraction)
+						&& isInteger(preservedWholeSecond)
+						&& preservedWholeSecond == wholeSecond
+					) {
+						var preservedNumeric = wholeSecond + Number("0." + preservedFraction);
+						if (Math.abs(preservedNumeric - second) < 1e-12) {
+							return rfc3339Pad(wholeSecond, 2) + "." + preservedFraction;
 						}
 					}
+
+					var secondString = String(second);
+					if (/e/i.test(secondString)) secondString = expandExponential(secondString);
+					if (secondString.indexOf(".") == -1) return rfc3339Pad(secondString, 2);
+
+					var split = secondString.split(".");
+					var integerPart = split[0];
+					var fractionPart = split[1].replace(/0+$/, "");
+					if (!fractionPart.length) return rfc3339Pad(integerPart, 2);
+					return rfc3339Pad(integerPart, 2) + "." + fractionPart;
+				};
+
+				return {
+					encode: function(time) {
+						var hour = time && time.hour;
+						var minute = time && time.minute;
+						var second = time && time.second;
+						if (!isInteger(hour) || hour < 0 || hour > 23) throw rfc3339Error(String(time));
+						if (!isInteger(minute) || minute < 0 || minute > 59) throw rfc3339Error(String(time));
+						if (typeof(second) != "number" || !isFinite(second) || second < 0 || second >= 60) throw rfc3339Error(String(time));
+						return rfc3339Pad(hour,2) + ":" + rfc3339Pad(minute,2) + ":" + encodeSecond(time, second);
+					},
+					decode: function(string) {
+						var parsed = /^(\d{2})\:(\d{2})\:(\d{2})(?:\.(\d+))?$/.exec(string);
+						if (!parsed) throw rfc3339Error(string);
+						var hour = Number(parsed[1]);
+						var minute = Number(parsed[2]);
+						var second = Number(parsed[3]) + ((parsed[4]) ? Number("0." + parsed[4]) : 0);
+						if (!isInteger(hour) || hour < 0 || hour > 23) throw rfc3339Error(string);
+						if (!isInteger(minute) || minute < 0 || minute > 59) throw rfc3339Error(string);
+						if (typeof(second) != "number" || !isFinite(second) || second < 0 || second >= 60) throw rfc3339Error(string);
+						var decoded = {
+							hour: hour,
+							minute: minute,
+							second: second
+						};
+						if (parsed[4]) {
+							Object.defineProperty(decoded, decodeWholeSecondProperty, {
+								value: Number(parsed[3]),
+								enumerable: false,
+								configurable: true
+							});
+							Object.defineProperty(decoded, decodeFractionProperty, {
+								value: parsed[4],
+								enumerable: false,
+								configurable: true
+							});
+						}
+						return decoded;
+					}
+				}
+			}
+
+			function When() {
+				var date;
+
+				if (arguments.length == 1) {
+					var args = arguments[0];
+					if (args.getYear && args.getFullYear) {
+						return new When({ date: args });
+					} else if (args.date) {
+						date = new Date(args.date.getTime());
+					} else if (args.unix) {
+						date = new Date(args.unix);
+					} else if (args.day) {
+						date = new Date(
+							args.day.year.value,
+							args.day.month.index-1,
+							args.day.day,
+							args.time.hours,
+							args.time.minutes,
+							Math.floor(args.time.seconds),
+							(args.time.seconds - Math.floor(args.time.seconds)) * 1000
+						);
+					} else if (args.json) {
+						return new When({
+							unix: args.json.unix
+						});
+					} else {
+						throw new TypeError("Unrecognized arguments.");
+					}
+				} else {
+					throw new TypeError("Unrecognized arguments.");
+				}
+
+				this.toString = function() {
+					return date.toString();
+				}
+
+				//	Time zone information: http://www.twinsun.com/tz/tz-link.htm
+				/** @type { slime.time.old.When["local"] } */
+				this.local = function(zone) {
+					if (!zone) zone = world.zones.local;
+					var zoned = zone.local(date.getTime());
+					return new Time({
+						day: new Day(zoned.year,zoned.month,zoned.day),
+						time: new Day_Time(zoned.hour,zoned.minute,zoned.second)
+					});
+				}
+
+				// this.day = new Day({ date: date });
+
+				// this.time = new Day.Time({
+				// 	hours: date.getHours(),
+				// 	minutes: date.getMinutes(),
+				// 	seconds: date.getSeconds() + date.getMilliseconds() / 1000
+				// });
+
+				this.unix = date.getTime();
+
+				this.isBefore = function(other) {
+					return this.unix < other.unix;
+				}
+
+				this.isAfter = function(other) {
+					return this.unix > other.unix;
+				}
+
+				this.is = function(other) {
+					return this.unix == other.unix;
+				}
+				return this;
+			}
+			When.now = function() {
+				return new When({date: new Date()});
+			}
+			When.codec = {};
+			When.codec.js = new function() {
+				this.encode = function(o) {
+					return { unix: o.unix };
+				}
+
+				this.decode = function(o) {
+					return new When({ unix: o.unix });
+				}
+			}
+			When.codec.rfc3339 = new function() {
+				this.decode = function(string) {
+					var parsedTime = /^(\d{4})\-(\d{2})\-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})(?:\.(\d{3}))?(Z|((?:\+|\-)\d{2})\:(\d{2}))$/.exec(string);
+					if (!parsedTime) {
+						throw new TypeError("Does not match RFC3339 format: " + string);
+					}
+					var seconds = parsedTime[6];
+					if (parsedTime[7]) {
+						seconds += "." + parsedTime[7];
+					}
+					var offset;
+					var zone = parsedTime[8];
+					if (parsedTime[9] && parsedTime[10]) {
+						var hh = Number(parsedTime[9]);
+						var mm = Number(parsedTime[10]);
+						offset = hh * 60 + ((hh < 0) ? -mm : mm);
+					} else if (parsedTime[8] == "Z") {
+						offset = 0;
+					}
+					var utc = world.zones.UTC.unix({
+						year: Number(parsedTime[1]),
+						month: Number(parsedTime[2]),
+						day: Number(parsedTime[3]),
+						hour: Number(parsedTime[4]),
+						minute: Number(parsedTime[5]),
+						second: Number(seconds)
+					});
+					var rv = utc - offset * 60 * 1000;
+					return new When({ unix: rv });
+				}
+
+				this.encode = function(when) {
+					return when.local(world.zones.UTC).format("yyyy-mm-ddTHR:mi:sc.###Z");
+				}
+			}
+			When.codec.Date = new function() {
+				this.encode = function(o) {
+					return new Date(o.unix);
+				}
+
+				this.decode = function(o) {
+					return new When(o.getTime());
+				}
+			}
+			var today = function() {
+				var datetime = world.zones.local.local(world.now.read());
+				return {
+					year: datetime.year,
+					month: datetime.month,
+					day: datetime.day
+				}
+			};
+
+			return {
+				Value: $api.fp.methods.pin(world)(Value),
+				Datetime: {
+					date: function(datetime) {
+						return {
+							year: datetime.year,
+							month: datetime.month,
+							day: datetime.day
+						};
+					},
+					time: function(datetime) {
+						return {
+							hour: datetime.hour,
+							minute: datetime.minute,
+							second: datetime.second
+						};
+					}
 				},
-				at: function(time) {
-					return function(date) {
+				Date: {
+					input: {
+						today: $api.deprecate(today)
+					},
+					today: {
+						read: today
+					},
+					from: {
+						ymd: function(y,m,d) {
+							return {
+								year: y,
+								month: m,
+								day: d
+							}
+						}
+					},
+					at: function(time) {
+						return function(date) {
+							return {
+								year: date.year,
+								month: date.month,
+								day: date.day,
+								hour: time.hour,
+								minute: time.minute,
+								second: time.second
+							}
+						}
+					},
+					is: function(date) {
+						return function(other) {
+							return ordering.js(date, other) == 0;
+						}
+					},
+					isBefore: function(date) {
+						return function(other) {
+							return ordering.js(date, other) > 0;
+						}
+					},
+					isAfter: function(date) {
+						return function(other) {
+							return ordering.js(date, other) < 0;
+						}
+					},
+					offset: function(offset) {
+						return function(day) {
+							return Date_add(day, offset);
+						}
+					},
+					delta: function(reference) {
+						return function(day) {
+							return Date_delta(reference, day);
+						}
+					},
+					after: function(day) {
+						return function(offset) {
+							return Date_add(day, offset);
+						}
+					},
+					month: function(date) {
 						return {
 							year: date.year,
-							month: date.month,
-							day: date.day,
-							hour: time.hour,
-							minute: time.minute,
-							second: time.second
-						}
-					}
-				},
-				is: function(date) {
-					return function(other) {
-						return ordering.js(date, other) == 0;
-					}
-				},
-				isBefore: function(date) {
-					return function(other) {
-						return ordering.js(date, other) > 0;
-					}
-				},
-				isAfter: function(date) {
-					return function(other) {
-						return ordering.js(date, other) < 0;
-					}
-				},
-				offset: function(offset) {
-					return function(day) {
-						return Date_add(day, offset);
-					}
-				},
-				delta: function(reference) {
-					return function(day) {
-						return Date_delta(reference, day);
-					}
-				},
-				after: function(day) {
-					return function(offset) {
-						return Date_add(day, offset);
-					}
-				},
-				month: function(date) {
-					return {
-						year: date.year,
-						month: date.month
-					};
-				},
-				months: {
-					offset: function(offset) {
-						return function(day) {
-							return Date_addMonths(day, offset);
-						}
+							month: date.month
+						};
 					},
-					after: function(day) {
-						return function(offset) {
-							return Date_addMonths(day, offset);
-						}
-					}
-				},
-				years: {
-					offset: function(offset) {
-						return function(day) {
-							return Date_addYears(day, offset);
-						}
-					},
-					after: function(day) {
-						return function(offset) {
-							return Date_addYears(day, offset);
-						}
-					}
-				},
-				codec: {
-					rfc3339: function() {
-						return {
-							encode: function(date) {
-								var year = date && date.year;
-								var month = date && date.month;
-								var day = date && date.day;
-
-								if (year < 0 || year > 9999 || !isValidGregorianDate(year, month, day)) {
-									throw rfc3339Error(String(year) + "-" + String(month) + "-" + String(day));
-								}
-
-								return rfc3339Pad(year, 4) + "-" + rfc3339Pad(month, 2) + "-" + rfc3339Pad(day, 2);
-							},
-							decode: function(string) {
-								var parsed = /^(\d{4})-(\d{2})-(\d{2})$/.exec(string);
-								if (!parsed) {
-									throw rfc3339Error(string);
-								}
-
-								var year = Number(parsed[1]);
-								var month = Number(parsed[2]);
-								var day = Number(parsed[3]);
-
-								if (year < 0 || year > 9999 || !isValidGregorianDate(year, month, day)) {
-									throw rfc3339Error(string);
-								}
-
-								return {
-									year: year,
-									month: month,
-									day: day
-								};
+					months: {
+						offset: function(offset) {
+							return function(day) {
+								return Date_addMonths(day, offset);
+							}
+						},
+						after: function(day) {
+							return function(offset) {
+								return Date_addMonths(day, offset);
 							}
 						}
-					}
-				},
-				format: format,
-				order: {
-					js: ordering.js
-				},
-				dayOfWeek: function(date) {
-					var js = new Date(date.year, date.month-1, date.day);
-					var dow = js.getDay();
-					var index = (dow == 0) ? 6 : dow - 1;
-					return daysOfWeek[index];
-				}
-			},
-			Month: {
-				/** @type { slime.time.month.Exports["last"] } */
-				last: function(p) {
-					/** @type { slime.time.Month } */
-					var next = (p.month == 12) ? {
-						year: p.year + 1,
-						month: 1
-					} : {
-						year: p.year,
-						month: p.month + 1
-					};
-					/** @type { slime.time.Date } */
-					var first = {
-						year: next.year,
-						month: next.month,
-						day: 1
-					};
-					return Date_add(first, -1);
-				}
-			},
-			Timezone: context.zones,
-			zone: {
-				Time: {
+					},
+					years: {
+						offset: function(offset) {
+							return function(day) {
+								return Date_addYears(day, offset);
+							}
+						},
+						after: function(day) {
+							return function(offset) {
+								return Date_addYears(day, offset);
+							}
+						}
+					},
 					codec: {
 						rfc3339: function() {
-							var parseFixedOffset = function(offset) {
-								if (offset == "Z") {
-									return 0;
-								}
-								var parsed = /^(\+|\-)(\d{2})\:(\d{2})$/.exec(offset);
-								if (!parsed) {
-									return void(0);
-								}
-								var hours = Number(parsed[2]);
-								var minutes = Number(parsed[3]);
-								if (hours > 23 || minutes > 59) {
-									return void(0);
-								}
-								var absolute = Number(parsed[2]) * 60 + Number(parsed[3]);
-								return (parsed[1] == "-") ? -absolute : absolute;
-							}
-
-							var validateLocalDateTime = function(local,string) {
-								var message = "Does not match RFC3339 format: " + string;
-								if (!isValidGregorianDate(local.year, local.month, local.day)) throw rfc3339Error(string);
-								if (local.hour < 0 || local.hour > 23) throw new TypeError(message);
-								if (local.minute < 0 || local.minute > 59) throw new TypeError(message);
-								if (local.second < 0 || local.second >= 60) throw new TypeError(message);
-							}
-
-							var offsetToString = function(offsetMinutes) {
-								if (offsetMinutes == 0) {
-									return "Z";
-								}
-								var sign = (offsetMinutes < 0) ? "-" : "+";
-								var absolute = Math.abs(offsetMinutes);
-								var hours = Math.floor(absolute / 60);
-								var minutes = absolute % 60;
-								return sign + rfc3339Pad(hours,2) + ":" + rfc3339Pad(minutes,2);
-							}
-
-							var formatSecond = function(second) {
-								var whole = Math.floor(second);
-								var milliseconds = Math.round((second - whole) * 1000);
-								var carry = (milliseconds == 1000) ? 1 : 0;
-								whole += carry;
-								milliseconds = (milliseconds == 1000) ? 0 : milliseconds;
-								if (milliseconds == 0) {
-									return rfc3339Pad(whole,2);
-								}
-								return rfc3339Pad(whole,2) + "." + rfc3339Pad(milliseconds,3);
-							}
-
-							var normalizeLocalDateTime = function(local) {
-								var unix = Date.UTC(local.year, local.month-1, local.day, local.hour, local.minute, 0, 0)
-									+ Math.round(local.second * 1000);
-								var normalized = new Date(unix);
-								return {
-									year: normalized.getUTCFullYear(),
-									month: normalized.getUTCMonth() + 1,
-									day: normalized.getUTCDate(),
-									hour: normalized.getUTCHours(),
-									minute: normalized.getUTCMinutes(),
-									second: normalized.getUTCSeconds() + normalized.getUTCMilliseconds() / 1000
-								};
-							}
-
-							var validateOffsetMinutes = function(offset,string) {
-								var message = "Does not match RFC3339 format: " + string;
-								if (typeof(offset) != "number" || !isFinite(offset) || Math.floor(offset) != offset) {
-									throw new TypeError(message);
-								}
-								if (offset < -1439 || offset > 1439) {
-									throw new TypeError(message);
-								}
-							}
-
 							return {
-								encode: function(zt) {
-									var requested = {
-										year: zt.year,
-										month: zt.month,
-										day: zt.day,
-										hour: zt.hour,
-										minute: zt.minute,
-										second: zt.second
-									};
-									validateLocalDateTime(requested, String(zt));
-									validateOffsetMinutes(zt.offset, String(zt));
-									var normalized = normalizeLocalDateTime(requested);
-									return [
-										rfc3339Pad(normalized.year,4), "-", rfc3339Pad(normalized.month,2), "-", rfc3339Pad(normalized.day,2),
-										"T",
-										rfc3339Pad(normalized.hour,2), ":", rfc3339Pad(normalized.minute,2), ":", formatSecond(normalized.second),
-										offsetToString(zt.offset)
-									].join("");
+								encode: function(date) {
+									var year = date && date.year;
+									var month = date && date.month;
+									var day = date && date.day;
+
+									if (year < 0 || year > 9999 || !isValidGregorianDate(year, month, day)) {
+										throw rfc3339Error(String(year) + "-" + String(month) + "-" + String(day));
+									}
+
+									return rfc3339Pad(year, 4) + "-" + rfc3339Pad(month, 2) + "-" + rfc3339Pad(day, 2);
 								},
 								decode: function(string) {
-									var parsed = /^(\d{4})\-(\d{2})\-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})(?:\.(\d+))?(Z|(?:\+|\-)\d{2}\:\d{2})$/.exec(string);
+									var parsed = /^(\d{4})-(\d{2})-(\d{2})$/.exec(string);
 									if (!parsed) {
 										throw rfc3339Error(string);
 									}
-									var fractional = (parsed[7]) ? Number("0." + parsed[7]) : 0;
-									var zone = (parsed[8] == "Z") ? "UTC" : parsed[8];
-									if (zone != "UTC" && typeof(parseFixedOffset(zone)) != "number") {
+
+									var year = Number(parsed[1]);
+									var month = Number(parsed[2]);
+									var day = Number(parsed[3]);
+
+									if (year < 0 || year > 9999 || !isValidGregorianDate(year, month, day)) {
 										throw rfc3339Error(string);
 									}
-									var rv = {
-										year: Number(parsed[1]),
-										month: Number(parsed[2]),
-										day: Number(parsed[3]),
-										hour: Number(parsed[4]),
-										minute: Number(parsed[5]),
-										second: Number(parsed[6]) + fractional,
-										offset: (zone == "UTC") ? 0 : parseFixedOffset(zone)
+
+									return {
+										year: year,
+										month: month,
+										day: day
 									};
-									validateLocalDateTime(rv, string);
-									return rv;
 								}
 							}
 						}
 					},
-					create: {
-						zone: function(zone) {
-							return function(datetime) {
+					format: format,
+					order: {
+						js: ordering.js
+					},
+					dayOfWeek: function(date) {
+						var js = new Date(date.year, date.month-1, date.day);
+						var dow = js.getDay();
+						var index = (dow == 0) ? 6 : dow - 1;
+						return daysOfWeek[index];
+					}
+				},
+				Month: {
+					/** @type { slime.time.month.Exports["last"] } */
+					last: function(p) {
+						/** @type { slime.time.Month } */
+						var next = (p.month == 12) ? {
+							year: p.year + 1,
+							month: 1
+						} : {
+							year: p.year,
+							month: p.month + 1
+						};
+						/** @type { slime.time.Date } */
+						var first = {
+							year: next.year,
+							month: next.month,
+							day: 1
+						};
+						return Date_add(first, -1);
+					}
+				},
+				Timezone: world.zones,
+				zone: {
+					Time: {
+						codec: {
+							rfc3339: function() {
+								var parseFixedOffset = function(offset) {
+									if (offset == "Z") {
+										return 0;
+									}
+									var parsed = /^(\+|\-)(\d{2})\:(\d{2})$/.exec(offset);
+									if (!parsed) {
+										return void(0);
+									}
+									var hours = Number(parsed[2]);
+									var minutes = Number(parsed[3]);
+									if (hours > 23 || minutes > 59) {
+										return void(0);
+									}
+									var absolute = Number(parsed[2]) * 60 + Number(parsed[3]);
+									return (parsed[1] == "-") ? -absolute : absolute;
+								}
+
+								var validateLocalDateTime = function(local,string) {
+									var message = "Does not match RFC3339 format: " + string;
+									if (!isValidGregorianDate(local.year, local.month, local.day)) throw rfc3339Error(string);
+									if (local.hour < 0 || local.hour > 23) throw new TypeError(message);
+									if (local.minute < 0 || local.minute > 59) throw new TypeError(message);
+									if (local.second < 0 || local.second >= 60) throw new TypeError(message);
+								}
+
+								var offsetToString = function(offsetMinutes) {
+									if (offsetMinutes == 0) {
+										return "Z";
+									}
+									var sign = (offsetMinutes < 0) ? "-" : "+";
+									var absolute = Math.abs(offsetMinutes);
+									var hours = Math.floor(absolute / 60);
+									var minutes = absolute % 60;
+									return sign + rfc3339Pad(hours,2) + ":" + rfc3339Pad(minutes,2);
+								}
+
+								var formatSecond = function(second) {
+									var whole = Math.floor(second);
+									var milliseconds = Math.round((second - whole) * 1000);
+									var carry = (milliseconds == 1000) ? 1 : 0;
+									whole += carry;
+									milliseconds = (milliseconds == 1000) ? 0 : milliseconds;
+									if (milliseconds == 0) {
+										return rfc3339Pad(whole,2);
+									}
+									return rfc3339Pad(whole,2) + "." + rfc3339Pad(milliseconds,3);
+								}
+
+								var normalizeLocalDateTime = function(local) {
+									var unix = Date.UTC(local.year, local.month-1, local.day, local.hour, local.minute, 0, 0)
+										+ Math.round(local.second * 1000);
+									var normalized = new Date(unix);
+									return {
+										year: normalized.getUTCFullYear(),
+										month: normalized.getUTCMonth() + 1,
+										day: normalized.getUTCDate(),
+										hour: normalized.getUTCHours(),
+										minute: normalized.getUTCMinutes(),
+										second: normalized.getUTCSeconds() + normalized.getUTCMilliseconds() / 1000
+									};
+								}
+
+								var validateOffsetMinutes = function(offset,string) {
+									var message = "Does not match RFC3339 format: " + string;
+									if (typeof(offset) != "number" || !isFinite(offset) || Math.floor(offset) != offset) {
+										throw new TypeError(message);
+									}
+									if (offset < -1439 || offset > 1439) {
+										throw new TypeError(message);
+									}
+								}
+
 								return {
-									year: datetime.year,
-									month: datetime.month,
-									day: datetime.day,
-									hour: datetime.hour,
-									minute: datetime.minute,
-									second: datetime.second,
-									offset: Math.round((context.zones.UTC.unix(datetime) - zone.unix(datetime)) / (60 * 1000))
+									encode: function(zt) {
+										var requested = {
+											year: zt.year,
+											month: zt.month,
+											day: zt.day,
+											hour: zt.hour,
+											minute: zt.minute,
+											second: zt.second
+										};
+										validateLocalDateTime(requested, String(zt));
+										validateOffsetMinutes(zt.offset, String(zt));
+										var normalized = normalizeLocalDateTime(requested);
+										return [
+											rfc3339Pad(normalized.year,4), "-", rfc3339Pad(normalized.month,2), "-", rfc3339Pad(normalized.day,2),
+											"T",
+											rfc3339Pad(normalized.hour,2), ":", rfc3339Pad(normalized.minute,2), ":", formatSecond(normalized.second),
+											offsetToString(zt.offset)
+										].join("");
+									},
+									decode: function(string) {
+										var parsed = /^(\d{4})\-(\d{2})\-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})(?:\.(\d+))?(Z|(?:\+|\-)\d{2}\:\d{2})$/.exec(string);
+										if (!parsed) {
+											throw rfc3339Error(string);
+										}
+										var fractional = (parsed[7]) ? Number("0." + parsed[7]) : 0;
+										var zone = (parsed[8] == "Z") ? "UTC" : parsed[8];
+										if (zone != "UTC" && typeof(parseFixedOffset(zone)) != "number") {
+											throw rfc3339Error(string);
+										}
+										var rv = {
+											year: Number(parsed[1]),
+											month: Number(parsed[2]),
+											day: Number(parsed[3]),
+											hour: Number(parsed[4]),
+											minute: Number(parsed[5]),
+											second: Number(parsed[6]) + fractional,
+											offset: (zone == "UTC") ? 0 : parseFixedOffset(zone)
+										};
+										validateLocalDateTime(rv, string);
+										return rv;
+									}
 								}
 							}
 						},
-						value: function(zone) {
-							return function(value) {
-								var datetime = zone.local(value);
-								return {
-									year: datetime.year,
-									month: datetime.month,
-									day: datetime.day,
-									hour: datetime.hour,
-									minute: datetime.minute,
-									second: datetime.second,
-									offset: Math.round((context.zones.UTC.unix(datetime) - value) / (60 * 1000))
+						create: {
+							zone: function(zone) {
+								return function(datetime) {
+									return {
+										year: datetime.year,
+										month: datetime.month,
+										day: datetime.day,
+										hour: datetime.hour,
+										minute: datetime.minute,
+										second: datetime.second,
+										offset: Math.round((world.zones.UTC.unix(datetime) - zone.unix(datetime)) / (60 * 1000))
+									}
+								}
+							},
+							value: function(zone) {
+								return function(value) {
+									var datetime = zone.local(value);
+									return {
+										year: datetime.year,
+										month: datetime.month,
+										day: datetime.day,
+										hour: datetime.hour,
+										minute: datetime.minute,
+										second: datetime.second,
+										offset: Math.round((world.zones.UTC.unix(datetime) - value) / (60 * 1000))
+									}
 								}
 							}
-						}
-					},
-					value: function(time) {
-						var string = (function(value) {
-							try {
-								return JSON.stringify(value);
-							} catch (e) {
-								return String(value);
+						},
+						value: function(time) {
+							var string = (function(value) {
+								try {
+									return JSON.stringify(value);
+								} catch (e) {
+									return String(value);
+								}
+							})(time);
+							var message = "Does not match RFC3339 format: " + string;
+							if (!time || typeof(time) != "object") {
+								throw rfc3339Error(string);
 							}
-						})(time);
-						var message = "Does not match RFC3339 format: " + string;
-						if (!time || typeof(time) != "object") {
-							throw rfc3339Error(string);
+							var local = {
+								year: time.year,
+								month: time.month,
+								day: time.day,
+								hour: time.hour,
+								minute: time.minute,
+								second: time.second
+							};
+							if (!isValidGregorianDate(local.year, local.month, local.day)) throw rfc3339Error(string);
+							if (local.hour < 0 || local.hour > 23) throw new TypeError(message);
+							if (local.minute < 0 || local.minute > 59) throw new TypeError(message);
+							if (local.second < 0 || local.second >= 60) throw new TypeError(message);
+							if (typeof(time.offset) != "number" || !isFinite(time.offset) || Math.floor(time.offset) != time.offset) {
+								throw new TypeError(message);
+							}
+							if (time.offset < -1439 || time.offset > 1439) {
+								throw new TypeError(message);
+							}
+							var localAsUtc = world.zones.UTC.unix({
+								year: time.year,
+								month: time.month,
+								day: time.day,
+								hour: time.hour,
+								minute: time.minute,
+								second: time.second
+							});
+							return localAsUtc - time.offset * 60 * 1000;
 						}
-						var local = {
-							year: time.year,
-							month: time.month,
-							day: time.day,
-							hour: time.hour,
-							minute: time.minute,
-							second: time.second
-						};
-						if (!isValidGregorianDate(local.year, local.month, local.day)) throw rfc3339Error(string);
-						if (local.hour < 0 || local.hour > 23) throw new TypeError(message);
-						if (local.minute < 0 || local.minute > 59) throw new TypeError(message);
-						if (local.second < 0 || local.second >= 60) throw new TypeError(message);
-						if (typeof(time.offset) != "number" || !isFinite(time.offset) || Math.floor(time.offset) != time.offset) {
-							throw new TypeError(message);
-						}
-						if (time.offset < -1439 || time.offset > 1439) {
-							throw new TypeError(message);
-						}
-						var localAsUtc = context.zones.UTC.unix({
-							year: time.year,
-							month: time.month,
-							day: time.day,
-							hour: time.hour,
-							minute: time.minute,
-							second: time.second
-						});
-						return localAsUtc - time.offset * 60 * 1000;
 					}
-				}
-			},
-			install: install,
-			Day: Object.assign(
-				Day,
-				{
-					order: order,
-					Time: Day_Time
-				}
-			),
-			Time: Object.assign(
-				Time,
-				{
-					Zone: context.zones
-				}
-			),
-			Year: Year,
-			When: Object.assign(
-				When,
-				{
-					order: order
-				}
-			)
-		})
+				},
+				install: install,
+				Day: Object.assign(
+					Day,
+					{
+						order: order,
+						Time: Day_Time
+					}
+				),
+				Time: Object.assign(
+					Time,
+					{
+						Zone: world.zones
+					}
+				),
+				Year: Year,
+				When: Object.assign(
+					When,
+					{
+						order: order
+					}
+				)
+			}
+		}
+
+		var exports = {
+			world: worlds,
+			use: use
+		};
+
+		var adapted = $api.Object.compose(
+			exports,
+			use({
+				now: ($context.world && $context.world.now) || { read: function() { return new Date().getTime(); } },
+				zones: $api.Object.compose(worlds.Date.Zone, ($context.world && $context.world.zones) || {})
+			})
+		);
+
+		$export(adapted);
 	}
 //@ts-ignore
 )($api,$context,$export)
