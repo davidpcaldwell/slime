@@ -64,18 +64,6 @@ namespace slime.time {
 		}
 	}
 
-	export interface Exports {
-		world: {
-			Date: {
-				now: World["now"]
-				zones: {
-					local: world.Zone
-					UTC: world.Zone
-				}
-			}
-		}
-	}
-
 	export interface Context {
 		world?: {
 			now?: World["now"]
@@ -936,11 +924,6 @@ namespace slime.time {
 
 	export interface Interface {
 		Timezone: {
-			/**
-			 * A timezone that uses the global Date function to handle timezone offsets.
-			 */
-			local: Zone
-			UTC: Zone
 			[x: string]: Zone
 		}
 	}
@@ -1167,7 +1150,27 @@ namespace slime.time {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports extends Interface {}
+	export interface Exports {
+		world: {
+			Date: {
+				now: World["now"]
 
-	export type Script = slime.runtime.loader.Scoped<Context|void,Exports>
+				Zone: {
+					/**
+					 * A timezone that uses the global Date function to handle timezone offsets.
+					 */
+					local: world.Zone
+					UTC: world.Zone
+				}
+			}
+		}
+	}
+
+	export interface Exports {
+		use: (world: World) => Interface
+	}
+
+	export type AdapterExports = Exports & Interface
+
+	export type Script = slime.runtime.loader.Scoped<Context|void,AdapterExports>
 }
