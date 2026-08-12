@@ -798,7 +798,7 @@
 					var monthId = (arguments[0].month.id) ? arguments[0].month.id : arguments[0].month;
 					return new Date(arguments[0].year.value, monthId.index-1, arguments[0].day);
 				} else if (arguments.length == 1 && typeof(arguments[0]) == "object" && arguments[0].constructor == When) {
-					var monthId = (arguments[0].month.id) ? arguments[0].month.id : arguments[0].month;
+					var monthId = (arguments[0].day.month.id) ? arguments[0].day.month.id : arguments[0].day.month;
 					return new Date(arguments[0].day.year.value, monthId.index-1,arguments[0].day.day,
 						arguments[0].time.hours, arguments[0].time.minutes, Math.floor(arguments[0].time.seconds),
 						(arguments[0].time.seconds % 1) * 1000
