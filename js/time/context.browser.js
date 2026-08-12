@@ -74,8 +74,10 @@
 		}, {});
 
 		$export({
-			zones: zones
-		})
+			world: {
+				zones: zones
+			}
+		});
 	}
 //@ts-ignore
 )($api,$export);

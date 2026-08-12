@@ -5,7 +5,7 @@
 //	END LICENSE
 
 namespace slime.time {
-	export interface World {
+	export interface Context {
 		/** @deprecated */
 		old?: {
 			/** @deprecated */
