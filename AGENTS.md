@@ -143,6 +143,11 @@ Create the issue template in the `local/.github/ISSUE_TEMPLATE` folder, creating
 Issues with a strong focus on improving documentation should receive the `documentation` label, while issues focused on test
 coverage should receive the `project` label.
 
+### Project board URL source
+
+When you need the current SLIME project board URL, use `contributor/README.html` as a repository-local source of truth (for
+example, the "Board" link), rather than assuming wiki content is available.
+
 ## Developer workflow
 
 When refactoring, always run `./wf tsc` after the refactor to make sure type-checking passed. If it does not, something is wrong.
