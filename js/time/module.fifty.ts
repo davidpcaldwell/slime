@@ -29,9 +29,7 @@ namespace slime.time {
 	export interface Datetime extends Date, Time {
 	}
 
-	//	TODO	the below type should probably be deprecated and replaced with two exported functions, while converting the
-	//			world.Zone type to a set of codecs
-
+	//	TODO	could this type be converted to a Codec?
 	/**
 	 * A time zone definition that can be used by the implementation to convert between ECMAScript time values and local times in
 	 * the given time zone.
@@ -59,18 +57,16 @@ namespace slime.time {
 		 */
 		now: slime.$api.fp.impure.Reading<number>
 
-		zones: {
-			[id: string]: world.Zone
-		}
+		zone: slime.$api.fp.impure.Reading<slime.time.Zone>
 	}
 
 	export interface Context {
+		zones?: {
+			[id: string]: world.Zone
+		}
+
 		world?: {
 			now?: World["now"]
-
-			zones?: {
-				[id: string]: world.Zone
-			}
 		}
 	}
 
@@ -1133,6 +1129,12 @@ namespace slime.time {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Interface {
+		value: () => slime.external.lib.es5.TimeValue
+		datetime: () => Datetime
+		date: () => Date
+	}
+
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -1151,8 +1153,14 @@ namespace slime.time {
 	)(fifty);
 
 	export interface Exports {
+		/**
+		 * Helpers to make it easier to construct {@link World} implementations.
+		 */
 		world: {
 			Date: {
+				/**
+				 * A `Reading` that uses the global Date function to determine the current time value.
+				 */
 				now: World["now"]
 
 				Zone: {

@@ -74,9 +74,7 @@
 		}, {});
 
 		$export({
-			world: {
-				zones: zones
-			}
+			zones: zones
 		});
 	}
 //@ts-ignore
