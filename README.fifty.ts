@@ -34,7 +34,7 @@
  * The current goal is to be compatible with versions used by most Java developers. As of New Relic's
  * [2024 survey](https://newrelic.com/resources/report/2024-state-of-the-java-ecosystem#new-java-versions-being-adopted-faster),
  * **Java 17** was the leading version, with 35.4% of monitored applications using it. **Java 11** followed with 32.9%, and
- * **Java 8** was still used by 28.8%. SLIME is also tested against **Java 21**.
+ * **Java 8** was still used by 28.8%. SLIME is also tested against **Java 21** and **Java 25**.
  *
  * ##### JVM JavaScript engine
  *

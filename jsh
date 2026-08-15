@@ -209,6 +209,10 @@ install_jdk_21_corretto() {
 	install_jdk_corretto "21.0.3.9.1" $1
 }
 
+install_jdk_25_corretto() {
+	install_jdk_corretto "25.0.4.7.1" $1
+}
+
 install_jdk_8() {
 	install_jdk_8_corretto "$@"
 }
@@ -223,6 +227,10 @@ install_jdk_17() {
 
 install_jdk_21() {
 	install_jdk_21_corretto "$@"
+}
+
+install_jdk_25() {
+	install_jdk_25_corretto "$@"
 }
 
 install_jdk() {
@@ -305,6 +313,7 @@ get_jrunscript_java_major_version() {
 			11.*) echo "11" ;;
 			17.*) echo "17" ;;
 			21.*) echo "21" ;;
+			25.*) echo "25" ;;
 			*) echo "Unknown" ;;
 		esac
 	else
@@ -336,6 +345,11 @@ fi
 
 if [ "$1" == "--install-jdk-21" ]; then
 	install_jdk_21 ${JSH_LOCAL_JDKS}/default
+	exit $?
+fi
+
+if [ "$1" == "--install-jdk-25" ]; then
+	install_jdk_25 ${JSH_LOCAL_JDKS}/default
 	exit $?
 fi
 
@@ -403,6 +417,11 @@ fi
 
 if [ "$1" == "--add-jdk-21" ]; then
 	install_jdk_21 ${JSH_LOCAL_JDKS}/21
+	exit $?
+fi
+
+if [ "$1" == "--add-jdk-25" ]; then
+	install_jdk_25 ${JSH_LOCAL_JDKS}/25
 	exit $?
 fi
 

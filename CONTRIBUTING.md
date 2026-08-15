@@ -68,7 +68,7 @@ If you need unique naming for non-devcontainer Compose usage, set `COMPOSE_PROJE
 When code is contributed via a PR, it must pass a series of checks on the server. These checks run by platform and are defined in
 the `.github/workflows` directory.
 
-* Java (21, 17, 11, 8) - defined by `test-jdk[n].yaml`, where `n` is the major version number, which in turn runs
+* Java (25, 21, 17, 11, 8) - defined by `test-jdk[n].yaml`, where `n` is the major version number, which in turn runs
 `contributor/suite-docker-jrunscript [n]`, which in turn runs `./wf check` under Linux via Docker, which in turn:
   * Runs linting via ESLint
   * Runs type checking via the TypeScript compiler
