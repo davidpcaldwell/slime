@@ -43,20 +43,18 @@
 		};
 
 		$export({
-			world: {
-				zones: (
-					function() {
-						var TimeZone = Packages.java.util.TimeZone;
-						/** @type { slime.time.World["zones"] } */
-						var rv = {};
-						var jstrings = TimeZone.getAvailableIDs();
-						for (var i=0; i<jstrings.length; i++) {
-							rv[String(jstrings[i])] = Zone(TimeZone.getTimeZone(jstrings[i]));
-						}
-						return rv;
+			zones: (
+				function() {
+					var TimeZone = Packages.java.util.TimeZone;
+					/** @type { slime.time.Context["zones"] } */
+					var rv = {};
+					var jstrings = TimeZone.getAvailableIDs();
+					for (var i=0; i<jstrings.length; i++) {
+						rv[String(jstrings[i])] = Zone(TimeZone.getTimeZone(jstrings[i]));
 					}
-				)()
-			}
+					return rv;
+				}
+			)()
 		})
 	}
 //@ts-ignore

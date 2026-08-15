@@ -479,13 +479,6 @@
 			return js.getUTCFullYear() === year && js.getUTCMonth() === month-1 && js.getUTCDate() === day;
 		}
 
-		/** @type { { now: (world: slime.time.World) => () => number }} */
-		var Value = {
-			now: function(world) {
-				return world.now.read || Date.now;
-			}
-		};
-
 		/** @type { slime.time.Exports["use"] } */
 		var use = function(world) {
 			/** @type { slime.time.date.Exports["format"] } */
@@ -910,7 +903,7 @@
 				}
 
 				this.local = function(zone) {
-					if (!zone) zone = world.zones.local;
+					if (!zone) zone = world.zone.read();
 					var unix = zone.unix({
 						year: day.year.value,
 						month: (day.month.id) ? day.month.id.index : day.month.index,
@@ -1074,7 +1067,7 @@
 				//	Time zone information: http://www.twinsun.com/tz/tz-link.htm
 				/** @type { slime.time.old.When["local"] } */
 				this.local = function(zone) {
-					if (!zone) zone = world.zones.local;
+					if (!zone) zone = world.zone.read();
 					var zoned = zone.local(date.getTime());
 					return new Time({
 						day: new Day(zoned.year,zoned.month,zoned.day),
@@ -1137,7 +1130,7 @@
 					} else if (parsedTime[8] == "Z") {
 						offset = 0;
 					}
-					var utc = world.zones.UTC.unix({
+					var utc = worlds.Date.Zone.UTC.unix({
 						year: Number(parsedTime[1]),
 						month: Number(parsedTime[2]),
 						day: Number(parsedTime[3]),
@@ -1150,7 +1143,7 @@
 				}
 
 				this.encode = function(when) {
-					return when.local(world.zones.UTC).format("yyyy-mm-ddTHR:mi:sc.###Z");
+					return when.local(worlds.Date.Zone.UTC).format("yyyy-mm-ddTHR:mi:sc.###Z");
 				}
 			}
 			When.codec.Date = new function() {
@@ -1163,7 +1156,7 @@
 				}
 			}
 			var today = function() {
-				var datetime = world.zones.local.local(world.now.read());
+				var datetime = world.zone.read().local(world.now.read());
 				return {
 					year: datetime.year,
 					month: datetime.month,
@@ -1172,7 +1165,11 @@
 			};
 
 			return {
-				Value: $api.fp.methods.pin(world)(Value),
+				Value: {
+					now: function() {
+						return world.now.read();
+					}
+				},
 				Datetime: {
 					date: function(datetime) {
 						return {
@@ -1345,7 +1342,9 @@
 						return Date_add(first, -1);
 					}
 				},
-				Timezone: world.zones,
+				//	For now, we automatically include "local" and "UTC" if not present in the context, for compatibility, though
+				//	this API may well change anyway
+				Timezone: $api.Object.compose(worlds.Date.Zone, $context.zones || {}),
 				zone: {
 					Time: {
 						codec: {
@@ -1477,7 +1476,7 @@
 										hour: datetime.hour,
 										minute: datetime.minute,
 										second: datetime.second,
-										offset: Math.round((world.zones.UTC.unix(datetime) - zone.unix(datetime)) / (60 * 1000))
+										offset: Math.round((worlds.Date.Zone.UTC.unix(datetime) - zone.unix(datetime)) / (60 * 1000))
 									}
 								}
 							},
@@ -1491,7 +1490,7 @@
 										hour: datetime.hour,
 										minute: datetime.minute,
 										second: datetime.second,
-										offset: Math.round((world.zones.UTC.unix(datetime) - value) / (60 * 1000))
+										offset: Math.round((worlds.Date.Zone.UTC.unix(datetime) - value) / (60 * 1000))
 									}
 								}
 							}
@@ -1526,7 +1525,7 @@
 							if (time.offset < -1439 || time.offset > 1439) {
 								throw new TypeError(message);
 							}
-							var localAsUtc = world.zones.UTC.unix({
+							var localAsUtc = worlds.Date.Zone.UTC.unix({
 								year: time.year,
 								month: time.month,
 								day: time.day,
@@ -1537,6 +1536,20 @@
 							return localAsUtc - time.offset * 60 * 1000;
 						}
 					}
+				},
+				value: function() {
+					return world.now.read();
+				},
+				datetime: function() {
+					return world.zone.read().local(world.now.read());
+				},
+				date: function() {
+					var datetime = world.zone.read().local(world.now.read());
+					return {
+						year: datetime.year,
+						month: datetime.month,
+						day: datetime.day
+					};
 				},
 				install: install,
 				Day: Object.assign(
@@ -1549,7 +1562,7 @@
 				Time: Object.assign(
 					Time,
 					{
-						Zone: world.zones
+						Zone: $api.Object.compose(worlds.Date.Zone, $context.zones || {})
 					}
 				),
 				Year: Year,
@@ -1571,7 +1584,7 @@
 			exports,
 			use({
 				now: ($context.world && $context.world.now) || { read: function() { return new Date().getTime(); } },
-				zones: $api.Object.compose(worlds.Date.Zone, ($context.world && $context.world.zones) || {})
+				zone: { read: function() { return worlds.Date.Zone.local; } }
 			})
 		);
 
