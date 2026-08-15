@@ -479,13 +479,6 @@
 			return js.getUTCFullYear() === year && js.getUTCMonth() === month-1 && js.getUTCDate() === day;
 		}
 
-		// /** @type { { now: (world: slime.time.World) => () => number }} */
-		// var Value = {
-		// 	now: function(world) {
-		// 		return world.now.read || Date.now;
-		// 	}
-		// };
-
 		/** @type { slime.time.Exports["use"] } */
 		var use = function(world) {
 			/** @type { slime.time.date.Exports["format"] } */
@@ -1173,7 +1166,9 @@
 
 			return {
 				Value: {
-					now: world.now.read
+					now: function() {
+						return world.now.read();
+					}
 				},
 				Datetime: {
 					date: function(datetime) {

@@ -132,13 +132,15 @@ namespace slime.time {
 				const { load } = test;
 
 				fifty.tests.exports.Value.now = function() {
+					var now = {
+						base: 999,
+						read: function(this: { base: number }) {
+							return this.base + 1;
+						}
+					};
 					var context: Context = {
 						world: {
-							now: {
-								read: function() {
-									return 1000;
-								}
-							}
+							now: now
 						}
 					};
 
@@ -150,8 +152,75 @@ namespace slime.time {
 
 					verify(defaulted).Value.now().is.type("number");
 
-					var now = defaulted.Value.now();
-					verify(now).is(now);
+					var nowValue = defaulted.Value.now();
+					verify(nowValue).is(nowValue);
+				};
+
+				fifty.tests.exports.value = function() {
+					var instant = Date.UTC(2026, 0, 2, 3, 4, 5, 6);
+					var configured = test.subject.use({
+						now: {
+							read: function() {
+								return instant;
+							}
+						},
+						zone: {
+							read: function() {
+								return test.subject.Timezone.UTC;
+							}
+						}
+					});
+
+					verify(configured).value().is(instant);
+				};
+
+				fifty.tests.exports.datetime = function() {
+					var instant = Date.UTC(2026, 0, 2, 3, 4, 5, 6);
+					var configured = test.subject.use({
+						now: {
+							read: function() {
+								return instant;
+							}
+						},
+						zone: {
+							read: function() {
+								return test.subject.Timezone.UTC;
+							}
+						}
+					});
+					var datetime = configured.datetime();
+
+					verify(datetime, "datetime()", function(it) {
+						it.year.is(2026);
+						it.month.is(1);
+						it.day.is(2);
+						it.hour.is(3);
+						it.minute.is(4);
+						it.second.is(5.006);
+					});
+				};
+
+				fifty.tests.exports.date = function() {
+					var instant = Date.UTC(2026, 0, 2, 3, 4, 5, 6);
+					var configured = test.subject.use({
+						now: {
+							read: function() {
+								return instant;
+							}
+						},
+						zone: {
+							read: function() {
+								return test.subject.Timezone.UTC;
+							}
+						}
+					});
+					var date = configured.date();
+
+					verify(date, "date()", function(it) {
+						it.year.is(2026);
+						it.month.is(1);
+						it.day.is(2);
+					});
 				};
 			}
 		//@ts-ignore
