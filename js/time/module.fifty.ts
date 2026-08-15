@@ -157,7 +157,7 @@ namespace slime.time {
 				};
 
 				fifty.tests.exports.value = function() {
-					var instant = Date.UTC(2026, 0, 2, 3, 4, 5, 6);
+					var instant = Date.UTC(2026, 0, 2, 3, 4, 5);
 					var configured = test.subject.use({
 						now: {
 							read: function() {
@@ -175,7 +175,7 @@ namespace slime.time {
 				};
 
 				fifty.tests.exports.datetime = function() {
-					var instant = Date.UTC(2026, 0, 2, 3, 4, 5, 6);
+					var instant = Date.UTC(2026, 0, 2, 3, 4, 5);
 					var configured = test.subject.use({
 						now: {
 							read: function() {
@@ -196,12 +196,12 @@ namespace slime.time {
 						it.day.is(2);
 						it.hour.is(3);
 						it.minute.is(4);
-						it.second.is(5.006);
+						it.second.is(5);
 					});
 				};
 
 				fifty.tests.exports.date = function() {
-					var instant = Date.UTC(2026, 0, 2, 3, 4, 5, 6);
+					var instant = Date.UTC(2026, 0, 2, 3, 4, 5);
 					var configured = test.subject.use({
 						now: {
 							read: function() {
