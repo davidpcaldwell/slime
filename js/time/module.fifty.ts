@@ -1005,6 +1005,20 @@ namespace slime.time {
 					verify(test.subject).Timezone.UTC.is.type("object");
 				});
 
+				// Legacy Java short time zone IDs (for example EST) were historically available,
+				// including pre-JDK25 behavior. Browser runtimes typically expose only canonical IANA IDs.
+				if (test.subject.Timezone.EST) fifty.run(function shortAliasCompatibility() {
+					verify(test.subject).Timezone.EST.is.type("object");
+					var datetime: Datetime = { year: 2026, month: 1, day: 5, hour: 12, minute: 0, second: 0 };
+					var instant = test.subject.Timezone["EST"].unix(datetime);
+					var roundtrip = test.subject.Timezone["EST"].local(instant);
+					verify(roundtrip).year.is(datetime.year);
+					verify(roundtrip).month.is(datetime.month);
+					verify(roundtrip).day.is(datetime.day);
+					verify(roundtrip).hour.is(datetime.hour);
+					verify(roundtrip).minute.is(datetime.minute);
+				});
+
 				verify(Object.keys(test.subject.Timezone).join(" "), "Timezones").is(Object.keys(test.subject.Timezone).join(" "));
 
 				var depart: Datetime = { year: 2025, month: 1, day: 5, hour: 17, minute: 30, second: 40 };

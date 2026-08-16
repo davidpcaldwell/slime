@@ -97,6 +97,16 @@ namespace slime.jsh {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
+			const normalizeStderr = function(stderr: string): string {
+				return stderr
+					.split("\n")
+					.filter(function(line) {
+						if (line == "Warning: jrunscript is deprecated and will be removed in a future release.") return false;
+						return true;
+					})
+					.join("\n");
+			};
+
 			fifty.tests.setting = fifty.test.Parent();
 
 			var src = fifty.jsh.file.relative("../..");
@@ -118,7 +128,7 @@ namespace slime.jsh {
 						}
 					});
 
-					verify(nodebug).stdio.error.is("");
+					verify(nodebug).stdio.error.evaluate(normalizeStderr).is("");
 
 					var debug = run({
 						command: "bash",
@@ -143,7 +153,7 @@ namespace slime.jsh {
 					jsh.shell.console("stderr = [\n" + debug.stdio.error + "\n]");
 
 					verify(debug).stdio.error.evaluate(function(stderr) {
-						return stderr.split("\n")[0]
+						return normalizeStderr(stderr).split("\n")[0]
 					}).is("++ uname");
 				});
 

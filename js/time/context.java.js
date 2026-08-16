@@ -46,12 +46,25 @@
 			zones: (
 				function() {
 					var TimeZone = Packages.java.util.TimeZone;
+					var ZoneId = (/** @type { any } */(Packages.java)).time.ZoneId;
 					/** @type { slime.time.Context["zones"] } */
 					var rv = {};
-					var jstrings = TimeZone.getAvailableIDs();
-					for (var i=0; i<jstrings.length; i++) {
-						rv[String(jstrings[i])] = Zone(TimeZone.getTimeZone(jstrings[i]));
+
+					// Use canonical tzdb IDs to avoid Java 25 deprecation warnings for legacy 3-letter IDs.
+					var zoneIds = ZoneId.getAvailableZoneIds().toArray();
+					for (var i=0; i<zoneIds.length; i++) {
+						var zoneId = String(zoneIds[i]);
+						rv[zoneId] = Zone(TimeZone.getTimeZone(ZoneId.of(zoneId)));
 					}
+
+					// Preserve historical short aliases (EST, PST, etc.) by mapping to canonical ZoneIds.
+					var aliases = ZoneId.SHORT_IDS.entrySet().toArray();
+					for (var j=0; j<aliases.length; j++) {
+						var alias = aliases[j].getKey();
+						var target = aliases[j].getValue();
+						rv[String(alias)] = Zone(TimeZone.getTimeZone(ZoneId.of(String(target))));
+					}
+
 					return rv;
 				}
 			)()
