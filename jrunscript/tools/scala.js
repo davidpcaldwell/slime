@@ -61,10 +61,14 @@
 								$api.fp.property("stdio"),
 								$api.fp.property("error"),
 								function(string) {
-									var pattern = /^Scala code runner version ([\d\.]+) (?:.*)/;
-									var match = pattern.exec(string);
-									if (match === null) throw new TypeError("Could not determine Scala version from output [" + string + "]");
-									return match[1];
+									var lines = string.split("\n");
+									for (var i = 0; i < lines.length; i++) {
+										var line = lines[i];
+										if (line == "Warning: jrunscript is deprecated and will be removed in a future release.") continue;
+										var match = /^Scala code runner version ([\d\.]+) (?:.*)/.exec(line);
+										if (match !== null) return match[1];
+									}
+									throw new TypeError("Could not determine Scala version from output [" + string + "]");
 								}
 							)
 						)

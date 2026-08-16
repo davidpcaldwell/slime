@@ -76,11 +76,21 @@ namespace slime.fifty.internal.test.data {
 			});
 		}
 
+		var normalizeStderr = function(stderr: string): string {
+			return stderr
+				.split("\n")
+				.filter(function(line: string) {
+					if (line == "Warning: jrunscript is deprecated and will be removed in a future release.") return false;
+					return true;
+				})
+				.join("\n");
+		};
+
 		if (fifty.global.jsh) fifty.tests.indent = function() {
 			var result = test("jsh", "load/child.fifty.ts");
 			jsh.shell.console("===\n" + result.stdio.error + "\n===");
 
-			var lines = result.stdio.error.split("\n");
+			var lines: string[] = normalizeStderr(result.stdio.error).split("\n");
 
 			verify(lines[0]).evaluate(function(s) { return s.substring(0,2); }).is.not("  ");
 
