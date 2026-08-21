@@ -25,6 +25,30 @@ Recommended setup:
 
 Agent behavior in this repository is configured to read `~/.agents/README.md` first, then follow references from that file.
 
+## Personal VS Code remote settings overlay in devcontainers
+
+This repository keeps shared devcontainer settings conservative by default. If you want personal
+Copilot or editor behavior overrides when using the devcontainer, use a personal overlay file in
+the mounted `local/` area.
+
+Setup steps:
+
+* Copy the JSON snippet in `.devcontainer/vscode-user-settings.overlay.example.md` to
+  `local/devcontainer/vscode-user-settings.overlay.json`.
+* Edit `local/devcontainer/vscode-user-settings.overlay.json` with your desired VS Code remote
+  user settings.
+* Re-open the devcontainer (or run `.devcontainer/apply-vscode-user-settings.bash` from a terminal).
+* Reload the VS Code window if needed.
+
+How it works:
+
+* On devcontainer startup, `.devcontainer/postStartCommand` invokes
+  `.devcontainer/apply-vscode-user-settings.bash`.
+* The script merges keys from
+  `local/devcontainer/vscode-user-settings.overlay.json` into the remote VS Code server file at
+  `/config/.vscode-server/data/Machine/settings.json`.
+* `local/` is git-ignored, so personal overrides are not committed.
+
 ## FP error handling conventions
 
 When adding or refactoring functional APIs, use this rule of thumb for failures:
