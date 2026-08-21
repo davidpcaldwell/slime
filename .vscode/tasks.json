@@ -183,6 +183,13 @@
 				"${execPath}"
 			],
 			"problemMatcher": []
+		},
+		{
+			"label": "Devcontainer: Apply personal VS Code settings overlay",
+			"detail": "Applies local/devcontainer/vscode-user-settings.overlay.json to remote VS Code Machine settings",
+			"type": "shell",
+			"command": ".devcontainer/apply-vscode-user-settings.bash",
+			"problemMatcher": []
 		}
 	],
 	"inputs": [

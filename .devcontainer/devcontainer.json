@@ -21,17 +21,9 @@
 				"remote.autoForwardPorts": true,
 				"remote.autoForwardPortsSource": "process",
 				"remote.restoreForwardedPorts": false,
-				"chat.agent.sandbox.enabled": "off",
 				"chat.agentFilesLocations": {
 					"~/.copilot/agents": false,
 					"~/.agents": true
-				},
-				"chat.permissions.default": "autoApprove",
-				"chat.tools.global.autoApprove": true,
-				"chat.tools.terminal.enableAutoApprove": true,
-				"chat.tools.terminal.ignoreDefaultAutoApproveRules": true,
-				"chat.tools.terminal.autoApprove": {
-					".*": true
 				},
 				"java.jdt.ls.java.home": "/slime/local/jdk/21",
 				"java.configuration.runtimes": [
