@@ -31,6 +31,9 @@ services:
         source: ./local/docker/home
         target: /config
       - type: bind
+        source: ./local/devcontainer
+        target: /config/.devcontainer
+      - type: bind
         source: ./local/agents
         target: /config/.agents
     ports:

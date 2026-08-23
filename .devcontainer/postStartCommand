@@ -65,6 +65,6 @@ if [ -x /slime/.devcontainer/apply-vscode-user-settings.bash ]; then
 	}
 fi
 
-if [ ! -f /slime/local/devcontainer/vscode-user-settings.overlay.json ]; then
-	echo "Tip: create /slime/local/devcontainer/vscode-user-settings.overlay.json to apply personal remote VS Code settings in this devcontainer."
+if [ ! -f /config/.devcontainer/vscode-user-settings.overlay.json ]; then
+	echo "Tip: create local/devcontainer/vscode-user-settings.overlay.json on the host (mounted as /config/.devcontainer/vscode-user-settings.overlay.json in the devcontainer) to apply personal remote VS Code settings."
 fi

@@ -7,11 +7,20 @@
 
 set -euo pipefail
 
-OVERLAY_FILE="/slime/local/devcontainer/vscode-user-settings.overlay.json"
 TARGET_FILE="/config/.vscode-server/data/Machine/settings.json"
 MARKER_FILE="/config/.vscode-server/data/Machine/.slime-overlay-applied"
 
-if [ ! -f "${OVERLAY_FILE}" ]; then
+OVERLAY_FILE=""
+for candidate in \
+	"/config/.devcontainer/vscode-user-settings.overlay.json"
+do
+	if [ -f "${candidate}" ]; then
+		OVERLAY_FILE="${candidate}"
+		break
+	fi
+done
+
+if [ -z "${OVERLAY_FILE}" ]; then
 	exit 0
 fi
 
@@ -21,11 +30,12 @@ if [ ! -f "${TARGET_FILE}" ]; then
 	echo '{}' > "${TARGET_FILE}"
 fi
 
-node - <<'NODE'
+if command -v node >/dev/null 2>&1; then
+	node - "${OVERLAY_FILE}" "${TARGET_FILE}" <<'NODE'
 const fs = require('fs');
 
-const overlayPath = '/slime/local/devcontainer/vscode-user-settings.overlay.json';
-const targetPath = '/config/.vscode-server/data/Machine/settings.json';
+const overlayPath = process.argv[2];
+const targetPath = process.argv[3];
 
 const readJson = (path) => {
 	const text = fs.readFileSync(path, 'utf8');
@@ -45,6 +55,33 @@ for (const [key, value] of Object.entries(overlay)) {
 
 fs.writeFileSync(targetPath, JSON.stringify(target, null, '\t') + '\n', 'utf8');
 NODE
+elif command -v python3 >/dev/null 2>&1; then
+	python3 - "${OVERLAY_FILE}" "${TARGET_FILE}" <<'PY'
+import json
+import sys
+
+overlay_path = sys.argv[1]
+target_path = sys.argv[2]
+
+def read_json(path):
+	with open(path, 'r', encoding='utf-8') as f:
+		value = json.load(f)
+	if not isinstance(value, dict):
+		raise ValueError(path + ' must contain a JSON object at the top level.')
+	return value
+
+overlay = read_json(overlay_path)
+target = read_json(target_path)
+target.update(overlay)
+
+with open(target_path, 'w', encoding='utf-8') as f:
+	json.dump(target, f, indent=2)
+	f.write('\n')
+PY
+else
+	echo "No node or python3 runtime available to apply settings overlay." >&2
+	exit 1
+fi
 
 cp "${OVERLAY_FILE}" "${MARKER_FILE}"
 
