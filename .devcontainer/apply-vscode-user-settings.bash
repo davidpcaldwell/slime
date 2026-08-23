@@ -75,7 +75,7 @@ target = read_json(target_path)
 target.update(overlay)
 
 with open(target_path, 'w', encoding='utf-8') as f:
-	json.dump(target, f, indent='\t')
+	json.dump(target, f, indent=2)
 	f.write('\n')
 PY
 else
