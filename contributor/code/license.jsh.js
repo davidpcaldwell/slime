@@ -196,6 +196,7 @@
 				if (files[i].path == "contributor/devcontainer/boot/install-x-libraries") extension = "bash";
 				if (files[i].path == "contributor/test/manual/graalvm") extension = "bash";
 				if (files[i].path == "contributor/test/manual/graalvm-debug") extension = "bash";
+				if (files[i].path == "contributor/submodule-gitdir-migrate") extension = "bash";
 				if (!extension) throw new Error("Extension null for " + files[i].path);
 			}
 			var text = toFile(file).node.read(String);

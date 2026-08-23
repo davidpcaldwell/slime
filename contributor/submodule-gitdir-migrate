@@ -50,7 +50,7 @@ submodule_git_path="${submodule_path}/.git"
 }
 [ -f "${submodule_git_path}" ] || fail "Expected a .git pointer file at ${submodule_git_path}"
 
-git_pointer_line="$(sed -n '1p' -- "${submodule_git_path}")"
+git_pointer_line="$(sed -n '1p' "${submodule_git_path}")"
 git_pointer_line="${git_pointer_line%$'\r'}"
 case "${git_pointer_line}" in
 	"gitdir: "*)
@@ -87,17 +87,15 @@ fi
 rm "${gitfile_backup_path}"
 
 submodule_git_config="${submodule_git_path}/config"
-submodule_git_config_cmd=(
-	git
-	--git-dir="${submodule_git_path}"
-	--work-tree="${submodule_path}"
-	config
-	--file "${submodule_git_config}"
-)
-
-if "${submodule_git_config_cmd[@]}" --get core.worktree >/dev/null 2>&1; then
-	if ! "${submodule_git_config_cmd[@]}" --unset core.worktree; then
-		fail "Failed to unset core.worktree in ${submodule_git_config}"
+if grep -Eq '^[[:space:]]*worktree[[:space:]]*=' "${submodule_git_config}"; then
+	config_tmp_path="${submodule_git_config}.tmp"
+	# Remove any core.worktree setting carried over from gitfile-style submodule config.
+	if ! perl -ne 'print unless /^\s*worktree\s*=/' "${submodule_git_config}" > "${config_tmp_path}"; then
+		fail "Failed to rewrite ${submodule_git_config}"
+	fi
+	if ! mv -f "${config_tmp_path}" "${submodule_git_config}"; then
+		rm -f "${config_tmp_path}" || true
+		fail "Failed to replace ${submodule_git_config}"
 	fi
 else
 	>&2 echo "core.worktree is already unset in ${submodule_git_config}; no update needed."
