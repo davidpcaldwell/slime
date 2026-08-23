@@ -25,7 +25,7 @@
 					"~/.copilot/agents": false,
 					"~/.agents": true
 				},
-				"java.jdt.ls.java.home": "/slime/local/jdk/21",
+				"java.jdt.ls.java.home": "/slime/local/jdk/25",
 				"java.configuration.runtimes": [
 					{
 						"name": "JavaSE-1.8",
@@ -41,7 +41,11 @@
 					},
 					{
 						"name": "JavaSE-21",
-						"path": "/slime/local/jdk/21",
+						"path": "/slime/local/jdk/21"
+					},
+					{
+						"name": "JavaSE-25",
+						"path": "/slime/local/jdk/25",
 						"default": true
 					}
 				]
