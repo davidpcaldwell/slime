@@ -202,116 +202,103 @@
 		 * @returns
 		 */
 		var Modules = function(p) {
+			/** @type { slime.jrunscript.tools.node.Module[] | null } */
+			var cachedListing = null;
+
+			var didPrime = false;
+
+			var invalidateListingCache = function() {
+				cachedListing = null;
+			};
+
+			var runPrimeInstall = function() {
+				var invocation = invokeNpm(
+					p.installation,
+					{
+						command: "install",
+						arguments: $api.Array.build(function(rv) {
+						}),
+						directory: (p.project) ? p.project.base : void(0),
+						stdio: {
+							output: "string",
+							error: "string"
+						}
+					}
+				);
+				return $api.fp.world.now.question(
+					$context.library.shell.subprocess.question,
+					invocation
+				);
+			};
+
+			var runNpmLs = function() {
+				var invocation = invokeNpm(
+					p.installation,
+					{
+						command: "ls",
+						arguments: $api.Array.build(function(rv) {
+							//	TODO	in latest npm, it reports this is deprecated and we should use --location=global instead.
+							//			should check whether this has always worked or whether we need to do some kind of
+							//			npm version checking here before choosing between the two forms
+							rv.push("-l");
+							if (!p.project) rv.push("--global");
+							rv.push("--depth", "0");
+							rv.push("--json")
+						}),
+						directory: (p.project) ? p.project.base : void(0),
+						stdio: {
+							output: "string",
+							error: "string"
+						}
+					}
+				);
+
+				var result = $api.fp.world.now.question(
+					$context.library.shell.subprocess.question,
+					invocation
+				);
+
+				if (result.status != 0) {
+					throw new Error("npm ls exit status: " + result.status
+						+ "\ninstallation: " + JSON.stringify(p.installation)
+						+ "\ninvocation: " + JSON.stringify(invocation)
+						+ "\nstdout:\n" + result.stdio.output
+						+ "\nstderr:\n" + result.stdio.error);
+				}
+
+				/** @type { slime.jrunscript.tools.node.internal.NpmLsOutput } */
+				var npmJson = JSON.parse(result.stdio.output);
+
+				if (!npmJson.dependencies) return [];
+				return $api.fp.result(
+					npmJson,
+					$api.fp.pipe(
+						$api.fp.property("dependencies"),
+						Object.entries,
+						$api.fp.Array.map(function(entry) {
+							return {
+								name: entry[0],
+								version: entry[1].version,
+								path: entry[1].path,
+								bin: entry[1].bin
+							}
+						})
+					)
+				);
+			};
+
 			/** @type { slime.jrunscript.tools.node.modules.Exports["list"] } */
 			var list = function() {
 				return function(events) {
-					// var invocation = toShellInvocation({
-					// 	command: "npm",
-					// 	arguments: $api.Array.build(function(rv) {
-					// 		rv.push("ls");
-					// 		//	TODO	in latest npm, it reports this is deprecated and we should use --location=global instead.
-					// 		//			should check whether this has always worked or whether we need to do some kind of
-					// 		//			npm version checking here before choosing between the two forms
-					// 		if (!p.project) rv.push("--global");
-					// 		rv.push("--depth", "0");
-					// 		rv.push("--json")
-					// 	}),
-					// 	directory: (p.project) ? p.project.base : $api.fp.now(
-					// 		p.installation.executable,
-					// 		$context.library.file.Location.from.os,
-					// 		$context.library.file.Location.parent(),
-					// 		$api.fp.property("pathname")
-					// 	),
-					// 	stdio: {
-					// 		output: "string",
-					// 		error: "string"
-					// 	}
-					// });
+					if (cachedListing) return cachedListing;
 
-					//Packages.java.lang.System.err.println("npm install ...");
-
-					(
-						function() {
-							var invocation = invokeNpm(
-								p.installation,
-								{
-									command: "install",
-									arguments: $api.Array.build(function(rv) {
-									}),
-									directory: (p.project) ? p.project.base : void(0),
-									stdio: {
-										output: "string",
-										error: "string"
-									}
-								}
-							);
-							var result = $api.fp.world.now.question(
-								$context.library.shell.subprocess.question,
-								invocation
-							);
-							return result;
-						}
-					)();
-
-					//Packages.java.lang.System.err.println("npm ls ...");
-
-					var invocation = invokeNpm(
-						p.installation,
-						{
-							command: "ls",
-							arguments: $api.Array.build(function(rv) {
-								//	TODO	in latest npm, it reports this is deprecated and we should use --location=global instead.
-								//			should check whether this has always worked or whether we need to do some kind of
-								//			npm version checking here before choosing between the two forms
-								rv.push("-l");
-								if (!p.project) rv.push("--global");
-								rv.push("--depth", "0");
-								rv.push("--json")
-							}),
-							directory: (p.project) ? p.project.base : void(0) /*$api.fp.now(
-								p.installation.executable,
-								$context.library.file.Location.from.os,
-								$context.library.file.Location.parent(),
-								$api.fp.property("pathname")
-							)*/,
-							stdio: {
-								output: "string",
-								error: "string"
-							}
-						}
-					);
-					var result = $api.fp.world.now.question(
-						$context.library.shell.subprocess.question,
-						invocation
-					);
-
-					if (result.status != 0) {
-						throw new Error("npm ls exit status: " + result.status
-							+ "\ninstallation: " + JSON.stringify(p.installation)
-							+ "\ninvocation: " + JSON.stringify(invocation)
-							+ "\nstdout:\n" + result.stdio.output
-							+ "\nstderr:\n" + result.stdio.error);
+					if (!didPrime) {
+						runPrimeInstall();
+						didPrime = true;
 					}
 
-					/** @type { slime.jrunscript.tools.node.internal.NpmLsOutput } */
-					var npmJson = JSON.parse(result.stdio.output);
-
-					if (!npmJson.dependencies) return [];
-					return $api.fp.result(
-						npmJson,
-						$api.fp.pipe(
-							$api.fp.property("dependencies"),
-							Object.entries,
-							$api.fp.Array.map(function(entry) {
-								return {
-									name: entry[0],
-									version: entry[1].version,
-									path: entry[1].path,
-									bin: entry[1].bin
-								}
-							})
-						)
-					);
+					cachedListing = runNpmLs();
+					return cachedListing;
 				}
 			};
 
@@ -354,6 +341,8 @@
 						$context.library.shell.subprocess.action,
 						invocation
 					);
+
+					invalidateListingCache();
 				}
 			};
 
@@ -405,6 +394,8 @@
 							$context.library.shell.subprocess.action,
 							invocation
 						);
+
+						invalidateListingCache();
 					}
 				} : void(0)
 			});
