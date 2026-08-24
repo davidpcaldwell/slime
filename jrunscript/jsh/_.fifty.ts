@@ -98,13 +98,7 @@ namespace slime.jsh {
 			const { $api, jsh } = fifty.global;
 
 			const normalizeStderr = function(stderr: string): string {
-				return stderr
-					.split("\n")
-					.filter(function(line) {
-						if (line == "Warning: jrunscript is deprecated and will be removed in a future release.") return false;
-						return true;
-					})
-					.join("\n");
+				return stderr;
 			};
 
 			fifty.tests.setting = fifty.test.Parent();
@@ -279,7 +273,7 @@ namespace slime.jsh {
  *
  * The `bash` launcher has three jobs:
  *
- * * Find or install a version of Java to use (currently the default is 21, though this might not work for remote shells; see #1617
+ * * Find or install a version of Java to use (currently the default is 25, though this might not work for remote shells; see #1617
  * and comments in the `jsh` script referencing #1617),
  * * Install a bootstrap JavaScript engine if necessary; currently, for Java 8-14, the JDK's built-in Nashorn is used, and for Java
  * 15+, standalone Nashorn {@include ../../local/typedoc/dependencies.md#nashorn.standalone.version} is used.

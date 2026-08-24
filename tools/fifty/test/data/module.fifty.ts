@@ -80,7 +80,6 @@ namespace slime.fifty.internal.test.data {
 			return stderr
 				.split("\n")
 				.filter(function(line: string) {
-					if (line == "Warning: jrunscript is deprecated and will be removed in a future release.") return false;
 					return true;
 				})
 				.join("\n");
