@@ -33,7 +33,7 @@ if [ "$(uname)" == "Linux" ]; then
 	fi
 fi
 
-SLIME_WF_JDK_VERSION="${SLIME_WF_JDK_VERSION:-21}"
+SLIME_WF_JDK_VERSION="${SLIME_WF_JDK_VERSION:-25}"
 
 SLIME_WF_JDK_DEFAULT="${JSH_LOCAL_JDKS}/default"
 
