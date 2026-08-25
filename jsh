@@ -234,7 +234,7 @@ install_jdk_25() {
 }
 
 install_jdk() {
-	install_jdk_25 "$@"
+	install_jdk_21 "$@"
 }
 
 
@@ -322,7 +322,8 @@ get_jrunscript_java_major_version() {
 }
 
 if [ "$1" == "--install-jdk" ]; then
-	#	Install the current shell default JDK into local/jdk/default.
+	#	Default JDK remains 8 because remote shell does not yet work with JDK 11; module path issues
+	#	See jrunscript/jsh/test/remote.fifty.ts
 	install_jdk ${JSH_LOCAL_JDKS}/default
 	exit $?
 fi
@@ -526,7 +527,7 @@ if test -n "${JRUNSCRIPT}" && test "$0" == "bash"; then
 	fi
 fi
 
-#	If no usable JDK is found, install the current default for the shell.
+#	Won't this install JDK 21 even for remote shells? See reference to issue #1617 above.
 if [ -z "${JRUNSCRIPT}" ]; then
 	install_jdk ${JSH_LOCAL_JDKS}/default
 	JRUNSCRIPT="${JSH_LOCAL_JDKS}/default/bin/jrunscript"
@@ -535,9 +536,9 @@ fi
 #	So this is a mess. With JDK 11 and up, according to (for example) https://bugs.openjdk.java.net/browse/JDK-8210140, we need
 #	an extra argument to Nashorn (--no-deprecation-warning) to avoid emitting warnings. But this argument causes Nashorn not to
 #	be found with JDK 8. So we have to version-check the JDK to determine whether to supply the argument. This version test works
-#	with SLIME-supported Amazon Corretto JDK 8, JDK 11, JDK 17, JDK 21, and JDK 25, and hasn't yet been tested with anything else.
+#	with SLIME-supported Amazon Corretto JDK 8, JDK 11, JDK 17, and JDK 21, and hasn't yet been tested with anything else.
 #
-#	But it works with JDK 8, 11, 17, 21, and 25, so it's better than nothing.
+#	But it works with JDK 8, 11, 17, and 21, so it's better than nothing.
 JDK_MAJOR_VERSION=$(get_jrunscript_java_major_version ${JRUNSCRIPT})
 if [ "${JDK_MAJOR_VERSION}" -gt 8 ] && [ "${JDK_MAJOR_VERSION}" -lt 15 ]; then
 	export JSH_NASHORN_DEPRECATION_ARGUMENT="-Dnashorn.args=--no-deprecation-warning"
@@ -562,25 +563,38 @@ if [ "$1" == "--shell-configure" ]; then
 fi
 
 run_jrunscript() {
-	local stderr_fifo
-	stderr_fifo="$(mktemp -u)"
-	mkfifo "${stderr_fifo}" || return 1
-
 	(
-		while IFS= read -r line || [ -n "${line}" ]; do
-			if [ "${line}" != "Warning: jrunscript is deprecated and will be removed in a future release." ]; then
-				printf '%s\n' "${line}" >&2
+		local temp_dir stderr_fifo filter_pid status
+		temp_dir="$(mktemp -d)" || exit 1
+		stderr_fifo="${temp_dir}/stderr.fifo"
+		mkfifo "${stderr_fifo}" || exit 1
+
+		cleanup_run_jrunscript() {
+			if [ -n "${filter_pid}" ]; then
+				kill "${filter_pid}" 2>/dev/null || true
+				wait "${filter_pid}" 2>/dev/null || true
 			fi
-		done < "${stderr_fifo}"
-	) &
-	local filter_pid="$!"
+			rm -f "${stderr_fifo}" 2>/dev/null || true
+			rmdir "${temp_dir}" 2>/dev/null || true
+		}
 
-	${JRUNSCRIPT} "$@" 2>"${stderr_fifo}"
-	local status="$?"
+		trap cleanup_run_jrunscript EXIT INT TERM
 
-	wait "${filter_pid}"
-	rm -f "${stderr_fifo}"
-	return "${status}"
+		(
+			while IFS= read -r line || [ -n "${line}" ]; do
+				if [ "${line}" != "Warning: jrunscript is deprecated and will be removed in a future release." ]; then
+					printf '%s\n' "${line}" >&2
+				fi
+			done < "${stderr_fifo}"
+		) &
+		filter_pid="$!"
+
+		${JRUNSCRIPT} "$@" 2>"${stderr_fifo}"
+		status="$?"
+		wait "${filter_pid}" 2>/dev/null || true
+		exit "${status}"
+	)
+	return $?
 }
 
 javaSystemPropertyArgument() {
