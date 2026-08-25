@@ -98,13 +98,7 @@ namespace slime.jsh {
 			const { $api, jsh } = fifty.global;
 
 			const normalizeStderr = function(stderr: string): string {
-				return stderr
-					.split("\n")
-					.filter(function(line) {
-						if (line == "Warning: jrunscript is deprecated and will be removed in a future release.") return false;
-						return true;
-					})
-					.join("\n");
+				return stderr;
 			};
 
 			fifty.tests.setting = fifty.test.Parent();

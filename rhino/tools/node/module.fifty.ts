@@ -268,7 +268,159 @@ namespace slime.jrunscript.tools.node {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			fifty.tests.npm = {};
+			var createCountingModulesFixture = function(p: { project?: boolean }) {
+				var dependencies: {
+					[name: string]: {
+						version: string
+						path: string
+						bin: { [name: string]: string }
+					}
+				} = {};
+
+				var calls = {
+					installQuestion: 0,
+					installAction: 0,
+					lsQuestion: 0
+				};
+
+				var parseInvocation = function(invocation: slime.jrunscript.shell.run.Intention) {
+					var args = invocation.arguments || [];
+					return {
+						command: args[1],
+						parameters: args.slice(2)
+					};
+				};
+
+				var installDependency = function(parameters: string[]) {
+					var packageSpecifier = parameters.find(function(parameter) {
+						return parameter.charAt(0) != "-";
+					});
+					if (!packageSpecifier) {
+						dependencies["project-install-refresh"] = {
+							version: "1.0.0",
+							path: "/tmp/project-install-refresh",
+							bin: {}
+						};
+						return;
+					}
+
+					var name = packageSpecifier;
+					var version = "1.0.0";
+					if (packageSpecifier.indexOf("@") > 0) {
+						var at = packageSpecifier.lastIndexOf("@");
+						name = packageSpecifier.substring(0, at);
+						version = packageSpecifier.substring(at + 1);
+					}
+
+					dependencies[name] = {
+						version: version,
+						path: "/tmp/" + name,
+						bin: {}
+					};
+				};
+
+				var fixtureSubject = fifty.$loader.script("module.js")({
+					library: {
+						file: jsh.file,
+						shell: {
+							subprocess: {
+								question: function(invocation: slime.jrunscript.shell.run.Intention) {
+									return function() {
+										var parsed = parseInvocation(invocation);
+										if (parsed.command == "install") {
+											calls.installQuestion += 1;
+											return {
+												status: 0,
+												stdio: {
+													output: "",
+													error: ""
+												}
+											};
+										}
+
+										if (parsed.command == "ls") {
+											calls.lsQuestion += 1;
+											return {
+												status: 0,
+												stdio: {
+													output: JSON.stringify({
+														name: "fixture",
+														dependencies: dependencies
+													}),
+													error: ""
+												}
+											};
+										}
+
+										throw new Error("Unexpected npm question command: " + parsed.command);
+									};
+								},
+								action: function(invocation: slime.jrunscript.shell.run.Intention) {
+									return function() {
+										var parsed = parseInvocation(invocation);
+										if (parsed.command != "install") {
+											throw new Error("Unexpected npm action command: " + parsed.command);
+										}
+										calls.installAction += 1;
+										installDependency(parsed.parameters);
+									};
+								}
+							}
+						} as any,
+						install: jsh.tools.install
+					}
+				} as any) as Exports;
+
+				var installation: Installation = {
+					executable: "/tmp/fake-node/bin/node"
+				};
+
+				var modules = (p.project)
+					? fixtureSubject.Project.modules({ base: "/tmp/fake-project" })(installation)
+					: fixtureSubject.Installation.modules(installation);
+
+				return {
+					modules: modules,
+					calls: calls
+				};
+			};
+
+			fifty.tests.npm = fifty.test.Parent();
+
+			fifty.tests.npm.listingCache = function() {
+				var fixture = createCountingModulesFixture({});
+
+				$api.fp.world.Question.now({ question: fixture.modules.list() });
+				$api.fp.world.Question.now({ question: fixture.modules.list() });
+
+				verify(fixture.calls.installQuestion).is(1);
+				verify(fixture.calls.lsQuestion).is(1);
+			};
+
+			fifty.tests.npm.installInvalidatesListingCache = function() {
+				var fixture = createCountingModulesFixture({});
+
+				$api.fp.world.Question.now({ question: fixture.modules.list() });
+				$api.fp.world.Action.now({ action: fixture.modules.install({ name: "minimal-package" }) });
+				$api.fp.world.Question.now({ question: fixture.modules.list() });
+
+				verify(fixture.calls.installQuestion).is(1);
+				verify(fixture.calls.installAction).is(1);
+				verify(fixture.calls.lsQuestion).is(2);
+			};
+
+			fifty.tests.npm.projectInstallInvalidatesListingCache = function() {
+				var fixture = createCountingModulesFixture({ project: true });
+
+				$api.fp.world.Question.now({ question: fixture.modules.list() });
+				if (!fixture.modules.project) throw new Error("Expected project modules API.");
+				fixture.modules.project.install();
+				$api.fp.world.Question.now({ question: fixture.modules.list() });
+
+				verify(fixture.calls.installQuestion).is(1);
+				verify(fixture.calls.installAction).is(1);
+				verify(fixture.calls.lsQuestion).is(2);
+			};
 
 			fifty.tests.wip = function() {
 				var TMPDIR = fifty.jsh.file.temporary.location();
@@ -503,6 +655,7 @@ namespace slime.jrunscript.tools.node.internal {
 				var api = jsh.shell.tools.node.installed;
 				jsh.shell.console("version: " + api.version);
 				fifty.run(fifty.tests.sandbox);
+				fifty.run(fifty.tests.npm);
 				fifty.run(fifty.tests.object.installation);
 			}
 		}
