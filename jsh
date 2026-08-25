@@ -562,6 +562,41 @@ if [ "$1" == "--shell-configure" ]; then
 	return 0
 fi
 
+run_jrunscript() {
+	(
+		local temp_dir stderr_fifo filter_pid status
+		temp_dir="$(mktemp -d)" || exit 1
+		stderr_fifo="${temp_dir}/stderr.fifo"
+		mkfifo "${stderr_fifo}" || exit 1
+
+		cleanup_run_jrunscript() {
+			if [ -n "${filter_pid}" ]; then
+				kill "${filter_pid}" 2>/dev/null || true
+				wait "${filter_pid}" 2>/dev/null || true
+			fi
+			rm -f "${stderr_fifo}" 2>/dev/null || true
+			rmdir "${temp_dir}" 2>/dev/null || true
+		}
+
+		trap cleanup_run_jrunscript EXIT INT TERM
+
+		(
+			while IFS= read -r line || [ -n "${line}" ]; do
+				if [ "${line}" != "Warning: jrunscript is deprecated and will be removed in a future release." ]; then
+					printf '%s\n' "${line}" >&2
+				fi
+			done < "${stderr_fifo}"
+		) &
+		filter_pid="$!"
+
+		${JRUNSCRIPT} "$@" 2>"${stderr_fifo}"
+		status="$?"
+		wait "${filter_pid}" 2>/dev/null || true
+		exit "${status}"
+	)
+	return $?
+}
+
 javaSystemPropertyArgument() {
 	if [ -n "$2" ]; then
 		echo "-D$1=$2"
@@ -581,7 +616,7 @@ if [ "$0" == "bash" ]; then
 
 	JSH_NETWORK_ARGUMENTS="${HTTP_PROXY_HOST_ARGUMENT} ${HTTP_PROXY_PORT_ARGUMENT} ${HTTPS_PROXY_HOST_ARGUMENT} ${HTTPS_PROXY_PORT_ARGUMENT} ${JSH_GITHUB_USER_ARGUMENT} ${JSH_GITHUB_PASSWORD_ARGUMENT}"
 	export JSH_SHELL_LIB
-	${JRUNSCRIPT} ${JSH_LAUNCHER_PROPERTY_ARGUMENTS} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/jrunscript/api.js?jsh')" "$@"
+	run_jrunscript ${JSH_LAUNCHER_PROPERTY_ARGUMENTS} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/jrunscript/api.js?jsh')" "$@"
 else
-	${JRUNSCRIPT} ${JSH_LAUNCHER_PROPERTY_ARGUMENTS} "$(dirname $0)/rhino/jrunscript/api.js" jsh "$@"
+	run_jrunscript ${JSH_LAUNCHER_PROPERTY_ARGUMENTS} "$(dirname $0)/rhino/jrunscript/api.js" jsh "$@"
 fi
