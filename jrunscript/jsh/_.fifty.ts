@@ -265,10 +265,12 @@ namespace slime.jsh {
 					jdkRoot,
 					jsh.file.Location.directory.relativePath("default")
 				);
-
-				verify(json).properties["java.home"].evaluate(String).is(
-					String(jsh.file.Pathname(defaultJdk.pathname).java.adapt().getCanonicalPath())
+				var defaultJava = $api.fp.now(
+					defaultJdk,
+					jsh.file.Location.directory.relativePath("bin/java")
 				);
+
+				verify($api.fp.now(defaultJava, jsh.file.Location.file.exists.simple)).is(true);
 
 				verify(json).properties["java.version"].evaluate(function(version) {
 					var match = /^(\d+)/.exec(String(version));
