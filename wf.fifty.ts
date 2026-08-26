@@ -228,6 +228,28 @@ namespace slime.project.wf {
 						fifty.global.jsh.shell.console(result.stdio.error);
 					}
 					fifty.verify(fresh).directory.getSubdirectory("node_modules/eslint").is.type("object");
+
+					var java = fresh.directory.getSubdirectory("local/jdk/default/bin").getFile("java");
+					fifty.verify(java).is.type("object");
+
+					var javaVersion = jsh.shell.run({
+						command: java,
+						arguments: ["-version"],
+						stdio: {
+							error: String
+						},
+						evaluate: function(output) {
+							return output.stdio.error;
+						}
+					});
+
+					fifty.verify(javaVersion).evaluate(function(output) {
+						var match = /version "([^"]+)"/.exec(output);
+						if (!match) return "";
+						if (match[1].indexOf("1.8.") == 0) return "8";
+						var major = /^(\d+)/.exec(match[1]);
+						return (major) ? major[1] : "";
+					}).is("25");
 				});
 
 				fifty.run(fifty.tests.requireGitIdentityDuringInitialize);

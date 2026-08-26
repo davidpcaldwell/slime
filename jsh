@@ -300,7 +300,7 @@ get_jrunscript_java_major_version() {
 	#	something
 
 	#	TODO	logic duplicated in jsh/launcher/main.js; can it somehow be invoked from here? Would be a pain.
-	#	This function works with supported JDKs Amazon Corretto 8 and 11. Untested with others.
+	#	This function works with supported JDKs Amazon Corretto 8, 11, 17, 21, and 25. Untested with others.
 	JRUNSCRIPT=$1
 	JDK=$(dirname $JRUNSCRIPT)/..
 	JAVA="${JDK}/bin/java"

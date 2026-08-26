@@ -215,6 +215,66 @@ namespace slime.jsh {
 
 				//	TODO	built.bash?, built.native?, packaged?, remote
 			}
+
+			fifty.tests.setting.defaultInstallJdkIs25 = function() {
+				var fixtures: slime.jsh.wf.test.Fixtures = (function() {
+					var script: slime.jsh.wf.test.Script = fifty.$loader.script("../../tools/wf/test/fixtures.ts");
+					return script()(fifty);
+				})();
+
+				var repository = fixtures.old.clone({
+					src: fifty.jsh.file.relative("../.."),
+				});
+
+				var cloneSrc = repository.directory.pathname.os.adapt();
+				var jdkRoot = $api.fp.now(
+					cloneSrc,
+					jsh.file.Location.directory.relativePath("local/test-default-jdks")
+				);
+
+				var environment = function(was) {
+					return $api.Object.compose(was, {
+						JSH_LOCAL_JDKS: jdkRoot.pathname,
+						JSH_USER_JDKS: "/dev/null"
+					});
+				};
+
+				run({
+					command: "bash",
+					arguments: [
+						$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jsh")).pathname,
+						"--install-jdk"
+					],
+					environment: environment
+				});
+
+				var output = run({
+					command: "bash",
+					arguments: [
+						$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jsh")).pathname,
+						$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js")).pathname,
+					],
+					environment: environment,
+					stdio: {
+						output: "string"
+					}
+				});
+
+				var json = JSON.parse(output.stdio.output);
+				var defaultJdk = $api.fp.now(
+					jdkRoot,
+					jsh.file.Location.directory.relativePath("default")
+				);
+
+				verify(json).properties["java.home"].evaluate(String).is(
+					String(jsh.file.Pathname(defaultJdk.pathname).java.adapt().getCanonicalPath())
+				);
+
+				verify(json).properties["java.version"].evaluate(function(version) {
+					var match = /^(\d+)/.exec(String(version));
+					return (match) ? match[1] : "";
+				}).is("25");
+			}
 		}
 	//@ts-ignore
 	)(fifty);
