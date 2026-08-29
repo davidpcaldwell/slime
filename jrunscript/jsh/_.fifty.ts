@@ -215,6 +215,67 @@ namespace slime.jsh {
 
 				//	TODO	built.bash?, built.native?, packaged?, remote
 			}
+
+			fifty.tests.setting.defaultInstallJdkIs25 = function() {
+				var fixtures: slime.jsh.wf.test.Fixtures = (function() {
+					var script: slime.jsh.wf.test.Script = fifty.$loader.script("../../tools/wf/test/fixtures.ts");
+					return script()(fifty);
+				})();
+
+				var repository = fixtures.old.clone({
+					src: fifty.jsh.file.relative("../.."),
+				});
+
+				var cloneSrc = repository.directory.pathname.os.adapt();
+				var jdkRoot = $api.fp.now(
+					cloneSrc,
+					jsh.file.Location.directory.relativePath("local/test-default-jdks")
+				);
+
+				var environment = function(was) {
+					return $api.Object.compose(was, {
+						JSH_LOCAL_JDKS: jdkRoot.pathname,
+						JSH_USER_JDKS: "/dev/null"
+					});
+				};
+
+				run({
+					command: "bash",
+					arguments: [
+						$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jsh")).pathname,
+						"--install-jdk"
+					],
+					environment: environment
+				});
+
+				var defaultJdk = $api.fp.now(
+					jdkRoot,
+					jsh.file.Location.directory.relativePath("default")
+				);
+				var defaultJava = $api.fp.now(
+					defaultJdk,
+					jsh.file.Location.directory.relativePath("bin/java")
+				);
+
+				verify($api.fp.now(defaultJava, jsh.file.Location.file.exists.simple)).is(true);
+
+				var versionOutput = run({
+					command: defaultJava.pathname,
+					arguments: ["-version"],
+					stdio: {
+						error: "string"
+					}
+				});
+
+				verify(versionOutput).stdio.error.evaluate(function(stderr) {
+					var versionLine = String(stderr).split("\n")[0];
+					var quoted = /version "([^"]+)"/.exec(versionLine);
+					if (!quoted) return "";
+					if (quoted[1].indexOf("1.8.") == 0) return "8";
+					var match = /^(\d+)/.exec(quoted[1]);
+					return (match) ? match[1] : "";
+				}).is("25");
+			}
 		}
 	//@ts-ignore
 	)(fifty);
@@ -273,7 +334,7 @@ namespace slime.jsh {
  *
  * The `bash` launcher has three jobs:
  *
- * * Find or install a version of Java to use (currently the default is 21, though this might not work for remote shells; see #1617
+ * * Find or install a version of Java to use (currently the default is 25, though this might not work for remote shells; see #1617
  * and comments in the `jsh` script referencing #1617),
  * * Install a bootstrap JavaScript engine if necessary; currently, for Java 8-14, the JDK's built-in Nashorn is used, and for Java
  * 15+, standalone Nashorn {@include ../../local/typedoc/dependencies.md#nashorn.standalone.version} is used.

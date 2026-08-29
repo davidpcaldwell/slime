@@ -234,7 +234,7 @@ install_jdk_25() {
 }
 
 install_jdk() {
-	install_jdk_21 "$@"
+	install_jdk_25 "$@"
 }
 
 
@@ -300,7 +300,7 @@ get_jrunscript_java_major_version() {
 	#	something
 
 	#	TODO	logic duplicated in jsh/launcher/main.js; can it somehow be invoked from here? Would be a pain.
-	#	This function works with supported JDKs Amazon Corretto 8 and 11. Untested with others.
+	#	This function works with supported JDKs Amazon Corretto 8, 11, 17, 21, and 25. Untested with others.
 	JRUNSCRIPT=$1
 	JDK=$(dirname $JRUNSCRIPT)/..
 	JAVA="${JDK}/bin/java"
@@ -322,8 +322,7 @@ get_jrunscript_java_major_version() {
 }
 
 if [ "$1" == "--install-jdk" ]; then
-	#	Default JDK remains 8 because remote shell does not yet work with JDK 11; module path issues
-	#	See jrunscript/jsh/test/remote.fifty.ts
+	#	Install the current shell default JDK into local/jdk/default.
 	install_jdk ${JSH_LOCAL_JDKS}/default
 	exit $?
 fi
@@ -527,7 +526,7 @@ if test -n "${JRUNSCRIPT}" && test "$0" == "bash"; then
 	fi
 fi
 
-#	Won't this install JDK 21 even for remote shells? See reference to issue #1617 above.
+#	If no usable JDK is found, install the current default for the shell.
 if [ -z "${JRUNSCRIPT}" ]; then
 	install_jdk ${JSH_LOCAL_JDKS}/default
 	JRUNSCRIPT="${JSH_LOCAL_JDKS}/default/bin/jrunscript"
@@ -536,9 +535,9 @@ fi
 #	So this is a mess. With JDK 11 and up, according to (for example) https://bugs.openjdk.java.net/browse/JDK-8210140, we need
 #	an extra argument to Nashorn (--no-deprecation-warning) to avoid emitting warnings. But this argument causes Nashorn not to
 #	be found with JDK 8. So we have to version-check the JDK to determine whether to supply the argument. This version test works
-#	with SLIME-supported Amazon Corretto JDK 8, JDK 11, JDK 17, and JDK 21, and hasn't yet been tested with anything else.
+#	with SLIME-supported Amazon Corretto JDK 8, JDK 11, JDK 17, JDK 21, and JDK 25, and hasn't yet been tested with anything else.
 #
-#	But it works with JDK 8, 11, 17, and 21, so it's better than nothing.
+#	But it works with JDK 8, 11, 17, 21, and 25, so it's better than nothing.
 JDK_MAJOR_VERSION=$(get_jrunscript_java_major_version ${JRUNSCRIPT})
 if [ "${JDK_MAJOR_VERSION}" -gt 8 ] && [ "${JDK_MAJOR_VERSION}" -lt 15 ]; then
 	export JSH_NASHORN_DEPRECATION_ARGUMENT="-Dnashorn.args=--no-deprecation-warning"
