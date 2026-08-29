@@ -26,6 +26,10 @@ abstract class Configuration {
 	}
 
 	private Shell _shell;
+	private Engine _rhinoEngine;
+	private boolean _rhinoChecked;
+	private Engine _nashornEngine;
+	private boolean _nashornChecked;
 
 	private Shell shell() throws IOException {
 		if (_shell == null) {
@@ -34,32 +38,48 @@ abstract class Configuration {
 		return _shell;
 	}
 
-	private Map<String,Engine> engineMap() throws IOException {
-		Map<String,Engine> INSTANCES = new HashMap<String,Engine>();
-		ScriptEngineManager factory = new ScriptEngineManager();
-		if (factory.getEngineByName("nashorn") != null) {
-			INSTANCES.put("nashorn", new Engine.Nashorn(factory));
+	private Engine rhinoEngine() throws IOException {
+		if (!_rhinoChecked) {
+			try {
+				shell().getRhinoClassLoader().loadClass("org.mozilla.javascript.Context");
+				_rhinoEngine = new Engine.Rhino(shell().getRhinoClassLoader(), this.debug());
+			} catch (ClassNotFoundException e) {
+				_rhinoEngine = null;
+			}
+			_rhinoChecked = true;
 		}
-		try {
-			shell().getRhinoClassLoader().loadClass("org.mozilla.javascript.Context");
-			INSTANCES.put("rhino", new Engine.Rhino(shell().getRhinoClassLoader(), this.debug()));
-		} catch (ClassNotFoundException e) {
+		return _rhinoEngine;
+	}
+
+	private Engine nashornEngine() {
+		if (!_nashornChecked) {
+			ScriptEngineManager factory = new ScriptEngineManager();
+			if (factory.getEngineByName("nashorn") != null) {
+				_nashornEngine = new Engine.Nashorn(factory);
+			}
+			_nashornChecked = true;
 		}
-		return INSTANCES;
+		return _nashornEngine;
+	}
+
+	private Engine engineById(String id) throws IOException {
+		if ("rhino".equals(id)) return rhinoEngine();
+		if ("nashorn".equals(id)) return nashornEngine();
+		return null;
 	}
 
 	private Engine getEngine() throws IOException {
 		String JSH_ENGINE = engine();
-		Map<String,Engine> engines = engineMap();
 		if (JSH_ENGINE != null) {
-			Engine specified = engines.get(JSH_ENGINE);
+			Engine specified = engineById(JSH_ENGINE);
 			if (specified != null) {
 				return specified;
 			}
 		}
 		String[] preferenceOrder = new String[] { "rhino", "nashorn" };
 		for (String e : preferenceOrder) {
-			if (engines.get(e) != null) return engines.get(e);
+			Engine candidate = engineById(e);
+			if (candidate != null) return candidate;
 		}
 		throw new RuntimeException("No JavaScript execution engine found.");
 	}
