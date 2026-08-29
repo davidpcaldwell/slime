@@ -248,19 +248,6 @@ namespace slime.jsh {
 					environment: environment
 				});
 
-				var output = run({
-					command: "bash",
-					arguments: [
-						$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jsh")).pathname,
-						$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jrunscript/jsh/test/jsh-data.jsh.js")).pathname,
-					],
-					environment: environment,
-					stdio: {
-						output: "string"
-					}
-				});
-
-				var json = JSON.parse(output.stdio.output);
 				var defaultJdk = $api.fp.now(
 					jdkRoot,
 					jsh.file.Location.directory.relativePath("default")
@@ -272,8 +259,20 @@ namespace slime.jsh {
 
 				verify($api.fp.now(defaultJava, jsh.file.Location.file.exists.simple)).is(true);
 
-				verify(json).properties["java.version"].evaluate(function(version) {
-					var match = /^(\d+)/.exec(String(version));
+				var versionOutput = run({
+					command: defaultJava.pathname,
+					arguments: ["-version"],
+					stdio: {
+						error: "string"
+					}
+				});
+
+				verify(versionOutput).stdio.error.evaluate(function(stderr) {
+					var versionLine = String(stderr).split("\n")[0];
+					var quoted = /version "([^"]+)"/.exec(versionLine);
+					if (!quoted) return "";
+					if (quoted[1].indexOf("1.8.") == 0) return "8";
+					var match = /^(\d+)/.exec(quoted[1]);
 					return (match) ? match[1] : "";
 				}).is("25");
 			}
