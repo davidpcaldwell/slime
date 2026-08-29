@@ -109,6 +109,13 @@ To run all tests for a file:
 A module's documentation typically is contained in a primary TypeScript namespace. Namespaces with `internal` in the name are
 designed for internal module or project use.
 
+### Profiling `wf`
+
+For profiling `wf` commands, use the canonical workflow documented in
+[CONTRIBUTING.md](CONTRIBUTING.md#profiling-wf-commands). In short: profile
+`tools/wf.jsh.js` (not the top-level `wf` Bash wrapper) via
+`jrunscript/jsh/tools/profile.jsh.js`, and write artifacts under `local/profiler/`.
+
 #### Troubleshooting: `./wf documentation` in devcontainers
 
 If serving documentation fails because Chrome reports that the profile is already in use, clear stale Chrome Singleton lock files

@@ -104,6 +104,30 @@ the browser implementation of the JSAPI test framework.
 * Node.js - defined by `test-node.yaml`, which runs `contributor/suite-docker-node`, which runs
 `./fifty test.jsh loader/node/loader.fifty.ts`
 
+## Profiling `wf` commands
+
+When profiling `wf`, target the `jsh` script entrypoint rather than the top-level Bash wrapper.
+
+Call chain:
+
+* `wf` -> `tools/wf.bash` -> `tools/wf.jsh.js` -> `wf.js`
+
+Use the profiler wrapper to run the `tools/wf.jsh.js` script directly, for example:
+
+```bash
+./jsh jrunscript/jsh/tools/profile.jsh.js \
+  --profiler:output:html local/profiler/wf-initialize.html \
+  --profiler:output:json local/profiler/wf-initialize.json \
+  --profiler:nobrowser \
+  tools/wf.jsh.js initialize
+```
+
+Notes:
+
+* `--profiler:nobrowser` avoids failures when a browser is unavailable.
+* Keep profiler outputs under `local/profiler/` so they remain checkout-local and untracked.
+* If you need an interactive view, omit `--profiler:nobrowser`.
+
 ## Older contributor documentation
 
 Currently, most contributor information is in [contributor/README.html](contributor/README.html), but it is being migrated to other

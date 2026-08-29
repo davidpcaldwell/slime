@@ -213,6 +213,7 @@
 				(
 					function node() {
 						var installation = jsh.shell.tools.node.installation;
+						var globalModules = jsh.shell.tools.node.Installation.modules(installation);
 
 						(
 							function core() {
@@ -271,7 +272,7 @@
 						(
 							function jsyaml() {
 								$api.fp.world.Action.now({
-									action: jsh.shell.tools.node.Installation.modules(installation).require({ name: "@types/js-yaml" }),
+									action: globalModules.require({ name: "@types/js-yaml" }),
 									handlers: {
 										installed: function(e) {
 											jsh.shell.console("Installed @types/js-yaml " + e.detail.version);
@@ -283,7 +284,7 @@
 						(
 							function github() {
 								$api.fp.world.Action.now({
-									action: jsh.shell.tools.node.Installation.modules(installation).require({ name: "@octokit/types" }),
+									action: globalModules.require({ name: "@octokit/types" }),
 									handlers: {
 										installed: function(e) {
 											jsh.shell.console("Installed @octokit/types " + e.detail.version);
