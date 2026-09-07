@@ -132,6 +132,20 @@
 			return tokens[tokens.length-1];
 		}
 
+		var hasShebang = function(file) {
+			var input = $api.fp.world.now.question(
+				jsh.file.world.Location.file.read.stream(),
+				jsh.file.world.Location.from.os(file.node.pathname.toString())
+			);
+			if (!input.present) return false;
+			var stream = input.value.java.adapt();
+			try {
+				return stream.read() == 35 && stream.read() == 33;
+			} finally {
+				stream.close();
+			}
+		}
+
 		var template = licensesCode.mpl["2.0"];
 
 		// var extensions = {};
@@ -159,7 +173,10 @@
 			if (files[i].path == "typedoc.json") extension = "js";
 			if (files[i].path == "typedoc-tsconfig.json") extension = "js";
 			if (files[i].path == ".devcontainer/devcontainer.json") extension = "js";
-			if (files[i].path == "rhino/tools/github/cat") extension = "bash";
+			if (files[i].path == "contributor/suite-docker-jrunscript") extension = "bash";
+			if (files[i].path == "contributor/suite-docker-jrunscript-engines") extension = "bash";
+			if (files[i].path == "contributor/suite-docker-browser") extension = "bash";
+			if (files[i].path == "contributor/suite-docker-node") extension = "bash";
 			if (files[i].path == "rhino/tools/github/test/cat-hello.sh") extension = "bash";
 			if (files[i].path == "rhino/tools/github/tools/dtsgen.json") extension = "js";
 			if (files[i].path == "rhino/tools/docker/tools/dtsgen.json") extension = "js";
@@ -167,38 +184,9 @@
 			if (files[i].path == "tools/fifty/vscode-tasks-obsolete.json") extension = "js";
 			if (extension == "json" && files[i].path.split("/")[0] == ".vscode") extension = "js";
 			if (files[i].path == "loader/jrunscript/test/data/ServiceLoader/META-INF/services/java.lang.Runnable") extension = "properties";
-			if (extension === null) {
-				if (files[i].path == "Dockerfile") extension = "Dockerfile";
-				if (files[i].path == "fifty") extension = "bash";
-				if (files[i].path == "wf") extension = "bash";
-				if (files[i].path == "tools/wf/templates/wf") extension = "bash";
-				if (files[i].path == "tools/wf/test/data/plugin-standard/wf") extension = "bash";
-				if (files[i].path == "tools/wf/install") extension = "bash";
-				if (files[i].path == "jrunscript/jsh/test/manual/engines") extension = "bash";
-				if (files[i].path == "jrunscript/jsh/test/issue1254") extension = "bash";
-				if (files[i].path == ".devcontainer/initializeCommand") extension = "bash";
-				if (files[i].path == ".devcontainer/postStartCommand") extension = "bash";
-				if (files[i].path == ".devcontainer/postCreateCommand") extension = "bash";
-				if (files[i].path == "contributor/test-docker-clean-run") extension = "bash";
-				if (files[i].path == "contributor/test-docker-clean-start") extension = "bash";
-				if (files[i].path == "contributor/test-docker-clean-command") extension = "bash";
-				if (files[i].path == "contributor/test-docker-clean-jsh") extension = "bash";
-				if (files[i].path == "contributor/suite-docker-jrunscript") extension = "bash";
-				if (files[i].path == "contributor/suite-docker-jrunscript-engines") extension = "bash";
-				if (files[i].path == "contributor/suite-docker-browser") extension = "bash";
-				if (files[i].path == "contributor/suite-docker-node") extension = "bash";
-				if (files[i].path == "contributor/suite-macos") extension = "bash";
-				if (files[i].path == "contributor/hooks/pre-commit") extension = "bash";
-				if (files[i].path == "contributor/devcontainer/check") extension = "bash";
-				if (files[i].path == "contributor/devcontainer/install-x-libraries") extension = "bash";
-				if (files[i].path == "contributor/devcontainer/rhino-debugger-test") extension = "bash";
-				if (files[i].path == "contributor/devcontainer/simulate-new-container") extension = "bash";
-				if (files[i].path == "contributor/devcontainer/boot/install-x-libraries") extension = "bash";
-				if (files[i].path == "contributor/test/manual/graalvm") extension = "bash";
-				if (files[i].path == "contributor/test/manual/graalvm-debug") extension = "bash";
-				if (files[i].path == "contributor/submodule-gitdir-migrate") extension = "bash";
-				if (!extension) throw new Error("Extension null for " + files[i].path);
-			}
+			if (extension === null && files[i].path == "Dockerfile") extension = "Dockerfile";
+			if ((!extension || !licensesCode.languages[extension]) && hasShebang(file)) extension = "bash";
+			if (!extension) throw new Error("Extension null for " + files[i].path);
 			var text = toFile(file).node.read(String);
 			text = text.replace(/\r\n/g, "\n");
 			if (!licensesCode.languages[extension]) throw new Error("Not found: " + extension + " for " + files[i].path);
