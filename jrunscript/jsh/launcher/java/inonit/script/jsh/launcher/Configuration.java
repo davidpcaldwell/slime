@@ -40,9 +40,11 @@ abstract class Configuration {
 
 	private Engine rhinoEngine() throws IOException {
 		if (!_rhinoChecked) {
+			Shell shell = shell();
 			try {
-				shell().getRhinoClassLoader().loadClass("org.mozilla.javascript.Context");
-				_rhinoEngine = new Engine.Rhino(shell().getRhinoClassLoader(), this.debug());
+				ClassLoader rhinoClassLoader = shell.getRhinoClassLoader();
+				rhinoClassLoader.loadClass("org.mozilla.javascript.Context");
+				_rhinoEngine = new Engine.Rhino(rhinoClassLoader, this.debug());
 			} catch (ClassNotFoundException e) {
 				_rhinoEngine = null;
 			}
