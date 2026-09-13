@@ -22,7 +22,12 @@ else
 	exit 1
 fi
 COMPOSE_PROJECT_NAME="slime-${PROJECT_HASH}"
-printf 'COMPOSE_PROJECT_NAME=%s\n' "${COMPOSE_PROJECT_NAME}" > "${PROJECT_ROOT}/.env"
+{
+	printf 'COMPOSE_PROJECT_NAME=%s\n' "${COMPOSE_PROJECT_NAME}"
+	# Lets a devcontainer distinguish itself from other SLIME devcontainers in the VS Code window title.
+	# Single-quoted so Compose's .env parser treats the path literally, without $ interpolation or # truncation.
+	printf "SLIME_HOST_PATH='%s'\n" "$(printf '%s' "${PROJECT_ROOT}" | sed "s/'/'\\\\''/g")"
+} > "${PROJECT_ROOT}/.env"
 rm -f "${HERE}/.env"
 
 # VS Code server updates stage into <commit>_<suffix> temporary directories.

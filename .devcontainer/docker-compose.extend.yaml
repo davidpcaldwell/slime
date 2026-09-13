@@ -9,6 +9,7 @@ services:
   local:
     environment:
       GIT_EDITOR: code --wait
+      SLIME_HOST_PATH: ${SLIME_HOST_PATH:-}
     volumes:
       - type: bind
         source: ./local/git/credentials/github.com
