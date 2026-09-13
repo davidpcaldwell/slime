@@ -32,8 +32,28 @@ const fs = require('fs');
 const targetPath = process.argv[2];
 const windowTitle = process.argv[3];
 
+// VS Code settings files are JSONC: they may contain // and /* */ comments and trailing commas.
+const parseJsonc = (text) => {
+	let stripped = '';
+	let inString = false;
+	for (let i = 0; i < text.length; i++) {
+		const c = text[i];
+		if (inString) {
+			stripped += c;
+			if (c === '\\') { stripped += text[++i]; } else if (c === '"') { inString = false; }
+			continue;
+		}
+		if (c === '"') { inString = true; stripped += c; }
+		else if (c === '/' && text[i + 1] === '/') { while (i < text.length && text[i] !== '\n') i++; stripped += '\n'; }
+		else if (c === '/' && text[i + 1] === '*') { i += 2; while (i < text.length && !(text[i] === '*' && text[i + 1] === '/')) i++; i++; }
+		else { stripped += c; }
+	}
+	stripped = stripped.replace(/,(\s*[}\]])/g, '$1');
+	return JSON.parse(stripped);
+};
+
 const text = fs.readFileSync(targetPath, 'utf8');
-const target = JSON.parse(text);
+const target = parseJsonc(text);
 if (target === null || Array.isArray(target) || typeof target !== 'object') {
 	throw new Error(targetPath + ' must contain a JSON object at the top level.');
 }
@@ -45,13 +65,50 @@ NODE
 elif command -v python3 >/dev/null 2>&1; then
 	python3 - "${TARGET_FILE}" "${WINDOW_TITLE}" <<'PY'
 import json
+import re
 import sys
 
 target_path = sys.argv[1]
 window_title = sys.argv[2]
 
+def parse_jsonc(text):
+	# VS Code settings files are JSONC: they may contain // and /* */ comments and trailing commas.
+	stripped = []
+	in_string = False
+	i = 0
+	n = len(text)
+	while i < n:
+		c = text[i]
+		if in_string:
+			stripped.append(c)
+			if c == '\\' and i + 1 < n:
+				stripped.append(text[i + 1])
+				i += 2
+				continue
+			if c == '"':
+				in_string = False
+			i += 1
+			continue
+		if c == '"':
+			in_string = True
+			stripped.append(c)
+			i += 1
+		elif c == '/' and i + 1 < n and text[i + 1] == '/':
+			while i < n and text[i] != '\n':
+				i += 1
+			stripped.append('\n')
+		elif c == '/' and i + 1 < n and text[i + 1] == '*':
+			i += 2
+			while i < n - 1 and not (text[i] == '*' and text[i + 1] == '/'):
+				i += 1
+			i += 2
+		else:
+			stripped.append(c)
+			i += 1
+	return json.loads(re.sub(r',(\s*[}\]])', r'\1', ''.join(stripped)))
+
 with open(target_path, 'r', encoding='utf-8') as f:
-	target = json.load(f)
+	target = parse_jsonc(f.read())
 if not isinstance(target, dict):
 	raise ValueError(target_path + ' must contain a JSON object at the top level.')
 

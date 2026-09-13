@@ -37,9 +37,29 @@ const fs = require('fs');
 const overlayPath = process.argv[2];
 const targetPath = process.argv[3];
 
+// VS Code settings files are JSONC: they may contain // and /* */ comments and trailing commas.
+const parseJsonc = (text) => {
+	let stripped = '';
+	let inString = false;
+	for (let i = 0; i < text.length; i++) {
+		const c = text[i];
+		if (inString) {
+			stripped += c;
+			if (c === '\\') { stripped += text[++i]; } else if (c === '"') { inString = false; }
+			continue;
+		}
+		if (c === '"') { inString = true; stripped += c; }
+		else if (c === '/' && text[i + 1] === '/') { while (i < text.length && text[i] !== '\n') i++; stripped += '\n'; }
+		else if (c === '/' && text[i + 1] === '*') { i += 2; while (i < text.length && !(text[i] === '*' && text[i + 1] === '/')) i++; i++; }
+		else { stripped += c; }
+	}
+	stripped = stripped.replace(/,(\s*[}\]])/g, '$1');
+	return JSON.parse(stripped);
+};
+
 const readJson = (path) => {
 	const text = fs.readFileSync(path, 'utf8');
-	const value = JSON.parse(text);
+	const value = parseJsonc(text);
 	if (value === null || Array.isArray(value) || typeof value !== 'object') {
 		throw new Error(path + ' must contain a JSON object at the top level.');
 	}
@@ -58,14 +78,51 @@ NODE
 elif command -v python3 >/dev/null 2>&1; then
 	python3 - "${OVERLAY_FILE}" "${TARGET_FILE}" <<'PY'
 import json
+import re
 import sys
 
 overlay_path = sys.argv[1]
 target_path = sys.argv[2]
 
+def parse_jsonc(text):
+	# VS Code settings files are JSONC: they may contain // and /* */ comments and trailing commas.
+	stripped = []
+	in_string = False
+	i = 0
+	n = len(text)
+	while i < n:
+		c = text[i]
+		if in_string:
+			stripped.append(c)
+			if c == '\\' and i + 1 < n:
+				stripped.append(text[i + 1])
+				i += 2
+				continue
+			if c == '"':
+				in_string = False
+			i += 1
+			continue
+		if c == '"':
+			in_string = True
+			stripped.append(c)
+			i += 1
+		elif c == '/' and i + 1 < n and text[i + 1] == '/':
+			while i < n and text[i] != '\n':
+				i += 1
+			stripped.append('\n')
+		elif c == '/' and i + 1 < n and text[i + 1] == '*':
+			i += 2
+			while i < n - 1 and not (text[i] == '*' and text[i + 1] == '/'):
+				i += 1
+			i += 2
+		else:
+			stripped.append(c)
+			i += 1
+	return json.loads(re.sub(r',(\s*[}\]])', r'\1', ''.join(stripped)))
+
 def read_json(path):
 	with open(path, 'r', encoding='utf-8') as f:
-		value = json.load(f)
+		value = parse_jsonc(f.read())
 	if not isinstance(value, dict):
 		raise ValueError(path + ' must contain a JSON object at the top level.')
 	return value
