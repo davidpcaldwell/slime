@@ -1,0 +1,55 @@
+#!/bin/bash
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+#	Opens this SLIME checkout in a VSCode devcontainer window, on macOS.
+
+set -euo pipefail
+
+if [ "$(uname -s)" != "Darwin" ]; then
+	echo "contributor/devcontainer/open supports macOS only; this system is $(uname -s)." >&2
+	exit 1
+fi
+
+SLIME="$(cd "$(dirname "$0")/../.." && pwd -P)"
+
+#	A .git file (rather than directory) means this checkout is a submodule or worktree whose Git directory lives outside the
+#	folder that would be mounted into the devcontainer.
+if [ -f "${SLIME}/.git" ]; then
+	echo "ERROR: ${SLIME}/.git is a file, not a directory." >&2
+	echo "This checkout is a submodule or linked worktree; its Git directory is outside ${SLIME} and would not be" >&2
+	echo "visible inside the devcontainer. Open a standalone clone of SLIME instead." >&2
+	exit 1
+fi
+
+if [ ! -d "${SLIME}/.git" ]; then
+	echo "ERROR: ${SLIME}/.git not found; ${SLIME} does not appear to be a Git checkout." >&2
+	exit 1
+fi
+
+#	A user-level install is checked first: if both exist, the user presumably installed their own copy deliberately.
+CODE=""
+for candidate in "${HOME}/Applications/Visual Studio Code.app" "/Applications/Visual Studio Code.app"; do
+	if [ -x "${candidate}/Contents/Resources/app/bin/code" ]; then
+		CODE="${candidate}/Contents/Resources/app/bin/code"
+		break
+	fi
+done
+
+if [ -z "${CODE}" ]; then
+	echo "ERROR: Visual Studio Code not found in /Applications or ${HOME}/Applications." >&2
+	exit 1
+fi
+
+#	The Dev Containers extension addresses a container by the hex-encoded host path of the workspace, so each checkout gets its
+#	own devcontainer; Compose project naming is likewise per-checkout (see .devcontainer/initializeCommand).
+HOST_PATH_HEX="$(printf '%s' "${SLIME}" | xxd -p | tr -d '\n')"
+
+#	/slime is the workspaceFolder declared by .devcontainer/devcontainer.json.
+FOLDER_URI="vscode-remote://dev-container+${HOST_PATH_HEX}/slime"
+
+echo "Opening ${SLIME} in devcontainer: ${FOLDER_URI}"
+exec "${CODE}" --new-window --folder-uri "${FOLDER_URI}"
