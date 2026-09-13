@@ -59,6 +59,12 @@ if command -v gh >/dev/null 2>&1; then
 	fi
 fi
 
+if [ -x /slime/.devcontainer/apply-window-title.bash ]; then
+	/slime/.devcontainer/apply-window-title.bash || {
+		echo "Warning: failed to apply distinguishing VS Code window title." >&2
+	}
+fi
+
 if [ -x /slime/.devcontainer/apply-vscode-user-settings.bash ]; then
 	/slime/.devcontainer/apply-vscode-user-settings.bash || {
 		echo "Warning: failed to apply personal VS Code settings overlay." >&2

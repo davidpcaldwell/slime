@@ -67,6 +67,17 @@ submodule or linked worktree whose Git directory would not be visible inside the
 Because the devcontainer is addressed by the host path of the checkout, and the Compose project name is derived from that path
 (see below), multiple SLIME checkouts can run devcontainers simultaneously on the same machine.
 
+## Distinguishing multiple SLIME devcontainer windows
+
+Every SLIME devcontainer mounts its checkout at `/slime`, so windows from different checkouts otherwise look identical in the VS
+Code title bar. `.devcontainer/initializeCommand` writes the host checkout path to `.env` as `SLIME_HOST_PATH`, which is passed
+into the container by `.devcontainer/docker-compose.extend.yaml`. On each container start, `.devcontainer/postStartCommand` runs
+`.devcontainer/apply-window-title.bash`, which sets a Machine-scoped `window.title` setting that prefixes the host path, for
+example `[/Users/you/checkouts/slime-a] file.js — slime`.
+
+This runs before `apply-vscode-user-settings.bash`, so a personal settings overlay (see above) can still override `window.title`
+if you prefer a different format.
+
 ## Devcontainer Compose ports and project naming
 
 The devcontainer uses Docker Compose with container ports published without fixed host ports. Docker assigns an available host
