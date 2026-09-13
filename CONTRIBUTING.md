@@ -58,6 +58,15 @@ When adding or refactoring functional APIs, use this rule of thumb for failures:
 
 This split keeps normal validation failures composable through `Result.map` / `Result.flatMap`, while reserving exceptions for clear programmer misuse.
 
+## Opening a devcontainer from the command line (macOS)
+
+On macOS, `contributor/devcontainer/open` opens the current SLIME checkout in a VSCode devcontainer window. It locates Visual
+Studio Code in `~/Applications` (preferred) or `/Applications`, and fails if `.git` is a file (that is, if the checkout is a
+submodule or linked worktree whose Git directory would not be visible inside the container).
+
+Because the devcontainer is addressed by the host path of the checkout, and the Compose project name is derived from that path
+(see below), multiple SLIME checkouts can run devcontainers simultaneously on the same machine.
+
 ## Devcontainer Compose ports and project naming
 
 The devcontainer uses Docker Compose with container ports published without fixed host ports. Docker assigns an available host
