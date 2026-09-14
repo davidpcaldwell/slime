@@ -14,6 +14,9 @@ set -euo pipefail
 TARGET_FILE="/config/.vscode-server/data/Machine/settings.json"
 
 if [ -z "${SLIME_HOST_PATH:-}" ]; then
+	# SLIME_HOST_PATH is only injected when the container is created/recreated (it comes from .env via
+	# docker-compose.extend.yaml). If it's missing here, the container needs to be rebuilt, not just restarted.
+	echo "SLIME_HOST_PATH is not set; skipping window title (rebuild the devcontainer to pick up .env changes)." >&2
 	exit 0
 fi
 
