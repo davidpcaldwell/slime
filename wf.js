@@ -15,6 +15,19 @@
 	 * @param { Omit<slime.project.wf.Interface,"test"> & { test: { jrunscript: any } } } $exports
 	 */
 	function(Packages,$api,jsh,$context,$loader,$exports) {
+		/**
+		 *
+		 * @param { any } commands
+		 * @param { string } path
+		 * @param { slime.jsh.script.cli.CommandMetadata } metadata
+		 */
+		function document(commands,path,metadata) {
+			var target = path.split(".").reduce(function(o,name) {
+				return (o) ? o[name] : void(0);
+			}, commands);
+			if (typeof(target) == "function") jsh.script.cli.defineCommand(target, metadata);
+		}
+
 		function synchronizeEclipseSettings() {
 			//	copy project settings to Eclipse project if they differ from current settings
 			var changed = false;
@@ -766,6 +779,57 @@
 				}
 			}
 		)();
+
+		document($exports, "initialize", {
+			category: "Project",
+			summary: "Initializes this SLIME checkout for development."
+		});
+		document($exports, "vscode.java.refresh", {
+			category: "Development",
+			summary: "Removes generated Java project files and prints VSCode refresh instructions."
+		});
+		document($exports, "check", {
+			category: "Checks",
+			summary: "Runs linting and TypeScript checks."
+		});
+		document($exports, "test.jrunscript", {
+			category: "Checks",
+			summary: "Runs the jrunscript test suite."
+		});
+		document($exports, "git.branch", {
+			category: "Git",
+			summary: "Creates and checks out a new branch based on origin trunk.",
+			args: "<branch>"
+		});
+		document($exports, "git.trunk", {
+			category: "Git",
+			summary: "Checks out the trunk branch and prunes merged branches."
+		});
+		document($exports, "git.branches.list", {
+			category: "Git",
+			summary: "Lists branch merge status and fast-forwards when safe."
+		});
+		document($exports, "git.branches.prune", {
+			category: "Git",
+			summary: "Prunes branches that have been merged to trunk."
+		});
+		document($exports, "precommit", {
+			category: "Checks",
+			summary: "Runs SLIME pre-commit checks."
+		});
+		document($exports, "merge", {
+			category: "Git",
+			summary: "Merges the named branch without committing.",
+			args: "<branch>"
+		});
+		document($exports, "docker.fifty", {
+			category: "Docker",
+			summary: "Runs Fifty in the Docker development environment."
+		});
+		document($exports, "docker.run", {
+			category: "Docker",
+			summary: "Runs a Docker Compose service command."
+		});
 
 		//	TODO	implement generation of git hooks so that we can get rid of separate pre-commit implementation
 	}

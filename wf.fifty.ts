@@ -74,6 +74,60 @@ namespace slime.project.wf {
 		) {
 			const { jsh } = fifty.global;
 
+			fifty.tests.help = function() {
+				var wf = fifty.jsh.file.object.getRelativePath("wf").file;
+
+				var help = jsh.shell.run({
+					command: wf,
+					arguments: ["--help"],
+					stdio: {
+						output: String,
+						error: String
+					},
+					evaluate: function(result) { return result; }
+				});
+				fifty.verify(help).status.is(0);
+				fifty.verify(help).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("status - Shows repository and project status.") != -1
+						&& output.indexOf("check - Runs linting and TypeScript checks.") != -1
+						&& output.indexOf("docker.run - Runs a Docker Compose service command.") != -1
+					;
+				}).is(true);
+				fifty.verify(help).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Wrote new dependencies TypeDoc includes") == -1;
+				}).is(true);
+
+				var commandHelp = jsh.shell.run({
+					command: wf,
+					arguments: ["git.branch", "--help"],
+					stdio: {
+						output: String,
+						error: String
+					},
+					evaluate: function(result) { return result; }
+				});
+				fifty.verify(commandHelp).status.is(0);
+				fifty.verify(commandHelp).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("git.branch <branch>") != -1;
+				}).is(true);
+
+				var noCommand = jsh.shell.run({
+					command: wf,
+					arguments: [],
+					stdio: {
+						output: String,
+						error: String
+					},
+					evaluate: function(result) { return result; }
+				});
+				fifty.verify(noCommand).status.is(1);
+				fifty.verify(noCommand).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Available commands:") != -1
+						&& output.indexOf("Wrote new dependencies TypeDoc includes") == -1
+					;
+				}).is(true);
+			}
+
 			fifty.tests.manual.issue407 = function() {
 				var target = test.fixtures.clone();
 				test.fixtures.configure(target);
@@ -213,6 +267,8 @@ namespace slime.project.wf {
 			}
 
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.help);
+
 				fifty.run(function ensureInitializeInstallsEslint() {
 					var fresh = test.fixtures.clone();
 					test.fixtures.configure(fresh);

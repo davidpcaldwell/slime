@@ -11,12 +11,43 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(jsh) {
+		var aliased = function(p) {
+		};
 		jsh.script.cli.wrap({
 			commands: {
-				status: function(p) {
+				status: jsh.script.cli.defineCommand(function(p) {
 					if (p.arguments.length == 0) return 0;
 					if (p.arguments.length > 1) return -1;
 					return Number(p.arguments[0]);
+				}, {
+					summary: "Reports the requested status code.",
+					args: "[status]"
+				}),
+				nested: {
+					echo: jsh.script.cli.defineCommand(function(p) {
+						jsh.shell.console(p.arguments[0]);
+					}, {
+						summary: "Echoes a nested command argument.",
+						category: "Nested"
+					})
+				},
+				unannotated: function(p) {
+				},
+				hidden: jsh.script.cli.defineCommand(function(p) {
+				}, {
+					summary: "Hidden command.",
+					hidden: true
+				}),
+				old: jsh.script.cli.defineCommand(function(p) {
+				}, {
+					summary: "Old command.",
+					deprecated: "Use status instead."
+				}),
+				alias: aliased
+			},
+			metadata: {
+				alias: {
+					summary: "Alias-specific summary."
 				}
 			}
 		});
