@@ -19,6 +19,19 @@
 
 		/**
 		 *
+		 * @param { any } commands
+		 * @param { string } path
+		 * @param { slime.jsh.script.cli.CommandMetadata } metadata
+		 */
+		function document(commands,path,metadata) {
+			var target = path.split(".").reduce(function(o,name) {
+				return (o) ? o[name] : void(0);
+			}, commands);
+			if (typeof(target) == "function") jsh.script.cli.defineCommand(target, metadata);
+		}
+
+		/**
+		 *
 		 * @param { slime.jrunscript.tools.git.repository.Local } repository
 		 * @param { string } path
 		 */
@@ -767,6 +780,105 @@
 				$exports.documentation = serveDocumentation({ watch: false });
 
 				$exports.document = serveDocumentation({ watch: true });
+
+				document($exports, "eslint", {
+					category: "Checks",
+					summary: "Runs ESLint on the project."
+				});
+				document($exports, "lint", {
+					category: "Checks",
+					summary: "Runs the configured lint check."
+				});
+				document($exports, "lint.fix", {
+					category: "Checks",
+					summary: "Runs the configured lint fixer."
+				});
+				document($exports, "tsc", {
+					category: "Checks",
+					summary: "Runs the TypeScript compiler.",
+					options: ["--vscode    Reformat TypeScript output for VSCode terminal links."]
+				});
+				document($exports, "typedoc", {
+					category: "Documentation",
+					summary: "Generates TypeDoc documentation."
+				});
+				document($exports, "status", {
+					category: "Project",
+					summary: "Shows repository and project status."
+				});
+				document($exports, "prune", {
+					category: "Git",
+					summary: "Deletes merged local and remote branches."
+				});
+				document($exports, "git.hooks.post-checkout", {
+					category: "Git hooks",
+					summary: "Updates the checkout after git checkout."
+				});
+				document($exports, "git.hooks.pre-commit", {
+					category: "Git hooks",
+					summary: "Runs pre-commit checks."
+				});
+				document($exports, "git.hooks.prepare-commit-msg", {
+					category: "Git hooks",
+					summary: "Prepares a default commit message when available."
+				});
+				document($exports, "git.hooks.post-merge", {
+					category: "Git hooks",
+					summary: "Updates submodules after a merge."
+				});
+				document($exports, "git.hooks.post-commit", {
+					category: "Git hooks",
+					summary: "Pushes the current HEAD after a commit."
+				});
+				document($exports, "test", {
+					category: "Checks",
+					summary: "Runs the configured project test."
+				});
+				document($exports, "precommit", {
+					category: "Checks",
+					summary: "Runs configured pre-commit checks."
+				});
+				document($exports, "submodule.update", {
+					category: "Submodules",
+					summary: "Updates a submodule and commits it after checks pass.",
+					options: ["--path <path>    Submodule path."]
+				});
+				document($exports, "submodule.remove", {
+					category: "Submodules",
+					summary: "Removes a top-level submodule.",
+					options: ["--path <path>    Submodule path."]
+				});
+				document($exports, "submodule.attach", {
+					category: "Submodules",
+					summary: "Checks out a submodule tracking branch.",
+					options: [
+						"--path <path>    Submodule path.",
+						"--recursive      Attach nested submodules."
+					]
+				});
+				document($exports, "submodule.reset", {
+					category: "Submodules",
+					summary: "Resets a submodule to the revision recorded by the parent project.",
+					options: ["--path <path>    Submodule path."]
+				});
+				document($exports, "commit", {
+					category: "Git",
+					summary: "Commits and pushes current project changes after checks pass.",
+					options: [
+						"--message <message>    Commit message.",
+						"--notest               Accepted for compatibility."
+					]
+				});
+				document($exports, "documentation", {
+					category: "Documentation",
+					summary: "Serves generated project documentation.",
+					options: ["--host <host>    Host name for documentation URLs."]
+				});
+				document($exports, "document", {
+					category: "Documentation",
+					summary: "Serves generated project documentation in watch mode.",
+					options: ["--host <host>    Host name for documentation URLs."]
+				});
 			}
 		)
 	}
