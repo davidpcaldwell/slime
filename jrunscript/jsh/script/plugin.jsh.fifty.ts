@@ -1225,6 +1225,20 @@ namespace slime.jsh.script {
 				result = fifty.global.jsh.shell.jsh({
 					shell: fifty.global.jsh.shell.jsh.src,
 					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
+					arguments: ["-h"],
+					stdio: {
+						error: String
+					},
+					evaluate: $api.fp.identity
+				});
+				fifty.verify(result).status.is(0);
+				fifty.verify(result).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Available commands:") != -1;
+				}).is(true);
+
+				result = fifty.global.jsh.shell.jsh({
+					shell: fifty.global.jsh.shell.jsh.src,
+					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
 					arguments: ["status", "--help"],
 					stdio: {
 						error: String
@@ -1277,12 +1291,65 @@ namespace slime.jsh.script {
 				fifty.verify(result).stdio.error.evaluate(function(output: string) {
 					return output.indexOf("Alias-specific summary.") != -1;
 				}).is(true);
+
+				result = fifty.global.jsh.shell.jsh({
+					shell: fifty.global.jsh.shell.jsh.src,
+					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
+					arguments: ["help", "merged"],
+					stdio: {
+						error: String
+					},
+					evaluate: $api.fp.identity
+				});
+				fifty.verify(result).status.is(0);
+				fifty.verify(result).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Second summary.") != -1
+						&& output.indexOf("Retained description.") != -1
+						&& output.indexOf("--first    Retained option.") != -1
+					;
+				}).is(true);
+
+				result = fifty.global.jsh.shell.jsh({
+					shell: fifty.global.jsh.shell.jsh.src,
+					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
+					arguments: ["missing"],
+					stdio: {
+						error: String
+					},
+					evaluate: $api.fp.identity
+				});
+				fifty.verify(result).status.is(1);
+				fifty.verify(result).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Command not found: missing") != -1
+						&& output.indexOf("Available commands:") != -1
+					;
+				}).is(true);
+
+				result = fifty.global.jsh.shell.jsh({
+					shell: fifty.global.jsh.shell.jsh.src,
+					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
+					arguments: ["help", "missing"],
+					stdio: {
+						error: String
+					},
+					evaluate: $api.fp.identity
+				});
+				fifty.verify(result).status.is(1);
+				fifty.verify(result).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Command not found: missing") != -1
+						&& output.indexOf("Available commands:") != -1
+					;
+				}).is(true);
 			};
 
 			fifty.tests.cli.metadata = function() {
 				const subject = test.subject;
 
-				var one = subject.cli.defineCommand(function() {}, { summary: "function summary" });
+				var one = subject.cli.defineCommand(function() {}, {
+					summary: "function summary",
+					description: "retained description"
+				});
+				subject.cli.defineCommand(one, { summary: "overridden summary" });
 				var two = subject.cli.defineCommand(function() {}, { summary: "hidden", hidden: true });
 				var call = subject.cli.Call.get({
 					descriptor: {
@@ -1302,6 +1369,67 @@ namespace slime.jsh.script {
 				fifty.verify(call).path.is("alias");
 				fifty.verify(call).evaluate(function(call) {
 					return call.command === one;
+				}).is(true);
+			};
+
+			fifty.tests.cli.metadataFallback = function() {
+				const { jsh } = fifty.global;
+				const scope = Function("return this")();
+				const originalWeakMap = scope.WeakMap;
+				const output: string[] = [];
+				var exited: { status: number };
+				try {
+					scope.WeakMap = void(0);
+					var was = jsh.unit.$slime;
+					var mocked = fifty.jsh.plugin.mock({
+						$loader: void(0),
+						jsh: Object.assign({}, jsh, {
+							shell: Object.assign({}, jsh.shell, {
+								console: function(message) {
+									output.push(String(message));
+								},
+								exit: function(status) {
+									exited = { status: status };
+									throw exited;
+								}
+							})
+						}),
+						plugins: {
+							shell: {}
+						},
+						$slime: Object.assign({}, was, {
+							getPackaged: function() { return null; },
+							/** @return { slime.jrunscript.native.inonit.script.jsh.Shell.Invocation } */
+							getInvocation: function() {
+								return {
+									getScript: function() {
+										return was.getInvocation().getScript();
+									},
+									getArguments: function() {
+										return ["--help"]
+									}
+								};
+							}
+						})
+					});
+					var command = mocked.jsh.script.cli.defineCommand(function() {}, {
+						summary: "Fallback metadata summary."
+					});
+					try {
+						mocked.jsh.script.cli.wrap({
+							commands: {
+								fallback: command
+							}
+						});
+					} catch (e) {
+						if (e !== exited) throw e;
+					}
+				} finally {
+					scope.WeakMap = originalWeakMap;
+				}
+				fifty.verify(exited).status.is(0);
+				fifty.verify(output.join("\n")).evaluate(function(output: string) {
+					return output.indexOf("fallback - Fallback metadata summary.") != -1;
 				}).is(true);
 			};
 		}

@@ -42,6 +42,13 @@
 			return path != "initialize";
 		}
 
+		function isHelpInvocation(invocation) {
+			if (invocation.arguments[0] == "help") return true;
+			return invocation.arguments.some(function(argument) {
+				return argument == "--help" || argument == "-h";
+			});
+		}
+
 		if (!jsh.wf.project.base()) {
 			jsh.shell.console("No wf project base defined; PROJECT = " + jsh.shell.environment.PROJECT);
 			jsh.shell.exit(1);
@@ -127,7 +134,7 @@
 			}
 		});
 
-		var hook = gitHookProcessor(invocation.arguments[0]);
+		var hook = (isHelpInvocation(invocation)) ? $api.fp.Maybe.from.nothing() : gitHookProcessor(invocation.arguments[0]);
 
 		if (hook.present) {
 			var status = hook.value();

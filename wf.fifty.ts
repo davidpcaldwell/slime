@@ -94,6 +94,23 @@ namespace slime.project.wf {
 					;
 				}).is(true);
 				fifty.verify(help).stdio.error.evaluate(function(output: string) {
+					var project = output.indexOf("Project:");
+					var development = output.indexOf("Development:");
+					var checks = output.indexOf("Checks:");
+					var documentation = output.indexOf("Documentation:");
+					var git = output.indexOf("Git:");
+					var docker = output.indexOf("Docker:");
+					return project != -1
+						&& project < development
+						&& development < checks
+						&& checks < documentation
+						&& documentation < git
+						&& git < docker
+						&& output.indexOf("initialize - Initializes this SLIME checkout for development.") < output.indexOf("status - Shows repository and project status.")
+						&& output.indexOf("lint - Runs the configured lint check.") < output.indexOf("check - Runs linting and TypeScript checks.")
+					;
+				}).is(true);
+				fifty.verify(help).stdio.error.evaluate(function(output: string) {
 					return output.indexOf("Wrote new dependencies TypeDoc includes") == -1;
 				}).is(true);
 
@@ -126,6 +143,52 @@ namespace slime.project.wf {
 						&& output.indexOf("Wrote new dependencies TypeDoc includes") == -1
 					;
 				}).is(true);
+
+				fifty.run(function initializationIsDeferredForHelp() {
+					var project = fifty.jsh.file.object.temporary.directory();
+					project.getRelativePath("wf.js").write([
+						"//@ts-check",
+						"(",
+						"function(jsh,$context,$exports) {",
+						"  $exports.initialize = function() {",
+						"    $context.base.getRelativePath('initialized').write('initialized', { append: false });",
+						"  };",
+						"  $exports.status = jsh.script.cli.defineCommand(function() {}, {",
+						"    category: 'Project',",
+						"    summary: 'Shows fixture status.'",
+						"  });",
+						"}",
+						")(jsh,$context,$exports);"
+					].join("\n"), { append: false });
+
+					function fixtureWf(arguments: string[]) {
+						return jsh.shell.run({
+							command: fifty.jsh.file.object.getRelativePath("tools/wf.bash").file,
+							arguments: arguments,
+							environment: Object.assign({}, jsh.shell.environment, {
+								PROJECT: project.pathname.toString(),
+								JSH_USER_JDKS: "/dev/null"
+							}),
+							stdio: {
+								output: String,
+								error: String
+							},
+							evaluate: function(result) { return result; }
+						});
+					}
+
+					var fixtureHelp = fixtureWf(["--help"]);
+					fifty.verify(fixtureHelp).status.is(0);
+					fifty.verify(project.getFile("initialized")).is.type("null");
+
+					var fixtureNoCommand = fixtureWf([]);
+					fifty.verify(fixtureNoCommand).status.is(1);
+					fifty.verify(project.getFile("initialized")).is.type("null");
+
+					var fixtureCommand = fixtureWf(["status"]);
+					fifty.verify(fixtureCommand).status.is(0);
+					fifty.verify(project.getFile("initialized")).is.type("object");
+				});
 			}
 
 			fifty.tests.manual.issue407 = function() {

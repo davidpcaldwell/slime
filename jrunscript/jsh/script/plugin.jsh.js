@@ -264,6 +264,7 @@
 						}
 					}
 					return {
+						// Fallback stores metadata by function identity, but does not provide weak-reference retention.
 						get: function(command) {
 							return command[property];
 						},
@@ -364,15 +365,22 @@
 					jsh.shell.console("Available commands:");
 					jsh.shell.console("");
 					if (hasCategories) {
-						var currentCategory;
+						var categories = [];
+						var byCategory = {};
 						items.forEach(function(item) {
 							var category = item.metadata.category || "Other";
-							if (category != currentCategory) {
-								if (currentCategory) jsh.shell.console("");
-								jsh.shell.console(category + ":");
-								currentCategory = category;
+							if (!byCategory[category]) {
+								byCategory[category] = [];
+								categories.push(category);
 							}
-							jsh.shell.console("  " + item.path + " - " + getSummary(item.metadata));
+							byCategory[category].push(item);
+						});
+						categories.forEach(function(category,index) {
+							if (index > 0) jsh.shell.console("");
+							jsh.shell.console(category + ":");
+							byCategory[category].forEach(function(item) {
+								jsh.shell.console("  " + item.path + " - " + getSummary(item.metadata));
+							});
 						});
 					} else {
 						items.forEach(function(item) {

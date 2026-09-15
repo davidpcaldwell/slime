@@ -13,6 +13,15 @@
 	function(jsh) {
 		var aliased = function(p) {
 		};
+		var merged = jsh.script.cli.defineCommand(function(p) {
+		}, {
+			summary: "First summary.",
+			description: "Retained description.",
+			options: ["--first    Retained option."]
+		});
+		jsh.script.cli.defineCommand(merged, {
+			summary: "Second summary."
+		});
 		jsh.script.cli.wrap({
 			commands: {
 				status: jsh.script.cli.defineCommand(function(p) {
@@ -43,7 +52,8 @@
 					summary: "Old command.",
 					deprecated: "Use status instead."
 				}),
-				alias: aliased
+				alias: aliased,
+				merged: merged
 			},
 			metadata: {
 				alias: {
