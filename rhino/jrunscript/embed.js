@@ -53,7 +53,7 @@
 					/** @type { slime.jrunscript.native.java.io.InputStream } */
 					var _stream = _connection.getInputStream();
 					var input = $api.jrunscript.io.InputStream.java(_stream);
-					var code = input.content.string.simple($api.jrunscript.io.Charset.default);
+					var code = input.read.string.simple($api.jrunscript.io.Charset.default);
 					$api.engine.execute(
 						{
 							name: script,

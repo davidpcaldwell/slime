@@ -33,7 +33,7 @@
  * The Java runtime replaces the `Type.fromName` function of {@link slime.$api.mime.Export} with a version that uses the
  * `java.net.URLConnection` implementation to resolve MIME types unresolved by SLIME. See {@link slime.jrunscript.mime.FromName}.
  *
- * It adds a {@link slime.$api.jrunscript.Global.jrunscript | `$api.jrunscript`} property containing various Java-specific APIs.
+ * It adds a {@link slime.$api.jrunscript.Global["jrunscript"] | `$api.jrunscript`} property containing various Java-specific APIs.
  *
  * ## For contributors
  *
@@ -196,7 +196,7 @@ namespace slime.jrunscript.runtime {
 					var writer = buffer.writeText();
 					writer.write("Buffer");
 					buffer.close();
-					var resource = new module.Resource({
+					var resource = new module.$api.jrunscript.loader.old.Resource({
 						stream: {
 							binary: buffer.readBinary()
 						}
@@ -213,7 +213,7 @@ namespace slime.jrunscript.runtime {
 					var writer = buffer.writeText();
 					writer.write(JSON.stringify({ foo: "bar" }));
 					buffer.close();
-					var resource = new module.Resource({
+					var resource = new module.$api.jrunscript.loader.old.Resource({
 						stream: {
 							binary: buffer.readBinary()
 						}
@@ -228,7 +228,7 @@ namespace slime.jrunscript.runtime {
 					var lines = [
 						"foo.bar=baz"
 					];
-					var resource = new module.Resource({
+					var resource = new module.$api.jrunscript.loader.old.Resource({
 						read: {
 							string: function() { return lines.join("\n"); }
 						}
@@ -257,7 +257,7 @@ namespace slime.jrunscript.runtime {
 					// TODO: writeText() below?
 					buffer.writeBinary().character().write(string);
 					buffer.close();
-					var resource = new module.Resource({
+					var resource = new module.$api.jrunscript.loader.old.Resource({
 						stream: {
 							binary: buffer.readBinary()
 						}
@@ -344,7 +344,7 @@ namespace slime.jrunscript.runtime {
 			export type HistoricSupportedDescriptor = slime.resource.Descriptor | resource.Descriptor | resource.LoadedDescriptor | DeprecatedStreamDescriptor
 
 			/**
-			 * An object representing the mode of operation of {@link old.Resource<any>} `write` operations.
+			 * An object representing the mode of operation of {@link slime.jrunscript.runtime.old.Resource<any>} `write` operations.
 			 */
 			export interface WriteMode {
 				/**
@@ -362,7 +362,7 @@ namespace slime.jrunscript.runtime {
 		}
 
 		export namespace loader {
-			export interface Source extends slime.old.loader.Source {
+			export interface Source extends slime.loader.old.Source {
 				_source?: slime.jrunscript.native.inonit.script.engine.Code.Loader
 				zip?: any
 				_file?: any
@@ -376,7 +376,7 @@ namespace slime.jrunscript.runtime {
 	export interface $javahost {
 		debugger: slime.runtime.Engine["debugger"]
 		script: any
-		MetaObject: any
+		MetaObject: slime.runtime.Engine["MetaObject"]
 		noEnvironmentAccess: any
 		eval(a: any, b: any, c: any, d: any): any
 	}
@@ -454,7 +454,7 @@ namespace slime.jrunscript.runtime {
 
 		export type CustomSource = ZipFileSource | ZipResourceSource | JavaFileSource | JavaCodeLoaderSource | DeprecatedResourcesSource
 
-		export type Source = slime.old.loader.Source | CustomSource
+		export type Source = slime.loader.old.Source | CustomSource
 	}
 
 	(
@@ -467,27 +467,20 @@ namespace slime.jrunscript.runtime {
 	)(fifty);
 
 	export type JavaFileClasspathEntry = { _file: slime.jrunscript.native.java.io.File }
-	export type SlimeClasspathEntry = { slime: { loader: slime.old.Loader } }
+	export type SlimeClasspathEntry = { slime: { loader: slime.loader.old.Loader } }
 	export type JarFileClasspathEntry = { jar: { _file: slime.jrunscript.native.java.io.File } }
 	export type JarResourceClasspathEntry = { jar: { resource: any } }
-	export type SrcClasspathEntry = { src: { loader: slime.old.Loader } }
+	export type SrcClasspathEntry = { src: { loader: slime.loader.old.Loader } }
 	export type ClasspathEntry = JavaFileClasspathEntry | SlimeClasspathEntry | JarFileClasspathEntry | JarResourceClasspathEntry | SrcClasspathEntry
 
 	//	TODO	probably all jrunscript-specific properties should be properties of the `jrunscript` property; all properties added
 	//			for this environment could be consolidated under that property
 	/**
-	 * The SLIME Java runtime supports a Java-based SLIME embedding, and extends the {@link slime.runtime.Exports | SLIME runtime}
-	 * to support Java-specific capabilities: a `classpath`, the `jrunscript`, `java` and `io` interfaces,
+	 * The SLIME Java runtime supports a Java-based SLIME embedding, and provides an `$api` property which extends the
+	 * {@link slime.runtime.Exports | SLIME runtime} to support Java-specific capabilities: a `classpath`, the `jrunscript`, `java` and `io` interfaces,
 	 * and Java-aware versions of `Resource`, `Loader`, and `mime`.
 	 */
-	export interface Exports extends slime.runtime.Exports {
-		Resource: slime.runtime.Exports["Resource"] & {
-			/**
-			 * Creates a `Resource` which has additional capabilities beyond the SLIME runtime `Resource`.
-			 */
-			new (p: old.resource.HistoricSupportedDescriptor): slime.jrunscript.runtime.old.Resource
-		}
-
+	export interface Exports {
 		io: slime.jrunscript.runtime.io.Exports
 		java: slime.jrunscript.runtime.java.Exports
 
@@ -508,7 +501,7 @@ namespace slime.jrunscript.runtime {
 
 			fifty.tests.exports.Resource = function() {
 				var file: slime.jrunscript.runtime.old.resource.Descriptor = fifty.$loader.source.get("expression.fifty.ts") as slime.jrunscript.runtime.old.resource.Descriptor;
-				var resource = new $slime.Resource({
+				var resource = new $slime.$api.jrunscript.loader.old.Resource({
 					type: $api.mime.Type.parse("application/x.typescript"),
 					read: {
 						binary: function() {
@@ -529,7 +522,7 @@ namespace slime.jrunscript.runtime {
 					stream.write(data);
 					stream.close();
 
-					var resource = new $slime.Resource({
+					var resource = new $slime.$api.jrunscript.loader.old.Resource({
 						stream: {
 							binary: buffer.readBinary()
 						}
@@ -547,8 +540,8 @@ namespace slime.jrunscript.runtime {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports extends slime.runtime.Exports {
-		Loader: slime.runtime.Exports["old"]["Loader"] & {
+	export interface Exports {
+		Loader: slime.$api.loader.old.Exports["old"]["Loader"] & {
 			new (p: internal.CustomSource): Loader
 		}
 	}
@@ -657,11 +650,11 @@ namespace slime.jrunscript.runtime {
 		}
 
 		export namespace entry {
-			export type Loader = (location: slime.runtime.loader.Location) => loader.Entry
+			export type Loader = (location: slime.runtime.loader.synchronous.Location) => loader.Entry
 		}
 	}
 
-	export interface Exports extends slime.runtime.Exports {
+	export interface Exports {
 		jrunscript: {
 			loader: {
 				from: {
@@ -722,22 +715,31 @@ namespace slime.jrunscript.runtime {
 				verify(getType($slime.loader.synchronous)).type.is("object");
 				verify(getType($slime.loader.synchronous.scripts)).type.is("function");
 
-				fifty.load("../Loader.fifty.ts", "script", loader);
-				fifty.load("../Loader.fifty.ts", "object", loader);
+				fifty.load("../loaders.fifty.ts", "script", loader);
 			}
 		}
 	//@ts-ignore
 	)(Packages,fifty);
-
-	export interface Exports extends slime.runtime.Exports {
-		$api: slime.$api.jrunscript.Global
-	}
 }
 
 namespace slime.$api.jrunscript {
-	export interface Global extends slime.$api.Global {
+	export interface Global extends slime.runtime.Exports {
 		jrunscript: {
+			loader: {
+				old: {
+					Resource: slime.$api.loader.old.Exports["Resource"] & {
+						/**
+						 * Creates a `Resource` which has additional capabilities beyond the SLIME runtime `Resource`.
+						 */
+						new (p: slime.jrunscript.runtime.old.resource.HistoricSupportedDescriptor): slime.jrunscript.runtime.old.Resource
+					}
+				}
+			}
+			java: slime.jrunscript.runtime.java.Exports
 			io: slime.jrunscript.runtime.io.Exports
+			properties: {
+				get: (name: string) => string | null
+			}
 		}
 
 		/**
@@ -746,6 +748,42 @@ namespace slime.$api.jrunscript {
 		 */
 		mime: slime.$api.mime.Export
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.exports.$api = fifty.test.Parent();
+
+			fifty.tests.exports.$api.properties = function() {
+				var src = fifty.jsh.file.relative("../..");
+				var run = $api.fp.now(
+					jsh.shell.subprocess.question,
+					$api.fp.world.Sensor.mapping()
+				);
+				var result = run({
+					command: "bash",
+					arguments: [
+						$api.fp.now(src, jsh.file.Location.directory.relativePath("jsh")).pathname,
+						"-Dfoo.bar",
+						"-Dfoo.baz=bizzy",
+						$api.fp.now(src, jsh.file.Location.directory.relativePath("loader/jrunscript/test/properties.jsh.js")).pathname
+					],
+					stdio: {
+						output: "string"
+					}
+				});
+				var output: { "foo.bar": string, "foo.baz": string, "foo.bizzy": string | null } = JSON.parse(result.stdio.output);
+				verify(output["foo.bar"]).is("");
+				verify(output["foo.baz"]).is("bizzy");
+				verify(output["foo.bizzy"]).is(null);
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 }
 
 (
@@ -807,7 +845,7 @@ namespace slime.$api.jrunscript {
 		}
 
 		fifty.tests.suite = function() {
-			verify(fifty.global.jsh.unit.$slime.$platform && typeof fifty.global.jsh.unit.$slime.$platform == "object").is(true);
+			verify(fifty.global.jsh.unit.$slime.$api.platform && typeof fifty.global.jsh.unit.$slime.$api.platform == "object").is(true);
 			//verify(fifty.global.jsh).unit.$slime.$platform.is.type("object");
 
 			fifty.run(fifty.tests.decoration);
@@ -818,14 +856,13 @@ namespace slime.$api.jrunscript {
 
 			fifty.load("test/data/2/module.fifty.ts");
 
-			//	TODO	redundant? tested per-engine in contributor/suite.jsh.js
+			//	TODO	redundant? tested per-engine in contributor/jrunscript.jsh.js
 			fifty.load("java.fifty.ts");
 			fifty.load("io.fifty.ts");
 		}
 	}
 //@ts-ignore
 )(Packages,fifty);
-
 
 (
 	function(
@@ -880,5 +917,15 @@ namespace slime.external.e4x {
 		new (value: any): XMLList
 
 		readonly [tag_XMLList]: "value"
+	}
+}
+
+namespace slime.jrunscript.runtime {
+	export interface Exports {
+		Resource: slime.$api.jrunscript.Global["jrunscript"]["loader"]["old"]["Resource"]
+	}
+
+	export interface Exports {
+		$api: slime.$api.jrunscript.Global
 	}
 }

@@ -14,7 +14,7 @@
 	function($context,$export) {
 		/**
 		 * @constructor
-		 * @param { Parameters<slime.$api.exports.Events["emitter"]>[0] } [p]
+		 * @param { Parameters<slime.$api.event.Exports["emitter"]>[0] } [p]
 		 */
 		var Emitter = function(p) {
 			if (!p) p = {};
@@ -29,7 +29,6 @@
 				}
 
 				if (p.parent) return castToInternal(p.parent);
-				if (p.getParent) return castToInternal(p.getParent());
 			}
 
 			/**
@@ -118,57 +117,72 @@
 			}
 		};
 
-		var attach = function(events,handler) {
-			for (var x in handler) {
-				events.listeners.add(x,handler[x]);
-			}
-		};
-
-		var detach = function(events,handler) {
-			for (var x in handler) {
-				events.listeners.remove(x,handler[x]);
-			}
-		}
-
 		/**
 		 * @template { object } D
-		 * @param { slime.$api.event.Handlers<D> } handlers
+		 * @param { { handlers: slime.$api.event.Handlers<D>, source?: any } } p
+		 * @returns { slime.runtime.internal.events.Receiver<D> }
 		 */
-		var ListenersInvocationReceiver = function(handlers) {
-			var source = {
-				listeners: void(0)
+		var ListenersInvocationReceiver = function(p) {
+			/**
+			 * @template { object } D
+			 * @param { slime.$api.event.Emitter<D> } events
+			 * @param { slime.$api.event.Handlers<D> } handlers
+			 */
+			var attach = function(events,handlers) {
+				for (var x in handlers) {
+					events.listeners.add(x,handlers[x]);
+				}
 			};
-			var events = new Emitter({ source: source });
+
+			/**
+			 * @template { object } D
+			 * @param { slime.$api.event.Emitter<D> } events
+			 * @param { slime.$api.event.Handlers<D> } handlers
+			 */
+			var detach = function(events,handlers) {
+				for (var x in handlers) {
+					events.listeners.remove(x,handlers[x]);
+				}
+			}
+
+			var emitter = new Emitter({ source: (p.source) || {} });
 
 			return {
 				attach: function() {
-					attach(events,handlers);
+					attach(emitter,p.handlers);
 				},
 				detach: function() {
-					detach(events,handlers);
+					detach(emitter,p.handlers);
 				},
-				emitter: events
+				emitter: emitter
 			}
 		};
 
-		/** @type { slime.$api.exports.Events["Function"] } */
+		/** @type { slime.$api.event.Exports["Function"] } */
 		var Function = function(f,defaultOn) {
+			/**
+			 * @template { object } D
+			 * @param { slime.$api.event.Emitter<D> } emitter
+			 * @returns { slime.runtime.internal.events.Receiver<D> }
+			 */
 			var EmitterInvocationReceiver = function(emitter) {
-				this.attach = function(){};
-				this.detach = function(){};
-				this.emitter = emitter;
+				return {
+					attach: function(){},
+					detach: function(){},
+					emitter: emitter
+				}
 			}
 
 			return function(p,receiver) {
 				var invocationReceiver = (receiver instanceof Emitter)
-					? new EmitterInvocationReceiver(receiver)
-					: ListenersInvocationReceiver(
-						(function() {
+					? EmitterInvocationReceiver(receiver)
+					: ListenersInvocationReceiver({
+						handlers: (function() {
 							if (receiver) return receiver;
 							if (defaultOn) return defaultOn;
 							return {};
 						})()
-					)
+					})
 				;
 				invocationReceiver.attach();
 				try {
@@ -188,14 +202,19 @@
 					return new Emitter(p);
 				},
 				Function: Function,
+				Managed: {
+					create: function(p) {
+						return ListenersInvocationReceiver(p);
+					}
+				},
 				Handlers: {
 					/** @template { any } D */
 					attached: function(handlers) {
 						//	TODO	would be nice if we had access to $api.fp.cast, but would require refactor
-						/** @type { (v: any) => slime.$api.exports.Attached<D> } */
+						/** @type { slime.js.Cast<slime.$api.event.Attached<D>> } */
 						var cast = function(v) { return v; };
 
-						var x = ListenersInvocationReceiver(handlers);
+						var x = ListenersInvocationReceiver({ handlers: handlers });
 						x.attach();
 						attachedHandlers.push(x);
 						return cast(x.emitter);
@@ -215,7 +234,8 @@
 				}
 			},
 			handle: function(p) {
-				var receiver = ListenersInvocationReceiver(p.handlers);
+				if (!p.implementation) throw new TypeError("Required: .implementation");
+				var receiver = ListenersInvocationReceiver({ handlers: p.handlers });
 				receiver.attach();
 				try {
 					//	TODO	'this' is almost certainly wrong. Perhaps should be optional parameter?

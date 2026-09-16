@@ -59,10 +59,10 @@
  *
  * ### Running Fifty tests in both `jsh` and a browser
  *
- * To run a test suite that runs the same definition in both `jsh` and a browser, just invoke the `fifty.test.platforms()` method,
- * which will create a test named `platforms` that runs the `suite` test in both `jsh` and a browser.
+ * To create a test that runs the same definition in both `jsh` and a browser, just invoke the `fifty.test.platforms()` method,
+ * which will create a test for that definition named `platforms` that runs the `suite` test in both `jsh` and a browser.
  *
- * Then, the suite can be run via:
+ * Thus, the suite can be run on both platforms via:
  *
  * `./fifty test.jsh file.fifty.ts --part platforms`.
  *
@@ -97,7 +97,7 @@ namespace slime.fifty.test {
 	 * The variable that appears as `fifty` within the scope of Fifty definition files when executing tests.
 	 */
 	export interface Kit {
-		$loader: slime.old.Loader
+		$loader: slime.loader.old.Loader
 
 		/**
 		 * Provides access to Fifty global constructs for this execution. `$platform` and `$api` are available. If running under
@@ -106,8 +106,8 @@ namespace slime.fifty.test {
 		 * to a particular custom element name.
 		 */
 		global: {
-			$platform: slime.runtime.Platform
-			$api: slime.$api.Global
+			$platform: slime.$api.Platform
+			$api: slime.runtime.Exports
 
 			jsh?: slime.jsh.Global
 			window?: Window
@@ -251,51 +251,98 @@ namespace slime.fifty.test {
  * Note that general Fifty implementation documentation can be reached through the {@link slime.fifty.internal | `slime.fifty.internal`} namespace.
  *
  * Namespaces:
- * * The {@link slime.fifty.test.internal.scope | `scope`} namespace contains supporting definitions for {@link slime.fifty.test.Kit}.
+ * * The {@link slime.fifty.internal.test.scope | `scope`} namespace contains supporting definitions for {@link slime.fifty.test.Kit}.
  * * The {@link slime.fifty.test.internal.test | `test`} namespace contains definitions for `test.js`.
  */
-namespace slime.fifty.test.internal {
+namespace slime.fifty.internal.test {
 	export interface Scope {
 		success: boolean
+		emitter: slime.$api.event.Emitter<slime.fifty.internal.test.Events>
 
 		depth(): number
-		fail(): void
 
+		/**
+		 * Fires an event indicating this scope has started, including the name of the scope in the event payload.
+		 */
 		start: (name: string) => void
-		test: slime.definition.verify.Context
+
+		test: slime.definition.verify.Executor
+
+		/**
+		 * Fires an event indicating this scope has finished, including the name, result, and elapsed time of the scope in the event
+		 * payload.
+		 */
 		end: (name: string, result: boolean) => void
 	}
 
-	/**
-	 * A destination to which test results and progress are sent.
-	 */
-	export interface Listener {
-		start: (scope: Scope, name: string) => void
-		test: (scope: Scope, message: string, result: boolean) => void
-		end: (scope: Scope, name: string, result: boolean) => void
+	export interface Current {
+		scope: slime.fifty.internal.test.Scope
+		verify: slime.definition.verify.Verify
 	}
 
-	export type run = slime.fifty.test.internal.test.Exports["run"]
-}
+	export interface State {
+		start: (name: string) => {
+			previous: Current
+			current: Current
+		}
+		end: (name: string, was: Current) => boolean
+		verify: slime.definition.verify.Verify
+		error: (e: any) => void
+	}
 
-namespace slime.fifty.test.internal.test {
-	export interface Context {
-		library: {
-			Verify: slime.definition.verify.Export
+	export type Executors = (state: slime.fifty.internal.test.State, console: slime.fifty.internal.test.Listener) => {
+		runner: (tests: slime.fifty.test.tests, console: slime.fifty.internal.test.Listener)
+			=> <T extends unknown>(ascope: slime.fifty.internal.test.AsynchronousScope, callable: (t: T) => void, name: string, argument?: T)
+			=> slime.fifty.internal.test.Result
+
+		error: (
+			name: string,
+			e: Error & { printStackTrace?: () => void; javaException?: any; },
+			console: slime.fifty.internal.test.Listener
+		) => void
+
+		verify: slime.definition.verify.Verify
+
+		state: () => slime.fifty.internal.test.State
+	}
+
+	export interface TestFile {
+		file: {
+			loader: slime.loader.old.Loader
+			path: string
+		}
+	}
+
+	export interface TestEnvironment {
+		environment: {
+			jsh?: {
+				directory: slime.jrunscript.file.Directory
+				loader: slime.loader.old.Loader
+			}
+		}
+	}
+
+	export type TestFileContext = TestFile & TestEnvironment
+
+	/**
+	 * @param argument - the argument passed to a fifty.load call; used for type invariant verification xyz
+	 */
+	export type Load = (
+		context: TestFileContext,
+		state: {
+			synchronous: slime.fifty.internal.test.State
+			asynchronous: slime.fifty.internal.test.AsynchronousScopes
+		},
+		argument?: any
+	) => {
+		/**
+		 * @param part - the part of the test suite. If `undefined`, the default value `"suite"` will be used.
+		 */
+		part: (part: string) => {
+			run: (listener: slime.fifty.internal.test.Listener) => slime.fifty.internal.test.Result
 		}
 
-		console: slime.fifty.test.internal.Listener
-
-		jsh?: {
-			global: slime.jsh.Global
-			scope: slime.fifty.test.internal.scope.jsh.Export
-		}
-
-		window?: {
-			global: Window & { console: typeof globalThis["console"] }
-		}
-
-		promises?: slime.definition.test.promises.Export
+		list: () => slime.fifty.internal.test.Manifest
 	}
 
 	export type Result = {
@@ -309,7 +356,64 @@ namespace slime.fifty.test.internal.test {
 		}
 	}
 
-	export type AsynchronousSubscope = () => slime.fifty.test.internal.test.Result
+	export interface Events {
+		start: { name: string }
+		test: slime.definition.unit.Test.Result
+		end: { name: string, result: boolean, elapsed: number }
+	}
+
+	//	TODO	this type is probably not "internal" as it is declared (albeit not by name) in the exports ... but they are the
+	//			exports of an internal script, so it is worth thinking about.
+	/**
+	 * A destination to which test results and progress are sent.
+	 */
+	export type Listener = slime.$api.event.Handlers<Events>
+
+	export type run = slime.fifty.internal.test.Exports["run"]
+
+	export namespace scope.jsh {
+		export interface Scope {
+			/**
+			 * A loader that will load resources from the same directory as the currently executing Fifty file.
+			 */
+			loader: slime.loader.old.Loader
+
+			/**
+			 * The directory containing the currently executing Fifty file.
+			 */
+			directory: slime.jrunscript.file.Directory
+
+			/**
+			 * The filename of the currently executing Fifty file.
+			 */
+			filename: string
+
+			fifty: Omit<slime.fifty.test.Kit,"jsh">
+		}
+
+		export type Export = (scope: slime.fifty.internal.test.scope.jsh.Scope) => slime.fifty.test.kit.Jsh
+
+		export type Script = slime.runtime.loader.Scoped<void,Export>
+	}
+
+	export interface Context {
+		library: {
+			Verify: slime.definition.verify.Export
+		}
+
+		jsh?: {
+			global: slime.jsh.Global
+			scope: slime.fifty.internal.test.scope.jsh.Export
+		}
+
+		window?: {
+			global: Window & { console: typeof globalThis["console"] }
+		}
+
+		promises?: slime.definition.test.promises.Export
+	}
+
+	export type AsynchronousSubscope = () => slime.fifty.internal.test.Result
 
 	export interface AsynchronousScope {
 		start: () => void
@@ -348,29 +452,20 @@ namespace slime.fifty.test.internal.test {
 		/**
 		 * Executes a Fifty page at the given path from the given loader, optionally limiting the test to a single part.
 		 */
-		run: (p: {
-			loader: slime.old.Loader
-			scopes: {
-				jsh?: {
-					directory: slime.jrunscript.file.Directory
-					loader: slime.old.Loader
-				}
-			}
-			path: string
+		run: (p: TestFileContext & {
 			part?: string
+			console: slime.$api.event.Handlers<slime.fifty.internal.test.Events>
 		}) => Result
 
-		list: (p: {
-			loader: slime.old.Loader
-			scopes: {
-				jsh?: {
-					directory: slime.jrunscript.file.Directory
-					loader: slime.old.Loader
-				}
-			}
-			path: string
-		}) => Manifest
+		list: (p: TestFileContext) => Manifest
 	}
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
+}
+
+namespace slime.fifty.test {
+
+}
+
+namespace slime.fifty.test.internal.test {
 }

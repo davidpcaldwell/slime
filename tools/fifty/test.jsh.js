@@ -96,28 +96,34 @@
 		/** @type { slime.definition.verify.Export } */
 		var verify = jsh.loader.file(jsh.shell.jsh.src.getFile("loader/api/verify.js"))
 
-		/** @type { { console: slime.fifty.test.internal.Listener, jsapi: slime.fifty.test.internal.Listener } } */
+		/** @type { { console: slime.fifty.internal.test.Listener, jsapi: slime.fifty.internal.test.Listener } } */
 		var views = {
 			console: (function() {
+				/**
+				 *
+				 * @param { Pick<slime.fifty.internal.test.Scope,"depth"> } scope
+				 * @param { string } string
+				 */
 				var write = function(scope,string) {
-					var indent = (scope) ? scope.depth() + 1 : 0;
-					var prefix = new Array(indent + 1).join("  ")
+					var indent = (scope.depth) ? scope.depth() : 0;
+					var prefix = new Array(indent + 1).join("  ");
+					//jsh.shell.console("Depth: " + Boolean(scope.depth) + " (" + indent + "): [" + prefix + "]");
 					jsh.shell.console(prefix + string);
 				};
 
-				/** @type { slime.fifty.test.internal.Listener } */
+				/** @type { slime.fifty.internal.test.Listener } */
 				var rv = {
-					start: function(scope,name) {
-						write(scope, "Running: " + name);
+					start: function(event) {
+						write(event.source, "Running: " + event.detail.name);
 					},
 
-					end: function(scope,name,result) {
-						var resultString = (result) ? "PASSED" : "FAILED"
-						write(scope, resultString + ": " + name);
+					end: function(event) {
+						var resultString = (event.detail.result) ? "PASSED" : "FAILED"
+						write(event.source, resultString + ": " + event.detail.name + " (" + event.detail.elapsed + " ms)");
 					},
 
-					test: function(scope,message,result) {
-						write(scope, message);
+					test: function(event) {
+						write(event.source, event.detail.message);
 					}
 				};
 
@@ -128,67 +134,66 @@
 					jsh.shell.echo(JSON.stringify(v));
 				}
 
-				return {
-					start: function(scope, name) {
+				return /** @type { slime.fifty.internal.test.Listener } */({
+					start: function(event) {
 						output({
 							type: "scenario",
 							detail: {
 								start: {
-									name: name
+									name: event.detail.name
 								}
 							}
 						});
 					},
 
-					end: function(scope, name, result) {
+					end: function(event) {
 						output({
 							type: "scenario",
 							detail: {
 								end: {
-									name: name
+									name: event.detail.name
 								},
-								result: result
+								result: event.detail.result
 							}
 						});
 					},
 
-					test: function(scope, message, success) {
+					test: function(event) {
 						output({
 							type: "test",
 							detail: {
-								success: success,
-								message: message
+								success: event.detail.success,
+								message: event.detail.message
 								//	TODO	error
 							}
 						})
 					}
-				}
+				})
 			})()
 		};
 
 		/**
 		 *
 		 * @param { slime.jrunscript.file.File } file
-		 * @param { slime.fifty.test.internal.Listener } view
+		 * @param { slime.fifty.internal.test.Listener } view
 		 * @param { "run" | "list" } method
 		 * @param { string } part
 		 * @returns
 		 */
 		var load = function(file,view,method,part) {
-			/** @type { slime.fifty.test.internal.scope.jsh.Script } */
+			/** @type { slime.fifty.internal.test.scope.jsh.Script } */
 			var scopeScript = jsh.script.loader.script("scope-jsh.ts");
 			var scopes = scopeScript();
 
 			var fiftyLoader = jsh.script.loader;
 
-			/** @type { slime.fifty.test.internal.test.Script } */
+			/** @type { slime.fifty.internal.test.Script } */
 			var testScript = fiftyLoader.script("test.js");
 
 			var implementation = testScript({
 				library: {
 					Verify: verify
 				},
-				console: view,
 				jsh: {
 					global: jsh,
 					scope: scopes
@@ -197,25 +202,35 @@
 
 			var loader = new jsh.file.Loader({ directory: file.parent });
 
-			return implementation[method]({
-				loader: loader,
-				scopes: {
+			var scope = {
+				file: {
+					loader: loader,
+					path: file.pathname.basename
+				},
+				environment: {
 					jsh: {
 						directory: file.parent,
 						loader: loader
 					}
 				},
-				path: file.pathname.basename,
-				part: part
-			});
+			};
+
+			if (method == "list") {
+				return implementation.list(scope);
+			} else if (method == "run") {
+				return implementation.run($api.Object.compose(scope, {
+					part: part,
+					console: view
+				}));
+			}
 		}
 
 		/**
 		 *
 		 * @param { slime.jrunscript.file.File } file
 		 * @param { string } part
-		 * @param { slime.fifty.test.internal.Listener } view
-		 * @returns { slime.fifty.test.internal.test.Result }
+		 * @param { slime.fifty.internal.test.Listener } view
+		 * @returns { slime.fifty.internal.test.Result }
 		 */
 		var execute = function(file,part,view) {
 			//@ts-ignore
@@ -225,7 +240,7 @@
 		/**
 		 *
 		 * @param { slime.jrunscript.file.File } file
-		 * @returns { slime.fifty.test.internal.test.Manifest }
+		 * @returns { slime.fifty.internal.test.Manifest }
 		 */
 		var list = function(file) {
 			//@ts-ignore

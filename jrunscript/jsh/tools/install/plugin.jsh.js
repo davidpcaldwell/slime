@@ -9,11 +9,11 @@
 	/**
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
-	 * @param { slime.$api.Global } $api
+	 * @param { slime.runtime.Exports } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { object } plugins
 	 * @param { slime.jsh.plugin.plugin } plugin
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 */
 	function(Packages,JavaAdapter,$api,jsh,plugins,plugin,$loader) {
 		plugin({
@@ -109,7 +109,7 @@
 							/**
 							 *
 							 * @param { slime.jsh.shell.tools.rhino.OldInstallCommand } p
-							 * @param { slime.$api.event.Emitter<slime.jsh.shell.tools.rhino.OldInstallEvents> } events
+							 * @param { slime.$api.event.Producer<slime.jsh.shell.tools.rhino.OldInstallEvents> } events
 							 */
 							function(p,events) {
 								var lib = (p.mock) ? p.mock.lib.toString() : void(0);
@@ -506,7 +506,7 @@
 
 					var fetchCode = function() {
 						return new jsh.http.Client().request({
-							url: "https://raw.githubusercontent.com/nodeca/js-yaml/refs/heads/master/dist/js-yaml.js",
+							url: "https://raw.githubusercontent.com/nodeca/js-yaml/3.14.1/dist/js-yaml.js",
 							evaluate: function(response) {
 								return response.body.stream.character().asString();
 							}
@@ -808,7 +808,7 @@
 				/** @type { slime.jrunscript.tools.node.internal.JshPluginInterface } */
 				var helper = plugins.node;
 
-				var node = helper.module({
+				var maybeNode = helper.module({
 					context: {
 						library: {
 							file: jsh.file,
@@ -818,6 +818,9 @@
 					}
 				});
 
+				if (!maybeNode.present) return;
+				var node = maybeNode.value;
+
 				jsh.shell.tools.node = (function integratedNode() {
 					if (!jsh.shell.jsh.lib) return;
 
@@ -825,10 +828,12 @@
 
 					/** @type { slime.jsh.shell.tools.node.Managed } */
 					var managed = {
-						installation: node.Installation.from.location({
-							filesystem: jsh.file.world.filesystems.os,
-							pathname: location.toString()
-						}),
+						installation: (function() {
+							// TODO: Remove this API and provide a function that returns a Maybe instead.
+							return {
+								executable: jsh.file.Pathname(location.toString() + "/" + "bin/node").toString()
+							}
+						})(),
 						installed: void(0),
 						require: void(0)
 					}
@@ -843,7 +848,7 @@
 					managed.require = (function() {
 						/**
 						 *
-						 * @param { slime.$api.event.Emitter<slime.jsh.shell.tools.node.RequireEvents> } events
+						 * @param { slime.$api.event.Producer<slime.jsh.shell.tools.node.RequireEvents> } events
 						 */
 						var action = function(events) {
 							var VERSION = node.versions.default();
@@ -852,9 +857,7 @@
 
 							var exists = jsh.shell.tools.node.Installation.exists.simple
 
-							var getVersion = $api.fp.world.Sensor.old.mapping({
-								sensor: jsh.shell.tools.node.Installation.getVersion
-							});
+							var getVersion = jsh.shell.tools.node.Installation.getVersion.simple;
 
 							//var now = node.object.at({ location: location.toString() });
 							if (exists(now) && getVersion(now) == "v" + VERSION) {

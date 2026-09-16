@@ -12,13 +12,13 @@ namespace slime.jsh.wf.standard {
 		}
 
 		jsh: {
-			shell: slime.jsh.shell.Exports
+			shell: slime.jsh.Global["shell"]
 			script: slime.jsh.script.Exports
 		}
 
 		api: {
-			checks: slime.$api.fp.impure.Input<slime.jsh.wf.Exports["checks"]>
-			project: slime.$api.fp.impure.Input<{
+			checks: slime.jsh.wf.Exports["checks"]
+			project: slime.$api.fp.Thunk<{
 				updateSubmodule: slime.jsh.wf.Exports["project"]["updateSubmodule"]
 				submodule: Pick<slime.jsh.wf.Exports["project"]["submodule"],"remove"|"status"|"attach">
 				lint: {
@@ -28,12 +28,12 @@ namespace slime.jsh.wf.standard {
 					construct: slime.jsh.wf.Exports["project"]["Submodule"]["construct"]
 				}
 			}>
-			git: slime.$api.fp.impure.Input<slime.jsh.wf.Exports["git"]>
-			typescript: slime.$api.fp.impure.Input<{
+			git: slime.jsh.wf.Exports["git"]
+			typescript: {
 				typedoc: {
 					now: slime.jsh.wf.Exports["typescript"]["typedoc"]["now"]
 				}
-			}>
+			}
 		}
 	}
 
@@ -232,7 +232,7 @@ namespace slime.jsh.wf.standard {
 									environment: $api.Object.compose(
 										jsh.shell.environment,
 										{
-											JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome().base
+											JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome.base
 										}
 									)
 								});
@@ -258,12 +258,6 @@ namespace slime.jsh.wf.standard {
 			}
 		//@ts-ignore
 		)(fifty);
-	}
-
-	export interface Project {
-		lint?: slime.jsh.wf.Lint
-		test?: slime.jsh.wf.Test
-		precommit?: slime.jsh.wf.Precommit
 	}
 
 	export type Options = {};
@@ -293,7 +287,11 @@ namespace slime.jsh.wf.standard {
 
 		prune: slime.jsh.script.cli.Command<Options>
 
-		test: slime.jsh.script.cli.Command<Options>
+		/**
+		 * A command that is present if the provided {@link slime.jsh.wf.standard.Project Project} had a `test` property supplying
+		 * a {@link slime.jsh.wf.Test Test} implementation, in which case it runs the provided implementation.
+		 */
+		test?: slime.jsh.script.cli.Command<Options>
 
 		precommit: slime.jsh.script.cli.Command<Options>
 
@@ -377,7 +375,7 @@ namespace slime.jsh.wf.standard {
 							environment: Object.assign({},
 								jsh.shell.environment,
 								{
-									JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome().base,
+									JSH_LAUNCHER_JDK_HOME: jsh.shell.java.Jdk.from.javaHome.base,
 									PROJECT: repository.directory.toString()
 								},
 								environment
@@ -635,6 +633,16 @@ namespace slime.jsh.wf.standard {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Project {
+		lint?: slime.jsh.wf.Lint
+		test?: slime.jsh.wf.Test
+		precommit?: ReturnType<slime.jsh.wf.checks.Exports["precommit"]>
+	}
+
+	/**
+	 * Given the {@link jsh.wf.cli.Context context} provided to wf scripts, a {@link standard.Project project definition}, and an exports object, attaches a set of standard exports
+	 * of type {@link Interface} to the given `$exports`.
+	 */
 	export type Export = (
 		$context: jsh.wf.cli.Context,
 		operations: standard.Project,
@@ -652,7 +660,7 @@ namespace slime.jsh.wf.standard {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Export>;
+	export type Script = slime.runtime.loader.Scoped<Context,Export>;
 
 	(
 		function(

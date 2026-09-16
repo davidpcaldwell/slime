@@ -4,17 +4,27 @@
 //
 //	END LICENSE
 
+//@ts-check
 (
-	function() {
+	/**
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function($api,jsh) {
 		var parameters = jsh.script.getopts({
 			options: {
 				replace: false
 			}
 		});
-		jsh.shell.tools.kotlin.install(parameters.options, {
-			console: function(e) {
-				jsh.shell.console(e.detail);
+		$api.fp.world.Means.now({
+			means: jsh.shell.tools.kotlin.install,
+			order: parameters.options,
+			handlers: {
+				console: function(e) {
+					jsh.shell.console(e.detail);
+				}
 			}
 		});
 	}
-)();
+//@ts-ignore
+)($api,jsh);

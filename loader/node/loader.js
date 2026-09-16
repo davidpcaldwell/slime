@@ -70,7 +70,7 @@
 				/**
 				 *
 				 * @param { string } path
-				 * @returns { slime.old.loader.Source }
+				 * @returns { slime.loader.old.Source }
 				 */
 				function toSource(path) {
 					return {
@@ -96,7 +96,7 @@
 				}
 				return {
 					Loader: function(p) {
-						return new runtime.old.Loader(toSource(p.base));
+						return new runtime.loader.old.old.Loader(toSource(p.base));
 					}
 				}
 			}

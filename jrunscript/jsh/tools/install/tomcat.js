@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.shell.tools.internal.tomcat.Context } $context
-	 * @param { slime.old.Loader } $loader
+	 * @param { slime.loader.old.Loader } $loader
 	 * @param { slime.loader.Export<slime.jsh.shell.tools.internal.tomcat.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {
@@ -162,7 +162,7 @@
 		 */
 		var basicInstall = function(p) {
 			/**
-			 * @param { slime.$api.event.Emitter<{ unzipping: { local: string, to: string }, installing: { to: string } }> } events
+			 * @param { slime.$api.event.Producer<{ unzipping: { local: string, to: string }, installing: { to: string } }> } events
 			 */
 			return function(events) {
 				var local = p.local;
@@ -264,8 +264,8 @@
 						if (update) {
 							//	delete existing
 							$api.fp.world.now.action(
-								$context.library.file.world.Location.directory.remove.world(),
-								$context.library.file.world.Location.from.os(installation.base)
+								$context.library.file.Location.directory.remove.wo,
+								$context.library.file.Location.from.os(installation.base)
 							);
 							proceed = true;
 						} else {

@@ -57,7 +57,7 @@
 
 				/**
 				 *
-				 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
+				 * @param { slime.$api.event.Producer<slime.jrunscript.shell.run.TellEvents> } events
 				 * @param { slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity } stream
 				 */
 				var destinationFactory = function(events, stream) {
@@ -75,7 +75,7 @@
 					}
 
 					/**
-					 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
+					 * @param { slime.$api.event.Producer<slime.jrunscript.shell.run.TellEvents> } events
 					 * @param { slime.jrunscript.shell.run.internal.SubprocessOutputStreamIdentity } stream
 					 * @returns { slime.jrunscript.shell.internal.run.OutputDestination }
 					 */
@@ -297,7 +297,7 @@
 			var killed = false;
 			return $api.fp.world.old.tell(
 				/**
-				 * @param { slime.$api.event.Emitter<slime.jrunscript.shell.run.TellEvents> } events
+				 * @param { slime.$api.event.Producer<slime.jrunscript.shell.run.TellEvents> } events
 				 */
 				function(events) {
 					events.fire("start", {
@@ -363,14 +363,14 @@
 
 		/**
 		 *
-		 * @param { (invocation: slime.jrunscript.shell.run.old.Invocation) => slime.jrunscript.shell.run.Mock } delegate
+		 * @param { (invocation: slime.jrunscript.shell.run.minus2.Invocation) => slime.jrunscript.shell.run.Mock } delegate
 		 * @returns
 		 */
 		var mockRun = function(delegate) {
 			return (
 				/**
 				 *
-				 * @param { slime.jrunscript.shell.run.old.Invocation } invocation
+				 * @param { slime.jrunscript.shell.run.minus2.Invocation } invocation
 				 * @returns
 				 */
 				function(invocation) {
@@ -386,10 +386,10 @@
 
 		/**
 		 *
-		 * @param { slime.jrunscript.shell.run.old.Invocation } old
-		 * @returns { slime.jrunscript.shell.run.Invocation }
+		 * @param { slime.jrunscript.shell.run.minus2.Invocation } old
+		 * @returns { slime.jrunscript.shell.run.minus1.Invocation }
 		 */
-		var modernize = function(old) {
+		var toMinus1 = function(old) {
 			return {
 				command: old.configuration.command,
 				arguments: old.configuration.arguments,
@@ -402,7 +402,7 @@
 		/** @type { slime.jrunscript.shell.internal.run.Exports["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation, isLineListener) {
 			var rv;
-			var action = world(modernize({ context: context, configuration: configuration }));
+			var action = world(toMinus1({ context: context, configuration: configuration }));
 			$api.fp.world.Action.now({
 				action: action,
 				handlers: {
@@ -443,23 +443,27 @@
 			return rv;
 		}
 
-		var Invocation_from_intention = function(parent) {
-			/**
-			 *
-			 * @param { slime.jrunscript.shell.run.intention.Input } p
-			 * @return { slime.jrunscript.runtime.io.InputStream }
-			 */
-			var toInputStream = function(p) {
-				if (typeof(p) == "string") {
-					var buffer = new $context.library.io.Buffer();
-					buffer.writeText().write(p);
-					buffer.close();
-					return buffer.readBinary();
-				} else {
-					return p;
-				}
-			};
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.run.intention.Input } p
+		 * @return { slime.jrunscript.runtime.io.InputStream }
+		 */
+		var toInputStream = (
+			function($context) {
+				return function(p) {
+					if (typeof(p) == "string") {
+						var buffer = new $context.library.io.Buffer();
+						buffer.writeText().write(p);
+						buffer.close();
+						return buffer.readBinary();
+					} else {
+						return p;
+					}
+				};
+			}
+		)({ library: { io: $context.library.io }});
 
+		var Invocation_from_intention = function(parent) {
 			return function(plan) {
 				var environment = plan.environment || $api.fp.identity;
 				return {
@@ -521,7 +525,7 @@
 							Invocation_from_intention
 						);
 
-						/** @type { slime.jrunscript.shell.exports.subprocess } */
+						/** @type { slime.jrunscript.shell.subprocess.Exports } */
 						var rv = {
 							action: function(p) {
 								return Invocation.action(
@@ -532,7 +536,8 @@
 								return Invocation.question(
 									toInvocation()(p)
 								);
-							}
+							}//,
+							//means: void(0)
 						};
 
 						return rv;
@@ -540,7 +545,7 @@
 				)()
 			},
 			action: function(old) {
-				return world(modernize(old));
+				return world(toMinus1(old));
 			},
 			question: function(invocation) {
 				return function(events) {
@@ -548,7 +553,7 @@
 					var rv;
 					$api.fp.impure.now.process(
 						$api.fp.world.process(
-							world(modernize(invocation)),
+							world(toMinus1(invocation)),
 							{
 								start: function(e) {
 									events.fire("start", e.detail);
@@ -571,13 +576,14 @@
 			run: function(invocation) {
 				return function(handler) {
 					$api.fp.world.now.tell(
-						world(modernize(invocation)),
+						world(toMinus1(invocation)),
 						handler
 					);
 				}
 			},
 			mock: mockRun,
 			internal: {
+				toInputStream: toInputStream,
 				buildStdio: buildStdio,
 				mock: {
 					tell: mockTell

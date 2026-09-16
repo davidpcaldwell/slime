@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.web.browser.Context } $context
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.web.Exports> } $export
 	 */
 	function($context,$loader,$export) {

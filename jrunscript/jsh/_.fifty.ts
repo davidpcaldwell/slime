@@ -97,6 +97,10 @@ namespace slime.jsh {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
+			const normalizeStderr = function(stderr: string): string {
+				return stderr;
+			};
+
 			fifty.tests.setting = fifty.test.Parent();
 
 			var src = fifty.jsh.file.relative("../..");
@@ -118,7 +122,7 @@ namespace slime.jsh {
 						}
 					});
 
-					verify(nodebug).stdio.error.is("");
+					verify(nodebug).stdio.error.evaluate(normalizeStderr).is("");
 
 					var debug = run({
 						command: "bash",
@@ -143,7 +147,7 @@ namespace slime.jsh {
 					jsh.shell.console("stderr = [\n" + debug.stdio.error + "\n]");
 
 					verify(debug).stdio.error.evaluate(function(stderr) {
-						return stderr.split("\n")[0]
+						return normalizeStderr(stderr).split("\n")[0]
 					}).is("++ uname");
 				});
 
@@ -211,6 +215,67 @@ namespace slime.jsh {
 
 				//	TODO	built.bash?, built.native?, packaged?, remote
 			}
+
+			fifty.tests.setting.defaultInstallJdkIs25 = function() {
+				var fixtures: slime.jsh.wf.test.Fixtures = (function() {
+					var script: slime.jsh.wf.test.Script = fifty.$loader.script("../../tools/wf/test/fixtures.ts");
+					return script()(fifty);
+				})();
+
+				var repository = fixtures.old.clone({
+					src: fifty.jsh.file.relative("../.."),
+				});
+
+				var cloneSrc = repository.directory.pathname.os.adapt();
+				var jdkRoot = $api.fp.now(
+					cloneSrc,
+					jsh.file.Location.directory.relativePath("local/test-default-jdks")
+				);
+
+				var environment = function(was) {
+					return $api.Object.compose(was, {
+						JSH_LOCAL_JDKS: jdkRoot.pathname,
+						JSH_USER_JDKS: "/dev/null"
+					});
+				};
+
+				run({
+					command: "bash",
+					arguments: [
+						$api.fp.now(cloneSrc, jsh.file.Location.directory.relativePath("jsh")).pathname,
+						"--install-jdk"
+					],
+					environment: environment
+				});
+
+				var defaultJdk = $api.fp.now(
+					jdkRoot,
+					jsh.file.Location.directory.relativePath("default")
+				);
+				var defaultJava = $api.fp.now(
+					defaultJdk,
+					jsh.file.Location.directory.relativePath("bin/java")
+				);
+
+				verify($api.fp.now(defaultJava, jsh.file.Location.file.exists.simple)).is(true);
+
+				var versionOutput = run({
+					command: defaultJava.pathname,
+					arguments: ["-version"],
+					stdio: {
+						error: "string"
+					}
+				});
+
+				verify(versionOutput).stdio.error.evaluate(function(stderr) {
+					var versionLine = String(stderr).split("\n")[0];
+					var quoted = /version "([^"]+)"/.exec(versionLine);
+					if (!quoted) return "";
+					if (quoted[1].indexOf("1.8.") == 0) return "8";
+					var match = /^(\d+)/.exec(quoted[1]);
+					return (match) ? match[1] : "";
+				}).is("25");
+			}
 		}
 	//@ts-ignore
 	)(fifty);
@@ -256,7 +321,7 @@ namespace slime.jsh {
 		}
 
 		file: slime.jrunscript.file.Plugin
-		time: slime.time.Exports
+		time: slime.time.AdapterExports
 		ip: slime.jrunscript.ip.Exports
 		db: {
 			jdbc: slime.jsh.db.jdbc.Exports
@@ -267,24 +332,24 @@ namespace slime.jsh {
 /**
  * ## The `jsh` unbuilt/remote `bash` launcher
  *
- * The `bash` launcher has two jobs:
+ * The `bash` launcher has three jobs:
  *
- * * Find or install a version of Java to use (currently the default is 21, though this might not work for remote shells; see #1617
+ * * Find or install a version of Java to use (currently the default is 25, though this might not work for remote shells; see #1617
  * and comments in the `jsh` script referencing #1617),
- * * Install a bootstrap JavaScript engine if necessary; currently, for Java 8-14, Nashorn is used, and for Java 15+, standalone
- * Nashorn {@include ../../local/typedoc/dependencies.md#nashorn.standalone.version} is used.
+ * * Install a bootstrap JavaScript engine if necessary; currently, for Java 8-14, the JDK's built-in Nashorn is used, and for Java
+ * 15+, standalone Nashorn {@include ../../local/typedoc/dependencies.md#nashorn.standalone.version} is used.
+ * * Properly invoke `jrunscript` (possibly providing the engine on the `jrunscript` classpath and configuring system properties) to
+ * execute the SLIME launcher script with the `jsh` argument.
  *
- * It then runs the `jsh` _launcher_.
- *
- * ## The `jsh` launcher
+ * ## The `jsh` launcher: SLIME launcher script with `jsh` argument
  *
  * The `jsh` launcher is a set of `jrunscript` scripts that is responsible for three things:
  *
  * * Installing the desired JavaScript engine configured via the `JSH_ENGINE` environment variable or `jsh.engine` system property,
  * and
  * * Building a command to execute the `jsh` _loader_ process.
- * * Providing an API to `jsh` scripts that is used to accomplish the above two tasks, so they do not have to be rewritten into the
- * `jsh` loader.
+ * * Providing the building blocks used to implement the launcher itself to the jsh loader and `jsh` scripts as an API, so that
+ * operations used in both the launcher and loader both use (and that applications might use) do not have to be written twice.
  *
  * It consists of several `jrunscript`-compatible scripts (all of which currently run on Nashorn, and crucially, cannot run on
  * GraalJS, because they use JavaScript multithreading with Java synchronization; they may be able to run on Rhino but this is

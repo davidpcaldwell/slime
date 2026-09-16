@@ -1,0 +1,154 @@
+[comment]: # (	LICENSE)
+[comment]: # (	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not)
+[comment]: # (	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.)
+[comment]: # ()
+[comment]: # (	END LICENSE)
+
+# Contributing to SLIME
+
+## Documentation for contributors
+
+The main documentation for contributors can be found at the contributor [README](./contributor/README.md). This documentation is
+also available in the TypeDoc documentation in the `slime.internal` namespace.
+
+## Personal agent instructions in devcontainers
+
+Contributors can configure personal instructions for coding agents via files in the host path `local/agents`. In the devcontainer,
+this host directory is mounted through `docker-compose.yaml` and should be accessed via `~/.agents`.
+
+Recommended setup:
+
+* Create `local/agents/README.md` as the primary entry point for your personal instructions on the host.
+* In the devcontainer, this same file is available at `~/.agents/README.md`.
+* Add one or more instruction files in `local/agents` and reference them from `local/agents/README.md`.
+* The VSCode task "Open my personal agent instructions" will bring these instructions up in the editor, if they exist.
+
+Agent behavior in this repository is configured to read `~/.agents/README.md` first, then follow references from that file.
+
+## Personal VS Code remote settings overlay in devcontainers
+
+This repository keeps shared devcontainer settings conservative by default. If you want personal
+Copilot or editor behavior overrides when using the devcontainer, use a personal overlay file in
+the mounted `local/` area.
+
+Setup steps:
+
+* Copy the JSON snippet in `.devcontainer/vscode-user-settings.overlay.example.md` to
+  `local/devcontainer/vscode-user-settings.overlay.json`.
+* Edit `local/devcontainer/vscode-user-settings.overlay.json` with your desired VS Code remote
+  user settings.
+* Re-open the devcontainer (or run `.devcontainer/apply-vscode-user-settings.bash` from a terminal).
+* Reload the VS Code window if needed.
+
+How it works:
+
+* On devcontainer startup, `.devcontainer/postStartCommand` invokes
+  `.devcontainer/apply-vscode-user-settings.bash`.
+* The script merges keys from
+  `local/devcontainer/vscode-user-settings.overlay.json` into the remote VS Code server file at
+  `/config/.vscode-server/data/Machine/settings.json`.
+* `local/` is git-ignored, so personal overrides are not committed.
+
+## FP error handling conventions
+
+When adding or refactoring functional APIs, use this rule of thumb for failures:
+
+* Throw JavaScript exceptions only for compile-time contract violations at runtime (for example, a non-string passed where a string is required). In this project, throws are a defensive backstop for runtime type erasure and untyped JavaScript callers.
+* Return `Result` failures for domain-invalid values that are still in the expected representation domain (for example, missing or empty string input).
+
+This split keeps normal validation failures composable through `Result.map` / `Result.flatMap`, while reserving exceptions for clear programmer misuse.
+
+## Opening a devcontainer from the command line (macOS)
+
+On macOS, `contributor/devcontainer/open` opens the current SLIME checkout in a VSCode devcontainer window. It locates Visual
+Studio Code in `~/Applications` (preferred) or `/Applications`, and fails if `.git` is a file (that is, if the checkout is a
+submodule or linked worktree whose Git directory would not be visible inside the container).
+
+Because the devcontainer is addressed by the host path of the checkout, and the Compose project name is derived from that path
+(see below), multiple SLIME checkouts can run devcontainers simultaneously on the same machine.
+
+## Distinguishing multiple SLIME devcontainer windows
+
+Every SLIME devcontainer mounts its checkout at `/slime`, so windows from different checkouts otherwise look identical in the VS
+Code title bar. `.devcontainer/initializeCommand` writes the host checkout path to `.env` as `SLIME_HOST_PATH`, which is passed
+into the container by `.devcontainer/docker-compose.extend.yaml`. On each container start, `.devcontainer/postStartCommand` runs
+`.devcontainer/apply-window-title.bash`, which sets a Machine-scoped `window.title` setting that prefixes the host path, for
+example `[/Users/you/checkouts/slime-a] file.js — slime`.
+
+This runs before `apply-vscode-user-settings.bash`, so a personal settings overlay (see above) can still override `window.title`
+if you prefer a different format.
+
+## Devcontainer Compose ports and project naming
+
+The devcontainer uses Docker Compose with container ports published without fixed host ports. Docker assigns an available host
+port for each published container port.
+
+To discover the host port currently assigned to a service port, run:
+
+```bash
+docker compose --project-name <project-name> port local 3000
+docker compose --project-name <project-name> port local 3001
+docker compose --project-name <project-name> port local 8000
+```
+
+For devcontainers, project-name uniqueness is derived from the host workspace path. During
+`.devcontainer/initializeCommand`, the repository path is hashed and written to the repository-root `.env`
+as `COMPOSE_PROJECT_NAME=slime-<hash>`.
+
+To discover the active project name, use `docker compose ls` on the host, then run the
+`docker compose --project-name ... port ...` commands above.
+
+Within the `local` container, these ports are used as follows:
+
+* `3000`: Webtop desktop HTTP interface.
+* `3001`: Webtop desktop HTTPS interface.
+* `8000`: HTTP endpoint used by project-local web tooling, including the documentation server (`./wf documentation` / `./fifty view`).
+
+If you need unique naming for non-devcontainer Compose usage, set `COMPOSE_PROJECT_NAME` (or pass `--project-name`) when invoking
+`docker compose`.
+
+## Continuous integration testing
+
+When code is contributed via a PR, it must pass a series of checks on the server. These checks run by platform and are defined in
+the `.github/workflows` directory.
+
+* Java (25, 21, 17, 11, 8) - defined by `test-jdk[n].yaml`, where `n` is the major version number, which in turn runs
+`contributor/suite-docker-jrunscript [n]`, which in turn runs `./wf check` under Linux via Docker, which in turn:
+  * Runs linting via ESLint
+  * Runs type checking via the TypeScript compiler
+  * Runs tests by installing Rhino and running the `contributor/jrunscript.jsh.js` script under `jsh`.
+* MacOS/Java (Java 21) - defined by `test-jdk-macos.yaml`, also runs `./wf check`, with the same steps as above
+* Browsers (Chrome, Firefox) - defined by `test-browsers.yaml`, which runs `contributor/suite-docker-browser`, which runs
+`/slime/contributor/suite-docker-browser.jsh.js` under `jsh`. This runs API tests for Chrome and Firefox, as well as tests verifying
+the browser implementation of the JSAPI test framework.
+* Node.js - defined by `test-node.yaml`, which runs `contributor/suite-docker-node`, which runs
+`./fifty test.jsh loader/node/loader.fifty.ts`
+
+## Profiling `wf` commands
+
+When profiling `wf`, target the `jsh` script entrypoint rather than the top-level Bash wrapper.
+
+Call chain:
+
+* `wf` -> `tools/wf.bash` -> `tools/wf.jsh.js` -> `wf.js`
+
+Use the profiler wrapper to run the `tools/wf.jsh.js` script directly, for example:
+
+```bash
+./jsh jrunscript/jsh/tools/profile.jsh.js \
+  --profiler:output:html local/profiler/wf-initialize.html \
+  --profiler:output:json local/profiler/wf-initialize.json \
+  --profiler:nobrowser \
+  tools/wf.jsh.js initialize
+```
+
+Notes:
+
+* `--profiler:nobrowser` avoids failures when a browser is unavailable.
+* Keep profiler outputs under `local/profiler/` so they remain checkout-local and untracked.
+* If you need an interactive view, omit `--profiler:nobrowser`.
+
+## Older contributor documentation
+
+Currently, most contributor information is in [contributor/README.html](contributor/README.html), but it is being migrated to other
+locations.

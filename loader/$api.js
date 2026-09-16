@@ -8,57 +8,21 @@
 (
 //	TODO	get rid of the wildcarded properties in $exports by adding all properties to $api.d.ts
 	/**
-	 * @param { slime.$api.internal.Scope["$engine"] } $engine
-	 * @param { slime.$api.internal.Scope["$slime"] } $slime
-	 * @param { slime.$api.internal.Scope["Packages"] } Packages
-	 * @param { slime.loader.Export<slime.$api.internal.Exports> } $export
+	 * @param { slime.$api.internal.Context } $context
+	 * @param { slime.loader.Export<slime.runtime.Exports> } $export
 	 */
-	function($engine,$slime,Packages,$export) {
-		var script = function(name) {
-			var load = function(name,$context) {
-				var $exports = {};
-				$engine.execute(
-					$slime.getRuntimeScript(name),
-					{
-						$context: $context,
-						$exports: $exports,
-						$export: function(v) {
-							$exports = v;
-						}
-					},
-					null
-				);
-				return $exports;
-			};
+	function($context,$export) {
+		var script = $context.script;
 
-			/**
-			 *
-			 * @param { any } $context
-			 * @returns { any }
-			 */
-			var rv = function($context) {
-				return load(name, $context);
-			}
-			return Object.assign(
-				rv,
-				{
-					thread: function() {
-						//	TODO
-						throw new Error("Unimplemented.");
-					}
-				}
-			);
-		}
-
-		var code = {
+		var scripts = {
 			/** @type { slime.runtime.internal.content.Script } */
 			content: script("content.js"),
-			/** @type { slime.loader.Script<void,slime.$api.internal.flag.Exports> } */
+			/** @type { slime.runtime.loader.Scoped<void,slime.$api.internal.flag.Exports> } */
 			flag: script("$api-flag.js"),
-			/** @type { slime.loader.Script<slime.runtime.internal.mime.Context,slime.$api.mime.Export> } */
-			mime: script("$api-mime.js"),
-			/** @type { slime.loader.Script<slime.runtime.internal.events.Context,slime.runtime.internal.events.Exports> } */
+			/** @type { slime.runtime.loader.Scoped<slime.runtime.internal.events.Context,slime.runtime.internal.events.Exports> } */
 			events: script("events.js"),
+			/** @type { slime.runtime.loader.Scoped<slime.$api.loader.old.internal.mime.Context,slime.$api.mime.Export> } */
+			mime: script("$api-mime.js"),
 			/** @type { slime.$api.fp.internal.Script } */
 			Function: script("$api-Function.js"),
 			/** @type { slime.$api.fp.internal.old.Script } */
@@ -67,11 +31,11 @@
 			methods: script("$api-fp-methods.js")
 		};
 
-		var content = code.content();
+		var content = scripts.content();
 
-		var flag = code.flag();
+		var flag = scripts.flag();
 
-		var events = code.events({
+		var events = scripts.events({
 			deprecate: flag.deprecate
 		});
 
@@ -222,9 +186,9 @@
 		};
 
 		var functions = (function() {
-			var old = code.Function_old({ deprecate: flag.deprecate });
+			var old = scripts.Function_old({ deprecate: flag.deprecate });
 
-			var current = code.Function({
+			var current = scripts.Function({
 				$api: { Iterable: Iterable },
 				events: events,
 				old: old,
@@ -232,7 +196,7 @@
 				script: script
 			});
 
-			var methods = code.methods({
+			var methods = scripts.methods({
 				library: {
 					Object: {
 						defineProperty: defineProperty
@@ -253,11 +217,40 @@
 
 		var fp = functions.fp;
 
+		/** @type { slime.$api.Global["global"] } */
 		var global = {
 			get: function(name) {
 				//	TODO	note  that modern JavaScript also has `globalThis`
 				var global = (function() { return this; })();
 				return global[name];
+			},
+			/**
+			 *
+			 * @param { string[] } path
+			 * @param { () => any } [create]
+			 * @returns
+			 */
+			at: function(path,create) {
+				//	This construct returns the top-level global object, e.g., window in the browser
+				var global = function() { return this; }();
+
+				var rv = global;
+
+				var factory = create || function() { return {}; };
+
+				for (var i=0; i<path.length; i++) {
+					if (i != path.length-1) {
+						if (typeof(rv[path[i]]) == "undefined") {
+							rv[path[i]] = {};
+						}
+					} else {
+						var existing = rv[path[i]];
+						rv[path[i]] = (typeof(existing) == "undefined" ) ? factory() : rv[path[i]];
+					}
+					rv = rv[path[i]];
+				}
+
+				return rv;
 			}
 		};
 
@@ -265,17 +258,17 @@
 			//	TODO	try to get rid of ignore below
 			//@ts-ignore
 			disableBreakOnExceptionsFor: function(f) {
-				if ($engine.debugger) {
+				if ($context.engine.debugger) {
 					var rv = function() {
-						var enabled = $engine.debugger.isBreakOnExceptions();
+						var enabled = $context.engine.debugger.isBreakOnExceptions();
 						if (enabled) {
-							$engine.debugger.setBreakOnExceptions(false);
+							$context.engine.debugger.setBreakOnExceptions(false);
 						}
 						try {
 							return f.apply(this,arguments);
 						} finally {
 							if (enabled) {
-								$engine.debugger.setBreakOnExceptions(true);
+								$context.engine.debugger.setBreakOnExceptions(true);
 							}
 						}
 					}
@@ -657,50 +650,98 @@
 			}
 		);
 
-		var mime = code.mime({
+		var mime = scripts.mime({
 			Function: fp,
 			deprecate: flag.deprecate
 		});
 
-		//	TODO	switch implementation to use load()
-		var threads = (function($context) {
-			var $exports = {
-				steps: void(0)
-			};
-			$engine.execute($slime.getRuntimeScript("threads.js"), { $context: $context, $exports: $exports }, null);
-			return $exports;
+		var threads = (function(context) {
+			/** @type { slime.runtime.loader.Scoped<Pick<slime.$api.Global,"Events">,slime.$api.Global["threads"]> } */
+			var code = script("threads.js");
+			return code(context);
 		})({ Events: Events });
 
-		var scripts = (
+		/** @type { slime.$api.Platform } */
+		var platform = (
+			/**
+			 */
 			function() {
-				/** @type { slime.runtime.internal.scripts.Exports } */
-				var rv;
-				$engine.execute(
-					$slime.getRuntimeScript("scripts.js"),
-					{
-						Packages: Packages,
-						$engine: $engine,
-						fp: fp,
-						apiForScripts: function() {
-							return $exports;
-						},
-						$export: function(v) {
-							rv = v;
+				/** @type { slime.$api.Platform } */
+				var $exports = {};
+
+				var global = (function() { return this; })();
+				if (global && global.XML && global.XMLList) {
+					$exports.e4x = {};
+					$exports.e4x.XML = global.XML;
+					$exports.e4x.XMLList = global.XMLList;
+				}
+
+				(
+					/**
+					 * @this { slime.$api.Platform }
+					 */
+					function() {
+						var getJavaClass = function(name) {
+							try {
+								if (typeof($context.Packages) == "undefined") return null;
+								var rv = $context.Packages[name];
+								if (typeof(rv) == "function") {
+									//	In the Firefox Java plugin, JavaPackage objects have typeof() == "function". They also have the
+									//	following format for their String values
+									try {
+										var prefix = "[Java Package";
+										if (String(rv).substring(0, prefix.length) == prefix) {
+											return null;
+										}
+									} catch (e) {
+										//	The string value of Packages.java.lang.Object and Packages.java.lang.Number throws a string (the
+										//	below) if you attempt to evaluate it.
+										if (e == "java.lang.NullPointerException") {
+											return rv;
+										}
+									}
+									return rv;
+								}
+								return null;
+							} catch (e) {
+								return null;
+							}
 						}
-					},
-					null
-				);
-				return rv;
+
+						if (getJavaClass("java.lang.Object")) {
+							this.java = new function() {
+								this.getClass = function(name) {
+									return getJavaClass(name);
+								}
+							};
+						}
+					}
+				).call($exports);
+
+				return $exports;
 			}
 		)();
 
-		/** @type { Parameters<typeof $export>[0]["exports"] } */
+		var code = (
+			function() {
+				/** @type { slime.runtime.internal.code.Script } */
+				var code = script("code.js");
+				return code({
+					$engine: $context.engine,
+					fp: fp
+				});
+			}
+		)();
+
+		/** @type { Parameters<typeof $export>[0] } */
 		var $exports = {
-			engine: $engine,
-			content: content,
+			engine: $context.engine,
+			platform: platform,
 			deprecate: flag.deprecate,
 			experimental: flag.experimental,
 			flag: flag.flag,
+			mime: mime,
+			content: content,
 			events: events.exports,
 			Iterable: Iterable,
 			fp: fp,
@@ -718,17 +759,77 @@
 			TODO: TODO,
 			Events: Events,
 			threads: threads,
-			mime: mime,
-			scripts: scripts.api
+			loader: void(0),
+			scripts: {
+				Code: code.api.Code,
+				Compiler: code.api.Compiler,
+				compiler: void(0)
+				//api.code.runtime.compiler.compile
+			}
 		};
 
-		$export({
-			scripts: {
-				platform: scripts.platform,
-				internal: scripts.internal
-			},
-			exports: $exports
-		});
+		var runtime = code.internal.runtime($exports);
+
+		var loader = function() {
+			/** @type { slime.runtime.internal.loader.Script } */
+			var scoped = script("loaders.js");
+
+			return scoped({
+				Executor: code.internal.Executor,
+				methods: runtime.internal.methods,
+				$api: {
+					content: content,
+					mime: mime,
+					Function: Object.assign(functions.Function, _Function),
+					fp: fp
+				},
+				createScriptScope: code.internal.createScriptScope
+			})
+		};
+
+		$exports.loader = $exports.Object.compose(
+			loader(),
+			{
+				old: (
+					function() {
+						/** @type { slime.runtime.internal.old_loaders.Script } */
+						var exports = script("old-loaders.js");
+
+						var oldLoaders = exports({
+							$api: $exports,
+							createScriptScope: code.internal.createScriptScope,
+							toExportScope: code.internal.old.toExportScope,
+							methods: runtime.internal.methods
+						});
+
+						return {
+							/** @type { slime.$api.loader.old.Exports["run"] } */
+							run: function(code,scope,target) {
+								return runtime.internal.methods.run.call(target,oldLoaders.Code.from.Resource(code),scope);
+							},
+							/** @type { slime.$api.loader.old.Exports["file"] } */
+							file: function(code,context,target) {
+								return runtime.internal.methods.old.file.call(target,oldLoaders.Code.from.Resource(code),context);
+							},
+							/** @type { slime.$api.loader.old.Exports["value"] } */
+							value: function(code,scope,target) {
+								return runtime.internal.methods.old.value.call(target,oldLoaders.Code.from.Resource(code),scope);
+							},
+							Resource: oldLoaders.Resource,
+							old: {
+								Loader: Object.assign(oldLoaders.constructor, oldLoaders.api, { constructor: null }),
+								loader: oldLoaders.api
+							}
+						}
+					}
+				)()
+			}
+		);
+
+
+		$exports.scripts.compiler = runtime.compiler;
+
+		$export($exports);
 	}
 //@ts-ignore
-)($engine,$slime,Packages,$export)
+)($context,$export)

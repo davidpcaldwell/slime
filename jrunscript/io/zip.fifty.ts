@@ -17,10 +17,10 @@ namespace slime.jrunscript.io.zip {
 		export const readToString = (function(fifty: slime.fifty.test.Kit) {
 			const $api = fifty.global.$api as slime.$api.jrunscript.Global;
 			return function(file: archive.File<Entry>): string {
-				return file.content.content.string.simple($api.jrunscript.io.Charset.default);
+				return file.content.read.string.simple($api.jrunscript.io.Charset.default);
 			};
 		//@ts-ignore
-		})($fifty)
+		})($fifty);
 	}
 
 	(
@@ -145,5 +145,5 @@ namespace slime.jrunscript.io.zip {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

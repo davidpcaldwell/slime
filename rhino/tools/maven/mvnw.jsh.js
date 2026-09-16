@@ -62,7 +62,7 @@
 						)
 					);
 
-					var jdk = jsh.shell.java.Jdk.from.javaHome();
+					var jdk = jsh.shell.java.Jdk.from.javaHome;
 
 					if (p.options.archetype) {
 						jsh.shell.console("Generating project from archetype ...");
@@ -93,7 +93,7 @@
 						var contents = $api.fp.now(
 							tmp,
 							jsh.file.Location.from.os,
-							jsh.file.Location.directory.list.stream.simple(),
+							jsh.file.Location.directory.list.stream().simple,
 							$api.fp.Stream.collect
 						);
 						//	TODO	unreachable

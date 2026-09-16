@@ -97,8 +97,8 @@
 
 								return Object.assign(
 									{},
-									runtime.old.loader,
-									runtime.loader,
+									runtime.$api.loader.old.old.loader,
+									runtime.$api.loader,
 									{
 										getLoaderScript: function(/** @type { string }*/path) {
 											return new $slime.Resource({
@@ -168,7 +168,7 @@
 				function(jsh) {
 					/** @type { slime.jsh.internal.loader.plugins.Export } */
 					var exported;
-					$slime.run(
+					$slime.$api.loader.old.run(
 						$slime.loader.getLoaderScript("plugins.js"),
 						{
 							$slime: $slime,
@@ -202,7 +202,7 @@
 					var isFile = function(from) { return Boolean(from && from.pathname && from.pathname.file); };
 					/** @type { (from: any) => from is slime.runtime.loader.Synchronous } */
 					var isSynchronousLoader = function(from) { return Boolean(from.get) && Boolean(from.code); };
-					/** @type { (from: any) => from is slime.old.Loader } */
+					/** @type { (from: any) => from is slime.loader.old.Loader } */
 					var isOldLoader = function(from) { return Boolean(from.get) && !Boolean(from.code); };
 
 					/**
@@ -304,18 +304,18 @@
 						run: function(code,scope,target) {
 							//	TODO	untested
 							if (isNode(code)) code = code.pathname;
-							return $slime.run(getCode(code),scope,target);
+							return $slime.$api.loader.old.run(getCode(code),scope,target);
 						},
 						//	TODO	seems to be undocumented in type system, may be unused
 						value: function(code,scope,target) {
 							//	TODO	untested
 							if (isNode(code)) code = code.pathname;
-							return $slime.value(getCode(code),scope,target);
+							return $slime.$api.loader.old.value(getCode(code),scope,target);
 						},
 						file: function(code,$context) {
 							//	TODO	untested
 							if (isNode(code)) code = code.pathname;
-							return $slime.file(getCode(code),$context);
+							return $slime.$api.loader.old.file(getCode(code),$context);
 						},
 						module: function(pathname) {
 							var format = {};
@@ -380,7 +380,7 @@
 													return rv;
 												})(),
 												new JavaAdapter(
-													Packages.inonit.script.jsh.Shell.Event.Listener,
+													Packages.inonit.script.jsh.Worker.Event.Listener,
 													{
 														on: function(e) {
 															p.onmessage(
@@ -415,7 +415,7 @@
 									onmessage: function(f) {
 										$jsh.onMessage(
 											new JavaAdapter(
-												Packages.inonit.script.jsh.Shell.Event.Listener,
+												Packages.inonit.script.jsh.Worker.Event.Listener,
 												{
 													on: function(event) {
 														//Packages.java.lang.System.err.println("Worker script onmessage got " + event);
@@ -521,7 +521,7 @@
 			//			$slime
 
 			if ($slime.getSystemProperties().get("inonit.tools.Profiler.args")) {
-				$slime.run($slime.loader.getLoaderScript("profiler.js"), {
+				$slime.$api.loader.old.run($slime.loader.getLoaderScript("profiler.js"), {
 					jsh: this,
 					_properties: $slime.getSystemProperties()
 				});

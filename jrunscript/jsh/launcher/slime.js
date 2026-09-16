@@ -37,10 +37,10 @@
 
 		//	TODO	not sure this makes any sense at all; why are we replacing the classpath from which Rhino can be loaded in this
 		//			circumstance? How is this used?
-		if (Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath")) {
+		if ($$api.properties.get("jsh.engine.rhino.classpath")) {
 			//	TODO	hard-coded assumption that this is file
 			$$api.engine.rhino.classpath = function() {
-				return new Packages.java.io.File(Packages.java.lang.System.getProperty("jsh.engine.rhino.classpath"))
+				return new Packages.java.io.File($$api.properties.get("jsh.engine.rhino.classpath"))
 			};
 		}
 
@@ -189,6 +189,7 @@
 					return complete(rv);
 				}
 			};
+
 			if (was && was.built) {
 				rv.launcher = new function() {
 					this.getClasses = function() {
@@ -241,9 +242,9 @@
 			}
 
 			rv.settings = (function() {
-				/** @typedef { { launcher: boolean, loader: boolean, loaderVmArguments?: (value: string) => string[] } } Definition */
+				/** @typedef { slime.jsh.internal.launcher.settings.Definition } Definition */
 
-				/** @typedef { { set: (value: string) => void, default: (f: () => string) => void, get: () => string, loaderVmArguments: () => string[], getLoaderProperty: () => string } } Setting */
+				/** @typedef { slime.jsh.internal.launcher.settings.Setting } Setting */
 
 				/** @type { Record<string, Setting> } */
 				var all = {};
@@ -257,8 +258,8 @@
 				 * @returns The string value of the setting, or `null` if the setting was not explicitly provided.
 				 */
 				var explicit = function(name) {
-					if (Packages.java.lang.System.getProperty(name) !== null) {
-						return String(Packages.java.lang.System.getProperty(name));
+					if ($$api.properties.get(name) !== null) {
+						return $$api.properties.get(name);
 					}
 					var ename = name.replace(/\./g, "_").toUpperCase();
 					if (Packages.java.lang.System.getenv(ename) !== null) {
@@ -268,9 +269,12 @@
 				};
 
 				/**
+				 * Defines a named setting intended to be set by SLIME invocations. These settings can be set either via a named
+				 * Java property passed to the launcher, like `foo.bar.baz`, or by a corresponding environment variable, like
+				 * `FOO_BAR_BAZ`.
+				 *
 				 * @param { string } name
 				 * @param { Definition } definition
-				 * @returns { Setting }
 				 */
 				var Setting = function(name,definition) {
 					/** @type { string } */
@@ -305,7 +309,7 @@
 						default: function(f) {
 							getDefault = f;
 						},
-						get: function() {
+						getLauncherProperty: function() {
 							if (definition.launcher) return get();
 							return void(0);
 						},
@@ -322,22 +326,28 @@
 					};
 
 					all[name] = rv;
-
-					return rv;
 				};
 
 				var LAUNCHER = {
 					launcher: true,
 					loader: false
 				};
+
 				var LOADER = {
 					launcher: false,
 					loader: true,
 				};
+
 				var BOTH = {
 					launcher: true,
 					loader: true
 				};
+
+				/**
+				 *
+				 * @param { (value: string) => string[] } f
+				 * @returns { Definition }
+				 */
 				var LOADER_VM = function(f) {
 					return {
 						launcher: false,
@@ -347,7 +357,7 @@
 						},
 						loader: false
 					}
-				}
+				};
 
 				//	TODO	audit all environment variables and properties accessed in launcher and loader
 
@@ -457,45 +467,18 @@
 				//			possibly unused
 				Setting("jsh.github.api.protocol", LOADER);
 
-				/**
-				 * @type { slime.jsh.internal.launcher.Slime["settings"]["set"] }
-				 */
-				var set = function(name,value) {
-					all[name].set(value);
-				}
-
-				/**
-				 * @type { slime.jsh.internal.launcher.Slime["settings"]["default"] }
-				 */
-				var setDefault = function(name,value) {
-					if (typeof(value) == "undefined") return;
-					/** @type { () => string } */
-					var getValue;
-					if (typeof(value) != "function") {
-						getValue = (function(rv) {
-							return function() {
-								return rv;
-							}
-						})(value);
-					} else {
-						getValue = value;
-					}
-					if (!all[name]) throw new Error("Cannot set default for " + name);
-					all[name].default(getValue);
-				};
-
 				//	If SLIME source location not specified, and we can determine it, supply it to the shell
-				if (rv.src) setDefault("jsh.shell.src", String(rv.src));
+				if (rv.src) all["jsh.shell.src"].default(function() { return String(rv.src); });
 
-				/**
-				 * @type { slime.jsh.internal.launcher.Slime["settings"]["get"] }
-				 */
-				var get = function(name) {
-					if (!all[name]) {
-						throw new Error("Cannot read: " + name);
-					}
-					return all[name].get();
-				}
+				// /**
+				//  * @type { slime.jsh.internal.launcher.Slime["settings"]["getLauncherProperty"] }
+				//  */
+				// var get = function(name) {
+				// 	if (!all[name]) {
+				// 		throw new Error("Cannot read: " + name);
+				// 	}
+				// 	return all[name].getLauncherProperty();
+				// }
 
 				//	Added to VM arguments for loader VM
 				/**
@@ -530,12 +513,14 @@
 						command.vm(arg);
 					});
 					sendPropertiesTo(command);
-				}
+				};
 
 				return {
-					set: set,
-					default: setDefault,
-					get: get,
+					byName: function(name) {
+						var rv = all[name];
+						if (!rv) throw new Error("No setting: " + name);
+						return rv;
+					},
 					sendPropertiesTo: sendPropertiesTo,
 					applyTo: applyTo
 				};

@@ -225,7 +225,7 @@ namespace slime.jrunscript.tools.install.deprecated {
 
 	export type install = (
 		p: slime.jrunscript.tools.install.old.Installation,
-		events: slime.$api.event.Emitter<{ console: string }>
+		events: slime.$api.event.Producer<{ console: string }>
 	) => slime.jrunscript.file.Directory
 
 	export namespace test {
@@ -373,5 +373,5 @@ namespace slime.jrunscript.tools.install.deprecated {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

@@ -56,27 +56,35 @@
 		var object = new jsh.unit.Suite(suite);
 
 		var seq = 0;
-		var apiHtml = jsh.loader.module(jsh.script.file.parent.parent.getRelativePath("api.html.js"), {
-			test: true,
-			api: {
-				assign: Object.assign
-			},
-			Verify: jsh.unit.Verify,
-			run: function(code,scope) {
-				if (typeof(code) == "string") {
-					//	TODO	move this processing inside the jsh loader (or rhino loader?) so that it can be invoked with name/string
-					//			properties. This code, after being moved to jsh loader, can then invoke rhino loader with name/_in
-					//			created below then we would invoke jsh loader here with code = { name: ..., string: code }
-					//	TODO	it seems likely a more useful name could be used here, perhaps using name of file plus jsapi:id path
-					code = {
-						name: "<eval>:" + String(++seq),
-						type: "application/javascript",
-						string: code
+		var apiHtml = (
+			function() {
+				var $loader = new jsh.file.Loader({ directory: jsh.script.file.parent.parent });
+				/** @type { slime.definition.api_html.Script } */
+				var script = $loader.script("api.html.js");
+				return script({
+					test: true,
+					api: {
+						assign: Object.assign
+					},
+					Verify: jsh.unit.Verify,
+					run: function(code,scope) {
+						if (typeof(code) == "string") {
+							//	TODO	move this processing inside the jsh loader (or rhino loader?) so that it can be invoked with name/string
+							//			properties. This code, after being moved to jsh loader, can then invoke rhino loader with name/_in
+							//			created below then we would invoke jsh loader here with code = { name: ..., string: code }
+							//	TODO	it seems likely a more useful name could be used here, perhaps using name of file plus jsapi:id path
+							code = {
+								name: "<eval>:" + String(++seq),
+								type: "application/javascript",
+								string: code
+							}
+						}
+						jsh.loader.run(code,scope);
 					}
-				}
-				jsh.loader.run(code,scope);
+
+				})
 			}
-		});
+		)();
 
 		var html = jsh.loader.file(jsh.script.file.parent.parent.parent.parent.getRelativePath("loader/api/old/jsh/html.js"), {
 			html: apiHtml,

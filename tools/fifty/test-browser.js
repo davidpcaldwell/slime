@@ -85,16 +85,16 @@
 				start: function(scope, name) {
 					scope.children[0].innerHTML = name;
 				},
-				test: function(scope, message, result) {
+				test: function(/** @type { HTMLElement } */scope, /** @type { string } */message, /** @type { boolean } */result) {
 					var test = templates.test();
 					test.children[0].innerHTML = "";
 					test.children[0].appendChild(document.createTextNode(message));
 					addHtmlClass(test, getHtmlClass(result));
 					scope.children[1].appendChild(test);
 				},
-				end: function(scope, name, result) {
+				end: function(scope, name, result, /** @type { number } */elapsed) {
 					scope.children[2].innerHTML = "";
-					scope.children[2].appendChild(document.createTextNode(name));
+					scope.children[2].appendChild(document.createTextNode(name + " (" + elapsed + " ms)"));
 					addHtmlClass(scope, getHtmlClass(result));
 				}
 			}
@@ -109,7 +109,7 @@
 				document.body.appendChild(top);
 				scopes.start(top, "foo");
 				scopes.test(top, "foo is foo", true);
-				scopes.end(top, "bar", true);
+				scopes.end(top, "bar", true, 123);
 				return;
 			}
 
@@ -117,18 +117,18 @@
 				/**
 				 *
 				 * @param { any } delegate
-				 * @returns { slime.fifty.test.internal.Listener }
+				 * @returns { slime.fifty.internal.test.Listener }
 				 */
 				function(delegate) {
 					var depth = function(scope) {
-						return (scope) ? scope.depth() + 1 : 0;
+						return (scope.depth) ? scope.depth() + 1 : 0;
 					};
 
 					/** @type { HTMLElement } */
 					var target;
 
 					return {
-						start: function(scope, name) {
+						start: function(e) {
 							if (!target) {
 								target = templates.scope();
 								document.body.appendChild(target);
@@ -137,17 +137,17 @@
 								target = templates.scope();
 								parent.children[1].appendChild(target);
 							}
-							scopes.start(target, name);
-							delegate.log("START", depth(scope), name);
+							scopes.start(target, e.detail.name);
+							delegate.log("START", depth(e.source), e.detail.name);
 						},
-						end: function(scope, name, result) {
-							scopes.end(target, name, result);
+						end: function(e) {
+							scopes.end(target, e.detail.name, e.detail.result, e.detail.elapsed);
 							target = target.parentElement.parentElement;
-							delegate.log("END", depth(scope), name, result);
+							delegate.log("END", depth(e.source), e.detail.name, e.detail.result);
 						},
-						test: function(scope, message, result) {
-							scopes.test(target, message, result);
-							delegate.log("TEST", depth(scope), message);
+						test: function(e) {
+							scopes.test(target, e.detail.message, e.detail.success);
+							delegate.log("TEST", depth(e.source), e.detail.message);
 						}
 					}
 				}
@@ -162,7 +162,7 @@
 				var fiftyLoader = new inonit.loader.Loader(inonit.loader.Base.page.url);
 
 				var code = {
-					/** @type { slime.fifty.test.internal.test.Script } */
+					/** @type { slime.fifty.internal.test.Script } */
 					test: fiftyLoader.script("test.js")
 				}
 
@@ -171,7 +171,6 @@
 						Verify: verify
 					},
 					promises: promises,
-					console: console,
 					window: {
 						global: window
 					}
@@ -193,10 +192,13 @@
 				);
 
 				return implementation.run({
-					loader: loader,
-					scopes: {},
-					path: path.file,
-					part: part
+					file: {
+						loader: loader,
+						path: path.file
+					},
+					environment: {},
+					part: part,
+					console: console
 				});
 			};
 
@@ -209,6 +211,7 @@
 					return rv;
 				} catch (e) {
 					window.alert(e);
+					window.console.error(e);
 					return Promise.resolve(false);
 				}
 			})();

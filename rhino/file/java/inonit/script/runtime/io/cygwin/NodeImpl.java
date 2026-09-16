@@ -199,7 +199,9 @@ class NodeImpl extends Filesystem.Node {
 		}
 	}
 
-	public void delete() throws IOException {
+	public boolean delete(DeleteEvents events) throws IOException {
+		//	TODO	probably none of this works
+		if (Integer.parseInt("1") == 1) throw new RuntimeException();
 		if (!exists()) {
 			throw new IOException("Does not exist: " + this);
 		} else {
@@ -210,7 +212,9 @@ class NodeImpl extends Filesystem.Node {
 				throw new IOException(e);
 			} catch (Command.Result.Failure e) {
 				process(e.getResult());
+				return false;
 			}
+			return true;
 		}
 	}
 
@@ -273,5 +277,10 @@ class NodeImpl extends Filesystem.Node {
 	//	forget the cached information) in anticipation of the data changing. If caching were eliminated, could get rid of this.
 	public void invalidate() {
 		uncache();
+	}
+
+	@Override
+	public boolean isSymlink() throws IOException {
+		throw new UnsupportedOperationException("Unimplemented method 'isSymlink'");
 	}
 }

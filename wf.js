@@ -11,21 +11,21 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.wf.cli.Context } $context
-	 * @param { slime.Loader } $loader
-	 * @param { slime.project.wf.Interface } $exports
+	 * @param { slime.runtime.loader.Store } $loader
+	 * @param { Omit<slime.project.wf.Interface,"test"> & { test: { jrunscript: any } } } $exports
 	 */
 	function(Packages,$api,jsh,$context,$loader,$exports) {
-		var $$api = {
-			Function: {
-				switch: function() {
-					var patterns = arguments;
-					return function() {
-						for (var i=0; i<patterns.length; i++) {
-							if (patterns[i].case.apply(this,arguments)) return patterns[i].use.apply(this,arguments);
-						}
-					}
-				}
-			}
+		/**
+		 *
+		 * @param { any } commands
+		 * @param { string } path
+		 * @param { slime.jsh.script.cli.CommandMetadata } metadata
+		 */
+		function document(commands,path,metadata) {
+			var target = path.split(".").reduce(function(o,name) {
+				return (o) ? o[name] : void(0);
+			}, commands);
+			if (typeof(target) == "function") jsh.script.cli.defineCommand(target, metadata);
 		}
 
 		function synchronizeEclipseSettings() {
@@ -184,6 +184,17 @@
 					|| jsh.shell.environment.SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT
 				;
 
+				if (jsh.shell.environment.GITHUB_ACTIONS && jsh.shell.environment.SLIME_WF_BASH_DEBUG) {
+					jsh.shell.console(
+						"CI DEBUG wf env: SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT="
+						+ jsh.shell.environment.SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT
+					);
+					jsh.shell.console(
+						"CI DEBUG wf computed skipGitIdentityRequirement="
+						+ skipGitIdentityRequirement
+					);
+				}
+
 				if (!skipGitIdentityRequirement) {
 					var gitIdentityProvider = (p && p.arguments[0] == "--test-git-identity-requirement") ? void(0) : jsh.wf.inputs.gitIdentityProvider.gui;
 
@@ -215,12 +226,11 @@
 				(
 					function node() {
 						var installation = jsh.shell.tools.node.installation;
+						var globalModules = jsh.shell.tools.node.Installation.modules(installation);
 
 						(
 							function core() {
-								var getVersion = $api.fp.world.Sensor.old.mapping({
-									sensor: jsh.shell.tools.node.Installation.getVersion
-								});
+								var getVersion = jsh.shell.tools.node.Installation.getVersion.simple;
 
 								$api.fp.world.now.tell(jsh.shell.tools.node.require.action, {
 									found: function(e) {
@@ -253,7 +263,7 @@
 								});
 
 								$api.fp.world.Action.now({
-									action: modules.require({ name: "@eslint/js" }),
+									action: modules.require({ name: "@eslint/js", version: "9.13.0" }),
 									handlers: {
 										installed: function(e) {
 											jsh.shell.console("Installed @eslint/js " + e.detail.version);
@@ -275,7 +285,7 @@
 						(
 							function jsyaml() {
 								$api.fp.world.Action.now({
-									action: jsh.shell.tools.node.Installation.modules(installation).require({ name: "@types/js-yaml" }),
+									action: globalModules.require({ name: "@types/js-yaml" }),
 									handlers: {
 										installed: function(e) {
 											jsh.shell.console("Installed @types/js-yaml " + e.detail.version);
@@ -287,7 +297,7 @@
 						(
 							function github() {
 								$api.fp.world.Action.now({
-									action: jsh.shell.tools.node.Installation.modules(installation).require({ name: "@octokit/types" }),
+									action: globalModules.require({ name: "@octokit/types" }),
 									handlers: {
 										installed: function(e) {
 											jsh.shell.console("Installed @octokit/types " + e.detail.version);
@@ -328,10 +338,10 @@
 						$api.fp.pipe(
 							jsh.file.Location.directory.relativePath("bin"),
 							function(bin) {
-								var exists = $api.fp.world.now.question(jsh.file.Location.directory.exists.world(), bin);
+								var exists = $api.fp.world.now.question(jsh.file.Location.directory.exists.wo, bin);
 								if (exists) {
 									$api.fp.world.now.action(
-										jsh.file.Location.directory.remove.world(),
+										jsh.file.Location.directory.remove.wo,
 										bin
 									);
 								}
@@ -404,98 +414,41 @@
 			return success;
 		};
 
-		/**
-		 * Runs the test suite, first installing Java, and Rhino.
-		 *
-		 * If the `docker` property is specified, the Selenium driver is installed and the docker flag is passed through to the
-		 * test suite to specify running the tests configured for the Docker environment.
-		 *
-		 * Exits the VM with exit status 1 on failure; otherwise, returns `true`.
-		 *
-		 * @param { { docker?: boolean } } [p]
-		 * @returns { slime.jsh.wf.Test }
-		 */
-		var test = function(p) {
-			if (!p) p = {};
-			return function(events) {
-				//	This invocation will install the JDK if necessary, and then ensure the version of Rhino is the correct one for
-				//	that JDK
-				jsh.shell.run({
-					command: "bash",
-					arguments: [
-						$context.base.getRelativePath("jsh"),
-						$context.base.getRelativePath("jrunscript/jsh/tools/install/rhino.jsh.js"),
-						"--replace"
-					]
-				});
-
-				//	Inserted to try to deal with issue #896. May not be needed; TypeScript may be installed when needed anyway. But with
-				//	tsc blipping in and out of existence, it seemed prudent to try simplifying the TypeScript life cycle.
-				jsh.wf.typescript.require();
-
-				var result = $api.fp.world.now.question(
-					jsh.shell.subprocess.question,
-					{
-						command: "bash",
-						arguments: $api.Array.build(function(rv) {
-							rv.push(jsh.shell.jsh.src.getFile("jsh").toString());
-							rv.push($context.base.getRelativePath("contributor/suite.jsh.js"));
-							if (p.docker) rv.push("-docker");
-							if (jsh.shell.environment.JSH_TEST_ISSUE317) rv.push("-issue317");
-						})
-					},
-					{
-						stdout: function(e) {
-							events.fire("output", e.detail.line);
-						},
-						stderr: function(e) {
-							events.fire("console", e.detail.line);
-						}
-					}
-				)
-				if (result.status != 0) {
-					jsh.shell.console("Failing because tests failed.");
-				}
-				return result.status == 0;
-			}
-		};
-
 		var project = (
 			/**
 			 *
 			 * @returns { slime.jsh.wf.standard.Project }
 			 */
 			function() {
-				/** @type { slime.jsh.wf.Precommit } */
-				var precommit = $api.fp.world.old.ask(function(events) {
-					var success = true;
-
-					var trunk = getTrunk();
-					var repository = jsh.tools.git.oo.Repository({ directory: $context.base });
-					var branch = repository.status().branch.name;
-					if (branch == trunk) {
-						events.fire("console", "Cannot commit directly to " + trunk);
-						success = false;
-					}
-
-					success = success && jsh.wf.checks.precommit({
-						lint: lint
-					})({
-						console: function(e) {
-							events.fire("console", e.detail);
-						}
-					});
-
-					return success;
-				});
-
 				return {
 					lint: {
 						check: lint,
 						fix: jsh.wf.checks.lint().fix
 					},
-					test: test({ docker: false }),
-					precommit: precommit
+					precommit: function(events) {
+						var success = true;
+
+						var trunk = getTrunk();
+						var repository = jsh.tools.git.oo.Repository({ directory: $context.base });
+						var branch = repository.status().branch.name;
+						if (branch == trunk) {
+							events.fire("console", "Cannot commit directly to " + trunk);
+							success = false;
+						}
+
+						var checks = $api.fp.now(
+							jsh.wf.checks.precommit({ lint: lint }),
+							$api.fp.world.Question.thunk({
+								console: function(e) {
+									jsh.shell.console(e.detail);
+								}
+							})
+						);
+
+						success = success && checks();
+
+						return success;
+					}
 				}
 			}
 		)();
@@ -503,45 +456,97 @@
 		jsh.wf.project.initialize(
 			$context,
 			project,
+			//	This object ends up having a test.jrunscript property, which $exports does not expect. Can think about better ways
+			//	to fix this, but this seems fine for now.
+			//@ts-ignore
 			$exports
 		);
 
 		$exports.check = $api.fp.pipe(
-			jsh.script.cli.option.boolean({ longname: "docker" }),
 			function(p) {
-				jsh.shell.console("Linting ...");
-				var lintingPassed = $api.fp.world.now.ask(lint, {
+				var lint = $api.fp.now(project.lint.check, $api.fp.world.Question.thunk({
 					console: function(e) {
 						jsh.shell.console(e.detail);
 					}
-				});
-				if (!lintingPassed) {
-					jsh.shell.console("Linting failed.");
-					return 1;
-				}
-				jsh.shell.console("Running TypeScript compiler ...");
-				jsh.wf.checks.tsc();
-				jsh.shell.console("Running tests ...");
-				var testsPassed = $api.fp.world.now.ask(
-					test({
-						docker: p.options.docker
-					}),
-					{
+				}));
+
+				var tsc = $api.fp.now(jsh.wf.checks.tsc(), $api.fp.world.Question.thunk({
+					console: function(e) {
+						jsh.shell.console(e.detail);
+					}
+				}));
+
+				return lint() && tsc();
+			},
+			function(result) {
+				return (result) ? 0 : 1;
+			}
+		);
+
+		$exports.test = {
+			jrunscript: function() {
+				/**
+				 * Runs the test suite, first installing Java, and Rhino.
+				 *
+				 * @type { slime.jsh.wf.Test }
+				 */
+				var test_jrunscript = function(events) {
+					//	This invocation will install the JDK if necessary, and then ensure the version of Rhino is the correct one for
+					//	that JDK
+					jsh.shell.run({
+						command: "bash",
+						arguments: [
+							$context.base.getRelativePath("jsh"),
+							$context.base.getRelativePath("jrunscript/jsh/tools/install/rhino.jsh.js"),
+							"--replace"
+						]
+					});
+
+					//	Inserted to try to deal with issue #896. May not be needed; TypeScript may be installed when needed anyway. But with
+					//	tsc blipping in and out of existence, it seemed prudent to try simplifying the TypeScript life cycle.
+					jsh.wf.typescript.require();
+
+					var result = $api.fp.world.now.question(
+						jsh.shell.subprocess.question,
+						{
+							command: "bash",
+							arguments: $api.Array.build(function(rv) {
+								rv.push(jsh.shell.jsh.src.getFile("jsh").toString());
+								rv.push($context.base.getRelativePath("contributor/jrunscript.jsh.js"));
+							})
+						},
+						{
+							stdout: function(e) {
+								events.fire("output", e.detail.line);
+							},
+							stderr: function(e) {
+								events.fire("console", e.detail.line);
+							}
+						}
+					)
+					if (result.status != 0) {
+						jsh.shell.console("Failing because tests failed.");
+					}
+					return result.status == 0;
+				};
+
+				var success = $api.fp.now(
+					test_jrunscript,
+					$api.fp.world.Question.thunk({
 						console: function(e) {
 							jsh.shell.console(e.detail);
 						},
 						output: function(e) {
 							jsh.shell.echo(e.detail);
 						}
-					}
+					}),
+					$api.fp.Thunk.force
 				);
-				if (!testsPassed) {
-					jsh.shell.console("Tests failed.");
-					return 1;
-				}
-				jsh.shell.console("Passed.");
+
+				if (!success) jsh.shell.console("jrunscript tests failed.");
+				return (success) ? 0 : 1;
 			}
-		);
+		}
 
 		if (jsh.tools.git.oo.Repository) {
 			(
@@ -775,176 +780,58 @@
 			}
 		)();
 
+		document($exports, "initialize", {
+			category: "Project",
+			summary: "Initializes this SLIME checkout for development."
+		});
+		document($exports, "vscode.java.refresh", {
+			category: "Development",
+			summary: "Removes generated Java project files and prints VSCode refresh instructions."
+		});
+		document($exports, "check", {
+			category: "Checks",
+			summary: "Runs linting and TypeScript checks."
+		});
+		document($exports, "test.jrunscript", {
+			category: "Checks",
+			summary: "Runs the jrunscript test suite."
+		});
+		document($exports, "git.branch", {
+			category: "Git",
+			summary: "Creates and checks out a new branch based on origin trunk.",
+			args: "<branch>"
+		});
+		document($exports, "git.trunk", {
+			category: "Git",
+			summary: "Checks out the trunk branch and prunes merged branches."
+		});
+		document($exports, "git.branches.list", {
+			category: "Git",
+			summary: "Lists branch merge status and fast-forwards when safe."
+		});
+		document($exports, "git.branches.prune", {
+			category: "Git",
+			summary: "Prunes branches that have been merged to trunk."
+		});
+		document($exports, "precommit", {
+			category: "Checks",
+			summary: "Runs SLIME pre-commit checks."
+		});
+		document($exports, "merge", {
+			category: "Git",
+			summary: "Merges the named branch without committing.",
+			args: "<branch>"
+		});
+		document($exports, "docker.fifty", {
+			category: "Docker",
+			summary: "Runs Fifty in the Docker development environment."
+		});
+		document($exports, "docker.run", {
+			category: "Docker",
+			summary: "Runs a Docker Compose service command."
+		});
+
 		//	TODO	implement generation of git hooks so that we can get rid of separate pre-commit implementation
-
-		//	TODO	figure out whether there is anything to be harvested from the below or whether it can simply be removed
-		if (false) $exports.commit = $api.fp.pipe(
-			/**
-			 *
-			 * @param { slime.jsh.script.cli.Invocation<slime.jsh.wf.standard.Options & { message: string }> } p
-			 */
-			function(p) {
-				var rv = {
-					options: $api.Object.compose(p.options),
-					arguments: []
-				};
-				for (var i=0; i<p.arguments.length; i++) {
-					if (p.arguments[i] == "--message") {
-						rv.options.message = p.arguments[++i];
-					} else {
-						rv.arguments.push(p.arguments[i]);
-					}
-				}
-				return rv;
-			},
-			function(p) {
-				if (!p.options.message) {
-					jsh.shell.console("Required: commit message (-m <message>).");
-					jsh.shell.exit(1);
-				}
-				var repository = jsh.tools.git.oo.Repository({ directory: $context.base });
-
-				jsh.wf.requireGitIdentity({
-					repository: repository,
-					get: jsh.wf.requireGitIdentity.get.gui
-				});
-
-				jsh.wf.prohibitUntrackedFiles({
-					repository: repository
-				}, {
-					untracked: function(e) {
-						jsh.shell.console("Untracked files are present; aborting:");
-						jsh.shell.console(e.detail.join("\n"));
-						jsh.shell.exit(1);
-					}
-				});
-
-				//	Below was replaced by new linting API
-				//noTrailingWhitespace();
-
-				jsh.shell.jsh({
-					shell: jsh.shell.jsh.src,
-					script: $context.base.getFile("contributor/eslint.jsh.js"),
-					stdio: {
-						output: null
-					},
-					evaluate: function(result) {
-						if (result.status) {
-							jsh.shell.console("ESLint status: " + result.status + "; failing.");
-							jsh.shell.exit(result.status);
-						} else {
-							jsh.shell.console("ESLint passed.");
-						}
-					}
-				});
-
-				jsh.wf.typescript.tsc();
-
-				//	Runs test suite
-				var timestamp = jsh.time.When.now();
-				var logs = $context.base.getRelativePath("local/wf/logs/commit").createDirectory({
-					recursive: true,
-					exists: function(dir) { return false; }
-				}).getRelativePath(timestamp.local().format("yyyy.mm.dd.HR.mi.sc")).createDirectory();
-				var stdio = {
-					output: logs.getRelativePath("stdout.txt").write(jsh.io.Streams.text),
-					error: logs.getRelativePath("stderr.txt").write(jsh.io.Streams.text)
-				};
-				jsh.shell.run({
-					command: $context.base.getRelativePath("jsh.bash"),
-					arguments: [
-						"--install-jdk"
-					]
-				});
-				jsh.shell.run({
-					command: $context.base.getRelativePath("jsh.bash"),
-					arguments: [
-						$context.base.getRelativePath("jsh/tools/install/rhino.jsh.js"),
-						"--replace"
-					]
-				});
-				jsh.shell.console("Running tests with output to " + logs + " ...");
-				var invocation = {
-					command: jsh.shell.jsh.src.getFile("jsh.bash"),
-					arguments: [
-						$context.base.getFile("contributor/suite.jsh.js")
-					],
-					stdio: {
-						output: {
-							line: function(line) {
-								stdio.output.write(line + "\n");
-							}
-						},
-						error: {
-							line: function(line) {
-								stdio.error.write(line + "\n");
-							}
-						}
-					},
-					evaluate: function(result) {
-						if (result.status != 0) {
-							jsh.shell.console("Failing because tests failed.");
-							jsh.shell.console("Output directory: " + logs);
-							jsh.shell.exit(1);
-						} else {
-							jsh.shell.console("Tests passed.");
-						}
-					}
-				};
-				jsh.shell.run(invocation);
-
-				repository.commit({
-					all: true,
-					noVerify: true,
-					message: p.options.message
-				});
-				jsh.shell.console("Committed changes to " + repository.directory);
-				//	TODO	add conditional push; see issue #166
-			}
-		)
-
-		/** @type { (p: slime.jrunscript.file.Directory) => void } */
-		var deleteContents = $api.fp.pipe(
-			function(dir) { return dir.pathname.toString() },
-			jsh.file.state.list,
-			function(f) {
-				return f();
-			},
-			$api.fp.Array.map($api.fp.property("absolute")),
-			$api.fp.Array.map(jsh.file.action.delete),
-			function(p) {
-				p.forEach(function(deletion) {
-					deletion({
-						deleted: function(e) {
-							jsh.shell.console("Deleted: " + e.detail);
-						}
-					})
-				})
-			}
-		)
-
-		/** @type { (p: string) => void } */
-		var deleteIfExists = $$api.Function.switch(
-			{
-				case: function(p) {
-					return Boolean($context.base.getSubdirectory(p));
-				},
-				use: function(p) {
-					deleteContents($context.base.getSubdirectory(p));
-				}
-			},
-			{
-				case: $api.fp.returning(true),
-				use: function(p) {
-					jsh.shell.console("Not found: " + $context.base.getRelativePath(p));
-				}
-			}
-		)
-
-		$exports.purge = function(p) {
-			deleteIfExists("local/wf/logs/commit");
-			deleteIfExists("local/wf/logs/test");
-		}
 	}
 //@ts-ignore
 )(Packages,$api,jsh,$context,$loader,$exports);

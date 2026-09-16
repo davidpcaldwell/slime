@@ -27,6 +27,13 @@ namespace slime.jrunscript.file {
 				parentNotFound: slime.jrunscript.file.Location
 				createdFolder: slime.jrunscript.file.Location
 			}
+
+			export interface Delete {
+				error: {
+					file: string
+					message: string
+				}
+			}
 		}
 
 		export interface Filesystem {
@@ -36,7 +43,7 @@ namespace slime.jrunscript.file {
 
 			fileExists: slime.$api.fp.world.Sensor<{
 				pathname: string
-			},void,slime.$api.fp.Maybe<boolean>>
+			},{},slime.$api.fp.Maybe<boolean>>
 
 			fileSize: slime.$api.fp.world.Sensor<{
 				pathname: string
@@ -60,8 +67,12 @@ namespace slime.jrunscript.file {
 
 			directoryExists: slime.$api.fp.world.Sensor<{
 				pathname: string
-			},void,slime.$api.fp.Maybe<boolean>>
+			},{},slime.$api.fp.Maybe<boolean>>
 
+			/**
+			 * Create a directory with the given pathname. The operation should fail if a file or directory already exists at the
+			 * given pathname, or if the parent directory does not exist.
+			 */
 			createDirectory: slime.$api.fp.world.Means<{
 				pathname: string
 			},{
@@ -75,16 +86,47 @@ namespace slime.jrunscript.file {
 			copy: slime.$api.fp.world.Means<{
 				from: string
 				to: string
-			},void>
+			},{}>
 
 			move: slime.$api.fp.world.Means<{
 				from: string
 				to: string
-			},void>
+			},{}>
 
-			remove: slime.$api.fp.world.Means<{
-				pathname: string
-			},void>
+			remove: {
+				file: slime.$api.fp.world.Sensor<
+					{
+						pathname: string
+					},
+					{
+						error: string
+					},
+					slime.$api.fp.Maybe<void>
+				>
+
+				/**
+				 * Removes an empty directory.
+				 */
+				directory: slime.$api.fp.world.Sensor<
+					{
+						pathname: string
+					},
+					{
+						error: string
+					},
+					slime.$api.fp.Maybe<void>
+				>
+			}
+
+			isSymlink: slime.$api.fp.world.Sensor<
+				{
+					pathname: string
+				},
+				{
+					error: string
+				},
+				slime.$api.fp.Maybe<boolean>
+			>
 
 			java?: {
 				codec: {
@@ -271,7 +313,7 @@ namespace slime.jrunscript.file {
 						}
 					);
 					$api.fp.world.now.tell(
-						filesystem.remove({ pathname: notFound })
+						filesystem.remove.file({ pathname: notFound })
 					);
 					var exists = $api.fp.world.now.ask(filesystem.fileExists({ pathname: notFound }));
 					verify(exists.present).is(true);

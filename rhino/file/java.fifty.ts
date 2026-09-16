@@ -65,7 +65,7 @@ namespace slime.jrunscript.file.internal.java {
 
 		/**
 		 * Creates a directory at the given location. Will throw an exception if the operation fails, for example, if the parent
-		 * does not exist.
+		 * does not exist, or if a file or directory already exists at the given location.
 		 */
 		createDirectoryAt: (peer: Peer) => void
 
@@ -77,8 +77,6 @@ namespace slime.jrunscript.file.internal.java {
 		write: {
 			binary: (peer: Peer, append: boolean) => slime.jrunscript.runtime.io.OutputStream
 		}
-
-		remove: (peer: Peer) => void
 
 		move: (peer: Peer, to: Peer) => void
 
@@ -252,7 +250,7 @@ namespace slime.jrunscript.file.internal.java {
 	//@ts-ignore
 	)(Packages,fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }
 
 namespace slime.jrunscript.file.internal.spi {
@@ -261,5 +259,5 @@ namespace slime.jrunscript.file.internal.spi {
 		getParentPath: (path: string, separator: string) => string
 	}
 
-	export type Script = slime.loader.Script<void,Exports>
+	export type Script = slime.runtime.loader.Scoped<void,Exports>
 }

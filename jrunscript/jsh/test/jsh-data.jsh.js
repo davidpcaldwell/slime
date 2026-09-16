@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { slime.$api.Global } $api
+	 * @param { slime.runtime.Exports } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(Packages,$api,jsh) {
@@ -125,7 +125,7 @@
 			}),
 			environment: jsh.shell.environment,
 			properties: properties,
-			directory: jsh.shell.process.directory.get(),
+			directory: jsh.shell.context.java.directory,
 			"shellClasspath": String(jsh.loader.java.getClass("inonit.script.jsh.Shell").getProtectionDomain().getCodeSource().getLocation().toString())
 		}, void(0), "    "));
 	}

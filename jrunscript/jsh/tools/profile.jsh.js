@@ -116,6 +116,19 @@
 					if (jsh.shell.rhino) {
 						properties["jsh.engine.rhino.classpath"] = String(jsh.shell.rhino.classpath);
 					}
+
+					var invocation = jsh.internal.bootstrap.jsh.invocation.fromSystemProperties();
+
+					for (var key in invocation.properties) {
+						properties[key] = invocation.properties[key];
+					}
+
+					var vmargs = [];
+					if (invocation.classpath.length) {
+						//	TODO	this is OS-specific; can we generalize?
+						vmargs.push("-classpath", invocation.classpath.join(":"));
+					}
+
 					if (parameters.options["profiler:property"]) {
 						var split = parameters.options["profiler:property"].split("=");
 						parameters.arguments.unshift("-D" + split[0] + "=" + split[1]);
@@ -124,12 +137,12 @@
 					if (!parameters.options["profiler:built"]) {
 						jsh.shell.jrunscript.old({
 							properties: properties,
-							arguments: [jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js"),"jsh"].concat(parameters.arguments)
+							arguments: vmargs.concat([jsh.shell.jsh.src.getRelativePath("rhino/jrunscript/api.js").toString(),"jsh"]).concat(parameters.arguments)
 						});
 					} else {
 						jsh.shell.jrunscript.old({
 							properties: properties,
-							arguments: [home.getRelativePath("jsh.js").toString()].concat(parameters.arguments)
+							arguments: vmargs.concat([home.getRelativePath("jsh.js").toString()]).concat(parameters.arguments)
 						});
 					}
 

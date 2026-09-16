@@ -209,6 +209,10 @@ install_jdk_21_corretto() {
 	install_jdk_corretto "21.0.3.9.1" $1
 }
 
+install_jdk_25_corretto() {
+	install_jdk_corretto "25.0.4.7.1" $1
+}
+
 install_jdk_8() {
 	install_jdk_8_corretto "$@"
 }
@@ -225,8 +229,12 @@ install_jdk_21() {
 	install_jdk_21_corretto "$@"
 }
 
+install_jdk_25() {
+	install_jdk_25_corretto "$@"
+}
+
 install_jdk() {
-	install_jdk_21 "$@"
+	install_jdk_25 "$@"
 }
 
 
@@ -292,7 +300,7 @@ get_jrunscript_java_major_version() {
 	#	something
 
 	#	TODO	logic duplicated in jsh/launcher/main.js; can it somehow be invoked from here? Would be a pain.
-	#	This function works with supported JDKs Amazon Corretto 8 and 11. Untested with others.
+	#	This function works with supported JDKs Amazon Corretto 8, 11, 17, 21, and 25. Untested with others.
 	JRUNSCRIPT=$1
 	JDK=$(dirname $JRUNSCRIPT)/..
 	JAVA="${JDK}/bin/java"
@@ -305,6 +313,7 @@ get_jrunscript_java_major_version() {
 			11.*) echo "11" ;;
 			17.*) echo "17" ;;
 			21.*) echo "21" ;;
+			25.*) echo "25" ;;
 			*) echo "Unknown" ;;
 		esac
 	else
@@ -313,8 +322,7 @@ get_jrunscript_java_major_version() {
 }
 
 if [ "$1" == "--install-jdk" ]; then
-	#	Default JDK remains 8 because remote shell does not yet work with JDK 11; module path issues
-	#	See jrunscript/jsh/test/remote.fifty.ts
+	#	Install the current shell default JDK into local/jdk/default.
 	install_jdk ${JSH_LOCAL_JDKS}/default
 	exit $?
 fi
@@ -336,6 +344,11 @@ fi
 
 if [ "$1" == "--install-jdk-21" ]; then
 	install_jdk_21 ${JSH_LOCAL_JDKS}/default
+	exit $?
+fi
+
+if [ "$1" == "--install-jdk-25" ]; then
+	install_jdk_25 ${JSH_LOCAL_JDKS}/default
 	exit $?
 fi
 
@@ -403,6 +416,11 @@ fi
 
 if [ "$1" == "--add-jdk-21" ]; then
 	install_jdk_21 ${JSH_LOCAL_JDKS}/21
+	exit $?
+fi
+
+if [ "$1" == "--add-jdk-25" ]; then
+	install_jdk_25 ${JSH_LOCAL_JDKS}/25
 	exit $?
 fi
 
@@ -508,7 +526,7 @@ if test -n "${JRUNSCRIPT}" && test "$0" == "bash"; then
 	fi
 fi
 
-#	Won't this install JDK 21 even for remote shells? See reference to issue #1617 above.
+#	If no usable JDK is found, install the current default for the shell.
 if [ -z "${JRUNSCRIPT}" ]; then
 	install_jdk ${JSH_LOCAL_JDKS}/default
 	JRUNSCRIPT="${JSH_LOCAL_JDKS}/default/bin/jrunscript"
@@ -517,16 +535,16 @@ fi
 #	So this is a mess. With JDK 11 and up, according to (for example) https://bugs.openjdk.java.net/browse/JDK-8210140, we need
 #	an extra argument to Nashorn (--no-deprecation-warning) to avoid emitting warnings. But this argument causes Nashorn not to
 #	be found with JDK 8. So we have to version-check the JDK to determine whether to supply the argument. This version test works
-#	with SLIME-supported Amazon Corretto JDK 8, JDK 11, JDK 17, and JDK 21, and hasn't yet been tested with anything else.
+#	with SLIME-supported Amazon Corretto JDK 8, JDK 11, JDK 17, JDK 21, and JDK 25, and hasn't yet been tested with anything else.
 #
-#	But it works with JDK 8, 11, 17, and 21, so it's better than nothing.
+#	But it works with JDK 8, 11, 17, 21, and 25, so it's better than nothing.
 JDK_MAJOR_VERSION=$(get_jrunscript_java_major_version ${JRUNSCRIPT})
-if [ "${JDK_MAJOR_VERSION}" == "11" ]; then
+if [ "${JDK_MAJOR_VERSION}" -gt 8 ] && [ "${JDK_MAJOR_VERSION}" -lt 15 ]; then
 	export JSH_NASHORN_DEPRECATION_ARGUMENT="-Dnashorn.args=--no-deprecation-warning"
 	JRUNSCRIPT="${JRUNSCRIPT} ${JSH_NASHORN_DEPRECATION_ARGUMENT}"
 fi
 
-if [ "${JDK_MAJOR_VERSION}" == "17" ] || [ "${JDK_MAJOR_VERSION}" == "21" ]; then
+if [ "${JDK_MAJOR_VERSION}" -ge 15 ]; then
 	#	Currently we know that we are not running a remote shell because we would download something other than Java 17 for that.
 	if [ ! -f "${JSH_BOOTSTRAP_NASHORN}" ]; then
 		install_nashorn
@@ -542,6 +560,41 @@ if [ "$1" == "--shell-configure" ]; then
 	export JRUNSCRIPT
 	return 0
 fi
+
+run_jrunscript() {
+	(
+		local temp_dir stderr_fifo filter_pid status
+		temp_dir="$(mktemp -d)" || exit 1
+		stderr_fifo="${temp_dir}/stderr.fifo"
+		mkfifo "${stderr_fifo}" || exit 1
+
+		cleanup_run_jrunscript() {
+			if [ -n "${filter_pid}" ]; then
+				kill "${filter_pid}" 2>/dev/null || true
+				wait "${filter_pid}" 2>/dev/null || true
+			fi
+			rm -f "${stderr_fifo}" 2>/dev/null || true
+			rmdir "${temp_dir}" 2>/dev/null || true
+		}
+
+		trap cleanup_run_jrunscript EXIT INT TERM
+
+		(
+			while IFS= read -r line || [ -n "${line}" ]; do
+				if [ "${line}" != "Warning: jrunscript is deprecated and will be removed in a future release." ]; then
+					printf '%s\n' "${line}" >&2
+				fi
+			done < "${stderr_fifo}"
+		) &
+		filter_pid="$!"
+
+		${JRUNSCRIPT} "$@" 2>"${stderr_fifo}"
+		status="$?"
+		wait "${filter_pid}" 2>/dev/null || true
+		exit "${status}"
+	)
+	return $?
+}
 
 javaSystemPropertyArgument() {
 	if [ -n "$2" ]; then
@@ -562,7 +615,7 @@ if [ "$0" == "bash" ]; then
 
 	JSH_NETWORK_ARGUMENTS="${HTTP_PROXY_HOST_ARGUMENT} ${HTTP_PROXY_PORT_ARGUMENT} ${HTTPS_PROXY_HOST_ARGUMENT} ${HTTPS_PROXY_PORT_ARGUMENT} ${JSH_GITHUB_USER_ARGUMENT} ${JSH_GITHUB_PASSWORD_ARGUMENT}"
 	export JSH_SHELL_LIB
-	${JRUNSCRIPT} ${JSH_LAUNCHER_PROPERTY_ARGUMENTS} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/jrunscript/api.js?jsh')" "$@"
+	run_jrunscript ${JSH_LAUNCHER_PROPERTY_ARGUMENTS} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/jrunscript/api.js?jsh')" "$@"
 else
-	${JRUNSCRIPT} ${JSH_LAUNCHER_PROPERTY_ARGUMENTS} "$(dirname $0)/rhino/jrunscript/api.js" jsh "$@"
+	run_jrunscript ${JSH_LAUNCHER_PROPERTY_ARGUMENTS} "$(dirname $0)/rhino/jrunscript/api.js" jsh "$@"
 fi

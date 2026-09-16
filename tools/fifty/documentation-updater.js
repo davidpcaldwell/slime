@@ -89,7 +89,7 @@
 		}
 
 		var existsDirectory = $api.fp.world.mapping(
-			$context.library.file.world.Location.directory.exists.world()
+			$context.library.file.world.Location.directory.exists.wo
 		);
 
 		/** @type { slime.tools.documentation.updater.Exports["Updater"] } */
@@ -116,26 +116,27 @@
 			);
 
 			var directoryExists = $api.fp.world.mapping(
-				$context.library.file.world.Location.directory.exists.world()
+				$context.library.file.world.Location.directory.exists.wo
 			);
 
-			var removeDirectory = $api.fp.world.output(
-				$context.library.file.world.Location.directory.remove.world()
-			);
+			var removeDirectory = $context.library.file.Location.remove({
+				recursive: true
+			}).simple;
 
 			/**
 			 *
 			 * @param { slime.jrunscript.file.Location } from
 			 */
 			var moveTypedocIntoPlace = function(from) {
-				$api.fp.world.now.action(
+				var effect = $api.fp.now(
 					$context.library.file.Filesystem.move,
-					{
-						filesystem: $context.library.file.world.filesystems.os,
-						from: from.pathname,
-						to: documentation.pathname
-					}
-				)
+					$api.fp.world.Means.effector()
+				);
+				effect({
+					filesystem: $context.library.file.world.filesystems.os,
+					from: from.pathname,
+					to: documentation.pathname
+				});
 			};
 
 			var world = {
@@ -146,7 +147,7 @@
 						})
 					},
 					documentation: function() {
-						var exists = $api.fp.world.Sensor.old.mapping({ sensor: $context.library.file.Location.directory.exists.world() });
+						var exists = $api.fp.world.Sensor.old.mapping({ sensor: $context.library.file.Location.directory.exists.wo });
 						if (!exists(documentation)) return $api.fp.Maybe.from.nothing();
 						var loader = $context.library.file.Location.directory.loader.synchronous({ root: documentation });
 						return $context.library.code.directory.lastModified({
@@ -233,7 +234,7 @@
 									process.kill();
 									var location = $context.library.file.world.Location.from.os(out);
 									$api.fp.world.now.action(
-										$context.library.file.world.Location.directory.remove.world(),
+										$context.library.file.world.Location.directory.remove.wo,
 										location
 									);
 								}
@@ -255,10 +256,16 @@
 							if (directoryExists(documentation)) {
 								removeDirectory(documentation);
 							}
-							moveTypedocIntoPlace($context.library.file.Location.from.os(e.detail.out()));
-							delete state.updates[e.detail.out()];
-							state.typedocBasedOnSrcAt = e.detail.started();
-							events.fire("finished", { out: e.detail.out() });
+							try {
+								moveTypedocIntoPlace($context.library.file.Location.from.os(e.detail.out()));
+								delete state.updates[e.detail.out()];
+								state.typedocBasedOnSrcAt = e.detail.started();
+								events.fire("finished", { out: e.detail.out() });
+							} catch (e) {
+								//	TODO	add some kind of error handling
+								// Packages.java.lang.System.err.println("Failed to update documentation.");
+								// Packages.java.lang.System.err.println(e);
+							}
 						}
 					})();
 				},

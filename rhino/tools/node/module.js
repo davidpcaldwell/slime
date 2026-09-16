@@ -73,9 +73,11 @@
 					url.value,
 					$api.fp.string.split("/"),
 					function(array) { return array[array.length-1]; },
-					$api.fp.string.match(/(.*)\.tar.gz$/),
+					$api.fp.RegExp.exec(/(.*)\.tar.gz$/),
 					function(match) {
-						return match[1];
+						if (!url.present) throw new Error("Unreachable; asserted outside pipeline.");
+						if (!match.present) throw new Error("Unexpected URL format: " + url.value);
+						return match.value[1];
 					}
 				)
 				return {
@@ -107,7 +109,7 @@
 			}
 		)();
 
-		/** @type { slime.jrunscript.tools.node.installation.Exports["getVersion"] } */
+		/** @type { slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,void,slime.$api.fp.Maybe<string>> } */
 		function getVersion(installation) {
 			return function(events) {
 				/** @type { slime.jrunscript.shell.run.Intention } */
@@ -122,7 +124,7 @@
 					$context.library.shell.subprocess.question,
 					intention
 				)
-				return exit.stdio.output.split("\n")[0];
+				return $api.fp.Maybe.from.some(exit.stdio.output.split("\n")[0]);
 			}
 		}
 
@@ -200,116 +202,103 @@
 		 * @returns
 		 */
 		var Modules = function(p) {
+			/** @type { slime.jrunscript.tools.node.Module[] | null } */
+			var cachedListing = null;
+
+			var didPrime = false;
+
+			var invalidateListingCache = function() {
+				cachedListing = null;
+			};
+
+			var runPrimeInstall = function() {
+				var invocation = invokeNpm(
+					p.installation,
+					{
+						command: "install",
+						arguments: $api.Array.build(function(rv) {
+						}),
+						directory: (p.project) ? p.project.base : void(0),
+						stdio: {
+							output: "string",
+							error: "string"
+						}
+					}
+				);
+				return $api.fp.world.now.question(
+					$context.library.shell.subprocess.question,
+					invocation
+				);
+			};
+
+			var runNpmLs = function() {
+				var invocation = invokeNpm(
+					p.installation,
+					{
+						command: "ls",
+						arguments: $api.Array.build(function(rv) {
+							//	TODO	in latest npm, it reports this is deprecated and we should use --location=global instead.
+							//			should check whether this has always worked or whether we need to do some kind of
+							//			npm version checking here before choosing between the two forms
+							rv.push("-l");
+							if (!p.project) rv.push("--global");
+							rv.push("--depth", "0");
+							rv.push("--json")
+						}),
+						directory: (p.project) ? p.project.base : void(0),
+						stdio: {
+							output: "string",
+							error: "string"
+						}
+					}
+				);
+
+				var result = $api.fp.world.now.question(
+					$context.library.shell.subprocess.question,
+					invocation
+				);
+
+				if (result.status != 0) {
+					throw new Error("npm ls exit status: " + result.status
+						+ "\ninstallation: " + JSON.stringify(p.installation)
+						+ "\ninvocation: " + JSON.stringify(invocation)
+						+ "\nstdout:\n" + result.stdio.output
+						+ "\nstderr:\n" + result.stdio.error);
+				}
+
+				/** @type { slime.jrunscript.tools.node.internal.NpmLsOutput } */
+				var npmJson = JSON.parse(result.stdio.output);
+
+				if (!npmJson.dependencies) return [];
+				return $api.fp.result(
+					npmJson,
+					$api.fp.pipe(
+						$api.fp.property("dependencies"),
+						Object.entries,
+						$api.fp.Array.map(function(entry) {
+							return {
+								name: entry[0],
+								version: entry[1].version,
+								path: entry[1].path,
+								bin: entry[1].bin
+							}
+						})
+					)
+				);
+			};
+
 			/** @type { slime.jrunscript.tools.node.modules.Exports["list"] } */
 			var list = function() {
 				return function(events) {
-					// var invocation = toShellInvocation({
-					// 	command: "npm",
-					// 	arguments: $api.Array.build(function(rv) {
-					// 		rv.push("ls");
-					// 		//	TODO	in latest npm, it reports this is deprecated and we should use --location=global instead.
-					// 		//			should check whether this has always worked or whether we need to do some kind of
-					// 		//			npm version checking here before choosing between the two forms
-					// 		if (!p.project) rv.push("--global");
-					// 		rv.push("--depth", "0");
-					// 		rv.push("--json")
-					// 	}),
-					// 	directory: (p.project) ? p.project.base : $api.fp.now(
-					// 		p.installation.executable,
-					// 		$context.library.file.Location.from.os,
-					// 		$context.library.file.Location.parent(),
-					// 		$api.fp.property("pathname")
-					// 	),
-					// 	stdio: {
-					// 		output: "string",
-					// 		error: "string"
-					// 	}
-					// });
+					if (cachedListing) return cachedListing;
 
-					//Packages.java.lang.System.err.println("npm install ...");
-
-					(
-						function() {
-							var invocation = invokeNpm(
-								p.installation,
-								{
-									command: "install",
-									arguments: $api.Array.build(function(rv) {
-									}),
-									directory: (p.project) ? p.project.base : void(0),
-									stdio: {
-										output: "string",
-										error: "string"
-									}
-								}
-							);
-							var result = $api.fp.world.now.question(
-								$context.library.shell.subprocess.question,
-								invocation
-							);
-							return result;
-						}
-					)();
-
-					//Packages.java.lang.System.err.println("npm ls ...");
-
-					var invocation = invokeNpm(
-						p.installation,
-						{
-							command: "ls",
-							arguments: $api.Array.build(function(rv) {
-								//	TODO	in latest npm, it reports this is deprecated and we should use --location=global instead.
-								//			should check whether this has always worked or whether we need to do some kind of
-								//			npm version checking here before choosing between the two forms
-								rv.push("-l");
-								if (!p.project) rv.push("--global");
-								rv.push("--depth", "0");
-								rv.push("--json")
-							}),
-							directory: (p.project) ? p.project.base : void(0) /*$api.fp.now(
-								p.installation.executable,
-								$context.library.file.Location.from.os,
-								$context.library.file.Location.parent(),
-								$api.fp.property("pathname")
-							)*/,
-							stdio: {
-								output: "string",
-								error: "string"
-							}
-						}
-					);
-					var result = $api.fp.world.now.question(
-						$context.library.shell.subprocess.question,
-						invocation
-					);
-
-					if (result.status != 0) {
-						throw new Error("npm ls exit status: " + result.status
-							+ "\ninstallation: " + JSON.stringify(p.installation)
-							+ "\ninvocation: " + JSON.stringify(invocation)
-							+ "\nstdout:\n" + result.stdio.output
-							+ "\nstderr:\n" + result.stdio.error);
+					if (!didPrime) {
+						runPrimeInstall();
+						didPrime = true;
 					}
 
-					/** @type { slime.jrunscript.tools.node.internal.NpmLsOutput } */
-					var npmJson = JSON.parse(result.stdio.output);
-
-					if (!npmJson.dependencies) return [];
-					return $api.fp.result(
-						npmJson,
-						$api.fp.pipe(
-							$api.fp.property("dependencies"),
-							Object.entries,
-							$api.fp.Array.map(function(entry) {
-								return {
-									name: entry[0],
-									version: entry[1].version,
-									path: entry[1].path,
-									bin: entry[1].bin
-								}
-							})
-						)
-					);
+					cachedListing = runNpmLs();
+					return cachedListing;
 				}
 			};
 
@@ -352,6 +341,8 @@
 						$context.library.shell.subprocess.action,
 						invocation
 					);
+
+					invalidateListingCache();
 				}
 			};
 
@@ -403,6 +394,8 @@
 							$context.library.shell.subprocess.action,
 							invocation
 						);
+
+						invalidateListingCache();
 					}
 				} : void(0)
 			});
@@ -778,14 +771,17 @@
 
 		$exports.Installation = {
 			from: {
-				location: function(location) {
-					return {
+				base: function(base) {
+					if (!base) throw new TypeError("Required: base directory location for Node.js installation.");
+					var exists = $context.library.file.Location.directory.exists.simple(base);
+					if (!exists) return $api.fp.Maybe.from.nothing();
+					return $api.fp.Maybe.from.some({
 						executable: $api.fp.now.invoke(
-							location,
+							base,
 							$context.library.file.Location.directory.relativePath("bin/node"),
 							$api.fp.property("pathname")
 						)
-					}
+					});
 				}
 			},
 			exists: (
@@ -810,7 +806,7 @@
 					};
 				}
 			)(),
-			getVersion: getVersion,
+			getVersion: $api.fp.world.Sensor.api.maybe(getVersion),
 			question: Intention_question,
 			Intention: {
 				shell: function(intention) {

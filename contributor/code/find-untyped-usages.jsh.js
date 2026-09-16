@@ -28,7 +28,7 @@
 		/** @type { slime.$api.fp.world.Sensor<{ from: slime.jrunscript.file.Directory, pattern: string },{ match: Match }, Match[]> } */
 		var search = function(p) {
 			var regexp = new RegExp(p.pattern);
-			/** @param { slime.$api.event.Emitter<{ match: { path: string, line: number, text: string } }> } events */
+			/** @param { slime.$api.event.Producer<{ match: { path: string, line: number, text: string } }> } events */
 			return function(events) {
 				/** @type { Match[] } */
 				var rv = [];
@@ -44,11 +44,14 @@
 							return true;
 						},
 						isSource: function(file) {
-							//	TODO	SLIME-specfic use of jsh.project.code
-							return $api.fp.Maybe.from.some(jsh.project.code.files.isText({
-								path: void(0),
-								file: file
-							}));
+							return $api.fp.now(
+								{
+									path: void(0),
+									file: file
+								},
+								//	TODO	SLIME-specfic use of jsh.project.code
+								jsh.project.code.files.isText
+							);
 						}
 					}
 				});

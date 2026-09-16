@@ -32,7 +32,7 @@ namespace slime.jrunscript.tools.kubernetes.cli {
 
 	export interface Environment {
 		Invocation: {
-			create: (p: cli.Invocation) => slime.jrunscript.shell.run.old.Invocation
+			create: (p: cli.Invocation) => slime.jrunscript.shell.run.minus2.Invocation
 		}
 	}
 
@@ -50,7 +50,7 @@ namespace slime.jrunscript.tools.kubernetes.cli {
 			toJson: (p: cli.Invocation) => cli.Invocation
 		}
 
-		result: (world: slime.jrunscript.shell.Exports["world"], invocation: slime.jrunscript.shell.run.old.Invocation) => slime.$api.fp.world.old.Ask<Events,Result>
+		result: (world: slime.jrunscript.shell.Exports["world"], invocation: slime.jrunscript.shell.run.minus2.Invocation) => slime.$api.fp.world.old.Ask<Events,Result>
 	}
 
 	export namespace test {
@@ -132,5 +132,5 @@ namespace slime.jrunscript.tools.kubernetes.cli {
 namespace slime.jrunscript.tools.docker.internal.kubectl {
 	export type Context = void
 
-	export type Script = slime.loader.Script<Context,slime.jrunscript.tools.kubernetes.cli.Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,slime.jrunscript.tools.kubernetes.cli.Exports>
 }

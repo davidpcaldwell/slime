@@ -12,7 +12,7 @@ namespace slime.runtime.browser.test.events {
 			const script: Script = fifty.$loader.script("events.js");
 			return script();
 		//@ts-ignore
-		})(fifty)
+		})(fifty);
 	}
 
 	export interface Exports {
@@ -56,5 +56,5 @@ namespace slime.runtime.browser.test.events {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

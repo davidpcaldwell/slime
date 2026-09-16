@@ -4,24 +4,148 @@
 //
 //	END LICENSE
 
+(
+	function(fifty: slime.fifty.test.Kit) {
+		fifty.tests.exports = fifty.test.Parent();
+		fifty.tests.manual = {};
+	}
+//@ts-ignore
+)(fifty);
+
 interface Function {
 	construct: any
 }
 
 /**
- *
- * The `$api` object is provided to all code loaded by the platform loader. It represents the SLIME APIs available on all platforms.
- * (Some platform-specific APIs are available through properties of the `$api` object, sucn as `$api.jrunscript` and `$api.browser`.)
- *
- * ## Functional programming: {@link slime.$api.fp `$api.fp`}
- *
- * The `$api.fp` namespace provides functional programming constructs. See {@link slime.$api.fp}.
+ * SLIME provides a runtime to all code loaded by the SLIME runtime loader. It is provided to all code loaded by the platform as the
+ * `$api` object. Other embeddings can add properties to the `$api` object to expose additional platform-specific capabilities, such
+ * as `$api.jrunscript` for Java/LiveConnect capabilities and `$api.browser` for browser-specific capabilities.
  *
  * ## Handling content: {@link slime.runtime.content `$api.content`}
  *
  * The `$api.content` namespace provides the ability to handle _content_. *Content* is defined in SLIME as a hierarchical structure
  * with a root and containing paths. It can represent a filesystem, a URL space, a ZIP/TAR file, or any other logically hierarchical
  * structure.
+ */
+namespace slime.runtime {
+	/**
+	 * An object that gives access to functionality for the current JavaScript engine. Created by combining the `$engine`
+	 * property provided as part of {@link slime.runtime.Scope} with default implementations provided by the SLIME runtime.
+	 */
+	export interface Engine {
+		/**
+		 * A function that can execute JavaScript code with a given script (script name for tools, plus code), scope (to provide to the script), and
+		 * *target* (to provide as the `this` value to the script).
+		 *
+		 * A default implementation is provided by SLIME, but embeddings may provide their own implementations that have
+		 * advantages over SLIME's pure-JavaScript implementation via {@link slime.runtime.scope.Engine.execute scope.Engine}.
+		 *
+		 * @param script An object describing the file to execute.
+		 * @param scope A scope to provide to the object; all the properties of this object must be in scope while the code executes.
+		 * @param target An object that must be provided to the code as `this` while the code is executing.
+		 */
+		execute: (code: runtime.loader.Script, scope: { [x: string]: any }, target: object) => void
+
+		debugger?: {
+			isBreakOnExceptions: () => boolean
+			setBreakOnExceptions: (b: boolean) => void
+		}
+
+		/**
+		 * (conditional; depends on engine support) A metaobject implementation.
+		 *
+		 * @returns An object that uses the given delegate object to supply properties, but uses the given getter and setter if
+		 * the delegate is `null` or the delegate lacks the named property.
+		 */
+		MetaObject?: (p: {
+			/**
+			 * A delegate object that will be used to supply implementations for properties in preference to using the
+			 * meta-object implementations.
+			 */
+			delegate?: object
+
+			/**
+			 * A function that will be called when one of this object's properties that is not defined by the delegate object is
+			 * accessed. This object will be provided as the `this` argument.
+			 *
+			 * @param name A property name
+			 * @returns A value for the named property.
+			 */
+			get: (name: string) => any
+
+			/**
+			 * A function that will be called when one of this object's properties that is not defined by the delegate object is
+			 * set. This object will be provided as the `this` argument.
+			 *
+			 * @param name A property name.
+			 * @param v The value assigned to the named property.
+			 */
+			set?: (name: string, v: any) => void
+		}) => { [name: string]: any }
+	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.engine = fifty.test.Parent();
+
+			fifty.tests.exports.engine.MetaObject = function() {
+				const test = function(b: boolean) {
+					verify(b).is(true);
+				};
+
+				if ($api.engine.MetaObject) {
+					var doubler = function(name) {
+						if (isNaN(Number(name))) {
+							return name + name;
+						} else {
+							return Number(name) * 2;
+						}
+					}
+
+					var a = $api.engine.MetaObject({ get: doubler });
+					test( a[1] == 2 );
+					test( a.name == "namename" );
+
+					var logger = new function() {
+						var log = [];
+
+						this.log = log;
+
+						this.setter = function(name,value) {
+							log.push({ target: this, name: name, value: value });
+
+							this[name] = value;
+						}
+					}
+
+					var $b = {};
+					var b = $api.engine.MetaObject({ delegate: $b, get: null, set: logger.setter });
+					b.foo = "bar";
+					test( logger.log[0].target == $b );
+					test( logger.log[0].name == "foo" );
+					test( logger.log[0].value == "bar" );
+				}
+			}
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Exports extends slime.$api.Global {
+		engine: Engine
+	}
+}
+
+/**
+ * The former namespace used to house the SLIME runtime APIs; now see {@link slime.runtime}.
+ *
+ * ## Functional programming: {@link slime.$api.fp `$api.fp`}
+ *
+ * The `$api.fp` namespace provides functional programming constructs. See {@link slime.$api.fp}.
  *
  * ## Handling deprecation and API usage
  *
@@ -30,16 +154,86 @@ interface Function {
  * `$api`}.
  */
 namespace slime.$api {
+	/**
+	 * Provides information about and capabilities of the underlying JavaScript platform; loaded code can use this information
+	 * in its implementation.
+	 */
+	export interface Platform {
+		/**
+		 * @deprecated E4X is deprecated; see [Wikipedia](https://en.wikipedia.org/wiki/ECMAScript_for_XML).
+		 *
+		 * Provides access to the [E4X](https://en.wikipedia.org/wiki/ECMAScript_for_XML) implementation for this engine, if one
+		 * is present.
+		 */
+		e4x?: {
+			XML: slime.external.e4x.XMLConstructor
+			XMLList: slime.external.e4x.XMLListConstructor
+		}
+
+		/**
+		 * If present, an object with properties describing the platform's Java/LiveConnect capabilities.
+		 */
+		java?: {
+			/**
+			 * @param name A Java class name.
+			 * @returns A `JavaClass` object representing the class with the given name, or `null` if no class by that name can
+			 * be loaded.
+			 */
+			getClass: (name: string) => slime.jrunscript.JavaClass
+		}
+	}
+
+	export interface Global {
+		/**
+		 * Provides information about the underlying JavaScript platform; see the {@link slime.runtime.Platform} type for details.
+		 */
+		platform: Platform
+	}
+
 	(
-		function(fifty: slime.fifty.test.Kit) {
-			fifty.tests.exports = fifty.test.Parent();
-			fifty.tests.manual = {};
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+			const { $api } = fifty.global;
+
+			fifty.tests.exports.platform = fifty.test.Parent();
+
+			fifty.tests.exports.platform.java = function() {
+				var o: { x: number } = { x: void(0) };
+				o.x = 3;
+				verify(o).x.is(3);
+				o.x = 4;
+				verify(o).x.is(4);
+
+				if (fifty.global.jsh) verify($api.platform).evaluate.property("java").is.type("object");
+				if (fifty.global.window) verify($api.platform).evaluate.property("java").is.type("undefined");
+			};
 		}
 	//@ts-ignore
 	)(fifty);
 
 	export interface Global {
-		engine: slime.runtime.Engine
+		/**
+		 * Allows the runtime deprecation of particular API constructs.
+		 */
+		deprecate: Flagger
+
+		/**
+		 * Allows the runtime marking of particular API constructs as experimental.
+		 */
+		experimental: Flagger
+
+		flag: {
+			once: (warning: Flagger["warning"]) => Flagger["warning"]
+		}
+	}
+
+	export interface Global {
+		mime: mime.Export
+	}
+
+	export interface Global {
 		content: slime.runtime.content.Exports
 	}
 
@@ -56,8 +250,94 @@ namespace slime.$api {
 	export interface Global {
 		global: {
 			get: <T>(propertyName: string) => T
+
+			/**
+			 * Returns a value rooted to the global object (`globalThis` in modern JavaScript). An optional function can be supplied
+			 * which will create the value if it does not exist; if the value is absent and no function is provided, an empty object
+			 * will be created and returned.
+			 *
+			 * The given path is interpreted as a series of property names. So if the path is `["inonit", "foo", "bar"]`, the object
+			 * will be rooted at `window` (or `globalThis`) and assigned to the `bar` property of the `foo` property of
+			 * `window.inonit`, and so would be available as `window.inonit.foo.bar`, or simply `inonit.foo.bar`, since properties
+			 * of the global object are visible by default.
+			 *
+			 * In the event portions of the sequence of rooting objects do not exist, they will be created. So, for example, in the
+			 * browser-based example above, if the `window.inonit` object exists, but the `window.inonit` object does not have a
+			 * property named `foo`, an object will be created and assigned to the `foo` property of `window.inonit`, and then that
+			 * object will be assigned a `bar` property.
+			 *
+			 * @param path The name/location of the namespace to create (or return if it exists).
+			 * @param create A function that will create the value to attach to the root object if it does not already exist. If
+			 * this parameter is not provided, an empty object will be created and used as the value.
+			 *
+			 * @returns The value given, for convenience.
+			 */
+			at: {
+				(path: string[]): any
+				<T>(path: string[], create: () => T): T
+			}
 		}
 	}
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.exports.global = fifty.test.Parent();
+
+			fifty.tests.exports.global.at = function() {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				var global: object & { crypto: any, Packages?: slime.jrunscript.Packages } = (function() { return this; })();
+
+				const Packages = (function() {
+					if (global.Packages) return global.Packages;
+					return null;
+				})();
+
+				var empty: object = $api.global.at([]);
+				verify(empty).is(global);
+
+				var uuid: () => string = (
+					function() {
+						var counter = 0;
+
+						if (global.crypto && global.crypto.randomUUID) {
+							return function() {
+								return global.crypto.randomUUID();
+							}
+						} else if (fifty.global.jsh) {
+							return function() {
+								return String(Packages.java.util.UUID.randomUUID().toString());
+							}
+						} else {
+							//	TODO	we really need something better than this for anything more than our first test.
+							return function() {
+								return "uuid:" + String(++counter);
+							}
+						}
+					}
+				)();
+
+				var first = uuid();
+
+				var namespaced = $api.global.at([first]);
+
+				verify(namespaced).is.type("object");
+				verify(global).evaluate.property(first).is(namespaced);
+
+				var second = uuid();
+
+				var namespacedTwo = $api.global.at([second, "foo"]);
+
+				verify(namespacedTwo).is.type("object");
+				verify(global).evaluate.property(second).evaluate.property("foo").is.type("object");
+				verify(global).evaluate.property(second).evaluate.property("bar").is.type("undefined");
+			}
+		}
+	//@ts-ignore
+	)(fifty);
 
 	export interface Global {
 		debug: {
@@ -1137,7 +1417,7 @@ namespace slime.$api {
 	}
 
 	export interface Global {
-		events: exports.Events
+		events: event.Exports
 
 		/**
 		 * All parts of this property are **deprecated**. See the individual declarations for details.
@@ -1187,6 +1467,281 @@ namespace slime.$api {
 				Task: any
 			}
 		}
+	}
+
+	//	TODO	duplicates logic in slime.runtime.test; should unify these
+
+	export namespace test {
+		export const subject: slime.runtime.Exports = (function(fifty: slime.fifty.test.Kit) {
+			var script: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
+			return script().subject(fifty);
+		//@ts-ignore
+		})(fifty);
+
+		export const fixture = (function(fifty: slime.fifty.test.Kit) {
+			return function(fixture: slime.$api.fp.Transform<slime.runtime.Scope>) {
+				var script: slime.runtime.test.Script = fifty.$loader.script("fixtures.ts");
+				return script().subject(fifty, fixture);
+			}
+		//@ts-ignore
+		})(fifty);
+	}
+
+	export namespace loader.old {
+		export interface Exports {
+			//	TODO	scope and target parameter documentation refers to slime.Loader, but that API does not actually define
+			//			them in Fifty (probably does in JSAPI).
+
+			/**
+			 * Analogous to {@link slime.Loader}'s `run()`, except that the caller specifies a
+			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
+			 *
+			 * @param code A resource to execute. If no MIME type can be determined, the type will be assumed to be
+			 * `application/javascript`.
+			 * `application/javascript` scripts will be executed as
+			 * JavaScript. `application/vnd.coffeescript` will be interpreted as CoffeeScript. The
+			 * `name` property, if provided, may be used by the underlying JavaScript engine when evaluating
+			 * the resource as code (for display in tools, for example).
+			 *
+			 * @param scope See {@link slime.Loader}'s `run()` method.
+			 *
+			 * @param target See {@link slime.Loader}'s `run()` method.
+			 */
+			run: (
+				code: slime.Resource,
+				scope?: { [name: string]: any },
+				target?: object
+			) => void
+
+			//	TODO	could parameterize types here, with C, E; must C and E extend object? any?
+			/**
+			 * Analogous to {@link slime.Loader}'s `file()` method, except that the caller specifies a
+			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
+			 *
+			 * @param code A resource to execute. See the `run()` method for details about this argument.
+			 *
+			 * @param $context See {@link slime.Loader}'s `file()` method.
+			 *
+			 * @param target See {@link slime.Loader}'s `file()` method.
+			 *
+			 * @returns See {@link slime.Loader}'s `file()` method.
+			 */
+			file: (
+				code: slime.Resource,
+				$context?: { [name: string]: any },
+				target?: object
+				//	TODO	return type should probably be { [name: string]: any }, but this causes a compilation failure currently
+			) => any
+
+			/**
+			 * Analogous to {@link slime.Loader}'s `value()` method, except that the caller specifies a
+			 * {@link slime.Resource} to execute rather than a path within a {@link slime.Loader}.
+			 *
+			 * @param code A resource to execute. See the `run()` method for details about this argument.
+			 *
+			 * @param scope See {@link slime.Loader}'s `value()` method.
+			 *
+			 * @param target See {@link slime.Loader}'s `value()` method.
+			 *
+			 * @returns See {@link slime.Loader}'s `value()` method.
+			 */
+			value: (
+				code: slime.Resource,
+				scope?: { [name: string]: any },
+				target?: object
+			) => { [name: string]: any }
+		}
+
+		export namespace resource {
+			export interface Exports {
+				new (o: slime.resource.Descriptor): slime.Resource
+
+				ReadInterface: {
+					string: (content: string) => slime.resource.ReadInterface
+				}
+			}
+		}
+
+		export interface Exports {
+			/**
+			 * Creates a {@link slime.Resource | Resource}.
+			 */
+			Resource: resource.Exports
+		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				var api = test.subject;
+
+				fifty.tests.exports.Resource = function() {
+					fifty.run(function type() {
+						var toString = function(p): string { return p.toString(); };
+
+						(function() {
+							var resource = new api.loader.old.Resource({});
+							verify(resource).type.is(null);
+						})();
+						(function() {
+							var resource = new api.loader.old.Resource({
+								type: $api.mime.Type.parse("application/json")
+							});
+							verify(resource).type.evaluate(toString).is("application/json");
+						})();
+						(function() {
+							var resource = new api.loader.old.Resource({
+								name: "foo.js"
+							});
+							verify(resource).type.evaluate(toString).is("application/javascript");
+						})();
+						(function() {
+							var resource = new api.loader.old.Resource({
+								name: "foo.x"
+							});
+							verify(resource).type.is(null);
+						})();
+					});
+
+					fifty.run(function name() {
+						(function() {
+							var resource = new api.loader.old.Resource({
+								name: "foo"
+							});
+							verify(resource).name.is("foo");
+						})();
+						(function() {
+							var resource = new api.loader.old.Resource({});
+							verify(resource).evaluate.property("name").is(void(0));
+						})();
+					});
+
+					fifty.run(function read() {
+						var readResource = fifty.evaluate.create(
+							function(resource: slime.Resource): string {
+								return resource.read(String);
+							},
+							"read(String)"
+						);
+
+						var newReadResource = fifty.evaluate.create(
+							function(resource: slime.Resource): string {
+								return resource.read.string();
+							},
+							"read.string()"
+						);
+
+						(function() {
+							var resource = new api.loader.old.Resource({
+								read: api.loader.old.Resource.ReadInterface.string("foo")
+							});
+							verify(resource).evaluate(readResource).is("foo");
+							verify(resource).evaluate(newReadResource).is("foo");
+						})();
+
+						(function() {
+							var resource = new api.loader.old.Resource({
+								read: {
+									string: function() {
+										return "bar";
+									}
+								}
+							});
+							verify(resource).evaluate(readResource).is("bar");
+						})();
+
+						(function() {
+							var resource = new api.loader.old.Resource({
+								read: api.loader.old.Resource.ReadInterface.string(JSON.stringify({ foo: "bar" }))
+							});
+							var json: { foo: string, baz?: any } = resource.read(JSON) as { foo: string, baz?: any };
+							verify(json).foo.is("bar");
+							verify(json).evaluate.property("baz").is(void(0));
+						})();
+
+						if ($api.platform.e4x) {
+							var global = (function() { return this; })();
+							var XML: slime.external.e4x.XMLConstructor = global["XML"];
+							var XMLList: slime.external.e4x.XMLListConstructor = global["XMLList"];
+							var resource = new api.loader.old.Resource({
+								read: api.loader.old.Resource.ReadInterface.string("<a><b/></a>")
+							});
+							var xml = resource.read(XML);
+							verify(xml).is.type("xml");
+
+							var list = { list: resource.read(XMLList) };
+							verify(list).list.is.type("xml");
+							verify(list).evaluate(function(v): number { return v.list.length(); }).is(1);
+						}
+					})
+				}
+			}
+		//@ts-ignore
+		)(fifty);
+
+		export namespace internal {
+			export type Resource = resource.Exports
+			export type methods = {
+				run: any
+			}
+			export namespace mime {
+				export interface Context {
+					Function: slime.$api.Global["fp"]
+					deprecate: slime.$api.Global["deprecate"]
+				}
+			}
+
+			/**
+			 * A subset of the {@link $slime.Deployment} interface that can load SLIME runtime scripts.
+			 */
+			export interface Code {
+				getRuntimeScript: slime.runtime.scope.Deployment["getRuntimeScript"]
+			}
+		}
+
+		export namespace old {
+			export interface Exports {
+				/**
+				 * Creates a *Loader*. A Loader loads resources from a specified source.
+				 */
+				Loader: slime.loader.old.Constructor & slime.runtime.internal.old_loaders.Exports["api"]
+			}
+		}
+
+		export interface Exports {
+			old: old.Exports
+		}
+	}
+
+	export interface Global {
+		/**
+		 * Provides operations related to loading resources and executing code using {@link slime.runtime.loader} types.
+		 */
+		loader: slime.runtime.loader.Exports & {
+			old: loader.old.Exports
+		}
+	}
+
+	export interface Scripts {
+		/**
+		 * A global script compiler provided by the overall SLIME runtime, which operates on {@link slime.runtime.loader.Code}
+		 * instances and can be updated with additional transpilers that also operate on those instances.
+		 */
+		compiler: {
+			update: (transform: slime.$api.fp.Transform<slime.runtime.loader.Compiler<slime.runtime.loader.Code>>) => void
+
+			/**
+			 * A `Compiler` which uses the currently configured settings.
+			 */
+			compile: slime.runtime.loader.Compiler<slime.runtime.loader.Code>
+		}
+	}
+
+	export interface Global {
+		scripts: Scripts
 	}
 
 	(
@@ -1373,11 +1928,17 @@ namespace slime.$api {
 			fifty: slime.fifty.test.Kit,
 		) {
 			fifty.tests.suite = function() {
+				fifty.load("content.fifty.ts");
 				fifty.load("$api-flag.fifty.ts");
-				fifty.load("$api-mime.fifty.ts");
-				fifty.load("$api-Function.fifty.ts");
+				fifty.load("events.fifty.ts");
 				fifty.load("$api-Function_old.fifty.ts");
+				fifty.load("$api-Function.fifty.ts");
 				fifty.load("$api-fp-methods.fifty.ts");
+				fifty.load("$api-mime.fifty.ts");
+
+				fifty.load("code.fifty.ts");
+
+				fifty.load("loaders.fifty.ts");
 
 				fifty.run(fifty.tests.jsapi);
 				fifty.run(fifty.tests.exports);
@@ -1390,20 +1951,15 @@ namespace slime.$api {
 }
 
 namespace slime.$api.internal {
-	export type script = <C,E>(name: string) => slime.loader.Script<C,E>
+	export type script = <C,E>(name: string) => slime.runtime.loader.Scoped<C,E>
 
-	export interface Scope {
-		$engine: Pick<slime.runtime.Engine,"execute"|"debugger">
-		$slime: Pick<slime.runtime.scope.Deployment,"getRuntimeScript">
-		Packages: slime.jrunscript.Packages
+	export interface Context {
+		engine: runtime.Engine
+		script: script
+		Packages?: slime.jrunscript.Packages
 	}
 
-	export interface Exports {
-		scripts: Pick<slime.runtime.internal.scripts.Exports,"internal"|"platform">
-		exports: Omit<slime.$api.Global,"scripts"> & { scripts: Omit<slime.$api.Global["scripts"],"compiler"> }
-	}
-
-	export type Script = slime.loader.Script<Scope,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,slime.runtime.Exports>
 }
 
 namespace slime.$api.oo {

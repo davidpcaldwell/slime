@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.servlet.internal.server.api.Context } $context
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.servlet.internal.server.api.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {

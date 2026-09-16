@@ -8,7 +8,7 @@ namespace slime.jrunscript.shell.test {
 	export type Context = void
 
 	export namespace run {
-		export type OldInvocationDelegate = (invocation: slime.jrunscript.shell.run.old.Invocation) => slime.jrunscript.shell.run.Mock
+		export type OldInvocationDelegate = (invocation: slime.jrunscript.shell.run.minus2.Invocation) => slime.jrunscript.shell.run.Mock
 	}
 
 	export interface Fixtures {
@@ -130,5 +130,5 @@ namespace slime.jrunscript.shell.test {
 	//@ts-ignore
 	)($context,$loader,$export);
 
-	export type Script = slime.loader.Script<Context,Fixtures>
+	export type Script = slime.runtime.loader.Scoped<Context,Fixtures>
 }

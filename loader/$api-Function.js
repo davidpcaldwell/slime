@@ -9,14 +9,16 @@
 	/**
 	 *
 	 * @param { slime.$api.fp.internal.Context } $context
-	 * @param { slime.loader.Export<slime.$api.fp.Exports> } $export
+	 * @param { slime.loader.Export<slime.$api.fp.internal.Exports> } $export
 	 */
 	function($context,$export) {
 		var code = {
 			/** @type { slime.$api.fp.internal.stream.Script } */
 			Stream: $context.script("$api-fp-stream.js"),
 			/** @type { slime.$api.fp.internal.impure.Script } */
-			impure: $context.script("$api-fp-impure.js")
+			impure: $context.script("$api-fp-impure.js"),
+			/** @type { slime.$api.fp.internal.world.Script } */
+			wo: $context.script("$api-fp-wo.js"),
 		};
 
 		var identity = function(v) { return v; };
@@ -70,6 +72,51 @@
 								rv = next.value;
 							}
 							return Maybe.from.some(rv);
+						}
+					}
+				}
+			}
+		)();
+
+		var Result = (
+			/** @type { () => slime.$api.fp.Exports["Result"] } */
+			function() {
+				/** @type { slime.$api.fp.Exports["Result"]["from"]["success"] } */
+				var success = function(v) {
+					return { ok: true, value: v };
+				};
+
+				/** @type { slime.$api.fp.Exports["Result"]["from"]["failure"] } */
+				var failure = function(e) {
+					return { ok: false, error: e };
+				};
+
+				return {
+					from: {
+						success: success,
+						failure: failure
+					},
+					map: function(f) {
+						return function(r) {
+							if (r.ok) return success(f(r.value));
+							var notOk = /** @type {{ error: any }} */(r);
+							return failure(notOk.error);
+						}
+					},
+					flatMap: function(f) {
+						return function(r) {
+							if (r.ok) return f(r.value);
+							var notOk = /** @type {{ error: any }} */(r);
+							return failure(notOk.error);
+						}
+					},
+					mapError: function(f) {
+						return function(r) {
+							if (!r.ok) {
+								var notOk = /** @type {{ error: any }} */(r);
+								return failure(f(notOk.error));
+							}
+							return success(r.value);
 						}
 					}
 				}
@@ -133,6 +180,10 @@
 				for (var i=0; i<items.length; i++) {
 					//	If the pipeline function is called with no arguments, call the initial function with no arguments
 					//	TODO	what to do if the pipeline function is called with multiple arguments?
+					if (!items[i]) {
+						debugger;
+						throw new TypeError("Expected function: " + items[i]);
+					}
 					if (i == 0 && arguments.length == 0) {
 						rv = items[i].call(this);
 					} else {
@@ -225,6 +276,17 @@
 			return pipe.apply(this, items.slice(1))(items[0]);
 		}
 
+		var build_map = function() {
+			if (arguments.length < 2) throw new TypeError();
+			if (typeof(arguments[0]) != "function") throw new TypeError("First argument must be a function.");
+			for (var i=1; i<arguments.length; i++) {
+				if (typeof(arguments[i]) != "function") {
+					throw new TypeError("All arguments after index 0 must be functions; index " + i + " is not.");
+				}
+			}
+			return now_map.apply(this, arguments);
+		}
+
 		/** @type { <T>(ordering: slime.$api.fp.Ordering<T>) => slime.$api.fp.CompareFn<T> } */
 		var orderingToJs = function(ordering) {
 			return function(a,b) {
@@ -245,14 +307,24 @@
 			});
 		})();
 
+		var optionalChain = function(name) {
+			return function(p) {
+				return (p == null) ? void(0) : p[name];
+			}
+		};
+
 		var impure = code.impure({
-			now: now_map,
 			Maybe: Maybe,
-			Partial: Partial,
-			pipe: pipe,
-			events: $context.events,
 			stream: stream.impure
-		});
+		}).impure;
+
+		var wo = code.wo({
+			pipe: pipe,
+			now: now_map,
+			Partial: Partial,
+			events: $context.events,
+			impure: impure
+		})
 
 		$export({
 			identity: identity,
@@ -323,6 +395,9 @@
 						return now_map.apply(this, args);
 					}
 				},
+				force: function(thunk) {
+					return thunk();
+				},
 				now: function(thunk) {
 					var maps = Array.prototype.slice.call(arguments, 1);
 					var rv = thunk();
@@ -344,11 +419,7 @@
 				}
 			},
 			property: property,
-			optionalChain: function(name) {
-				return function(p) {
-					return (p == null) ? void(0) : p[name];
-				}
-			},
+			optionalChain: optionalChain,
 			curry: function(c) {
 				return function(f) {
 					return function(p) {
@@ -448,62 +519,93 @@
 					}
 				},
 				format: function(p) {
-					var content = p.mask.split("()");
-					if (content.length - 1 != p.values.length) throw new TypeError(
-						"Mask has " + String(content.length-1) + " placeholders, but " + p.values.length + " placeholders supplied."
-					);
 					return function(t) {
-						var rv = content[0];
-						for (var i=0; i<p.values.length; i++) {
-							rv += p.values[i](t);
-							rv += content[i+1];
+						var rv = p.mask;
+						var values = p.values || { value: String };
+						for (var x in values) {
+							while(rv.indexOf("${" + x + "}") != -1) {
+								rv = rv.replace("${" + x + "}", values[x](t));
+							}
 						}
 						return rv;
 					}
 				}
 			},
 			Object: {
-				property: {
-					update: function(p) {
-						return function(target) {
-							var rv = Object.assign(
-								{},
-								target
-							);
-							rv[p.property] = p.change(rv[p.property]);
-							return rv;
-						}
-					},
-					//@ts-ignore
-					set: function(p) {
-						return function(target) {
-							var rv = Object.assign({}, target);
-							for (var x in p) {
-								var value = p[x](rv);
-								//@ts-ignore
-								rv[x] = value;
+				property: (
+					function() {
+						/** @type { slime.$api.fp.object.property.Exports["maybe"] } */
+						var maybe = function() {
+							var keys = arguments;
+
+							//	Note that isNothing has the same semantics as the optional chaining operator, with null or undefined
+							//	resulting in `true` and other values resulting in `false`.
+							var isNothing = function(v) { return !Maybe.from.value(v).present };
+
+							return function(object) {
+								var rv = object;
+								for (var i=0; i<keys.length; i++) {
+									var value = rv[keys[i]];
+									if (isNothing(value)) return Maybe.from.nothing();
+									rv = value;
+								}
+								return isNothing(rv) ? Maybe.from.nothing() : Maybe.from.some(rv);
 							}
-							return rv;
-						}
-					},
-					maybe: function() {
-						var keys = arguments;
-						var isNothing = function(v) { return !Maybe.from.value(v).present };
-						return function(object) {
-							var rv = object;
-							for (var i=0; i<keys.length; i++) {
-								var value = rv[keys[i]];
-								if (isNothing(value)) return Maybe.from.nothing();
-								rv = value;
+						};
+
+						return {
+							update: function(p) {
+								return function(target) {
+									var rv = Object.assign(
+										{},
+										target
+									);
+									rv[p.property] = p.change(rv[p.property]);
+									return rv;
+								}
+							},
+							/**
+							 * @template { {} } T
+							 * @template { {} } R
+							 * @param { { [k in keyof R]: slime.$api.fp.Mapping<T,R[k]> } } p
+							 */
+							set: function(p) {
+								/** @type { slime.js.Cast<T & { [k in keyof R]: R[k] }> } */
+								var asReturnType = function(p) { return p; };
+
+								return function(target) {
+									var rv = asReturnType(Object.assign({}, target));
+									for (var x in p) {
+										var k = /** @type { keyof R } */(x);
+										var value = p[k](rv);
+										//	TODO	is there something more eleegant than this?
+										rv[k] = /** @type {(T & { [k in keyof R]: R[k]; })[Extract<keyof R, string>]} */(value);
+									}
+									return rv;
+								}
+							},
+							maybe: maybe,
+							get: function() {
+								var keys = arguments;
+								return function(object) {
+									var result = maybe.apply(this, keys)(object);
+									if (!result.present) return void(0);
+									return result.value;
+								}
 							}
-							return isNothing(rv) ? Maybe.from.nothing() : Maybe.from.some(rv);
-						}
+						};
+					}
+				)(),
+				with: function(p) {
+					return function(target) {
+						return Object.assign({}, target, p);
 					}
 				},
 				entries: Object.entries,
 				fromEntries: Object.fromEntries
 			},
 			Maybe: Maybe,
+			Result: Result,
 			Partial: Partial,
 			switch: function(cases) {
 				return function(p) {
@@ -679,6 +781,11 @@
 					return function(v) {
 						return JSON.stringify(JSON.parse(v), void(0), space);
 					}
+				},
+				parse: function(cast) {
+					return function(string) {
+						return cast(JSON.parse(string));
+					}
 				}
 			},
 			RegExp: {
@@ -693,12 +800,20 @@
 						var copy = new RegExp(regexp.source);
 						return Maybe.from.value(copy.exec(string));
 					}
+				},
+				test: function(regexp) {
+					return function(string) {
+						//	We copy the RegExp to deal with possibilities of multithreaded access
+						var copy = new RegExp(regexp.source);
+						return copy.test(string);
+					}
 				}
 			},
 			now: Object.assign(now_map, {
 				invoke: now_map,
 				map: now_map
 			}),
+			build: build_map,
 			result: now_map,
 			object: {
 				Update: {
@@ -780,8 +895,8 @@
 			},
 			mutating: $context.old.Function.mutating,
 			value: $context.old.Function.value,
-			impure: impure.impure,
-			world: impure.world
+			impure: impure,
+			world: wo.world
 		});
 	}
 //@ts-ignore

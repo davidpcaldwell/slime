@@ -34,7 +34,7 @@
  * The current goal is to be compatible with versions used by most Java developers. As of New Relic's
  * [2024 survey](https://newrelic.com/resources/report/2024-state-of-the-java-ecosystem#new-java-versions-being-adopted-faster),
  * **Java 17** was the leading version, with 35.4% of monitored applications using it. **Java 11** followed with 32.9%, and
- * **Java 8** was still used by 28.8%. SLIME is also tested against **Java 21**.
+ * **Java 8** was still used by 28.8%. SLIME is also tested against **Java 21** and **Java 25**.
  *
  * ##### JVM JavaScript engine
  *
@@ -46,8 +46,8 @@
  * including Nashorn, the **built-in JDK 8-14 Nashorn** is used, while for JDK versions subsequent to Nashorn's removal, standalone
  * **Nashorn {@include ./local/typedoc/dependencies.md#nashorn.standalone.version}** is used.
  *
- * **GraalVM** is not yet supported, although
- * [development is underway](https://github.com/davidpcaldwell/slime/issues?q=is%3Aissue%20state%3Aopen%20graal%20label%3Agraalvm).
+ * **GraalJS** is not yet supported, although
+ * [development is underway](https://github.com/davidpcaldwell/slime/issues?q=is%3Aissue%20state%3Aopen%20graal%20label%3Agraal).
  *
  * ##### Servlet containers
  *
@@ -75,27 +75,16 @@
  *
  * ### Creating a custom embedding for the SLIME runtime
  *
- * SLIME provides several embeddings of the SLIME runtime, as listed above. The runtime implementation provides an interface
- * embedders can use to create a runtime for a specific platform, but the embedder makes the decision about how to provide access to
- * the runtime interface, and the various SLIME embeddings listed above differ in how they do so. This makes it hard to write
- * cross-platform code that uses constructs from the common runtime, so Work is underway to provide more standard access to the
- * runtime by moving elements of the runtime interface to the shared `$api` object provided to all code loaded by the runtime.
- * (`jsh`, a Java servlet-based embedding, a browser embedding, a JXA embedding for macOS automation), and a simple Node.js
- * embedding.
- *
- * Custom SLIME embeddings may be developed by creating a suitable implementation of {@link slime.runtime.Scope} and putting that
- * object in scope when evaluating `loader/expression.js`, which yields an object of type {@link slime.runtime.Exports}. The
- * embedding can then use the `slime.runtime.Exports` to provide arbitrary APIs for users of the embedding.
+ * Arbitrary SLIME embeddings can be created; the {@link slime.runtime.internal} documentation provides information about how to do
+ * so.
  *
  * ## Using SLIME
  *
  * ### APIs for all platforms
  *
- * SLIME provides its platform-independent {@link slime.$api API} to all code loaded with SLIME via the {@link slime.$api.Global | `$api`}
- * object, which provides a number of general-purpose constructs, including a functional programming module available as
- * {@link slime.$api.fp.Exports | `$api.fp`}. A low-level {@link slime.runtime.Platform | `$platform`} object is also provided to
- * all code loaded; `$platform` may provide access to engine-specific capabilities, but it is likely that `$platform` will be folded
- * into `$api` in the future.
+ * SLIME provides its platform-independent {@link slime.runtime API} to all code loaded with SLIME via the
+ * {@link slime.runtime.Exports | `$api`} object, which provides a number of general-purpose constructs, including a functional
+ * programming module available as {@link slime.$api.fp.Exports | `$api.fp`}.
  *
  * Similarly, the SLIME runtime also provides some common tools to runtime embedders, for historical reasons. So in some areas,
  * multiple embeddings share implementations and specifications of the same functionality, presented in the same or similar ways.
@@ -142,7 +131,15 @@
  *
  * ### Bundled tools and examples
  *
- * SLIME has several potentially useful programs bundled in its distribution.
+ * SLIME has several development support tools and potentially useful programs bundled in its distribution.
+ *
+ * #### Profile a `jsh` script under Rhino
+ *
+ * SLIME provides a Rhino profiler that can run a given script under a profiler and emit timing data about a program.
+ *
+ * The profiler can be invokved using `./jsh jrunscript/jsh/tools/profile.jsh.js *script* [*args*]`, where `*script*` is a
+ * `jsh` to run under the profiler, and `*args*` are any arguments to pass to the script. The profiler can be configured with
+ * profiler-specific options; see the `profile.jsh.js` file for details.
  *
  * #### Serve a directory (and optionally open a Chrome browser to browse it)
  *

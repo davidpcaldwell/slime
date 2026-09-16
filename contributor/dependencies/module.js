@@ -120,7 +120,7 @@
 					}),
 					function(p) {
 						var parent = $context.library.file.Location.parent()(p.to);
-						var means = $context.library.file.Location.directory.require.old({ recursive: true });
+						var means = $context.library.file.Location.directory.require({ recursive: true }).wo;
 						$api.fp.world.Means.now({
 							means: means,
 							order: parent

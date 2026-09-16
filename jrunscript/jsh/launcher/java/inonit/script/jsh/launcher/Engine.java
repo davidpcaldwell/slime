@@ -13,8 +13,6 @@ import java.util.logging.*;
 
 import javax.script.*;
 
-import inonit.system.*;
-
 public abstract class Engine {
 	private static Logger LOG = Logger.getLogger(Engine.class.getName());
 
@@ -88,7 +86,7 @@ public abstract class Engine {
 			field.setAccessible(true);
 			int rv = field.getInt(null);
 			if (rv == NULL_EXIT_STATUS) return null;
-			return new Integer(rv);
+			return Integer.valueOf(rv);
 		}
 
 		@Override Integer run(URL script, String[] args) throws IOException {
@@ -107,19 +105,19 @@ public abstract class Engine {
 				LOG.log(Level.INFO, "Exited Rhino shell with status: %s", status);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
-				status = new Integer(127);
+				status = Integer.valueOf(127);
 			} catch (NoSuchMethodException e) {
 				e.printStackTrace();
-				status = new Integer(127);
+				status = Integer.valueOf(127);
 			} catch (NoSuchFieldException e) {
 				e.printStackTrace();
-				status = new Integer(127);
+				status = Integer.valueOf(127);
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
-				status = new Integer(127);
+				status = Integer.valueOf(127);
 			} catch (java.lang.reflect.InvocationTargetException e) {
 				e.printStackTrace();
-				status = new Integer(127);
+				status = Integer.valueOf(127);
 			}
 			return status;
 		}

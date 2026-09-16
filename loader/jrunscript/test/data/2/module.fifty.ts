@@ -6,7 +6,7 @@
 
 namespace slime.jrunscript.runtime.test.javac {
 	export interface Context {
-		echo: slime.$api.fp.impure.Effect<string>
+		echo: slime.$api.fp.impure.Effector<string>
 	}
 
 	export interface Exports {
@@ -58,5 +58,5 @@ namespace slime.jrunscript.runtime.test.javac {
 	//@ts-ignore
 	)(Packages,fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

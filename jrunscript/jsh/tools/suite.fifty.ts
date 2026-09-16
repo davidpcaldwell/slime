@@ -21,7 +21,7 @@ namespace slime.jsh.tools.test {
 				var tmp = jsh.shell.TMPDIR.createTemporary({ directory: true });
 
 				var environmentWithJdk = function(now) {
-					var jdk = jsh.shell.java.Jdk.from.javaHome();
+					var jdk = jsh.shell.java.Jdk.from.javaHome;
 
 					var jdkBin = $api.fp.now(jdk, $api.fp.property("base"), jsh.file.Location.from.os, jsh.file.Location.directory.relativePath("bin"));
 

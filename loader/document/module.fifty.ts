@@ -64,7 +64,7 @@ namespace slime.runtime.document {
 
 	export namespace document {
 		export interface Exports {
-			edit: (f: slime.$api.fp.impure.Effect<Document>) => slime.$api.fp.Transform<string>
+			edit: (f: slime.$api.fp.impure.Effector<Document>) => slime.$api.fp.Transform<string>
 
 			codec: {
 				string: slime.Codec<slime.runtime.document.Document,string>
@@ -235,9 +235,9 @@ namespace slime.runtime.document {
 		export namespace content {
 			export interface Exports {
 				set: {
-					text: <T extends Parent>(data: string) => slime.$api.fp.impure.Effect<T>
+					text: <T extends Parent>(data: string) => slime.$api.fp.impure.Effector<T>
 
-					nodes: <T extends Parent>(f: (t: T) => Node[]) => slime.$api.fp.impure.Effect<T>
+					nodes: <T extends Parent>(f: (t: T) => Node[]) => slime.$api.fp.impure.Effector<T>
 				}
 
 				text: {
@@ -404,5 +404,5 @@ namespace slime.runtime.document {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context | void,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context | void,Exports>
 }

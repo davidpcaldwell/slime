@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.fifty.view.Context } $context
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.fifty.view.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {

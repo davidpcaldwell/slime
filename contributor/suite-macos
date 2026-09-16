@@ -5,4 +5,4 @@
 #
 #	END LICENSE
 
-$(dirname $0)/../wf check
+$(dirname $0)/../wf test.jrunscript

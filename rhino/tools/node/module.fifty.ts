@@ -60,7 +60,7 @@ namespace slime.jrunscript.tools.node {
 
 	/**
 	 * A specified installation of Node.js. When determining whether Node.js is installed at a particular location, one can
-	 * create an `Installation` using the `from.location` function, and then check for its existence with `exists`.
+	 * create an `Installation` using the `from.base` function, and then check for its existence with `exists`.
 	 */
 	export interface Installation {
 		executable: string
@@ -83,12 +83,12 @@ namespace slime.jrunscript.tools.node {
 		export interface Exports {
 			from: {
 				/**
-				 * Given a Node installation location, returns the Node `Installation` corresponding to that location.
+				 * Given a Node installation location, returns a Node `Installation` corresponding to that location.
 				 *
 				 * @param home The home directory of the `Installation`.
-				 * @returns
+				 * @returns A {@link slime.$api.fp.Maybe} containing the `Installation` if one can be derived.
 				 */
-				location: (home: slime.jrunscript.file.Location) => slime.jrunscript.tools.node.Installation
+				base: (home: slime.jrunscript.file.Location) => slime.$api.fp.Maybe<slime.jrunscript.tools.node.Installation>
 			}
 
 			exists: {
@@ -96,7 +96,11 @@ namespace slime.jrunscript.tools.node {
 				simple: (installation: Installation) => boolean
 			}
 
-			getVersion: slime.$api.fp.world.Sensor<slime.jrunscript.tools.node.Installation,void,string>
+			getVersion: slime.$api.fp.world.sensor.api.Maybe<
+				slime.jrunscript.tools.node.Installation,
+				void,
+				string
+			>
 		}
 	}
 
@@ -120,12 +124,16 @@ namespace slime.jrunscript.tools.node {
 
 			//	TODO	test still directly references world object
 			fifty.tests.sandbox.installation = function() {
-				var exists = $api.fp.now(test.subject.Installation.exists.wo, $api.fp.world.Sensor.mapping());
-				var getVersion = $api.fp.world.mapping(test.subject.Installation.getVersion);
+				var exists = test.subject.Installation.exists.simple;
+				var getVersion = test.subject.Installation.getVersion.simple;
 
 				var TMPDIR = fifty.jsh.file.temporary.location();
-				var installation = test.subject.Installation.from.location(TMPDIR);
+				var maybeInstallation = test.subject.Installation.from.base(TMPDIR);
+				verify(maybeInstallation).present.is(false);
 
+				var installation: slime.jrunscript.tools.node.Installation = {
+					executable: $api.fp.now(TMPDIR, fifty.global.jsh.file.Location.directory.relativePath("bin/node"), $api.fp.property("pathname"))
+				};
 				var before = exists(installation);
 				verify(before).is(false);
 
@@ -135,6 +143,8 @@ namespace slime.jrunscript.tools.node {
 					})
 				);
 
+				var maybeInstallationAfter = test.subject.Installation.from.base(TMPDIR);
+				verify(maybeInstallationAfter).present.is(true);
 				var after = exists(installation);
 				verify(after).is(true);
 				var version = getVersion(installation);
@@ -190,7 +200,10 @@ namespace slime.jrunscript.tools.node {
 							version: test.subject.test.versions.current
 						})
 					);
-					var installation = test.subject.Installation.from.location(TMPDIR);
+					var maybeInstallation = test.subject.Installation.from.base(TMPDIR);
+					verify(maybeInstallation).present.is(true);
+					if (!maybeInstallation.present) throw new Error("Unable to derive Node installation from base.");
+					var installation = maybeInstallation.value;
 					debugger;
 					var result = $api.fp.world.now.question(
 						test.subject.Installation.Intention.question({
@@ -213,9 +226,9 @@ namespace slime.jrunscript.tools.node {
 		export interface Exports {
 			list: () => slime.$api.fp.world.Question<void, Module[]>
 
-			installed: (name: string) => slime.$api.fp.world.Question<void, slime.$api.fp.Maybe<Module>>
+			installed: (name: string) => slime.$api.fp.world.Question<{}, slime.$api.fp.Maybe<Module>>
 
-			install: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<void>
+			install: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<{}>
 
 			require: (p: { name: string, version?: string }) => slime.$api.fp.world.Action<
 				{
@@ -255,7 +268,159 @@ namespace slime.jrunscript.tools.node {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			fifty.tests.npm = {};
+			var createCountingModulesFixture = function(p: { project?: boolean }) {
+				var dependencies: {
+					[name: string]: {
+						version: string
+						path: string
+						bin: { [name: string]: string }
+					}
+				} = {};
+
+				var calls = {
+					installQuestion: 0,
+					installAction: 0,
+					lsQuestion: 0
+				};
+
+				var parseInvocation = function(invocation: slime.jrunscript.shell.run.Intention) {
+					var args = invocation.arguments || [];
+					return {
+						command: args[1],
+						parameters: args.slice(2)
+					};
+				};
+
+				var installDependency = function(parameters: string[]) {
+					var packageSpecifier = parameters.find(function(parameter) {
+						return parameter.charAt(0) != "-";
+					});
+					if (!packageSpecifier) {
+						dependencies["project-install-refresh"] = {
+							version: "1.0.0",
+							path: "/tmp/project-install-refresh",
+							bin: {}
+						};
+						return;
+					}
+
+					var name = packageSpecifier;
+					var version = "1.0.0";
+					if (packageSpecifier.indexOf("@") > 0) {
+						var at = packageSpecifier.lastIndexOf("@");
+						name = packageSpecifier.substring(0, at);
+						version = packageSpecifier.substring(at + 1);
+					}
+
+					dependencies[name] = {
+						version: version,
+						path: "/tmp/" + name,
+						bin: {}
+					};
+				};
+
+				var fixtureSubject = fifty.$loader.script("module.js")({
+					library: {
+						file: jsh.file,
+						shell: {
+							subprocess: {
+								question: function(invocation: slime.jrunscript.shell.run.Intention) {
+									return function() {
+										var parsed = parseInvocation(invocation);
+										if (parsed.command == "install") {
+											calls.installQuestion += 1;
+											return {
+												status: 0,
+												stdio: {
+													output: "",
+													error: ""
+												}
+											};
+										}
+
+										if (parsed.command == "ls") {
+											calls.lsQuestion += 1;
+											return {
+												status: 0,
+												stdio: {
+													output: JSON.stringify({
+														name: "fixture",
+														dependencies: dependencies
+													}),
+													error: ""
+												}
+											};
+										}
+
+										throw new Error("Unexpected npm question command: " + parsed.command);
+									};
+								},
+								action: function(invocation: slime.jrunscript.shell.run.Intention) {
+									return function() {
+										var parsed = parseInvocation(invocation);
+										if (parsed.command != "install") {
+											throw new Error("Unexpected npm action command: " + parsed.command);
+										}
+										calls.installAction += 1;
+										installDependency(parsed.parameters);
+									};
+								}
+							}
+						} as any,
+						install: jsh.tools.install
+					}
+				} as any) as Exports;
+
+				var installation: Installation = {
+					executable: "/tmp/fake-node/bin/node"
+				};
+
+				var modules = (p.project)
+					? fixtureSubject.Project.modules({ base: "/tmp/fake-project" })(installation)
+					: fixtureSubject.Installation.modules(installation);
+
+				return {
+					modules: modules,
+					calls: calls
+				};
+			};
+
+			fifty.tests.npm = fifty.test.Parent();
+
+			fifty.tests.npm.listingCache = function() {
+				var fixture = createCountingModulesFixture({});
+
+				$api.fp.world.Question.now({ question: fixture.modules.list() });
+				$api.fp.world.Question.now({ question: fixture.modules.list() });
+
+				verify(fixture.calls.installQuestion).is(1);
+				verify(fixture.calls.lsQuestion).is(1);
+			};
+
+			fifty.tests.npm.installInvalidatesListingCache = function() {
+				var fixture = createCountingModulesFixture({});
+
+				$api.fp.world.Question.now({ question: fixture.modules.list() });
+				$api.fp.world.Action.now({ action: fixture.modules.install({ name: "minimal-package" }) });
+				$api.fp.world.Question.now({ question: fixture.modules.list() });
+
+				verify(fixture.calls.installQuestion).is(1);
+				verify(fixture.calls.installAction).is(1);
+				verify(fixture.calls.lsQuestion).is(2);
+			};
+
+			fifty.tests.npm.projectInstallInvalidatesListingCache = function() {
+				var fixture = createCountingModulesFixture({ project: true });
+
+				$api.fp.world.Question.now({ question: fixture.modules.list() });
+				if (!fixture.modules.project) throw new Error("Expected project modules API.");
+				fixture.modules.project.install();
+				$api.fp.world.Question.now({ question: fixture.modules.list() });
+
+				verify(fixture.calls.installQuestion).is(1);
+				verify(fixture.calls.installAction).is(1);
+				verify(fixture.calls.lsQuestion).is(2);
+			};
 
 			fifty.tests.wip = function() {
 				var TMPDIR = fifty.jsh.file.temporary.location();
@@ -265,7 +430,10 @@ namespace slime.jrunscript.tools.node {
 						version: test.subject.test.versions.current
 					}
 				);
-				var installation = test.subject.Installation.from.location(TMPDIR);
+				var maybeInstallation = test.subject.Installation.from.base(TMPDIR);
+				verify(maybeInstallation).present.is(true);
+				if (!maybeInstallation.present) throw new Error("Unreachable; just to help type checker.");
+				var installation = maybeInstallation.value;
 
 				var modules = test.subject.Installation.modules(installation);
 
@@ -459,12 +627,12 @@ namespace slime.jrunscript.tools.node {
 		}
 	}
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }
 
 namespace slime.jrunscript.tools.node.internal {
 	export interface JshPluginInterface {
-		module: (p: { context: Context }) => Exports
+		module: (p: { context: Context }) => slime.$api.fp.Maybe<Exports>
 	}
 
 	//	TODO	this probably has a richer structure when --depth is not 0
@@ -487,6 +655,7 @@ namespace slime.jrunscript.tools.node.internal {
 				var api = jsh.shell.tools.node.installed;
 				jsh.shell.console("version: " + api.version);
 				fifty.run(fifty.tests.sandbox);
+				fifty.run(fifty.tests.npm);
 				fifty.run(fifty.tests.object.installation);
 			}
 		}

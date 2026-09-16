@@ -91,9 +91,9 @@ namespace slime.jsh.shell.tools.tomcat {
 				var pathnames = $api.fp.now(
 					jsh.shell.HOME.pathname.os.adapt(),
 					jsh.file.Location.directory.relativePath("Downloads"),
-					jsh.file.Location.directory.list.stream.simple({
+					jsh.file.Location.directory.list.stream({
 						descend: $api.fp.Thunk.value(false)
-					}),
+					}).simple,
 					$api.fp.Stream.filter(
 						$api.fp.pipe(
 							jsh.file.Location.basename,
@@ -110,7 +110,7 @@ namespace slime.jsh.shell.tools.tomcat {
 						function(it) {
 							//	TODO	standard composition for this
 							jsh.shell.console("Removing: " + it.pathname);
-							jsh.file.Location.file.remove.simple(it);
+							jsh.file.Location.remove().simple(it);
 						}
 					)
 				);
@@ -254,7 +254,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				}
 			}
 		}
-		console: slime.$api.fp.impure.Effect<string>
+		console: slime.$api.fp.impure.Effector<string>
 		jsh: {
 			loader: {
 				plugins: slime.jsh.Global["loader"]["plugins"]
@@ -433,7 +433,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 					lib: slime.jrunscript.file.world.Location
 				}
 				script: slime.jrunscript.file.world.Location
-			}): slime.jrunscript.shell.run.old.Invocation {
+			}): slime.jrunscript.shell.run.minus2.Invocation {
 				var invocation = jsh.shell.Invocation.from.argument({
 					command: "bash",
 					arguments: $api.Array.build(function(rv) {
@@ -614,5 +614,5 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

@@ -429,7 +429,7 @@ namespace slime.jrunscript.ip {
 			var Mock = function(
 				implementation: (
 					p: Parameters<World["tcp"]["isAvailable"]>[0],
-					events: $api.event.Emitter<{ exception: Error }>
+					events: $api.event.Producer<{ exception: Error }>
 				) => boolean
 			 ) {
 				var isAvailable: World["tcp"]["isAvailable"] = function(p) {

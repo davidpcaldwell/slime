@@ -15,7 +15,7 @@
 	function($api,$context,$export) {
 		/**
 		 * @param { slime.jrunscript.http.client.spi.Implementation } client
-		 * @param { slime.$api.event.Emitter<slime.jrunscript.tools.install.download.Events> } events
+		 * @param { slime.$api.event.Producer<slime.jrunscript.tools.install.download.Events> } events
 		 */
 		var fetcher = function(client,events) {
 			return $api.fp.world.Sensor.old.mapping({
@@ -119,7 +119,7 @@
 						set: function(v) {
 							if (!v) throw new Error("!v!");
 							if (!v.read()) throw new Error("!v.read()!");
-							var it = $context.library.file.Location.directory.require.old()(location);
+							var it = $context.library.file.Location.directory.require().wo(location);
 							$api.fp.world.Action.now({
 								action: it
 							});

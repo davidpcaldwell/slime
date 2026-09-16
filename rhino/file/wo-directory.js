@@ -9,12 +9,93 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.runtime.Platform } $platform
 	 * @param { slime.jrunscript.file.internal.wo.directory.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.file.internal.wo.directory.Exports> } $export
 	 */
-	function($api,$platform,$context,$loader,$export) {
+	function($api,$context,$loader,$export) {
+		/** @type { (fs: slime.jrunscript.file.world.Filesystem) => slime.$api.fp.Transform<string> } */
+		var canonicalize = function(filesystem) {
+			return function(pathname) {
+				var terms = pathname.split(filesystem.separator.pathname);
+				var rv = [];
+				var RETURN_NULL = false;
+				terms.forEach(function(term) {
+					if (RETURN_NULL) return;
+					if (term == ".") {
+						return;
+					} else if (term == "..") {
+						//	TODO	This seems brittle but causes tests to pass on UNIX-like filesystems. Probably need to revisit.
+						if (rv.length == 1 && rv[0] === "") {
+							RETURN_NULL = true;
+							return;
+						} else {
+							rv.pop();
+						}
+					} else {
+						rv.push(term);
+					}
+				});
+				return (RETURN_NULL) ? null : rv.join(filesystem.separator.pathname);
+			}
+		};
+
+		/** @type { <T>(f: (location: slime.jrunscript.file.Location) => T) => (location: string) => T } */
+		var osParameter = function(f) {
+			return $api.fp.pipe($context.os.codec.encode, f);
+		};
+
+		/**
+		 *
+		 * @type { <T>(f: (t: T) => slime.jrunscript.file.Location) => (t: T) => string } f
+		 */
+		var osResult = function(f) {
+			return $api.fp.pipe(f, $context.os.codec.decode);
+		};
+
+		/** @type { (path: string) => (location: slime.jrunscript.file.Location) => slime.jrunscript.file.Location } */
+		var Location_relative_location = function(path) {
+			return function(location) {
+				var absolute = location.pathname + location.filesystem.separator.pathname + path;
+				var canonical = canonicalize(location.filesystem)(absolute);
+				if (canonical === null) return null;
+				return {
+					filesystem: location.filesystem,
+					pathname: canonical
+				}
+			}
+		};
+
+		/** @type { slime.jrunscript.file.location.os["directory"]["relativePath"] } */
+		var Location_relative_os = function(path) {
+			return osParameter(osResult(Location_relative_location(path)));
+		};
+
+		/** @type { slime.jrunscript.file.location.Exports["parent"] } */
+		var Location_parent = function() {
+			return Location_relative_location("..");
+		};
+
+		/** @type { slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: slime.jrunscript.file.Location }> } */
+		var ensureParent = function(location) {
+			var it = function(location,events) {
+				var parent = Location_relative_location("..")(location);
+				var exists = $context.Location_directory_exists(parent)(events);
+				if (!exists) {
+					it(parent, events);
+					$api.fp.world.now.action(
+						location.filesystem.createDirectory,
+						{ pathname: parent.pathname }
+					);
+					events.fire("created", parent);
+				}
+			};
+
+			return function(events) {
+				it(location,events);
+			}
+		}
+
 		var code = {
 			// /** @type { slime.jrunscript.file.internal.java.Script } */
 			// java: $loader.script("java.js"),
@@ -33,10 +114,10 @@
 			navigation: {
 				base: function(location) {
 					return function(relative) {
-						return $context.Location_relative(relative)(location);
+						return Location_relative_location(relative)(location);
 					}
 				},
-				relativePath: $context.Location_relative,
+				relativePath: Location_relative_location,
 				relativeTo: function(target) {
 					/** @type { (reference: slime.jrunscript.file.Location, location: slime.jrunscript.file.Location) => string } */
 					var x = function recurse(reference,location) {
@@ -64,123 +145,77 @@
 			}
 		};
 
-		var wo = {
-			directory: {
-				/** @type { slime.jrunscript.file.location.directory.Exports["list"]["world"] } */
-				list: function(p) {
-					/**
-					 *
-					 * @param { slime.jrunscript.file.Location } location
-					 * @param { slime.$api.fp.Predicate<slime.jrunscript.file.Location> } descend
-					 * @param { slime.$api.event.Emitter<slime.jrunscript.file.location.directory.list.Events> } events
-					 * @returns { slime.jrunscript.file.Location[] }
-					 */
-					var process = function(location,descend,events) {
-						var listed = $api.fp.world.now.ask(
-							location.filesystem.listDirectory({ pathname: location.pathname })
-						);
-						/** @type { slime.jrunscript.file.Location[] } */
-						var rv = [];
-						if (listed.present) {
-							listed.value.forEach(function(name) {
-								var it = {
-									filesystem: location.filesystem,
-									pathname: location.pathname + location.filesystem.separator.pathname + name
-								};
-								rv.push(it);
-								var isDirectory = $api.fp.world.now.question(location.filesystem.directoryExists, { pathname: it.pathname });
-								if (isDirectory.present) {
-									if (isDirectory.value) {
-										if (descend(it)) {
-											var contents = process(it,descend,events);
-											rv = rv.concat(contents);
-										}
-									} else {
-										//	ordinary file, nothing to do
-									}
-								} else {
-									//	TODO	not exactly the same situation as failing to list the directory, but close enough
-									events.fire("failed", it);
-								}
-							});
-						} else {
-							events.fire("failed", location);
-						}
-						return rv;
-					};
-
-					return function(events) {
-						var descend = (p && p.descend) ? p.descend : $api.fp.Mapping.all(false);
-						var array = process(p.target,descend,events);
-						return $api.fp.Stream.from.array(array);
-					}
-				}
-			}
-		};
-
-		var directoryExists = {
-			simple: $context.Location_directory_exists.simple,
-			world: function() {
-				return $context.Location_directory_exists.world();
-			}
-		};
+		var directoryExists = $api.fp.world.Sensor.api.simple($context.Location_directory_exists);
 
 		/**
-		 *
-		 * @param { slime.jrunscript.file.Location } location
-		 * @param { slime.$api.fp.world.Order<ReturnType<slime.jrunscript.file.location.directory.Exports["require"]>["wo"]> } p
-		 * @returns { ReturnType<ReturnType<slime.jrunscript.file.location.directory.Exports["require"]>["wo"]> }
+		 * @param { Parameters<slime.jrunscript.file.location.directory.Exports["require"]>[0] } p
+		 * @returns { ReturnType<slime.jrunscript.file.location.directory.Exports["require"]>["wo"] }
 		 */
-		var require_shared = function(location,p) {
-			return function(events) {
-				var exists = location.filesystem.directoryExists({
-					pathname: location.pathname
-				})(events);
-				if (exists.present) {
-					if (!exists.value) {
-						if (p && p.recursive) {
-							$api.fp.world.now.action(
-								$context.ensureParent,
-								location,
-								{
-									created: function(e) {
-										events.fire("created", {
-											filesystem: location.filesystem,
-											pathname: e.detail.pathname
-										})
-									}
-								}
-							);
-						}
-						$api.fp.world.now.action(
-							location.filesystem.createDirectory,
-							{ pathname: location.pathname }
-						)
-						//	TODO	should push this event back into implementation
-						//			this way, we could inform of recursive creations as well
-						//			probably in the implementation, payload should be pathname, translated into
-						//			location at this layer
-						events.fire("created", location);
-					} else {
-						events.fire("found", location);
-					}
-				} else {
-					throw new Error("Error determining whether directory is present at " + location.pathname);
-				}
-			}
-		};
-
-		/** @type { (location: slime.jrunscript.file.Location) => ReturnType<slime.jrunscript.file.Exports["Location"]["directory"]["require"]>["wo"] } */
-		var require = function(location) {
-			return function(p) {
-				return require_shared(location,p);
-			}
-		}
-
-		/** @type { slime.jrunscript.file.Exports["Location"]["directory"]["require"]["old"] } */
-		var require_old = function(p) {
+		var require_wo = function(p) {
 			return function(location) {
-				return require_shared(location,p);
+				return function(events) {
+					if (p && p.fresh) {
+						//	TODO	implement
+						var fileExists = false;
+						var somethingElseExists = false;
+
+						if (directoryExists.simple(location)) {
+							var sensor = $context.remove.location({
+								recursive: true,
+								known: true
+							});
+							var api = $api.fp.world.Sensor.api.simple(sensor);
+							//	TODO	wire up to remove events
+							var result = api.simple(location);
+							if (!result.present) return $api.fp.Maybe.from.nothing();
+						} else if (fileExists || somethingElseExists) {
+							$api.TODO()();
+						} else {
+							//	do nothing, we will create this fresh
+						}
+					}
+
+					var existsCheckResult = location.filesystem.directoryExists({
+						pathname: location.pathname
+					})(events);
+
+					if (existsCheckResult.present) {
+						var exists = existsCheckResult.value;
+						if (!exists) {
+							try {
+								if (p && p.recursive) {
+									$api.fp.world.Means.now({
+										means: ensureParent,
+										order: location,
+										handlers: {
+											created: function(e) {
+												events.fire("created", e.detail);
+											}
+										}
+									});
+								}
+								$api.fp.world.Means.now({
+									means: location.filesystem.createDirectory,
+									order: { pathname: location.pathname }
+								});
+								//	TODO	should push this event back into implementation
+								//			this way, we could inform of recursive creations as well
+								//			probably in the implementation, payload should be pathname, translated into
+								//			location at this layer
+								events.fire("created", location);
+							} catch (e) {
+								//	TODO	report error via event
+								return $api.fp.Maybe.from.nothing();
+							}
+						} else {
+							events.fire("found", location);
+						}
+						return $api.fp.Maybe.from.some(location);
+					} else {
+						//throw new Error("Error determining whether directory is present at " + location.pathname);
+						return $api.fp.Maybe.from.nothing();
+					}
+				}
 			}
 		};
 
@@ -191,7 +226,7 @@
 				get: function(path) {
 					var target = $api.fp.now(
 						root,
-						$context.Location_relative(path.join(separator))
+						Location_relative_location(path.join(separator))
 					);
 
 					var exists = $api.fp.now(
@@ -208,7 +243,7 @@
 				list: function(path) {
 					var target = $api.fp.now(
 						root,
-						$context.Location_relative(path.join(separator))
+						Location_relative_location(path.join(separator))
 					);
 
 					var targetExists = $api.fp.now(
@@ -243,26 +278,27 @@
 			return function(events) {
 				/** @type { (path: string[]) => void } */
 				var process = function(path) {
-					var destination = $context.Location_relative(path.join(p.to.filesystem.separator.pathname))(p.to);
+					var destination = Location_relative_location(path.join(p.to.filesystem.separator.pathname))(p.to);
 
 					var entries = p.index.list(path);
 					if (!entries.present) return;
 					entries.value.forEach(function(entry) {
 						if ($api.content.Entry.is.IndexEntry(entry)) {
+							// TODO	create directory?
 							process(path.concat([entry.name]));
 						} else {
-							var target = $context.Location_relative(entry.name)(destination);
-							var parent = $context.Location_parent()(target);
-							if (!$context.Location_directory_exists.simple(parent)) {
+							var target = Location_relative_location(entry.name)(destination);
+							var parent = Location_parent()(target);
+							if (!directoryExists.simple(parent)) {
 								$api.fp.world.Means.now({
-									means: require_old({ recursive: true }),
+									means: require_wo({ recursive: true }),
 									order: parent
 								});
 							}
 							var write = $context.Location_file_write(target);
-							p.write({
-								file: entry.value,
-								api: write
+							var pipe = $api.fp.now(write.stream, $api.fp.world.Means.effector());
+							pipe({
+								input: p.content(entry.value)
 							});
 							events.fire("mirrored", target);
 						}
@@ -274,7 +310,7 @@
 		}
 
 		var list_iterate_simple = $api.fp.now(
-			$api.fp.world.Sensor.old.mapping({ sensor: wo.directory.list }),
+			$api.fp.world.Sensor.old.mapping({ sensor: $context.list_world }),
 			$api.fp.curry({ descend: $api.fp.Mapping.all(false) }),
 			$api.fp.flatten("target")
 		);
@@ -285,52 +321,20 @@
 			relativeTo: directory.navigation.relativeTo,
 			/** @type { slime.jrunscript.file.location.Exports["directory"]["exists"] } */
 			exists: directoryExists,
-			require: Object.assign(
-				function(location) {
-					var means = require(location);
-					return $api.fp.world.Means.api.simple(means)
-				},
-				{
-					old: require_old
-				}
-			),
-			/** @type { slime.jrunscript.file.location.Exports["directory"]["remove"] } */
-			remove: {
-				world: function() {
-					return $context.remove;
-				},
-				simple: $api.fp.world.Means.output({
-					means: $context.remove
-				})
+			require: function(p) {
+				var means = require_wo(p);
+				return $api.fp.world.Sensor.api.maybe(means)
 			},
+			/** @type { slime.jrunscript.file.location.Exports["directory"]["remove"] } */
+			remove: $api.fp.world.Sensor.api.maybe($context.remove.directory),
 			list: (
 				function() {
 					return {
-						world: wo.directory.list,
+						world: $context.list_world,
 						iterate: {
 							simple: list_iterate_simple
 						},
-						stream: {
-							world: function(configuration) {
-								return function(location) {
-									return wo.directory.list({
-										target: location,
-										descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.all(false)
-									});
-								}
-							},
-							simple: function(configuration) {
-								return function(location) {
-									return $api.fp.world.Sensor.now({
-										sensor: wo.directory.list,
-										subject: {
-											target: location,
-											descend: (configuration && configuration.descend) ? configuration.descend : $api.fp.Mapping.all(false)
-										}
-									});
-								}
-							}
-						}
+						stream: $context.list_stream
 					}
 				}
 			)(),
@@ -370,17 +374,40 @@
 						),
 						compiler: function(location) {
 							if (!location.pathname) throw new Error("Not location: keys = " + Object.keys(location));
-							return $api.scripts.compiler(adapt(location))
+							return $api.scripts.compiler.compile(adapt(location))
 						},
 						unsupported: function(code) { return null; },
 						scope: {
 							$api: $api,
-							$platform: $platform
+							$platform: $api.platform
 						}
 					})
 				}
-			}
+			},
+			os: {
+				relativePath: Location_relative_os,
+				list: {
+					stream: function(configuration) {
+						var locationConfiguration = (configuration) ? {
+							descend: function(location) {
+								return configuration.descend(location.pathname);
+							}
+						} : void(0);
+						var locationStreamApi = $context.list_stream(locationConfiguration);
+						var osStreamApi = $api.fp.now(
+							locationStreamApi.wo,
+							$api.fp.world.Sensor.subject($context.os.codec.encode),
+							$api.fp.world.Sensor.reading($api.fp.Stream.map($context.os.codec.decode))
+						);
+						return $api.fp.world.Sensor.api.simple(osStreamApi);
+					}
+				}
+			},
+			ensureParent: ensureParent,
+			Location_relative: Location_relative_location,
+			Location_parent: Location_parent,
+			Location_directory_exists: directoryExists
 		})
 	}
 //@ts-ignore
-)($api,$platform,$context,$loader,$export);
+)($api,$context,$loader,$export);

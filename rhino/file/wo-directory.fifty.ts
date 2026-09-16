@@ -180,27 +180,8 @@ namespace slime.jrunscript.file.location.directory {
 	)(fifty);
 
 	export interface Exports {
-		exists: {
-			simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location,boolean>
-			world: () => slime.$api.fp.world.Sensor<slime.jrunscript.file.Location, {}, boolean>
-		}
-
-		require: {
-			(location: slime.jrunscript.file.Location): slime.$api.fp.world.means.api.Simple<
-				{ recursive?: boolean },
-				{
-					created: slime.jrunscript.file.Location
-					found: slime.jrunscript.file.Location
-				}
-			>
-
-			old: (p?: { recursive?: boolean }) => slime.$api.fp.world.Means<slime.jrunscript.file.Location, {
-				created: slime.jrunscript.file.Location
-				found: slime.jrunscript.file.Location
-			}>
-		}
+		exists: slime.$api.fp.world.sensor.api.Simple<slime.jrunscript.file.Location, {}, boolean>
 	}
-
 
 	(
 		function(
@@ -215,17 +196,17 @@ namespace slime.jrunscript.file.location.directory {
 
 				var exists = Object.assign(
 					$api.fp.world.mapping(
-						subject.Location.directory.exists.world()
+						subject.Location.directory.exists.wo
 					),
 					{ toString: function() { return "exists()"; }}
 				);
 
 				verify(at).evaluate(exists).is(false);
 
-				$api.fp.world.process(subject.Location.directory.require.old()(at))();
+				$api.fp.world.process(subject.Location.directory.require().wo(at))();
 				verify(at).evaluate(exists).is(true);
 
-				$api.fp.world.process(subject.Location.directory.require.old()(at))();
+				$api.fp.world.process(subject.Location.directory.require().wo(at))();
 				verify(at).evaluate(exists).is(true);
 			}
 		}
@@ -233,10 +214,21 @@ namespace slime.jrunscript.file.location.directory {
 	)(fifty);
 
 	export interface Exports {
-		remove: {
-			simple: slime.$api.fp.impure.Output<slime.jrunscript.file.Location>
-			world: () => slime.$api.fp.world.Means<slime.jrunscript.file.Location,void>
-		}
+		/**
+		 *
+		 * @param mode.recursive If true, parent directories will be created as needed; default `false`.
+		 * @param mode.fresh If true, the directory will be removed if it already exists before being created; default `false`.
+		 * @returns A sensor API that, when invoked, will create a directory at the given locaion, emitting appropriate events
+		 * along the way, and return the same location if successful, otherwise returning `Maybe.nothing`.
+		 */
+		require: (mode?: { recursive?: boolean, fresh?: boolean }) => slime.$api.fp.world.sensor.api.Maybe<
+			slime.jrunscript.file.Location,
+			{
+				created: slime.jrunscript.file.Location
+				found: slime.jrunscript.file.Location
+			},
+			slime.jrunscript.file.Location
+		>
 	}
 
 	(
@@ -246,22 +238,161 @@ namespace slime.jrunscript.file.location.directory {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			const exists = {
-				directory: $api.fp.world.mapping(jsh.file.world.Location.directory.exists.world())
+			var Captor = function() {
+				return fifty.$api.Events.Captor({
+					created: void(0),
+					found: void(0)
+				});
 			};
 
-			fifty.tests.sandbox.locations.directory.remove = function() {
-				var tmp = fifty.jsh.file.temporary.directory();
+			var wo = function(mode?: {
+				recursive?: boolean;
+				fresh?: boolean;
+			}) {
+				return fifty.global.jsh.file.Location.directory.require(mode).wo;
+			};
 
-				verify(tmp).evaluate(exists.directory).is(true);
+			const exists = {
+				directory: fifty.global.jsh.file.Location.directory.exists.simple,
+				file: fifty.global.jsh.file.Location.file.exists.simple
+			};
 
-				$api.fp.world.now.action(jsh.file.world.Location.directory.remove.world(), tmp);
+			const asLocation = (a: any) => a as slime.jrunscript.file.Location;
 
-				verify(tmp).evaluate(exists.directory).is(false);
+			fifty.tests.sandbox.locations.directory.require = fifty.test.Parent();
+
+			fifty.tests.sandbox.locations.directory.require.basic = function() {
+				var captor = Captor();
+
+				var simple = $api.fp.now(wo(), $api.fp.world.Sensor.mapping(captor.handler));
+
+				var at = fifty.jsh.file.temporary.location();
+
+				verify(at).evaluate(exists.directory).is(false);
+				verify(captor).events.length.is(0);
+
+				var result = simple(at);
+
+				verify(result).present.is(true);
+				verify(at).evaluate(exists.directory).is(true);
+				verify(captor).events.length.is(1);
+
+				if (captor.events.length > 0) {
+					verify(captor.events[0].type).is("created");
+					verify(captor.events[0].detail).evaluate(asLocation).pathname.is(at.pathname);
+				}
+			}
+
+			fifty.tests.sandbox.locations.directory.require.recursive = fifty.test.Parent();
+
+			const recursive = function(mode?: {
+				recursive?: boolean;
+				fresh?: boolean;
+			}) {
+				var captor = Captor();
+
+				var simple = $api.fp.now(wo(mode), $api.fp.world.Sensor.mapping(captor.handler));
+
+				var at = fifty.jsh.file.temporary.location();
+				var base = fifty.global.jsh.file.Location.directory.base(at);
+				var nested = base("a/b/c");
+
+				verify(nested).evaluate(exists.directory).is(false);
+				verify(captor).events.length.is(0);
+
+				var result = simple(nested);
+
+				return { at, base, nested, result, events: captor.events };
+			};
+
+			fifty.tests.sandbox.locations.directory.require.recursive.yes = function() {
+				const { at, base, nested, result, events } = recursive({ recursive: true });
+
+				verify(result).present.is(true);
+				verify(nested).evaluate(exists.directory).is(true);
+				verify(events).length.is(4);
+				if (events.length == 4) {
+					verify(events[0].type).is("created");
+					verify(events[0].detail).evaluate(asLocation).pathname.is(at.pathname);
+					verify(events[1].type).is("created");
+					verify(events[1].detail).evaluate(asLocation).pathname.is(base("a").pathname);
+					verify(events[2].type).is("created");
+					verify(events[2].detail).evaluate(asLocation).pathname.is(base("a/b").pathname);
+					verify(events[3].type).is("created");
+					verify(events[3].detail).evaluate(asLocation).pathname.is(base("a/b/c").pathname);
+				}
+			};
+
+			fifty.tests.sandbox.locations.directory.require.recursive.no = function() {
+				const { at, base, nested, result, events } = recursive({ recursive: false });
+
+				verify(result).present.is(false);
+				verify(nested).evaluate(exists.directory).is(false);
+				verify(events).length.is(0);
+			};
+
+			fifty.tests.sandbox.locations.directory.require.fresh = fifty.test.Parent();
+
+			var fresh = function(before: { nonempty: boolean }) {
+				return function(mode?: { recursive?: boolean; fresh?: boolean }) {
+					return function(after: { exists: boolean, files: number }) {
+						var at: slime.jrunscript.file.Location;
+
+						debugger;
+
+						if (before.nonempty) {
+							at = fifty.jsh.file.temporary.directory();
+							var it = $api.fp.now(at, jsh.file.Location.relative("it"));
+							verify(it).evaluate(exists.file).is(false);
+							var write = jsh.file.Location.file.write.open(it).simple;
+							var out = write();
+							verify(it).evaluate(exists.file).is(true);
+						} else {
+							at = fifty.jsh.file.temporary.location();
+						}
+
+						var listing = $api.fp.pipe(
+							jsh.file.Location.directory.list.stream().simple,
+							$api.fp.Stream.collect
+						);
+
+						var captor = Captor();
+
+						var simple = $api.fp.now(wo(mode), $api.fp.world.Sensor.mapping(captor.handler));
+
+						verify(at).evaluate(exists.directory).is(before.nonempty);
+						verify(captor).events.length.is(0);
+						if (before.nonempty) verify(at).evaluate(listing).length.is( 1 );
+
+						var result = simple(at);
+
+						verify(result).present.is(true);
+						verify(at).evaluate(exists.directory).is(true);
+						verify(at).evaluate(listing).length.is( (mode.fresh) ? 0 : after.files );
+					}
+				}
+			}
+
+			fifty.tests.sandbox.locations.directory.require.fresh.create = function() {
+				fresh({ nonempty: false })({ fresh: true })({ exists: true, files: 0 });
+				fresh({ nonempty: false })({ fresh: false })({ exists: true, files: 0 });
+			}
+
+			fifty.tests.sandbox.locations.directory.require.fresh.yes = function() {
+				debugger;
+				fresh({ nonempty: true })({ fresh: true })({ exists: true, files: 0 });
+			}
+
+			fifty.tests.sandbox.locations.directory.require.fresh.no = function() {
+				fresh({ nonempty: true })({ fresh: false })({ exists: true, files: 1 });
 			}
 		}
 	//@ts-ignore
 	)(fifty);
+
+	export interface Exports {
+		remove: slime.jrunscript.file.remove.Directory
+	}
 
 	export namespace list {
 		export interface Events {
@@ -285,21 +416,20 @@ namespace slime.jrunscript.file.location.directory {
 				simple: slime.$api.fp.Mapping<slime.jrunscript.file.Location,slime.$api.fp.Stream<slime.jrunscript.file.Location>>
 			}
 
-			stream: {
-				world: (p?: {
+			stream: (
+				p?: {
 					/**
 					 * If provided, is invoked to decide whether the listing will descend into the given directory. By default,
 					 * no subdirectories will be traversed.
 					 */
 					descend: slime.$api.fp.Predicate<slime.jrunscript.file.Location>
-				}) => slime.$api.fp.world.Sensor<
-					slime.jrunscript.file.Location,
-					list.Events,
-					slime.$api.fp.Stream<slime.jrunscript.file.Location>
-				>,
-				simple: (p?: Parameters<Exports["list"]["stream"]["world"]>[0])
-					=> slime.$api.fp.world.Simple<ReturnType<Exports["list"]["stream"]["world"]>>
-			}
+				}
+			)
+			=> slime.$api.fp.world.sensor.api.Simple<
+				slime.jrunscript.file.Location,
+				list.Events,
+				slime.$api.fp.Stream<slime.jrunscript.file.Location>
+			>
 		}
 	}
 
@@ -341,18 +471,18 @@ namespace slime.jrunscript.file.location.directory {
 
 				var stream_iterate = $api.fp.Stream.collect(
 					$api.fp.world.Sensor.now({
-						sensor: subject.Location.directory.list.stream.world(),
+						sensor: subject.Location.directory.list.stream().wo,
 						subject: target
 					})
 				);
 
 				var stream_traverse = $api.fp.Stream.collect(
 					$api.fp.world.Sensor.now({
-						sensor: subject.Location.directory.list.stream.world({
+						sensor: subject.Location.directory.list.stream({
 							descend: function(into) {
 								return true;
 							}
-						}),
+						}).wo,
 						subject: target
 					})
 				);
@@ -397,7 +527,7 @@ namespace slime.jrunscript.file.location.directory {
 			fifty.tests.manual.issue1181 = function() {
 				var location = fifty.jsh.file.temporary.location();
 				var listing = $api.fp.world.now.question(
-					subject.Location.directory.list.stream.world(),
+					subject.Location.directory.list.stream().wo,
 					location,
 					{
 						failed: function(e) {
@@ -474,7 +604,7 @@ namespace slime.jrunscript.file.location.directory {
 			fifty.tests.sandbox.filesystem.directory.move = function() {
 				const exists = {
 					file: $api.fp.world.mapping(jsh.file.world.Location.file.exists.world()),
-					directory: $api.fp.world.mapping(jsh.file.world.Location.directory.exists.world())
+					directory: $api.fp.world.mapping(jsh.file.world.Location.directory.exists.wo)
 				};
 
 				const atFilepath = jsh.file.world.Location.relative("filepath");
@@ -484,7 +614,7 @@ namespace slime.jrunscript.file.location.directory {
 					$api.fp.pipe(
 						//	TODO	Output.compose?
 						$api.fp.impure.tap(
-							$api.fp.world.output(jsh.file.world.Location.directory.require.old())
+							$api.fp.world.output(jsh.file.world.Location.directory.require().wo)
 						),
 						$api.fp.impure.tap(
 							$api.fp.pipe(
@@ -569,112 +699,114 @@ namespace slime.jrunscript.file.location.directory {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports {
-		content: {
+	export namespace content {
+		export interface Exports {
 			Index: (root: slime.jrunscript.file.Location) => slime.runtime.content.Index<slime.jrunscript.file.Location>
+		}
 
+		export interface Exports {
 			mirror: <T>(p: {
 				index: slime.runtime.content.Index<T>
-				write: (p: {
-					file: T
-					api: ReturnType<slime.jrunscript.file.location.file.Exports["write"]["old"]>
-				}) => void
+
+				content: (t: T) => slime.jrunscript.runtime.io.InputStream
+
 				to: slime.jrunscript.file.Location
 			}) => slime.$api.fp.world.Action<{
 				mirrored: slime.jrunscript.file.Location
 			}>
 		}
+
+		(
+			function(
+				fifty: slime.fifty.test.Kit
+			) {
+				const { verify } = fifty;
+				const { $api } = fifty.global;
+
+				const subject = fifty.global.jsh.file.Location.directory;
+
+				fifty.tests.exports.content = fifty.test.Parent();
+
+				fifty.tests.exports.content.Index = function() {
+					var root = fifty.jsh.file.relative(".");
+					var content = subject.content.Index(root);
+
+					verify(content).get(["loader.js"]).present.is(true);
+					verify(content).get(["foo"]).present.is(false);
+
+					var listing = content.list([]);
+					if (!listing.present) {
+						verify(true).is(false);
+					} else {
+						debugger;
+						var script = listing.value.find(function(entry) { return entry.name == "loader.js" });
+						var absent = listing.value.find(function(entry) { return entry.name == "foo" });
+						var folder = listing.value.find(function(entry) { return entry.name == "oo" });
+
+						verify(script).evaluate.property("value").is.type("object");
+						verify(script).evaluate.property("value").evaluate.property("pathname").is.type("string");
+						verify(script).evaluate.property("value").evaluate.property("get").is.type("undefined");
+
+						verify(absent).is(void(0));
+
+						verify(folder).evaluate.property("store").is.type("object");
+						verify(folder).evaluate.property("store").evaluate.property("pathname").is.type("undefined");
+						verify(folder).evaluate.property("store").evaluate.property("get").is.type("function");
+					}
+				}
+
+				fifty.tests.exports.content.mirror = function() {
+					const $$api = $api as slime.$api.jrunscript.Global;
+
+					const fixtures = (function() {
+						const script: slime.runtime.test.Script = fifty.$loader.script("../../loader/fixtures.ts");
+						return {
+							runtime: script()
+						}
+					})();
+
+					var content: slime.runtime.test.mock.Content<string> = fixtures.runtime.mock.content();
+					content.set("foo/bar", "bar!");
+					content.set("foo/baz", "baz!!");
+
+					var to = fifty.jsh.file.temporary.location();
+
+					var action = subject.content.mirror({
+						index: content.index,
+						content: function(p) {
+							return $$api.jrunscript.io.InputStream.string.default(p);
+						},
+						to: to
+					});
+
+					fifty.global.$api.fp.world.Action.now({
+						action: action
+					});
+
+					var bar = fifty.global.$api.fp.now(
+						to,
+						fifty.global.jsh.file.Location.directory.relativePath("foo/bar"),
+						fifty.global.jsh.file.Location.file.read.string.simple,
+					);
+
+					verify(bar).is("bar!");
+
+					var baz = fifty.global.$api.fp.now(
+						to,
+						fifty.global.jsh.file.Location.directory.relativePath("foo/baz"),
+						fifty.global.jsh.file.Location.file.read.string.simple,
+					);
+
+					verify(baz).is("baz!!");
+				}
+			}
+		//@ts-ignore
+		)(fifty);
 	}
 
-	(
-		function(
-			fifty: slime.fifty.test.Kit
-		) {
-			const { verify } = fifty;
-
-			const fixtures = (function() {
-				const script: slime.runtime.test.Script = fifty.$loader.script("../../loader/fixtures.ts");
-				return {
-					runtime: script()
-				}
-			})();
-
-			const subject = fifty.global.jsh.file.Location.directory;
-
-			fifty.tests.exports.content = fifty.test.Parent();
-
-			fifty.tests.exports.content.Index = function() {
-				var root = fifty.jsh.file.relative(".");
-				var content = subject.content.Index(root);
-
-				verify(content).get(["loader.js"]).present.is(true);
-				verify(content).get(["foo"]).present.is(false);
-
-				var listing = content.list([]);
-				if (!listing.present) {
-					verify(true).is(false);
-				} else {
-					debugger;
-					var script = listing.value.find(function(entry) { return entry.name == "loader.js" });
-					var absent = listing.value.find(function(entry) { return entry.name == "foo" });
-					var folder = listing.value.find(function(entry) { return entry.name == "oo" });
-
-					verify(script).evaluate.property("value").is.type("object");
-					verify(script).evaluate.property("value").evaluate.property("pathname").is.type("string");
-					verify(script).evaluate.property("value").evaluate.property("get").is.type("undefined");
-
-					verify(absent).is(void(0));
-
-					verify(folder).evaluate.property("store").is.type("object");
-					verify(folder).evaluate.property("store").evaluate.property("pathname").is.type("undefined");
-					verify(folder).evaluate.property("store").evaluate.property("get").is.type("function");
-				}
-			}
-
-			fifty.tests.exports.content.mirror = function() {
-				var content: slime.runtime.test.mock.Content<string> = fixtures.runtime.mock.content();
-				content.set("foo/bar", "bar!");
-				content.set("foo/baz", "baz!!");
-
-				var to = fifty.jsh.file.temporary.location();
-
-				var action = subject.content.mirror({
-					index: content.index,
-					write: function(p) {
-						debugger;
-						fifty.global.$api.fp.world.Means.now({
-							means: p.api.string,
-							order: {
-								value: p.file
-							}
-						});
-					},
-					to: to
-				});
-
-				fifty.global.$api.fp.world.Action.now({
-					action: action
-				});
-
-				var bar = fifty.global.$api.fp.now(
-					to,
-					fifty.global.jsh.file.Location.directory.relativePath("foo/bar"),
-					fifty.global.jsh.file.Location.file.read.string.simple,
-				);
-
-				verify(bar).is("bar!");
-
-				var baz = fifty.global.$api.fp.now(
-					to,
-					fifty.global.jsh.file.Location.directory.relativePath("foo/baz"),
-					fifty.global.jsh.file.Location.file.read.string.simple,
-				);
-
-				verify(baz).is("baz!!");
-			}
-		}
-	//@ts-ignore
-	)(fifty);
+	export interface Exports {
+		content: content.Exports
+	}
 
 	export interface Exports {
 		Loader: {
@@ -683,21 +815,64 @@ namespace slime.jrunscript.file.location.directory {
 	}
 }
 
+namespace slime.jrunscript.file.wo.directory {
+	export type os = {
+		relativePath: (path: string) => (base: string) => string
+
+		list: {
+			stream: (
+				p?: {
+					/**
+					 * If provided, is invoked to decide whether the listing will descend into the given directory. By default,
+					 * no subdirectories will be traversed.
+					 */
+					descend: slime.$api.fp.Predicate<string>
+				}
+			)
+			=> slime.$api.fp.world.sensor.api.Simple<
+				string,
+				slime.jrunscript.file.location.directory.list.Events,
+				slime.$api.fp.Stream<string>
+			>
+		}
+	}
+}
+
 namespace slime.jrunscript.file.internal.wo.directory {
 	export interface Context {
+		filesystem: {
+			os: slime.jrunscript.file.world.Filesystem
+		}
+
+		os: {
+			codec: slime.Codec<string, slime.jrunscript.file.Location>
+		}
+
 		Location: slime.jrunscript.file.internal.loader.Context["library"]["Location"]
 		Location_basename: slime.jrunscript.file.Exports["Location"]["basename"]
-		Location_relative: slime.jrunscript.file.location.Exports["directory"]["relativePath"]
-		Location_parent: slime.jrunscript.file.location.Exports["parent"]
-		Location_directory_exists: slime.jrunscript.file.Exports["Location"]["directory"]["exists"]
 		Location_file_read_string: slime.jrunscript.file.Exports["Location"]["file"]["read"]["string"]
 		Location_file_write: slime.jrunscript.file.Exports["Location"]["file"]["write"]["old"]
-		ensureParent: slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: slime.jrunscript.file.Location }>
-		remove: slime.$api.fp.world.Means<slime.jrunscript.file.Location,void>
 		Store: slime.runtime.loader.Exports["Store"]
+
+		Location_directory_exists: slime.jrunscript.file.Exports["Location"]["directory"]["exists"]["wo"]
+		list_world: slime.jrunscript.file.location.directory.Exports["list"]["world"]
+		list_stream: slime.jrunscript.file.location.directory.Exports["list"]["stream"]
+		remove: {
+			directory: slime.jrunscript.file.location.directory.Exports["remove"]["wo"]
+			location: slime.jrunscript.file.remove.internal.Exports["location"]
+		}
 	}
 
 	export type Exports = slime.jrunscript.file.location.directory.Exports
+		& {
+			os: jrunscript.file.wo.directory.os
+		}
+		& {
+			ensureParent: slime.$api.fp.world.Means<slime.jrunscript.file.Location, { created: slime.jrunscript.file.Location }>
+			Location_relative: slime.jrunscript.file.location.Exports["directory"]["relativePath"]
+			Location_parent: slime.jrunscript.file.location.Exports["parent"]
+			Location_directory_exists: slime.jrunscript.file.Exports["Location"]["directory"]["exists"]
+		}
 
 	(
 		function(
@@ -711,5 +886,5 @@ namespace slime.jrunscript.file.internal.wo.directory {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

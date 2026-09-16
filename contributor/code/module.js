@@ -50,13 +50,12 @@
 				};
 
 				//	TODO	obviously this is not ideal
-				var getBasename = function(location) {
+				var getBasename = function(/** @type { slime.jrunscript.file.Location } */location) {
 					return $context.library.file.Pathname(location.pathname).basename;
 				}
 
-				/** @type { slime.tools.code.isText } */
-				var isText = $api.fp.series(
-					function(entry) {
+				var isTextOld = $api.fp.series(
+					function(/** @type { slime.tools.code.File } */entry) {
 						if (entry.path == "tools/wf/test/data/plugin-standard/wf") return true;
 					},
 					function added(entry) {
@@ -124,7 +123,14 @@
 						//	This is a specific project file of test data for a ServiceLoader-related test
 						if (/META-INF\/services\/java.lang.Runnable$/.test(entry.file.pathname.toString())) return false;
 					}
-				)
+				);
+
+				/** @type { slime.tools.code.isText } */
+				var isText = function(entry) {
+					var rv = isTextOld(entry);
+					if (typeof(rv) == "boolean") return $api.fp.Maybe.from.some(rv);
+					return $api.fp.Maybe.from.nothing();
+				};
 
 				// var isTexts = (
 				// 	function() {

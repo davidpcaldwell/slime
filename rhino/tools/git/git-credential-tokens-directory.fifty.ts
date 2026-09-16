@@ -22,6 +22,16 @@ namespace slime.jrunscript.tools.git.credentials {
 		}
 	}
 
+	export type Operation = "get" | "store" | "erase"
+
+	export interface Data {
+		host?: string
+		path?: string
+		password?: string
+
+		[x: string]: string | undefined
+	}
+
 	export interface Project {
 		base: slime.jrunscript.file.Location
 	}
@@ -81,6 +91,19 @@ namespace slime.jrunscript.tools.git.credentials {
 			>
 		}
 
+		credentials: (f:
+			(p: Data) => slime.$api.fp.Maybe<{
+				username: string
+				password: string
+			}>
+		) => (p: {
+			operation: Operation
+			input: slime.jrunscript.runtime.io.InputStream
+			output: slime.$api.fp.impure.Effector<string>
+			console: slime.$api.fp.impure.Effector<string>
+			debug?: slime.$api.fp.impure.Effector<string>
+		}) => void
+
 		/**
 		 * Implements the `git` [credential helper](https://git-scm.com/docs/gitcredentials) interface when the "operation" is
 		 * passed to it as the `operation` property of its input.
@@ -92,12 +115,12 @@ namespace slime.jrunscript.tools.git.credentials {
 		 * @returns
 		 */
 		helper: (p: {
-			operation: string
+			operation: Operation
 			project: Project
 			input: slime.jrunscript.runtime.io.InputStream
-			output: slime.$api.fp.impure.Output<string>
-			console: slime.$api.fp.impure.Output<string>
-			debug?: slime.$api.fp.impure.Output<string>
+			output: slime.$api.fp.impure.Effector<string>
+			console: slime.$api.fp.impure.Effector<string>
+			debug?: slime.$api.fp.impure.Effector<string>
 		}) => void
 	}
 
@@ -255,6 +278,66 @@ namespace slime.jrunscript.tools.git.credentials {
 					var result = parseOutput(output);
 					verify(result).evaluate.property("password").is(void(0));
 				});
+
+				fifty.run(function passwordGet() {
+					var output = "";
+					var password = forHelper.credentials(function(input) {
+						if (input.host == "example.com") {
+							return $api.fp.Maybe.from.some({
+								username: "foo",
+								password: "bar"
+							});
+						}
+						return $api.fp.Maybe.from.nothing();
+					});
+
+					password({
+						operation: "get",
+						input: jsh.io.InputStream.string.default(
+							//	The input's username deliberately differs from the callback's returned username, so this test
+							//	proves the output username comes from the callback rather than merely echoing the input.
+							$api.Array.build(function(lines) {
+								lines.push("host=example.com");
+								lines.push("username=input-username");
+							}).join("\n")
+						),
+						output: function(line) {
+							output += line + "\n";
+						},
+						console: jsh.shell.console
+					});
+
+					var result = parseOutput(output);
+					verify(result).evaluate.property("username").is("foo");
+					verify(result).evaluate.property("password").is("bar");
+					if (!output.endsWith("\n\n")) throw new Error("Expected credential helper output to end with a blank line.");
+				});
+
+				fifty.run(function passwordNonGet() {
+					var output = "";
+					var password = forHelper.credentials(function() {
+						return $api.fp.Maybe.from.some({
+							username: "foo",
+							password: "bar"
+						});
+					});
+
+					password({
+						operation: "store",
+						input: jsh.io.InputStream.string.default(
+							$api.Array.build(function(lines) {
+								lines.push("host=example.com");
+								lines.push("username=foo");
+							}).join("\n")
+						),
+						output: function(line) {
+							output += line + "\n";
+						},
+						console: jsh.shell.console
+					});
+
+					verify(output).is("");
+				});
 			}
 		}
 	//@ts-ignore
@@ -271,5 +354,5 @@ namespace slime.jrunscript.tools.git.credentials {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

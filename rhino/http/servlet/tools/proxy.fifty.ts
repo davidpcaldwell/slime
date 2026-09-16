@@ -18,7 +18,7 @@ namespace slime.servlet.proxy {
 			ip: slime.jrunscript.ip.Exports
 			http: slime.jrunscript.http.client.Exports
 			jsh: {
-				shell: slime.jsh.shell.Exports
+				shell: slime.jsh.Global["shell"]
 				httpd: slime.jsh.httpd.Exports
 			}
 		}
@@ -99,7 +99,7 @@ namespace slime.servlet.proxy {
 				}
 			});
 		//@ts-ignore
-		})(fifty)
+		})(fifty);
 	}
 
 	(
@@ -136,5 +136,5 @@ namespace slime.servlet.proxy {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

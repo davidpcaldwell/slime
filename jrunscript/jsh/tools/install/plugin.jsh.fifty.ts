@@ -316,8 +316,14 @@ namespace slime.external {
 					fifty.jsh.file.relative("../../../../docker-compose.yaml"),
 					jsh.file.Location.file.read.string.simple
 				)
-			);
-			verify(parsed).evaluate.property("name").is("slime");
+			) as {
+				services: {
+					local: {}
+				}
+			};
+			if (!parsed || !parsed.services || !parsed.services.local) {
+				throw new Error("Expected docker-compose.yaml to define services.local.");
+			}
 		}
 	}
 //@ts-ignore
@@ -409,7 +415,9 @@ namespace slime.jsh.shell.tools {
 	}
 
 	export interface Exports {
-		kotlin: any
+		kotlin: {
+			install: slime.$api.fp.world.Means<{ replace?: boolean }, { console: string }>
+		}
 	}
 
 	export namespace scala {
@@ -606,10 +614,7 @@ namespace slime.jsh.shell.tools {
 				const { $api, jsh } = fifty.global;
 
 				var getVersion = function(install: slime.jrunscript.tools.node.Installation) {
-					return $api.fp.world.Sensor.now({
-						sensor: jsh.shell.tools.node.Installation.getVersion,
-						subject: install
-					});
+					return jsh.shell.tools.node.Installation.getVersion.simple(install);
 				}
 
 				$api.fp.world.Action.now({

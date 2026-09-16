@@ -26,6 +26,8 @@ namespace slime.project.license.cli {
 					}
 				});
 				cloned.directory.getRelativePath("a.js").write("", { append: false });
+				cloned.directory.getRelativePath("shebang-script").write("#!/bin/bash\n", { append: false });
+				cloned.directory.getRelativePath(".shebang-script").write("#!/bin/bash\n", { append: false });
 				var result = $api.fp.world.now.question(
 					jsh.shell.world.question,
 					jsh.shell.Invocation.from.argument({

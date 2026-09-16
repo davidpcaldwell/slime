@@ -45,17 +45,72 @@
 		};
 
 		/**
-		 * @param { { directory?: slime.jrunscript.file.Directory, loader?: slime.old.Loader, prefix: string } } p
+		 * @param { slime.jsh.httpd.resources.MappingDescriptor } p
+		 * @param { string } path
+		 * @returns { string | undefined }
+		 */
+		var portionUnder = function(p,path) {
+			if (p.prefix.substring(0,path.length) == path) {
+				var remaining = p.prefix.substring(path.length);
+				var add = remaining.split("/")[0] + "/";
+				return add;
+			}
+		};
+
+		/**
+		 * @param { slime.jsh.httpd.resources.MappingDescriptor } p
+		 * @param { slime.jrunscript.file.Directory } WEBAPP
+		 */
+		var build = function(p,WEBAPP) {
+			var impl = function(prefix,loader) {
+				var to = WEBAPP.getRelativePath(prefix);
+
+				var copy = function(loader,pathname) {
+					var recurse = arguments.callee;
+					var directory = pathname.createDirectory({
+						ifExists: function(dir) {
+							return false;
+						},
+						recursive: true
+					});
+					if (!loader.list) {
+						debugger;
+					}
+					var items = loader.list();
+					items.forEach(function(item) {
+						if (item.loader) {
+							recurse(item.loader, directory.getRelativePath(item.path));
+						} else {
+							// TODO: this used to be item.resource.read(jsh.io.Streams.binary); not sure which it should be right now.
+							// seems to be mismatch between Resource and Resource.source
+							var resource = item.resource;
+							directory.getRelativePath(item.path).write(resource.read(jsh.io.Streams.binary), {
+								append: false
+							});
+						}
+					});
+				}
+
+				copy(loader,to);
+			}
+
+			impl(p.prefix,p.loader);
+		}
+
+		/**
+		 * @type { slime.jsh.httpd.resources.internal.MappingConstructor }
+		 * @param { Parameters<slime.jsh.httpd.resources.internal.MappingConstructor>[0] } p
 		 */
 		var Mapping = function(p) {
 			if (p.directory) {
 				p.loader = new DirectoryWithoutVcsLoader({ directory: p.directory });
 			}
-			this.toString = function() {
+
+			var toString = function() {
 				return p.prefix + " -> " + p.loader + " (dir=" + p.directory + ")";
 			}
 
-			this.get = function(path) {
+			var get = function(path) {
 				if (path.substring(0,p.prefix.length) == p.prefix) {
 					var subpath = path.substring(p.prefix.length);
 					return p.loader.source.get(subpath);
@@ -63,7 +118,7 @@
 				return null;
 			};
 
-			this.list = function(path) {
+			var list = function(path) {
 				if (path.substring(0,p.prefix.length) == p.prefix) {
 					var subpath = path.substring(p.prefix.length);
 					var loader = (subpath.length) ? p.loader.Child(subpath) : p.loader;
@@ -72,164 +127,41 @@
 				return null;
 			};
 
-			this.under = function(path) {
-				if (p.prefix.substring(0,path.length) == path) {
-					var remaining = p.prefix.substring(path.length);
-					var add = remaining.split("/")[0] + "/";
-					return add;
-				}
+			return {
+				descriptor: p,
+				toString: toString,
+				get: get,
+				list: list
 			};
-
-			this.build = function(WEBAPP) {
-				var build = function(prefix,loader) {
-					var to = WEBAPP.getRelativePath(prefix);
-
-					var copy = function(loader,pathname) {
-						var recurse = arguments.callee;
-						var directory = pathname.createDirectory({
-							ifExists: function(dir) {
-								return false;
-							},
-							recursive: true
-						});
-						if (!loader.list) {
-							debugger;
-						}
-						var items = loader.list();
-						items.forEach(function(item) {
-							if (item.loader) {
-								recurse(item.loader, directory.getRelativePath(item.path));
-							} else {
-								// TODO: this used to be item.resource.read(jsh.io.Streams.binary); not sure which it should be right now.
-								// seems to be mismatch between Resource and Resource.source
-								var resource = item.resource;
-								directory.getRelativePath(item.path).write(resource.read(jsh.io.Streams.binary), {
-									append: false
-								});
-							}
-						});
-					}
-
-					copy(loader,to);
-				}
-
-				build(p.prefix,p.loader);
-			}
 		};
 
 		/**
-		 * @param { Mapping[] } mapping
+		 * @type { new () => slime.jsh.httpd.Resources }
 		 */
-		var Resources = function(mapping) {
-			var loader = new function() {
-				this.get = function(path) {
-					for (var i=0; i<mapping.length; i++) {
-						var mapped = mapping[i].get(path);
-						if (mapped) return mapped;
-					}
-					return null;
-				};
+		var Resources = function() {
+			/** @type { slime.jsh.httpd.resources.internal.Mapping[] } */
+			var mapping = [];
 
-				var toEntry = function(item) {
-					if (typeof(item) == "string") {
-						if (item.substring(item.length-1) == "/") {
-							return {
-								path: item.substring(0,item.length-1),
-								loader: true,
-								resource: false
-							}
-						} else {
-							return {
-								path: item,
-								loader: false,
-								resource: true
-							}
-						}
-					} else if (item.path) {
-						return item;
-					} else {
-						throw new Error();
-					}
-				};
-
-				this.list = function(path) {
-					var rv = [];
-					for (var i=0; i<mapping.length; i++) {
-						var listed = mapping[i].list(path);
-						var under = mapping[i].under(path);
-						if (listed) {
-							rv = rv.concat(listed);
-						} else if (under) {
-							if (rv.indexOf(under) == -1) {
-								rv.push({ path: under.substring(0,under.length-1), loader: true  });
-							}
-						}
-					}
-					return rv.map(toEntry);
-				};
-
-				this.toString = function() {
-					return "jsh.httpd.Resources [" + mapping.map(function(item) {
-						return item.toString();
-					}).join(", ") + "]";
-				}
-			};
-
-			/**
-			 * @param { { prefix?: string } & slime.old.loader.Source<{ prefix: string }> } [p]
-			 * @this { slime.old.Loader<any, slime.Resource> & { resource: any } }
-			 */
-			var NewLoader = function(p) {
-				if (!p) p = {};
-				if (!p.prefix) p.prefix = "";
-				var get = function(path) {
-					for (var i=0; i<mapping.length; i++) {
-						var gotten = mapping[i].get(path);
-						if (gotten) return gotten;
-					}
-				};
-
-				p.get = function(path) {
-					var rv = get(p.prefix+path);
-					return rv;
-				};
-
-				//	Satisfy TypeScript
-				this.Child = this.Child;
-				this.get = this.get;
-
-				var self = this;
-
-				p.list = function() {
-					var prefix = (p.prefix) ? p.prefix : "";
-					var rv = loader.list(prefix + arguments[0]);
-					rv.forEach(function(listed) {
-						if (listed.loader && listed.loader === true) {
-							listed.loader = self.Child(listed.path + "/");
-						}
-					},this);
-					return rv;
-				}
-
-				p.child = function(path) {
-					return { prefix: p.prefix+path };
-				}
-				jsh.io.Loader.apply(this,[p]);
-				this.resource = function(path) {
-					return this.get(path);
-				};
-				//	TODO	why is list necessary for children but apparently not for parent? assuming it was a bug; adding
-				this.toString = function() {
-					return "plugin.jsh.resources.js NewLoader: prefix=" + p.prefix + " mapping=[" + mapping.map(function(map) {
-						return String(map);
-					}).join("\n");
-				}
-				// this.list = function() {
-				// 	return loader.list("");
-				// }
+			/** @type { slime.jsh.httpd.Resources["add"] } */
+			this.add = function(m) {
+				mapping.push(Mapping(m));
 			}
 
-			this.loader = new NewLoader();
+			this.map = function(prefix,pathname) {
+				//	TODO	poor workaround on next line for attempt to map a directory rather than a correctly-structured object
+				if (pathname.directory === true) pathname = pathname.pathname;
+				if (pathname.directory) {
+					mapping.push(Mapping({
+						prefix: prefix,
+						directory: pathname.directory
+					}));
+				} else if (pathname.loader) {
+					mapping.push(Mapping({
+						prefix: prefix,
+						loader: pathname.loader
+					}));
+				}
+			};
 
 			/**
 			 * @type { slime.jsh.httpd.Resources["file"] }
@@ -277,53 +209,136 @@
 				}
 			}
 
+			var loader = new function() {
+				this.get = function(path) {
+					for (var i=0; i<mapping.length; i++) {
+						var mapped = mapping[i].get(path);
+						if (mapped) return mapped;
+					}
+					return null;
+				};
+
+				var toEntry = function(item) {
+					if (typeof(item) == "string") {
+						if (item.substring(item.length-1) == "/") {
+							return {
+								path: item.substring(0,item.length-1),
+								loader: true,
+								resource: false
+							}
+						} else {
+							return {
+								path: item,
+								loader: false,
+								resource: true
+							}
+						}
+					} else if (item.path) {
+						return item;
+					} else {
+						throw new Error();
+					}
+				};
+
+				this.list = function(path) {
+					var rv = [];
+					for (var i=0; i<mapping.length; i++) {
+						var listed = mapping[i].list(path);
+						var under = portionUnder(mapping[i].descriptor,path);
+						if (listed) {
+							rv = rv.concat(listed);
+						} else if (under) {
+							if (rv.indexOf(under) == -1) {
+								rv.push({ path: under.substring(0,under.length-1), loader: true  });
+							}
+						}
+					}
+					return rv.map(toEntry);
+				};
+
+				this.toString = function() {
+					return "jsh.httpd.Resources [" + mapping.map(function(item) {
+						return item.toString();
+					}).join(", ") + "]";
+				}
+			};
+
+			/**
+			 * @type { new (p?: { prefix?: string & slime.loader.old.Source<{ prefix: string }> }) => slime.loader.old.Loader<any, slime.Resource> & { resource: any } }
+			 */
+			var Loader = function(p) {
+				if (!p) p = {};
+				if (!p.prefix) p.prefix = "";
+				var get = function(path) {
+					for (var i=0; i<mapping.length; i++) {
+						var gotten = mapping[i].get(path);
+						if (gotten) return gotten;
+					}
+				};
+
+				p.get = function(path) {
+					var rv = get(p.prefix+path);
+					return rv;
+				};
+
+				//	Satisfy TypeScript
+				this.Child = this.Child;
+				this.get = this.get;
+
+				var self = this;
+
+				p.list = function() {
+					var prefix = (p.prefix) ? p.prefix : "";
+					var rv = loader.list(prefix + arguments[0]);
+					rv.forEach(function(listed) {
+						if (listed.loader && listed.loader === true) {
+							listed.loader = self.Child(listed.path + "/");
+						}
+					},this);
+					return rv;
+				}
+
+				p.child = function(path) {
+					return { prefix: p.prefix+path };
+				}
+				this.source = void(0);
+				this.toSynchronous = void(0);
+				this.factory = void(0);
+				this.script = void(0);
+				this.run = void(0);
+				this.value = void(0);
+				this.file = void(0);
+				this.module = void(0);
+				jsh.io.Loader.apply(this,[p]);
+				this.resource = function(path) {
+					return this.get(path);
+				};
+				//	TODO	why is list necessary for children but apparently not for parent? assuming it was a bug; adding
+				this.toString = function() {
+					return "plugin.jsh.resources.js NewLoader: prefix=" + p.prefix + " mapping=[" + mapping.map(function(map) {
+						return String(map);
+					}).join("\n");
+				}
+				// this.list = function() {
+				// 	return loader.list("");
+				// }
+			}
+
+			this.loader = new Loader();
+
 			this.build = function(WEBAPP) {
 				mapping.forEach(function(item) {
-					item.build(WEBAPP);
+					build(item.descriptor,WEBAPP);
 				});
 			}
 		}
-
-		/**
-		 * @type { new () => slime.jsh.httpd.Resources }
-		 */
-		var NewResources = function() {
-			/** @type { Mapping[] } */
-			var mapping = [];
-
-			this.file = void(0);
-			this.loader = void(0);
-			this.build = void(0);
-			Resources.call(this,mapping);
-
-			/** @type { slime.jsh.httpd.Resources["add"] } */
-			this.add = function(m) {
-				mapping.push(new Mapping(m));
-			}
-
-			this.map = function(prefix,pathname) {
-				//	TODO	poor workaround on next line for attempt to map a directory rather than a correctly-structured object
-				if (pathname.directory === true) pathname = pathname.pathname;
-				if (pathname.directory) {
-					mapping.push(new Mapping({
-						prefix: prefix,
-						directory: pathname.directory
-					}));
-				} else if (pathname.loader) {
-					mapping.push(new Mapping({
-						prefix: prefix,
-						loader: pathname.loader
-					}));
-				}
-			};
-		};
 
 		var rv = (function() {
 			var rv = {
 				Old: void(0),
 				NoVcsDirectory: void(0),
 				script: void(0),
-				Constructor: NewResources
+				Constructor: Resources
 			};
 
 			rv.NoVcsDirectory = DirectoryWithoutVcsLoader;
@@ -340,7 +355,7 @@
 		}
 
 		rv.script = function(/* mapping files */) {
-			var resources = new NewResources();
+			var resources = new Resources();
 			return script(resources, Array.prototype.slice.call(arguments));
 		};
 

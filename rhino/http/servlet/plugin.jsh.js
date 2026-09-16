@@ -14,7 +14,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.httpd.Dependencies & { httpd: slime.jsh.httpd.Exports } } jsh
 	 * @param { slime.jsh.plugin.plugin } plugin
-	 * @param { slime.old.Loader } $loader
+	 * @param { slime.loader.old.Loader } $loader
 	 */
 	function(Packages,JavaAdapter,$slime,$api,jsh,plugin,$loader) {
 		plugin({
@@ -119,7 +119,7 @@
 					/**
 					 *
 					 * @param { (scope: slime.servlet.Scope) => void } run
-					 * @param { () => slime.old.Loader } getScriptLoader
+					 * @param { () => slime.loader.old.Loader } getScriptLoader
 					 * @returns { slime.jsh.httpd.servlet.DescriptorUsingLoad["load"] }
 					 */
 					var toByLoad = function(run,getScriptLoader) {
@@ -223,19 +223,19 @@
 					}
 				}
 
-				/** @type { (webapps: slime.jsh.httpd.tomcat.AcceptOldForm) => slime.jsh.httpd.tomcat.MultipleWebapps["webapps"] } */
-				var acceptOldFormToWebapps = function(webapps) {
-					/** @type { (webapps: slime.jsh.httpd.tomcat.AcceptOldForm) => webapps is slime.jsh.httpd.tomcat.SingleWebapp } */
+				/** @type { (webapps: slime.jsh.httpd.tomcat.WebappsWithOldOptionalForm) => slime.jsh.httpd.tomcat.MultipleWebapps["webapps"] } */
+				var normalizeWebapps = function(webapps) {
+					/** @type { (webapps: slime.jsh.httpd.tomcat.WebappsWithOldOptionalForm) => webapps is slime.jsh.httpd.tomcat.SingleWebapp } */
 					var isSingleWebapp = function(webapps) {
 						return Boolean(webapps["webapp"]);
 					}
 
-					/** @type { (webapps: slime.jsh.httpd.tomcat.AcceptOldForm) => webapps is slime.jsh.httpd.tomcat.MultipleWebapps } */
+					/** @type { (webapps: slime.jsh.httpd.tomcat.WebappsWithOldOptionalForm) => webapps is slime.jsh.httpd.tomcat.MultipleWebapps } */
 					var isMultipleWebapps = function(webapps) {
 						return Boolean(webapps["webapps"]);
 					}
 
-					/** @type { (webapps: slime.jsh.httpd.tomcat.AcceptOldForm) => webapps is slime.jsh.httpd.servlet.configuration.WebappServlet } */
+					/** @type { (webapps: slime.jsh.httpd.tomcat.WebappsWithOldOptionalForm) => webapps is slime.jsh.httpd.servlet.configuration.WebappServlet } */
 					var isServletWebapp = function(webapps) {
 						return Boolean(webapps["servlet"]);
 					}
@@ -259,7 +259,7 @@
 				if (TOMCAT_CLASS) {
 					var Tomcat = (
 						/**
-						 * @param { slime.jsh.httpd.tomcat.Configuration & (slime.jsh.httpd.tomcat.AcceptOldForm) } p
+						 * @param { slime.jsh.httpd.tomcat.Configuration & (slime.jsh.httpd.tomcat.WebappsWithOldOptionalForm) } p
 						 */
 						function(p) {
 							//	TODO	probably should not happen now that we specify webapps in the configuration
@@ -272,6 +272,9 @@
 								return node;
 							}
 
+							/**
+							 * The Tomcat server base directory.
+							 */
 							var base = (p.base) ? p.base : castToDirectory(jsh.shell.TMPDIR.createTemporary({ directory: true, prefix: "tomcat" }));
 
 							var getOpenPort = function() {
@@ -348,13 +351,25 @@
 								}
 							)();
 
-							var addContext = function(path,base) {
-								return _tomcat.addContext(path, base.pathname.java.adapt().getCanonicalPath());
+							/**
+							 * @param { string } path
+							 * @returns
+							 */
+							var addContext = function(path) {
+								/**
+								 * @param { string } path
+								 * @returns
+								 */
+								var getContextDocBase = function(path) {
+									return jsh.shell.TMPDIR.createTemporary({ directory: true, prefix: "tomcat-context-docbase" });
+								};
+
+								return _tomcat.addContext(path, getContextDocBase(path).pathname.java.adapt().getCanonicalPath());
 							};
 
 							/**
 							 * @param { any } context Tomcat native Java context object
-							 * @param { slime.old.Loader | undefined } resources
+							 * @param { slime.loader.old.Loader | undefined } resources
 							 * @param { string } pattern
 							 * @param { string } servletName
 							 * @param { slime.jsh.httpd.servlet.Descriptor } servletDeclaration
@@ -388,12 +403,6 @@
 														api: $loader.Child("server/"),
 														script: void(0),
 														container: servletImplementation.resources
-													},
-
-													Loader: {
-														tools: {
-															toExportScope: jsh.io.old.loader.tools.toExportScope
-														}
 													},
 
 													loadServletScriptIntoScope: servletImplementation.servlet.load,
@@ -439,31 +448,34 @@
 							/** @type { slime.jsh.httpd.Tomcat["map"] } */
 							var map = function(m) {
 								if (isServlets(m)) {
-									var context = addContext(m.path,base);
+									var context = addContext(m.path);
 									var id = 0;
+									//	TODO	seems like we would duplicate servlet names with this pattern were map called more
+									// 			than once
 									for (var pattern in m.servlets) {
 										addServlet(context,m.resources,pattern,"slime" + String(id++),m.servlets[pattern])
 									}
 								} else if (typeof(m.path) == "string" && m.webapp) {
 									_tomcat.getEngine().setParentClassLoader(_tomcat.getEngine().getClass().getClassLoader());
-									var context = _tomcat.addWebapp(m.path, m.webapp.java.adapt().getCanonicalPath());
-									jsh.shell.console("Added " + context);
+									var _tomcatContext = _tomcat.addWebapp(m.path, m.webapp.java.adapt().getCanonicalPath());
+									jsh.shell.console("Added " + _tomcatContext);
 								}
 							};
 
-							/** @type { slime.jsh.httpd.Tomcat["servlet"] } */
-							var servlet = function(declaration) {
-								addServlet(addContext("",base),declaration.resources,"/*","slime",declaration);
-							};
-
-							var webapps = acceptOldFormToWebapps(p);
+							var webapps = normalizeWebapps(p);
 
 							Object.entries(webapps).forEach(function(entry) {
 								map($api.Object.compose({ path: entry[0] }, entry[1]));
 							});
 
 							rv.map = $api.deprecate(map);
-							rv.servlet = $api.deprecate(servlet);
+
+							rv.servlet = $api.deprecate(
+								/** @type { slime.jsh.httpd.Tomcat["servlet"] } */
+								function(declaration) {
+									addServlet(addContext(""),declaration.resources,"/*","slime",declaration);
+								}
+							);
 
 							var started = false;
 

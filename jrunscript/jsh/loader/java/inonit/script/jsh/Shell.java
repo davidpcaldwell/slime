@@ -13,6 +13,7 @@ import java.util.logging.*;
 import inonit.script.runtime.io.*;
 import inonit.system.*;
 import inonit.script.engine.*;
+import inonit.script.jsh.Shell.Invocation.CheckedException;
 
 public class Shell {
 	private static final Logger LOG = Logger.getLogger(Shell.class.getName());
@@ -66,6 +67,7 @@ public class Shell {
 	}
 
 	private Configuration configuration;
+
 	private Engine engine;
 
 	private Shell() {
@@ -484,235 +486,40 @@ public class Shell {
 		}
 	}
 
-	public static class EventLoop {
-		private static int INDEX = 0;
-
-		private ArrayList<Event.Outgoing> events = new ArrayList<Event.Outgoing>();
-		private HashSet<Worker> workers = new HashSet<Worker>();
-
-		//	true for top level, false for workers until terminate() is called
-		private boolean canFinish = true;
-
-		private int index;
-
-		public String toString() {
-			return "EventLoop: " + index;
-		}
-
-		EventLoop() {
-			this.index = ++INDEX;
-			LOG.log(Level.FINEST, "Constructed EventLoop: " + this);
-		}
-
-		synchronized void post(Event.Outgoing event) {
-			LOG.log(Level.FINEST, "Posted event: " + event.event.json + " to " + this);
-			events.add(event);
-			notifyAll();
-		}
-
-		synchronized void add(Worker worker) {
-			LOG.log(Level.FINEST, "Adding worker to " + this + " ...");
-			workers.add(worker);
-		}
-
-		synchronized void remove(Worker worker) {
-			LOG.log(Level.FINEST, "Removing worker from " + this + " ...");
-			workers.remove(worker);
-			if (workers.isEmpty()) {
-				LOG.log(Level.FINEST, "Last worker terminated.");
-			}
-			notifyAll();
-		}
-
-		synchronized void terminate() {
-			this.canFinish = true;
-			notifyAll();
-		}
-
-		private boolean isAlive() {
-			LOG.log(Level.FINEST, this + ".isAlive(): workers=" + workers.size() + " events=" + events.size() + " canFinish=" + canFinish);
-			return !workers.isEmpty() || events.size() > 0 || !canFinish;
-		}
-
-		private synchronized Event.Outgoing take() {
-			while(events.size() == 0 && isAlive()) {
-				try {
-					wait();
-				} catch (InterruptedException e) {
-					throw new RuntimeException(e);
-				}
-			}
-			if (events.size() > 0) {
-				Event.Outgoing rv = events.get(0);
-				events.remove(0);
-				return rv;
-			} else {
-				return null;
-			}
-		}
-
-		/**
-		 * "Runs" the event loop, essentially exhausting it and returning. Note that the event loop cannot finish until all Workers
-		 * are terminated.
-		 */
-		public Runnable run() {
-			return new Runnable() {
-				public void run() {
-					LOG.log(Level.FINEST, "Starting event loop " + EventLoop.this + " in thread " + Thread.currentThread());
-					while(isAlive()) {
-						LOG.log(Level.FINEST, "Begin take() in " + this);
-						Event.Outgoing event = take();
-						LOG.log(Level.FINEST, "Finished take() in " + this);
-						if (event != null) {
-							LOG.log(Level.FINEST, "Event loop " + EventLoop.this + " got " + event.event.json);
-							event.dispatch();
-						}
-					}
-					LOG.log(Level.FINEST, "Finishing event loop " + EventLoop.this + " in thread " + Thread.currentThread().getName());
-				}
-			};
-		}
+	void subshell(Shell shell) throws CheckedException {
+		engine.main(shell);
 	}
 
-	public static class Event {
-		static Event create(String json) {
-			Event rv = new Event();
-			rv.json = json;
-			return rv;
-		}
-
-		private String json;
-
-		public String json() {
-			return json;
-		}
-
-		final void dispatch(Listener listener) {
-			listener.on(this);
-		}
-
-		public static abstract class Listener {
-			public abstract void on(Event event);
-		}
-
-		static class Outgoing {
-			static Outgoing create(Event event, Listener destination) {
-				if (destination == null) throw new RuntimeException();
-				Outgoing rv = new Outgoing();
-				rv.event = event;
-				rv.destination = destination;
-				return rv;
-			}
-
-			private Event event;
-			private Listener destination;
-
-			final void dispatch() {
-				destination.on(event);
-			}
-		}
-	}
-
-	public static class Worker {
-		public static Worker create(Shell container, File source, String[] arguments, Shell.Event.Listener toParent) {
-			return new Worker(container, source, arguments, toParent);
-		}
-
-		private Shell parent;
-		private File source;
-		private String[] arguments;
-		private Shell.Event.Listener toParent;
-		private Shell shell;
-
-		Worker(Shell parent, File source, String[] arguments, Event.Listener toParent) {
-			this.parent = parent;
-			this.source = source;
-			this.arguments = arguments;
-			this.toParent = toParent;
-		}
-
-		public String toString() {
-			return "Worker: " + source;
-		}
-
-		private boolean started = false;
-
-		void start() {
-			parent.events.add(this);
-			LOG.log(Level.FINEST, "Starting worker ...");
-			Invocation invocation = Shell.Invocation.create(Shell.Script.create(source), arguments);
-			this.shell = parent.subshell(parent.getEnvironment(), invocation);
-			shell.events.canFinish = false;
-			shell.parent = parent.events;
-			shell.parentListener = this.toParent;
-			LOG.log(Level.FINEST, "Created worker shell " + shell);
-			new Thread(
-				new Runnable() {
-					public void run() {
-						try {
-							LOG.log(Level.FINEST, "Starting worker shell evaluation.");
-							parent.engine.main(
-								shell
-							);
-							LOG.log(Level.FINEST, "Worker shell evaluation completed.");
-						} catch (Invocation.CheckedException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				}
-			).start();
-			synchronized(shell) {
-				LOG.log(Level.FINEST, "Waiting for worker event loop to start.");
-				while(!shell.eventLoopStarted) {
-					try {
-						shell.wait();
-					} catch (InterruptedException e) {
-						throw new RuntimeException(e);
-					}
-				}
-				LOG.log(Level.FINEST, "Worker event loop started.");
-			}
-		}
-
-		/**
-		 * Used to send a message *to* this worker.
-		 */
-		public synchronized void postMessage(String json) {
-			LOG.log(Level.FINEST, "Worker: Posting worker message " + json + " to " + shell);
-			shell.events.post(Event.Outgoing.create(Event.create(json), shell.listener));
-		}
-
-		public synchronized void terminate() {
-			shell.events.terminate();
-			parent.events.remove(Worker.this);
-		}
-	}
-
+	//	TODO	private?
 	//	Used by both top-level and child shells, though termination rules are different
-	private EventLoop events = new EventLoop();
+	Worker.EventLoop events = new Worker.EventLoop();
 
+	//	TODO	private?
 	//	listener set by global onMessage call
-	private Event.Listener listener;
+	Worker.Event.Listener listener;
 
 	//	When onMessage is called in a worker
-	public void onMessage(Event.Listener listener) {
+	public void onMessage(Worker.Event.Listener listener) {
 		LOG.log(Level.FINEST, "Worker onMessage set " + listener);
 		if (listener == null) throw new NullPointerException();
 		this.listener = listener;
 	}
 
-	private EventLoop parent;
-	private Event.Listener parentListener;
+	//	TODO	private?
+	Worker.EventLoop parent;
+	//	TODO	private?
+	Worker.Event.Listener parentListener;
 
-	private boolean eventLoopStarted = false;
+	//	TODO	private?
+	boolean eventLoopStarted = false;
 
 	//	When postMessage is called in a worker, we need to put the event into the parent's event loop
 	public void postMessage(String json) {
 		LOG.log(Level.FINEST, "Worker posting message " + json);
-		parent.post(Event.Outgoing.create(Event.create(json), parentListener));
+		parent.post(Worker.Event.Outgoing.create(Worker.Event.create(json), parentListener));
 	}
 
-	public Worker worker(File source, String[] arguments, Event.Listener listener) {
+	public Worker worker(File source, String[] arguments, Worker.Event.Listener listener) {
 		Worker rv = new Worker(this, source, arguments, listener);
 		rv.start();
 		return rv;

@@ -10,6 +10,43 @@ namespace slime.jsh.internal.launcher {
 		built?: slime.jrunscript.native.java.io.File
 	}
 
+	export namespace settings {
+		/**
+		 * Defines how a particular setting (which is denoted by a Java system property, although it can also be set via
+		 * environment variable) is used by the launcher.
+		 */
+		export interface Definition {
+			/**
+			 * If `true`, this setting is available within the launcher.
+			 */
+			launcher: boolean
+
+			/**
+			 * If `true`, this setting is passed as a system property to the loader VM.
+			 */
+			loader: boolean
+
+			/**
+			 * If present, this setting adds VM arguments to the loader VM; this function is invoked with the setting's current
+			 * value, and should return an array of strings representing VM arguments.
+			 */
+			loaderVmArguments?: (value: string) => string[]
+		}
+
+		export interface Setting {
+			set: (value: string) => void
+			default: (f: () => string) => void
+
+			/**
+			 * Returns the effective value for a given setting in the context of the launcher process.
+			 */
+			getLauncherProperty: () => string
+
+			loaderVmArguments: () => string[]
+			getLoaderProperty: () => string
+		}
+	}
+
 	export interface Source {
 		getSourceFilesUnder: {
 			(string: string): slime.jrunscript.native.java.net.URL[]
@@ -39,19 +76,13 @@ namespace slime.jsh.internal.launcher {
 		home: any
 
 		settings: {
-			set: (name: string, value: string) => void
-			default: (name: string, value: string | (() => string)) => void
-
-			/**
-			 * Returns the effective value for a given setting.
-			 */
-			get: (name: string) => string
+			byName: (name: string) => settings.Setting
 
 			//	Probably redundant but currently appears to be used in packaged shells, where applyTo does not apply in the same
 			//	way given that there is no loader VM.
-			sendPropertiesTo: (recipient: slime.internal.jrunscript.bootstrap.JavaCommand) => void
+			sendPropertiesTo: (recipient: slime.internal.jrunscript.bootstrap.java.Command) => void
 
-			applyTo: (recipient: slime.internal.jrunscript.bootstrap.JavaCommand) => void
+			applyTo: (recipient: slime.internal.jrunscript.bootstrap.java.Command) => void
 		}
 
 		Src: (p: {

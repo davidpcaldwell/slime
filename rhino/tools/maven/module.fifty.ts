@@ -31,7 +31,7 @@ namespace slime.jrunscript.tools.maven {
 				document: any
 			}
 			io: slime.jrunscript.io.Exports
-			shell: slime.jsh.shell.Exports
+			shell: slime.jsh.Global["shell"]
 			document: slime.jsh.Global["document"]
 		}
 	}
@@ -530,7 +530,7 @@ namespace slime.jrunscript.tools.maven {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }
 
 namespace slime.jsh {

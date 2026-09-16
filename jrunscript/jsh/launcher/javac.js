@@ -11,6 +11,7 @@
 	 */
 	function() {
 		var Packages = this.Packages;
+		/** @type { Pick<typeof this.$api,"debug"|"engine"|"java"|"io"|"github"> } */
 		var $api = this.$api;
 		var JavaAdapter = this.JavaAdapter;
 
@@ -35,8 +36,25 @@
 
 		/** @typedef { (p: Parameters<slime.jsh.internal.launcher.javac.compile>[0], c: { console: slime.jrunscript.native.java.io.OutputStream, arguments: string[] }) => void } JavaCompiler */
 
+		var getToolProviderJavac = function() {
+			try {
+				var toolProvider = Packages.java.util.spi.ToolProvider;
+				if (!toolProvider || !toolProvider.findFirst) return null;
+				var maybeJavac = toolProvider.findFirst("javac");
+				if (!maybeJavac || !maybeJavac.isPresent || !maybeJavac.isPresent()) return null;
+				return maybeJavac.get();
+			} catch (e) {
+				// Java 8 does not provide java.util.spi.ToolProvider.
+				$api.debug("ToolProvider API unavailable: " + e);
+				return null;
+			}
+		};
+
 		/** @type { JavaCompiler } */
 		var toolProviderApiCompile = function(p,c) {
+			var tool = getToolProviderJavac();
+			if (!tool) throw new Error("ToolProvider javac not available.");
+
 			var _tmp = Packages.java.io.File.createTempFile("slime-remote-src", null);
 			_tmp.delete();
 			_tmp.mkdirs();
@@ -63,18 +81,17 @@
 				_writer.close();
 			});
 
-			var tool = Packages.java.util.spi.ToolProvider.findFirst("javac").get();
 			$api.debug("tool = " + tool);
 
 			var javacArguments = (
 				c.arguments
-				.concat([
-					"-d", String(p.destination.getCanonicalPath()),
-				].concat(
-					files.map(function(it) {
-						return String(it.file.getCanonicalPath());
-					})
-				))
+					.concat([
+						"-d", String(p.destination.getCanonicalPath()),
+					].concat(
+						files.map(function(it) {
+							return String(it.file.getCanonicalPath());
+						})
+					))
 			);
 			$api.debug("arguments = \n" + javacArguments.join("\n"));
 
@@ -90,6 +107,9 @@
 		/** @type { JavaCompiler } */
 		var javaCompilerApiCompile = function(p,c) {
 			var javac = Packages.javax.tools.ToolProvider.getSystemJavaCompiler();
+			if (!javac) {
+				throw new Error("System Java compiler unavailable. Ensure a full JDK is installed.");
+			}
 
 			var jfm = (
 				new function() {
@@ -219,7 +239,7 @@
 						 */
 						function(_urls) {
 							this.getClassLoader = function() {
-								var __urls = new $api.java.Array({ type: Packages.java.net.URL, length: p.classpath.length });
+								var __urls = $api.java.Array({ type: Packages.java.net.URL, length: p.classpath.length });
 								for (var i=0; i<_urls.length; i++) {
 									__urls[i] = p.classpath[i];
 								}
@@ -649,7 +669,8 @@
 			//
 			//	It'd be better not to pollute the local filesystem by downloading these, but we're going to do that so that the
 			//	implementation works.
-			var useToolProviderApi = true;
+			var useToolProviderApi = !!getToolProviderJavac();
+			$api.debug("useToolProviderApi = " + useToolProviderApi);
 
 			var algorithm = (useToolProviderApi) ? toolProviderApiCompile : javaCompilerApiCompile;
 

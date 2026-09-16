@@ -33,7 +33,7 @@
 								}
 							});
 							jsh.shell.console("half = " + half + " forked=" + forked);
-							verify({},"Subprocess").evaluate(function() {
+							verify({},"<subprocess>").evaluate(function() {
 								return forked < half;
 							}).is(true);
 						}

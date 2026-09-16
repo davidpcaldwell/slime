@@ -13,7 +13,7 @@ namespace slime.runtime.loader.internal.test.store {
 		calculated: part.Exports
 	}
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 
 	export namespace part {
 		export interface Context {
@@ -25,6 +25,6 @@ namespace slime.runtime.loader.internal.test.store {
 			squared: number
 		}
 
-		export type Script = slime.runtime.loader.Module<Context,Exports>
+		export type Script = slime.runtime.loader.Scoped<Context,Exports>
 	}
 }

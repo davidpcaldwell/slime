@@ -8,7 +8,7 @@
 (
 	/**
 	 *
-	 * @param { slime.runtime.Platform } $platform
+	 * @param { slime.$api.Platform } $platform
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.runtime.document.old.Context } $context
 	 * @param { slime.loader.Export<slime.runtime.document.old.Exports> } $export

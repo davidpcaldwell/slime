@@ -8,7 +8,6 @@
 (
 	/**
 	 *
-	 * @param { slime.runtime.Platform } $platform
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
 	 * @param { slime.external.e4x.XMLListConstructor } XMLList
@@ -16,7 +15,7 @@
 	 * @param { slime.jrunscript.runtime.io.Context } $context
 	 * @param { slime.loader.Export<slime.jrunscript.runtime.io.Exports> } $export
 	 */
-	function($platform,Packages,JavaAdapter,XMLList,$api,$context,$export) {
+	function(Packages,JavaAdapter,XMLList,$api,$context,$export) {
 		/** @type { slime.jrunscript.native.inonit.script.runtime.io.Streams } */
 		var _java = $context._streams;
 
@@ -76,7 +75,7 @@
 		/** @typedef { slime.jrunscript.native.java.io.OutputStream } JavaOutputStream */
 		/** @typedef { slime.jrunscript.runtime.io.PipeEvents } PipeEvents */
 
-		/** @type { (i: JavaInputStream, o: JavaOutputStream, events: slime.$api.event.Emitter<PipeEvents> ) => void } */
+		/** @type { (i: JavaInputStream, o: JavaOutputStream, events: slime.$api.event.Producer<PipeEvents> ) => void } */
 		var pipe_all_native = function(i,o,events) {
 			//	TODO	do better error handling; this essentially swallows everything
 			var error = function(e) { throw new Error(); };
@@ -132,9 +131,10 @@
 			};
 
 			return {
-				content: {
+				read: {
 					string: {
 						simple: function(charset) {
+							if (!charset) charset = Charset.default;
 							var _reader = new Packages.java.io.InputStreamReader(peer, charset.java.adapt());
 							return String(_java.readString(_reader));
 						}
@@ -150,7 +150,7 @@
 				},
 				pipe: {
 					all: pipe_all,
-					simple: $api.fp.now(pipe_all, $api.fp.world.Means.effect())
+					simple: $api.fp.now(pipe_all, $api.fp.world.Means.effector())
 				},
 				character: character,
 				java: {
@@ -180,7 +180,7 @@
 			return {
 				pipe: {
 					all: pipe_all,
-					simple: $api.fp.now(pipe_all, $api.fp.world.Means.effect())
+					simple: $api.fp.now(pipe_all, $api.fp.world.Means.effector())
 				},
 				split: function(other) {
 					var otherPeer = other.java.adapt();
@@ -290,7 +290,7 @@
 							}
 						}
 					},
-					($platform.e4x) ? {
+					($api.platform.e4x) ? {
 						asXml: $api.deprecate(function() {
 							var string = this.asString();
 							var resource = new $context.api.Resource({
@@ -327,7 +327,7 @@
 					peer.close();
 				},
 				write: function(string) {
-					if ($platform.e4x && isE4x(string)) {
+					if ($api.platform.e4x && isE4x(string)) {
 						$api.deprecate(function() {
 							peer.write( string.toXMLString() );
 							peer.flush();
@@ -657,4 +657,4 @@
 		});
 	}
 //@ts-ignore
-)($platform, Packages, JavaAdapter, (function() { return this.XMLList })(), $api, $context, $export);
+)(Packages, JavaAdapter, (function() { return this.XMLList })(), $api, $context, $export);

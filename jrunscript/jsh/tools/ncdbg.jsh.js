@@ -14,7 +14,7 @@
 	function(Packages,$api,jsh) {
 		//	TODO	if port 7778 is bound, should fail immediately
 
-		/** @type { Partial<slime.jrunscript.shell.run.old.Result> } */
+		/** @type { Partial<slime.jrunscript.shell.run.minus2.Result> } */
 		var result;
 
 		var locations = (function() {
@@ -145,7 +145,7 @@
 					args.push("--lazy");
 				}
 				var JAVA_HOME = (function() {
-					var h = jsh.shell.java.Jdk.from.javaHome();
+					var h = jsh.shell.java.Jdk.from.javaHome;
 					return jsh.file.Pathname(h.base).directory;
 				})();
 				jsh.shell.run({

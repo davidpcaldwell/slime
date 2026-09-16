@@ -53,7 +53,7 @@ namespace slime.jrunscript.shell.browser {
 			exitOnClose?: boolean
 
 			on?: {
-				start?: (this: slime.jrunscript.shell.browser.object.RunArguments, p: slime.jrunscript.shell.run.old.events.Event & {
+				start?: (this: slime.jrunscript.shell.browser.object.RunArguments, p: slime.jrunscript.shell.run.minus2.events.Event & {
 					pid: number;
 					kill: () => void;
 				}) => void
@@ -163,6 +163,8 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 
 			fifty.tests.getMajorVersion = function() {
 				verify(subject).getMajorVersion({ version: "Google Chrome 96.0.4664.93", program: "/foo" }).is(96);
+				verify(subject).getMajorVersion({ version: "Google Chrome for Testing 116.0.5845.96", program: "/foo" }).is(116);
+				verify(subject).getMajorVersion({ version: "Chromium 149.0.7827.196 built on Ubuntu 26.04 LTS", program: "/foo" }).is(149);
 			}
 		}
 	//@ts-ignore
@@ -249,5 +251,5 @@ namespace slime.jrunscript.shell.browser.internal.chrome {
 	)(Packages,fifty);
 
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

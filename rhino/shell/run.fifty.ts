@@ -4,11 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.jrunscript.shell.context.subprocess {
-	export type World = slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
-}
-
-namespace slime.jrunscript.shell.internal.run {
+namespace slime.jrunscript.shell.subprocess {
 	(
 		function(
 			fifty: slime.fifty.test.Kit
@@ -18,6 +14,101 @@ namespace slime.jrunscript.shell.internal.run {
 	//@ts-ignore
 	)(fifty);
 
+	export interface Exports {}
+
+	export type Environment = {
+		readonly [name: string]: string
+	}
+
+	export interface Exports {
+		action: slime.$api.fp.world.Means<run.Intention,run.TellEvents>
+		question: slime.$api.fp.world.Sensor<run.Intention,run.AskEvents,run.Exit>
+	}
+
+
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			const subject = jsh.shell;
+
+			fifty.tests.manual.subprocess = {};
+
+			fifty.tests.manual.subprocess.question = $api.fp.impure.Process.create({
+				input: $api.fp.impure.Input.map(
+					$api.fp.impure.Input.value({
+						command: "ls",
+						stdio: {
+							output: "string"
+						}
+					} as slime.jrunscript.shell.run.Intention),
+					$api.fp.world.mapping(subject.subprocess.question)
+				),
+				output: $api.fp.pipe(
+					$api.fp.JSON.stringify({ space: 4 }),
+					jsh.shell.console
+				)
+			});
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export interface Output {
+		stdout: slime.jrunscript.runtime.io.InputStream
+		stderr: slime.jrunscript.runtime.io.InputStream
+	}
+
+	export interface Invocation {
+		context: {
+			environment: Environment
+			directory: string
+		}
+
+		process: {
+			command: string
+			arguments: string[]
+		}
+
+		input: slime.jrunscript.runtime.io.InputStream
+
+		output: <O,E>(p: {
+			events: (
+				p: {
+					stdout: slime.jrunscript.runtime.io.InputStream
+					stderr: slime.jrunscript.runtime.io.InputStream
+				}
+			) => {
+				stdout: slime.$api.event.Producer<O>
+				stderr: slime.$api.event.Producer<E>
+			}
+
+			handlers: {
+				stdout: slime.$api.event.Handlers<O>
+				stderr: slime.$api.event.Handlers<E>
+			}
+		}) => void
+	}
+
+	export interface MeansEvents {
+		start: {
+			pid: number
+			output: Output
+			kill: () => void
+		}
+
+		exit: {
+			status: number
+		}
+	}
+}
+
+namespace slime.jrunscript.shell.context.subprocess {
+	export type World = slime.$api.fp.world.Means<slime.jrunscript.shell.run.minus1.Invocation, slime.jrunscript.shell.run.TellEvents>
+}
+
+namespace slime.jrunscript.shell.internal.run {
 	export interface Context {
 		library: {
 			java: slime.jrunscript.java.Exports
@@ -53,13 +144,13 @@ namespace slime.jrunscript.shell.internal.run {
 
 	export interface Exports {
 		exports: {
-			subprocess: slime.jrunscript.shell.exports.subprocess
+			subprocess: slime.jrunscript.shell.subprocess.Exports
 		}
 
 		test: {
 			Invocation: {
 				from: {
-					intention: (parent: shell.run.internal.Parent) => (plan: shell.run.Intention) => shell.run.Invocation
+					intention: (parent: shell.run.internal.Parent) => (plan: shell.run.Intention) => shell.run.minus1.Invocation
 				}
 			}
 
@@ -105,14 +196,12 @@ namespace slime.jrunscript.shell.internal.run {
 namespace slime.jrunscript.shell.run {
 	export type OutputCapture = "string" | "line" | Omit<slime.jrunscript.runtime.io.OutputStream, "close">;
 
+	export type Environment = subprocess.Environment;
+
 	export interface StdioConfiguration {
 		input: slime.jrunscript.runtime.io.InputStream
 		output: OutputCapture
 		error: OutputCapture
-	}
-
-	export type Environment = {
-		readonly [name: string]: string
 	}
 
 	export namespace intention {
@@ -134,12 +223,15 @@ namespace slime.jrunscript.shell.run {
 		}
 	}
 
-	export interface Invocation {
-		environment: Environment
-		directory: Intention["directory"]
-		stdio: StdioConfiguration
-		command: Intention["command"]
-		arguments: Intention["arguments"]
+	export namespace minus1 {
+		export interface Invocation {
+			environment: Environment
+			directory: Intention["directory"]
+			command: Intention["command"]
+			arguments: Intention["arguments"]
+
+			stdio: StdioConfiguration
+		}
 	}
 
 	export namespace internal {
@@ -261,7 +353,7 @@ namespace slime.jrunscript.shell.internal.run {
 	}
 
 	export namespace test {
-		export const ls: shell.run.old.Invocation = (function(fifty: slime.fifty.test.Kit) {
+		export const ls: shell.run.minus2.Invocation = (function(fifty: slime.fifty.test.Kit) {
 			return {
 				context: {
 					environment: fifty.global.jsh.shell.environment,
@@ -309,7 +401,7 @@ namespace slime.jrunscript.shell.internal.run {
 	)(fifty);
 
 	export interface Exports {
-		run: slime.$api.fp.world.old.Action<slime.jrunscript.shell.run.old.Invocation,slime.jrunscript.shell.run.TellEvents>
+		run: slime.$api.fp.world.old.Action<slime.jrunscript.shell.run.minus2.Invocation,slime.jrunscript.shell.run.TellEvents>
 	}
 
 	(
@@ -364,6 +456,8 @@ namespace slime.jrunscript.shell.internal.run {
 
 	export interface Exports {
 		internal: {
+			toInputStream: (input: shell.run.intention.Input) => slime.jrunscript.runtime.io.InputStream
+
 			buildStdio: slime.$api.fp.world.Sensor<
 				slime.jrunscript.shell.run.StdioConfiguration,
 				slime.jrunscript.shell.run.TellEvents,
@@ -389,20 +483,20 @@ namespace slime.jrunscript.shell.internal.run {
 			 * @deprecated
 			 */
 			run: (
-				context: slime.jrunscript.shell.run.old.Context,
-				configuration: slime.jrunscript.shell.run.old.Configuration,
+				context: slime.jrunscript.shell.run.minus2.Context,
+				configuration: slime.jrunscript.shell.run.minus2.Configuration,
 				module: {
 					events: any
 				},
-				events: slime.jrunscript.shell.run.old.Events,
-				p: slime.jrunscript.shell.run.old.Argument,
-				invocation: slime.jrunscript.shell.run.old.Argument,
+				events: slime.jrunscript.shell.run.minus2.Events,
+				p: slime.jrunscript.shell.run.minus2.Argument,
+				invocation: slime.jrunscript.shell.run.minus2.Argument,
 				isLineListener: (p: slime.jrunscript.shell.invocation.old.OutputStreamConfiguration) => p is slime.jrunscript.shell.invocation.old.OutputStreamToLines
 			) => slime.jrunscript.shell.run.Exit
 		}
 	}
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 
 	(
 		function(

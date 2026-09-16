@@ -77,7 +77,7 @@ namespace slime.jrunscript.tools.maven.script.mvnw {
 							rv.push("install");
 						}),
 						environment: function(was) {
-							return $api.Object.compose(was, { JAVA_HOME: jsh.shell.java.Jdk.from.javaHome().base });
+							return $api.Object.compose(was, { JAVA_HOME: jsh.shell.java.Jdk.from.javaHome.base });
 						},
 						directory: project,
 						stdio: {

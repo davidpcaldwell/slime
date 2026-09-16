@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 *
+	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.$api.old.Context } $context
 	 * @param { slime.Loader } $loader
