@@ -553,12 +553,26 @@ namespace slime.jsh.script {
 			[x: string]: Commands<T> | Command<T>
 		}
 
+		export interface CommandMetadata {
+			summary?: string
+			description?: string
+			args?: string
+			options?: string[]
+			examples?: string[]
+			category?: string
+			hidden?: boolean
+			deprecated?: string
+		}
+
 		export interface Descriptor<T> {
 			options?: Processor<{},T>
 			commands: Commands<T>
+			metadata?: { [path: string]: CommandMetadata }
+			before?: (call: Call<T>) => void
 		}
 
 		export interface Call<T> {
+			path: string
 			command: Command<T>
 			invocation: Invocation<T>
 		}
@@ -598,12 +612,15 @@ namespace slime.jsh.script {
 				execute: <T>(p: {
 					commands: Commands<T>
 					call: CallSearchResult<T>
+					before?: (call: Call<T>) => void
+					descriptor?: Descriptor<T>
 				}) => never | void
 			}
 
 			execute: <T>(p: {
 				commands: Commands<T>
 				invocation: Invocation<T>
+				metadata?: { [path: string]: CommandMetadata }
 			}) => never | void
 		}
 
@@ -631,6 +648,7 @@ namespace slime.jsh.script {
 							}
 						}) as slime.jsh.script.cli.Call<{}>;
 
+						verify(one).path.is("hello");
 						verify(one).evaluate.property("command").is(hello);
 						verify(one).invocation.options.is.type("object");
 						verify(one).invocation.arguments.length.is(0);
@@ -643,6 +661,7 @@ namespace slime.jsh.script {
 							}
 						}) as slime.jsh.script.cli.Call<{}>;
 
+						verify(two).path.is("hello");
 						verify(two).evaluate.property("command").is(hello);
 						verify(two).invocation.options.is.type("object");
 						verify(two).invocation.arguments.length.is(1);
@@ -659,6 +678,7 @@ namespace slime.jsh.script {
 							arguments: ["hello"]
 						}) as slime.jsh.script.cli.Call<{}>;
 
+						verify(one).path.is("hello");
 						verify(one).evaluate.property("command").is(hello);
 						verify(one).invocation.options.is.type("object");
 						verify(one).invocation.arguments.length.is(0);
@@ -668,6 +688,7 @@ namespace slime.jsh.script {
 							arguments: ["hello", "world"]
 						}) as slime.jsh.script.cli.Call<{}>;
 
+						verify(two).path.is("hello");
 						verify(two).evaluate.property("command").is(hello);
 						verify(two).invocation.options.is.type("object");
 						verify(two).invocation.arguments.length.is(1);
@@ -1046,6 +1067,8 @@ namespace slime.jsh.script {
 			 * status 1.
 			 */
 			wrap: (descriptor: cli.Descriptor<any>) => void
+
+			defineCommand: <T>(command: cli.Command<T>, metadata: cli.CommandMetadata) => cli.Command<T>
 		}
 
 		export type Program = (invocation: slime.jsh.script.cli.Invocation<{}>) => number | void
@@ -1053,6 +1076,7 @@ namespace slime.jsh.script {
 		export interface Exports {
 			program: <T = {}>(p: {
 				commands: Commands<T>
+				metadata?: { [path: string]: CommandMetadata }
 			}) => Program
 		}
 	}
@@ -1157,7 +1181,7 @@ namespace slime.jsh.script {
 
 			fifty.tests.cli.wrap = function() {
 				const $api = fifty.global.$api;
-				var result: { status: number } = fifty.global.jsh.shell.jsh({
+				var result: { status: number, stdio?: { output?: string, error?: string } } = fifty.global.jsh.shell.jsh({
 					shell: fifty.global.jsh.shell.jsh.src,
 					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
 					arguments: ["status"],
@@ -1180,6 +1204,233 @@ namespace slime.jsh.script {
 					evaluate: $api.fp.identity
 				});
 				fifty.verify(result).status.is(1);
+
+				result = fifty.global.jsh.shell.jsh({
+					shell: fifty.global.jsh.shell.jsh.src,
+					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
+					arguments: ["--help"],
+					stdio: {
+						error: String
+					},
+					evaluate: $api.fp.identity
+				});
+				fifty.verify(result).status.is(0);
+				fifty.verify(result).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Available commands:") != -1 && output.indexOf("status - Reports the requested status code.") != -1;
+				}).is(true);
+				fifty.verify(result).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("hidden") == -1 && output.indexOf("unannotated - (no description)") != -1;
+				}).is(true);
+
+				result = fifty.global.jsh.shell.jsh({
+					shell: fifty.global.jsh.shell.jsh.src,
+					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
+					arguments: ["-h"],
+					stdio: {
+						error: String
+					},
+					evaluate: $api.fp.identity
+				});
+				fifty.verify(result).status.is(0);
+				fifty.verify(result).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Available commands:") != -1;
+				}).is(true);
+
+				result = fifty.global.jsh.shell.jsh({
+					shell: fifty.global.jsh.shell.jsh.src,
+					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
+					arguments: ["status", "--help"],
+					stdio: {
+						error: String
+					},
+					evaluate: $api.fp.identity
+				});
+				fifty.verify(result).status.is(0);
+				fifty.verify(result).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Usage:") != -1 && output.indexOf("Reports the requested status code.") != -1;
+				}).is(true);
+
+				result = fifty.global.jsh.shell.jsh({
+					shell: fifty.global.jsh.shell.jsh.src,
+					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
+					arguments: ["help", "nested.echo"],
+					stdio: {
+						error: String
+					},
+					evaluate: $api.fp.identity
+				});
+				fifty.verify(result).status.is(0);
+				fifty.verify(result).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Echoes a nested command argument.") != -1;
+				}).is(true);
+
+				result = fifty.global.jsh.shell.jsh({
+					shell: fifty.global.jsh.shell.jsh.src,
+					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
+					arguments: ["help", "old"],
+					stdio: {
+						error: String
+					},
+					evaluate: $api.fp.identity
+				});
+				fifty.verify(result).status.is(0);
+				fifty.verify(result).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Deprecated: Use status instead.") != -1;
+				}).is(true);
+
+				result = fifty.global.jsh.shell.jsh({
+					shell: fifty.global.jsh.shell.jsh.src,
+					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
+					arguments: ["alias", "-h"],
+					stdio: {
+						error: String
+					},
+					evaluate: $api.fp.identity
+				});
+				fifty.verify(result).status.is(0);
+				fifty.verify(result).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Alias-specific summary.") != -1;
+				}).is(true);
+
+				result = fifty.global.jsh.shell.jsh({
+					shell: fifty.global.jsh.shell.jsh.src,
+					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
+					arguments: ["help", "merged"],
+					stdio: {
+						error: String
+					},
+					evaluate: $api.fp.identity
+				});
+				fifty.verify(result).status.is(0);
+				fifty.verify(result).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Second summary.") != -1
+						&& output.indexOf("Retained description.") != -1
+						&& output.indexOf("--first    Retained option.") != -1
+					;
+				}).is(true);
+
+				result = fifty.global.jsh.shell.jsh({
+					shell: fifty.global.jsh.shell.jsh.src,
+					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
+					arguments: ["missing"],
+					stdio: {
+						error: String
+					},
+					evaluate: $api.fp.identity
+				});
+				fifty.verify(result).status.is(1);
+				fifty.verify(result).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Command not found: missing") != -1
+						&& output.indexOf("Available commands:") != -1
+					;
+				}).is(true);
+
+				result = fifty.global.jsh.shell.jsh({
+					shell: fifty.global.jsh.shell.jsh.src,
+					script: fifty.jsh.file.object.getRelativePath("test/cli.jsh.js").file,
+					arguments: ["help", "missing"],
+					stdio: {
+						error: String
+					},
+					evaluate: $api.fp.identity
+				});
+				fifty.verify(result).status.is(1);
+				fifty.verify(result).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Command not found: missing") != -1
+						&& output.indexOf("Available commands:") != -1
+					;
+				}).is(true);
+			};
+
+			fifty.tests.cli.metadata = function() {
+				const subject = test.subject;
+
+				var one = subject.cli.defineCommand(function() {}, {
+					summary: "function summary",
+					description: "retained description"
+				});
+				subject.cli.defineCommand(one, { summary: "overridden summary" });
+				var two = subject.cli.defineCommand(function() {}, { summary: "hidden", hidden: true });
+				var call = subject.cli.Call.get({
+					descriptor: {
+						commands: {
+							one: one,
+							alias: one,
+							two: two
+						},
+						metadata: {
+							alias: {
+								summary: "path summary"
+							}
+						}
+					},
+					arguments: ["alias"]
+				}) as cli.Call<{}>;
+				fifty.verify(call).path.is("alias");
+				fifty.verify(call).evaluate(function(call) {
+					return call.command === one;
+				}).is(true);
+			};
+
+			fifty.tests.cli.metadataFallback = function() {
+				const { jsh } = fifty.global;
+				const scope = Function("return this")();
+				const originalWeakMap = scope.WeakMap;
+				const output: string[] = [];
+				var exited: { status: number };
+				try {
+					scope.WeakMap = void(0);
+					var was = jsh.unit.$slime;
+					var mocked = fifty.jsh.plugin.mock({
+						$loader: void(0),
+						jsh: Object.assign({}, jsh, {
+							shell: Object.assign({}, jsh.shell, {
+								console: function(message) {
+									output.push(String(message));
+								},
+								exit: function(status) {
+									exited = { status: status };
+									throw exited;
+								}
+							})
+						}),
+						plugins: {
+							shell: {}
+						},
+						$slime: Object.assign({}, was, {
+							getPackaged: function() { return null; },
+							/** @return { slime.jrunscript.native.inonit.script.jsh.Shell.Invocation } */
+							getInvocation: function() {
+								return {
+									getScript: function() {
+										return was.getInvocation().getScript();
+									},
+									getArguments: function() {
+										return ["--help"]
+									}
+								};
+							}
+						})
+					});
+					var command = mocked.jsh.script.cli.defineCommand(function() {}, {
+						summary: "Fallback metadata summary."
+					});
+					try {
+						mocked.jsh.script.cli.wrap({
+							commands: {
+								fallback: command
+							}
+						});
+					} catch (e) {
+						if (e !== exited) throw e;
+					}
+				} finally {
+					scope.WeakMap = originalWeakMap;
+				}
+				fifty.verify(exited).status.is(0);
+				fifty.verify(output.join("\n")).evaluate(function(output: string) {
+					return output.indexOf("fallback - Fallback metadata summary.") != -1;
+				}).is(true);
 			};
 		}
 	//@ts-ignore

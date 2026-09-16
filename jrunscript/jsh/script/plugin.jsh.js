@@ -250,14 +250,203 @@
 					}
 				};
 
+				var metadataStore = (function() {
+					var property = "__slime_jsh_script_cli_metadata__";
+					if (typeof(WeakMap) != "undefined") {
+						var weak = new WeakMap();
+						return {
+							get: function(command) {
+								return weak.get(command);
+							},
+							set: function(command, metadata) {
+								weak.set(command, metadata);
+							}
+						}
+					}
+					return {
+						// Fallback stores metadata by function identity, but does not provide weak-reference retention.
+						get: function(command) {
+							return command[property];
+						},
+						set: function(command, metadata) {
+							if (Object.prototype.hasOwnProperty.call(command, property)) {
+								command[property] = metadata;
+							} else {
+								Object.defineProperty(command, property, {
+									value: metadata,
+									enumerable: false,
+									configurable: false,
+									writable: true
+								});
+							}
+						}
+					}
+				})();
+
+				var defineCommand = function(command, metadata) {
+					metadataStore.set(command, $api.Object.compose(metadataStore.get(command) || {}, metadata));
+					return command;
+				};
+
+				var getMetadata = function(descriptor, path, command) {
+					var fromCommand = metadataStore.get(command) || {};
+					var fromPath = (descriptor && descriptor.metadata && descriptor.metadata[path]) ? descriptor.metadata[path] : {};
+					return $api.Object.compose(fromCommand, fromPath);
+				};
+
 				function getCommandList(rv,commands,prefix) {
 					if (!prefix) prefix = "";
 					for (var x in commands) {
 						if (typeof(commands[x]) == "function") {
 							rv.push(prefix + x);
+							getCommandList(rv,commands[x],prefix + x + ".");
+						} else if (typeof(commands[x]) == "object") {
+							getCommandList(rv,commands[x],prefix + x + ".");
 						}
-						getCommandList(rv,commands[x],prefix + x + ".");
 					}
+				}
+
+				function getCommandItems(descriptor) {
+					var rv = [];
+					function recurse(commands,prefix) {
+						if (!prefix) prefix = "";
+						for (var x in commands) {
+							var target = commands[x];
+							var path = prefix + x;
+							if (typeof(target) == "function") {
+								rv.push({
+									path: path,
+									command: target,
+									metadata: getMetadata(descriptor, path, target)
+								});
+								recurse(target, path + ".");
+							} else if (typeof(target) == "object") {
+								recurse(target, path + ".");
+							}
+						}
+					}
+					recurse(descriptor.commands);
+					return rv;
+				}
+
+				function isHelpArgument(argument) {
+					return argument == "--help" || argument == "-h";
+				}
+
+				function getHelpRequest(invocation) {
+					if (invocation.arguments.length == 0) return { type: "index", status: 1 };
+					if (isHelpArgument(invocation.arguments[0])) return { type: "index", status: 0 };
+					if (invocation.arguments[0] == "help") {
+						if (invocation.arguments[1]) return { type: "command", command: invocation.arguments[1], status: 0 };
+						return { type: "index", status: 0 };
+					}
+					for (var i=1; i<invocation.arguments.length; i++) {
+						if (isHelpArgument(invocation.arguments[i])) return { type: "command", command: invocation.arguments[0], status: 0 };
+					}
+				}
+
+				function showUsage() {
+					jsh.shell.console("Usage: " + jsh.script.file + " [options] <command> [arguments]");
+				}
+
+				function getSummary(metadata) {
+					return (metadata.summary) ? metadata.summary : "(no description)";
+				}
+
+				function renderIndex(descriptor) {
+					var items = getCommandItems(descriptor).filter(function(item) {
+						return !item.metadata.hidden;
+					});
+					var hasCategories = items.some(function(item) {
+						return Boolean(item.metadata.category);
+					});
+					showUsage();
+					jsh.shell.console("");
+					jsh.shell.console("Available commands:");
+					jsh.shell.console("");
+					if (hasCategories) {
+						var categories = [];
+						var byCategory = {};
+						items.forEach(function(item) {
+							var category = item.metadata.category || "Other";
+							if (!byCategory[category]) {
+								byCategory[category] = [];
+								categories.push(category);
+							}
+							byCategory[category].push(item);
+						});
+						categories.forEach(function(category,index) {
+							if (index > 0) jsh.shell.console("");
+							jsh.shell.console(category + ":");
+							byCategory[category].forEach(function(item) {
+								jsh.shell.console("  " + item.path + " - " + getSummary(item.metadata));
+							});
+						});
+					} else {
+						items.forEach(function(item) {
+							jsh.shell.console(item.path + " - " + getSummary(item.metadata));
+						});
+					}
+				}
+
+				function renderCommandHelp(descriptor, path) {
+					var call = getCommand({
+						commands: descriptor.commands,
+						invocation: {
+							options: {},
+							arguments: [path]
+						}
+					});
+					if ($api.Error.old.isType(jsh.script.cli.error.TargetNotFound)(call)) {
+						jsh.shell.console("Command not found: " + path);
+						jsh.shell.console("");
+						renderIndex(descriptor);
+						return 1;
+					}
+					if ($api.Error.old.isType(jsh.script.cli.error.TargetNotFunction)(call)) {
+						jsh.shell.console("Command is not function: " + path + " is " + call.target);
+						return 1;
+					}
+					var found = /** @type { slime.jsh.script.cli.Call<{}> } */ (call);
+					var metadata = getMetadata(descriptor, path, found.command);
+					jsh.shell.console("Usage: " + jsh.script.file + " " + path + (metadata.args ? " " + metadata.args : " [arguments]"));
+					jsh.shell.console("");
+					jsh.shell.console(getSummary(metadata));
+					if (metadata.deprecated) {
+						jsh.shell.console("");
+						jsh.shell.console("Deprecated: " + metadata.deprecated);
+					}
+					if (metadata.description) {
+						jsh.shell.console("");
+						jsh.shell.console(metadata.description);
+					}
+					if (metadata.options) {
+						jsh.shell.console("");
+						jsh.shell.console("Options:");
+						metadata.options.forEach(function(option) {
+							jsh.shell.console("  " + option);
+						});
+					}
+					if (metadata.examples) {
+						jsh.shell.console("");
+						jsh.shell.console("Examples:");
+						metadata.examples.forEach(function(example) {
+							jsh.shell.console("  " + example);
+						});
+					}
+					return 0;
+				}
+
+				function handleHelp(descriptor, invocation) {
+					var request = getHelpRequest(invocation);
+					if (!request) return false;
+					if (request.type == "index") {
+						renderIndex(descriptor);
+					} else {
+						request.status = renderCommandHelp(descriptor, request.command);
+					}
+					jsh.shell.exit(request.status);
+					return true;
 				}
 
 				/** @type { slime.jsh.script.cli.Exports["Call"]["parse"] } */
@@ -295,6 +484,7 @@
 						});
 					} else {
 						return {
+							path: command,
 							command: referenced,
 							invocation: {
 								options: p.invocation.options,
@@ -324,11 +514,12 @@
 				var executeCall = function(p) {
 					var commands = p.commands;
 					var call = p.call;
-					function showUsage() {
-						jsh.shell.console("Usage: " + jsh.script.file + " [options] <command> [arguments]");
-					}
 
 					function showCommands() {
+						if (p.descriptor) {
+							renderIndex(p.descriptor);
+							return;
+						}
 						var rv = [];
 						getCommandList(rv, commands);
 						jsh.shell.console("Available commands:");
@@ -355,6 +546,7 @@
 						jsh.shell.exit(1);
 					} else {
 						try {
+							if (p.before) p.before(call);
 							var status = call.command(call.invocation);
 							if (typeof(status) != "undefined") {
 								jsh.shell.exit(status);
@@ -384,26 +576,35 @@
 					},
 					program: function(p) {
 						return function(invocation) {
+							var descriptor = {
+								commands: p.commands,
+								metadata: p.metadata
+							};
+							handleHelp(descriptor, invocation);
 							var call = getCommand({
 								commands: p.commands,
 								invocation: invocation
 							});
 							executeCall({
 								commands: p.commands,
-								call: call
+								call: call,
+								descriptor: descriptor
 							});
 						}
 					},
 					execute: function(p) {
+						handleHelp(p, p.invocation);
 						var call = getCommand({
 							commands: p.commands,
 							invocation: p.invocation
 						});
 						jsh.script.cli.Call.execute({
 							commands: p.commands,
-							call: call
+							call: call,
+							descriptor: p
 						});
 					},
+					defineCommand: defineCommand,
 					option: {
 						string: option($api.fp.identity),
 						boolean: function(o) {
@@ -534,13 +735,20 @@
 						}
 					},
 					wrap: function wrap(descriptor) {
-						var call = getCall({
-							descriptor: descriptor,
-							arguments: jsh.script.arguments.slice()
+						/** @type { slime.jsh.script.cli.Processor<{},{}> } */
+						var emptyOptions = $api.fp.identity;
+						var options = descriptor.options || emptyOptions;
+						var invocation = options({ options: {}, arguments: jsh.script.arguments.slice() });
+						handleHelp(descriptor, invocation);
+						var call = getCommand({
+							commands: descriptor.commands,
+							invocation: invocation
 						});
 						executeCall({
 							commands: descriptor.commands,
-							call: call
+							call: call,
+							before: descriptor.before,
+							descriptor: descriptor
 						});
 					}
 				};

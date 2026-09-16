@@ -31,10 +31,22 @@
 							} else {
 								return $api.fp.Maybe.from.nothing();
 							}
+
 						}
 					}
 				}
 			}
+		}
+
+		function shouldInitialize(path) {
+			return path != "initialize";
+		}
+
+		function isHelpInvocation(invocation) {
+			if (invocation.arguments[0] == "help") return true;
+			return invocation.arguments.some(function(argument) {
+				return argument == "--help" || argument == "-h";
+			});
 		}
 
 		if (!jsh.wf.project.base()) {
@@ -52,23 +64,23 @@
 			options: $api.fp.cast.unsafe,
 			commands: new jsh.file.Loader({ directory: jsh.wf.project.base() }).module("wf.js", {
 				base: jsh.wf.project.base()
-			})
+			}),
+			before: function(call) {
+				if (shouldInitialize(call.path) && project.initialize) {
+					project.initialize({
+						options: toT({}),
+						arguments: []
+					});
+				}
+			}
 		}
 
 		/** @type { slime.jsh.script.cli.Commands<T> & { initialize?: slime.jsh.script.cli.Command<T> } } */
 		var project = descriptor.commands;
 
-		var invocation = jsh.script.cli.invocation(descriptor.options);
-
 		/** @type { slime.js.Cast<T> } */
 		var toT = $api.fp.cast.unsafe;
-
-		if (invocation.arguments[0] != "initialize" && project.initialize) {
-			project.initialize({
-				options: toT({}),
-				arguments: []
-			});
-		}
+		var invocation = jsh.script.cli.invocation(descriptor.options);
 
 		var gitHookProcessor = $$api.Function.RegExp.processor({
 			pattern: /^git.hook.(.*)$/,
@@ -110,13 +122,19 @@
 					//	TODO	this weird redeclaration should not be needed; type narrowing should apply to `command` here
 					var target = command;
 					return function() {
+						if (shouldInitialize(target.path) && project.initialize) {
+							project.initialize({
+								options: toT({}),
+								arguments: []
+							});
+						}
 						return target.command(target.invocation);
 					}
 				}
 			}
 		});
 
-		var hook = gitHookProcessor(invocation.arguments[0]);
+		var hook = (isHelpInvocation(invocation)) ? $api.fp.Maybe.from.nothing() : gitHookProcessor(invocation.arguments[0]);
 
 		if (hook.present) {
 			var status = hook.value();
