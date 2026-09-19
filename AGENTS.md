@@ -15,9 +15,9 @@ Before making code edits, running tests, replying to PR comments, or resolving r
 
 * Read [AGENTS.md](AGENTS.md).
 * Read [CONTRIBUTING.md](CONTRIBUTING.md).
-* Check both `local/agents/README.md` (the host path, relative to the repository root) and
-  `~/.agents/README.md` (the devcontainer path). Read whichever exists and any personal instruction files it references. If both
-  paths exist and resolve to different files, read both.
+* Check `$HOME/.slime/contributor/agents/README.md` (the canonical host path), `local/agents/README.md` (the per-checkout host
+  override, relative to the repository root), and `~/.agents/README.md` (the devcontainer path). Read whichever exists and any
+  personal instruction files it references. If multiple paths exist and resolve to different files, read each distinct file.
 * Confirm in the next user-facing message what personal instruction sources were loaded, or that none were found.
 * If personal instructions conflict with repository instructions, stop and ask the user how to proceed.
 * Follow the "FP error handling conventions" section in [CONTRIBUTING.md](CONTRIBUTING.md#fp-error-handling-conventions) for when to throw exceptions versus returning `Result` failures.
@@ -26,19 +26,20 @@ Before making code edits, running tests, replying to PR comments, or resolving r
 
 ## Personal instructions
 
-Personal instructions for this repository are stored at `local/agents` on the host. In a devcontainer, that directory is mounted at
-`~/.agents`.
+Personal instructions for this repository are stored at `$HOME/.slime/contributor/agents` on the host. A checkout may override
+that default with its own `local/agents` directory. In a devcontainer, the selected host directory is mounted at `~/.agents`.
 
-The initial source of personal instructions is therefore `local/agents/README.md` on the host and `~/.agents/README.md` in a
-devcontainer. Agents must check both paths rather than assuming they are running in one environment or the other. Usually only one
-path exists; if both exist and resolve to different files, load both.
+The initial source of personal instructions is therefore `$HOME/.slime/contributor/agents/README.md` on the host, optionally
+overridden for a checkout by `local/agents/README.md`, and `~/.agents/README.md` in a devcontainer. Agents must check all three
+paths rather than assuming they are running in one environment or the other. Usually only one path exists; if multiple paths exist
+and resolve to different files, load each distinct file.
 
 ### Preflight protocol for agents
 
 Before making code edits, running tests, replying to PR comments, or resolving review threads, do all of the following:
 
 * Read [AGENTS.md](AGENTS.md)
-* Check `local/agents/README.md` and `~/.agents/README.md`
+* Check `$HOME/.slime/contributor/agents/README.md`, `local/agents/README.md`, and `~/.agents/README.md`
 * Read each existing, distinct README and any personal instruction files it references
 * Confirm in the next user-facing message what personal instruction sources were loaded, or that none were found
 

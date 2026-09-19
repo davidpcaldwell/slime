@@ -34,7 +34,7 @@ services:
         source: ./local/devcontainer
         target: /config/.devcontainer
       - type: bind
-        source: ./local/agents
+        source: ${SLIME_AGENT_INSTRUCTIONS_HOST_PATH:-${HOME}/.slime/contributor/agents}
         target: /config/.agents
     ports:
       - "8000"

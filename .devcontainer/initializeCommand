@@ -22,11 +22,29 @@ else
 	exit 1
 fi
 COMPOSE_PROJECT_NAME="slime-${PROJECT_HASH}"
+
+DEFAULT_AGENT_INSTRUCTIONS_HOST_PATH="${HOME}/.slime/contributor/agents"
+LOCAL_AGENT_INSTRUCTIONS_HOST_PATH="${PROJECT_ROOT}/local/agents"
+if [ -n "${SLIME_AGENT_INSTRUCTIONS_HOST_PATH:-}" ]; then
+	AGENT_INSTRUCTIONS_HOST_PATH="${SLIME_AGENT_INSTRUCTIONS_HOST_PATH}"
+elif [ -e "${LOCAL_AGENT_INSTRUCTIONS_HOST_PATH}" ]; then
+	AGENT_INSTRUCTIONS_HOST_PATH="${LOCAL_AGENT_INSTRUCTIONS_HOST_PATH}"
+else
+	AGENT_INSTRUCTIONS_HOST_PATH="${DEFAULT_AGENT_INSTRUCTIONS_HOST_PATH}"
+fi
+if [ -e "${AGENT_INSTRUCTIONS_HOST_PATH}" ] && [ ! -d "${AGENT_INSTRUCTIONS_HOST_PATH}" ]; then
+	echo "Agent instructions path exists but is not a directory: ${AGENT_INSTRUCTIONS_HOST_PATH}" >&2
+	exit 1
+fi
+mkdir -p "${AGENT_INSTRUCTIONS_HOST_PATH}"
+
 {
 	printf 'COMPOSE_PROJECT_NAME=%s\n' "${COMPOSE_PROJECT_NAME}"
 	# Lets a devcontainer distinguish itself from other SLIME devcontainers in the VS Code window title.
 	# Single-quoted so Compose's .env parser treats the path literally, without $ interpolation or # truncation.
 	printf "SLIME_HOST_PATH='%s'\n" "$(printf '%s' "${PROJECT_ROOT}" | sed "s/'/'\\\\''/g")"
+	# Mounts personal agent instructions into the container as ~/.agents.
+	printf "SLIME_AGENT_INSTRUCTIONS_HOST_PATH='%s'\n" "$(printf '%s' "${AGENT_INSTRUCTIONS_HOST_PATH}" | sed "s/'/'\\\\''/g")"
 } > "${PROJECT_ROOT}/.env"
 rm -f "${HERE}/.env"
 
