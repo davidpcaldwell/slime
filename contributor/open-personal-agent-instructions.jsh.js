@@ -16,6 +16,13 @@
 				jsh.script.cli.option.string({ longname: "execPath" }),
 				function(p) {
 					var devcontainerLocation = jsh.file.Location.from.os("/config/.agents");
+					var homeLocation = (jsh.shell.environment.HOME)
+						? $api.fp.now(
+							jsh.file.Location.from.os(jsh.shell.environment.HOME),
+							jsh.file.Location.directory.relativePath(".slime/contributor/agents")
+						)
+						: void(0)
+					;
 					var hostLocation = $api.fp.now(
 						jsh.script.world.file,
 						jsh.file.Location.parent(),
@@ -28,20 +35,26 @@
 					);
 					var readmeLocations = {
 						devcontainer: $api.fp.now(devcontainerLocation, jsh.file.Location.directory.relativePath("README.md")),
+						home: (homeLocation) ? $api.fp.now(homeLocation, jsh.file.Location.directory.relativePath("README.md")) : void(0),
 						host: $api.fp.now(hostLocation, jsh.file.Location.directory.relativePath("README.md"))
 					};
 					var fileExists = jsh.file.Location.file.exists.simple;
 					var locations = (
 						function() {
-							if (fileExists(readmeLocations.host)) {
+							if (fileExists(readmeLocations.devcontainer)) {
+								return {
+									program: "code",
+									file: readmeLocations.devcontainer.pathname
+								};
+							} else if (fileExists(readmeLocations.host)) {
 								return {
 									program: p.options.execPath || "code",
 									file: readmeLocations.host.pathname
 								};
-							} else if (fileExists(readmeLocations.devcontainer)) {
+							} else if (readmeLocations.home && fileExists(readmeLocations.home)) {
 								return {
-									program: "code",
-									file: readmeLocations.devcontainer.pathname
+									program: p.options.execPath || "code",
+									file: readmeLocations.home.pathname
 								};
 							} else {
 								return void(0);
@@ -56,6 +69,7 @@
 					} else {
 						jsh.shell.console("Did not find README.md for agents.");
 						jsh.shell.console("locations.host: " + readmeLocations.host.pathname);
+						if (readmeLocations.home) jsh.shell.console("locations.home: " + readmeLocations.home.pathname);
 						jsh.shell.console("locations.devcontainer: " + readmeLocations.devcontainer.pathname);
 						jsh.shell.exit(1);
 					}

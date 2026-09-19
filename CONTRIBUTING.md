@@ -11,19 +11,25 @@
 The main documentation for contributors can be found at the contributor [README](./contributor/README.md). This documentation is
 also available in the TypeDoc documentation in the `slime.internal` namespace.
 
-## Personal agent instructions in devcontainers
+## Personal agent instructions
 
-Contributors can configure personal instructions for coding agents via files in the host path `local/agents`. In the devcontainer,
-this host directory is mounted through `docker-compose.yaml` and should be accessed via `~/.agents`.
+Contributors can configure personal instructions for coding agents via files in the host path
+`$HOME/.slime/contributor/agents`. A checkout can override this default with its own repository-relative `local/agents`
+directory. In the devcontainer, the selected host directory is mounted through `docker-compose.yaml` and is available at
+`~/.agents`.
 
 Recommended setup:
 
-* Create `local/agents/README.md` as the primary entry point for your personal instructions on the host.
+* Create `$HOME/.slime/contributor/agents/README.md` as the primary entry point for your personal instructions on the host.
 * In the devcontainer, this same file is available at `~/.agents/README.md`.
-* Add one or more instruction files in `local/agents` and reference them from `local/agents/README.md`.
+* Add one or more instruction files in `$HOME/.slime/contributor/agents` and reference them from
+  `$HOME/.slime/contributor/agents/README.md`.
+* To use different instructions for one checkout, create `local/agents/README.md` in that checkout.
 * The VSCode task "Open my personal agent instructions" will bring these instructions up in the editor, if they exist.
 
-Agent behavior in this repository is configured to read `~/.agents/README.md` first, then follow references from that file.
+Agents are required to check `$HOME/.slime/contributor/agents/README.md`, `local/agents/README.md`, and `~/.agents/README.md`,
+then follow references from each existing, distinct file. This ensures the instructions are loaded whether the agent runs on the
+host or in the devcontainer.
 
 ## Personal VS Code remote settings overlay in devcontainers
 

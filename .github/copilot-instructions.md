@@ -6,9 +6,10 @@
 
 Refer to [AGENTS.md](../AGENTS.md) for instructions on how this project works.
 
-Before taking substantive action (code edits, tests, or PR review actions), check for
-`~/.agents/README.md`. If it exists, load and follow it. If it does not exist (for example, in cloud
-GitHub review environments), proceed using repository instructions.
+Before taking substantive action (code edits, tests, or PR review actions), check `$HOME/.slime/contributor/agents/README.md`
+(the canonical host path), `local/agents/README.md` (the per-checkout host override, relative to the repository root), and
+`~/.agents/README.md` (the devcontainer path). Load each existing, distinct file and follow any personal instruction files it
+references. If none exists (for example, in cloud GitHub review environments), proceed using repository instructions.
 
 When evaluating incoming files, attempt to emphasize evaluating test coverage by examining associated Fifty tests and evaluating
 documentation provided via the Fifty definition files. Also, attempt to emphasize quality as described in the "Code Quality" section
