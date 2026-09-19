@@ -6,8 +6,9 @@
 
 Refer to [AGENTS.md](../AGENTS.md) for instructions on how this project works.
 
-Before taking substantive action (code edits, tests, or PR review actions), check for
-`~/.agents/README.md`. If it exists, load and follow it. If it does not exist (for example, in cloud
+Before taking substantive action (code edits, tests, or PR review actions), check both
+`local/agents/README.md` (the host path, relative to the repository root) and `~/.agents/README.md` (the devcontainer path). Load
+each existing, distinct file and follow any personal instruction files it references. If neither exists (for example, in cloud
 GitHub review environments), proceed using repository instructions.
 
 When evaluating incoming files, attempt to emphasize evaluating test coverage by examining associated Fifty tests and evaluating

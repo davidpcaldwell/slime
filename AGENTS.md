@@ -15,7 +15,9 @@ Before making code edits, running tests, replying to PR comments, or resolving r
 
 * Read [AGENTS.md](AGENTS.md).
 * Read [CONTRIBUTING.md](CONTRIBUTING.md).
-* If `~/.agents/README.md` exists, read it and any personal instruction files it references.
+* Check both `local/agents/README.md` (the host path, relative to the repository root) and
+  `~/.agents/README.md` (the devcontainer path). Read whichever exists and any personal instruction files it references. If both
+  paths exist and resolve to different files, read both.
 * Confirm in the next user-facing message what personal instruction sources were loaded, or that none were found.
 * If personal instructions conflict with repository instructions, stop and ask the user how to proceed.
 * Follow the "FP error handling conventions" section in [CONTRIBUTING.md](CONTRIBUTING.md#fp-error-handling-conventions) for when to throw exceptions versus returning `Result` failures.
@@ -24,19 +26,20 @@ Before making code edits, running tests, replying to PR comments, or resolving r
 
 ## Personal instructions
 
-When running inside a devcontainer, load personal instructions for operating this repository from
-`~/.agents` before taking substantive action.
+Personal instructions for this repository are stored at `local/agents` on the host. In a devcontainer, that directory is mounted at
+`~/.agents`.
 
-The initial source of personal instructions is
-`~/.agents/README.md`.
+The initial source of personal instructions is therefore `local/agents/README.md` on the host and `~/.agents/README.md` in a
+devcontainer. Agents must check both paths rather than assuming they are running in one environment or the other. Usually only one
+path exists; if both exist and resolve to different files, load both.
 
 ### Preflight protocol for agents
 
 Before making code edits, running tests, replying to PR comments, or resolving review threads, do all of the following:
 
 * Read [AGENTS.md](AGENTS.md)
-* Read `~/.agents/README.md` if it exists
-* Read any personal instruction files referenced by that README
+* Check `local/agents/README.md` and `~/.agents/README.md`
+* Read each existing, distinct README and any personal instruction files it references
 * Confirm in the next user-facing message what personal instruction sources were loaded, or that none were found
 
 If personal instructions conflict with repository instructions, stop and ask the user how to proceed.

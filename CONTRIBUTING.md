@@ -11,10 +11,10 @@
 The main documentation for contributors can be found at the contributor [README](./contributor/README.md). This documentation is
 also available in the TypeDoc documentation in the `slime.internal` namespace.
 
-## Personal agent instructions in devcontainers
+## Personal agent instructions
 
-Contributors can configure personal instructions for coding agents via files in the host path `local/agents`. In the devcontainer,
-this host directory is mounted through `docker-compose.yaml` and should be accessed via `~/.agents`.
+Contributors can configure personal instructions for coding agents via files in the repository-relative host path `local/agents`.
+In the devcontainer, this host directory is mounted through `docker-compose.yaml` and is available at `~/.agents`.
 
 Recommended setup:
 
@@ -23,7 +23,8 @@ Recommended setup:
 * Add one or more instruction files in `local/agents` and reference them from `local/agents/README.md`.
 * The VSCode task "Open my personal agent instructions" will bring these instructions up in the editor, if they exist.
 
-Agent behavior in this repository is configured to read `~/.agents/README.md` first, then follow references from that file.
+Agents are required to check both `local/agents/README.md` and `~/.agents/README.md`, then follow references from each existing,
+distinct file. This ensures the instructions are loaded whether the agent runs on the host or in the devcontainer.
 
 ## Personal VS Code remote settings overlay in devcontainers
 
