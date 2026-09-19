@@ -6,6 +6,8 @@
 
 namespace slime.jsh.shell {
 	export interface JshShellJsh {
+		//	TODO	it is irregular for this member to be defined and declared and implemented in a completely separate hierarchy
+		//			thatn the rest of `jsh.shell.jsh`. Should revisit.
 		tools: slime.jsh.shell.jsh.tools.Plugin
 	}
 }

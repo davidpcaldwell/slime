@@ -18,7 +18,7 @@
 	function(Packages,JavaAdapter,$api,$context,$export) {
 		var module = $context.module;
 
-		/** @type { Pick<slime.jsh.shell.Exports,"Intention"|"engine"|"exit"|"stdio"|"echo"|"console"|"println"|"rhino"|"shell"|"jsh"|"run"|"world"|"stdin"|"stdout"|"stderr"> } */
+		/** @type { Pick<slime.jrunscript.shell.Exports,"Intention"> & Pick<slime.jsh.shell.Exports,"engine"|"exit"|"stdio"|"echo"|"console"|"println"|"rhino"|"shell"|"jsh"|"run"|"world"|"stdin"|"stdout"|"stderr"> } */
 		var $exports = {};
 
 		//	TODO	would be nice to generalize this and push it back into the shell module itself
@@ -28,18 +28,33 @@
 
 		$exports.exit = $context.exit;
 
-		$exports.stdio = $context.stdio;
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.context.OutputStream } stream
+		 * @returns { slime.jrunscript.shell.context.Console }
+		 */
+		var toConsole = function(stream) {
+			return $api.Object.compose(
+				stream,
+				{
+					write: function(p) {
+						stream.character().write(p);
+					}
+				}
+			);
+		}
+
+		$exports.stdio = {
+			input: $context.stdio.input,
+			output: toConsole($context.stdio.output),
+			error: toConsole($context.stdio.error)
+		};
+
 		// TODO: Can these methods below be replaced by using a Resource created from the InputStream? Are they documented anywhere? Can
 		// they be eliminated? They are the last SLIME usage of the asXml() method
 		["readLines", "asString", "asXml"].forEach(function(method) {
 			$exports.stdio.input[method] = function(p) {
 				return this.character()[method].apply(this.character(), arguments);
-			}
-		});
-
-		["output","error"].forEach(function(name) {
-			$exports.stdio[name].write = function(p) {
-				$exports.stdio[name].character().write(p);
 			}
 		});
 
@@ -505,6 +520,8 @@
 			},/** @type { string[] } */([]))
 		}
 
+		//	TODO	consider rewriting in terms of a partial execution of the jsh bash launcher followed by an invocation of
+		//			jrunscript using the new launcher-based types that describe classpath, properties, etc.
 		/** @type { (s: slime.jsh.shell.UnbuiltInstallation) => (p: slime.jsh.shell.Intention) => slime.jrunscript.shell.run.Intention } */
 		var unbuiltToShellIntention = function(s) {
 			return function(p) {
@@ -540,6 +557,9 @@
 				if (isUnbuilt(shell)) {
 					return unbuiltToShellIntention(shell)(p);
 				} else if (isBuilt(shell)) {
+					//	TODO	consider rewriting in terms of a partial execution of the jsh bash launcher followed by an invocation of
+					//			jrunscript using the new launcher-based types that describe classpath, properties, etc.
+
 					var getHomeBashLauncher = $api.fp.pipe(
 						asBuiltInstallation,
 						$api.fp.property("home"),
@@ -615,7 +635,7 @@
 
 		$exports.jsh = Object.assign(
 			/**
-			 * @type { slime.jsh.shell.JshInvoke }
+			 * @type { slime.jsh.shell.JshOldInvoke }
 			 */
 			function(p) {
 				//	Deal with old, two-argument form
@@ -669,7 +689,7 @@
 						$api.Object.compose(
 							jrunscriptForkConfiguration,
 							{
-								jrunscript: module.properties.file("jsh.launcher.jrunscript")
+								jrunscript: module.properties.file("jsh.launcher.invocation.jrunscript")
 							}
 						)
 					);
@@ -891,7 +911,7 @@
 							({
 								arguments: $context.api.script.arguments,
 								environment: $api.fp.identity,
-								directory: $context.module.process.directory.get(),
+								directory: $context.module.context.java.directory,
 								properties: $context.api.java.vm.properties(),
 								stdio: void(0)
 							})

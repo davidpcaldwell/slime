@@ -25,7 +25,7 @@ namespace slime.jrunscript.tools.gcloud {
 
 		export type Configuration = <P,R>(command: Command<P,R>) => {
 			intention: (p: P) => slime.jrunscript.shell.run.Intention
-			handler: (events: slime.$api.event.Emitter<Events>) => slime.$api.event.Handlers<slime.jrunscript.shell.run.AskEvents>
+			handler: (events: slime.$api.event.Producer<Events>) => slime.$api.event.Handlers<slime.jrunscript.shell.run.AskEvents>
 			result: (result: slime.jrunscript.shell.run.Exit) => R
 		}
 
@@ -136,13 +136,13 @@ namespace slime.jrunscript.tools.gcloud {
 
 			var captor = (
 				function() {
-					var last: shell.run.old.Invocation;
+					var last: shell.run.minus2.Invocation;
 
 					return {
 						last: function() {
 							return last;
 						},
-						mock: function(invocation: shell.run.old.Invocation): shell.run.Mock {
+						mock: function(invocation: shell.run.minus2.Invocation): shell.run.Mock {
 							last = invocation;
 							return {
 								exit: {
@@ -176,7 +176,6 @@ namespace slime.jrunscript.tools.gcloud {
 			var library = {
 				shell: code.shell.module({
 					_environment: void(0),
-					_properties: void(0),
 					api: {
 						bootstrap: jsh.internal.bootstrap,
 						js: jsh.js,
@@ -266,10 +265,18 @@ namespace slime.jrunscript.tools.gcloud {
 
 				var withConfig = subject.cli.Configuration.config("/gcloud/config")(configuration);
 				verify(getIntention(withConfig),"intention", function(it) {
-					debugger;
 					var environment = it.environment({});
-					jsh.shell.console(JSON.stringify(environment));
 					verify(environment).evaluate(function(value) { return value.CLOUDSDK_CONFIG; }).is("/gcloud/config");
+				});
+
+				verify(getIntention(configuration),"intention", function(it) {
+					var environment = it.environment({ CLOUDSDK_PYTHON: "" });
+					verify(environment).evaluate(function(value) { return value.CLOUDSDK_PYTHON; }).is("");
+				});
+
+				verify(getIntention(configuration),"intention", function(it) {
+					var environment = it.environment(void(0));
+					verify(environment).evaluate(function(value) { return Object.prototype.hasOwnProperty.call(value, "CLOUDSDK_PYTHON"); }).is(true);
 				});
 
 				var withProject = subject.cli.Configuration.project("PROJECT")(withAccount);
@@ -317,7 +324,7 @@ namespace slime.jrunscript.tools.gcloud {
 	)(fifty);
 
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }
 
 namespace slime.jsh {

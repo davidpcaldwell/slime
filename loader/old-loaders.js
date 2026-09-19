@@ -8,14 +8,84 @@
 (
 	/**
 	 *
-	 * @param { slime.$api.Global } $api
-	 * @param { slime.runtime.internal.old_loaders.Scope["toExportScope"] } toExportScope
-	 * @param { slime.runtime.internal.old_loaders.Scope["Resource"] } Resource
-	 * @param { slime.runtime.internal.old_loaders.Scope["createScriptScope"] } createScriptScope
-	 * @param { slime.runtime.internal.old_loaders.Scope["methods"] } methods
+	 * @param { slime.runtime.internal.old_loaders.Context } $context
 	 * @param { slime.loader.Export<slime.runtime.internal.old_loaders.Exports> } $export
 	 */
-	function($api,toExportScope,Resource,createScriptScope,methods,$export) {
+	function($context,$export) {
+		var $api = $context.$api;
+		var toExportScope = $context.toExportScope;
+		var createScriptScope = $context.createScriptScope;
+		var methods = $context.methods;
+
+		/**
+		 * @constructor
+		 * @param { slime.resource.Descriptor } o
+		 * @this { slime.Resource }
+		 */
+		function Resource(o) {
+			this.type = (function(type,name) {
+				if (typeof(type) == "string") return $api.mime.Type.parse(type);
+				if (type && type.media && type.subtype) return type;
+				if (!type && name) {
+					var fromName = $api.mime.Type.fromName(name);
+					if (fromName) return fromName;
+				}
+				if (!type) return null;
+				throw new TypeError("Resource 'type' property must be a MIME type or string.");
+			})(o.type,o.name);
+
+			this.name = (o.name) ? o.name : void(0);
+
+			if (o.read && o.read.string) {
+				this.read = Object.assign(
+					function(v) {
+						var $platform = $api.platform;
+
+						if (v === String) {
+							var rv = o.read.string();
+							return rv;
+						}
+						if (v === JSON) return JSON.parse(this.read(String));
+
+						var e4xRead = function() {
+							var string = this.read(String);
+							string = string.replace(/\<\?xml.*\?\>/, "");
+							string = string.replace(/\<\!DOCTYPE.*?\>/, "");
+							return string;
+						};
+
+						if ($platform.e4x && v == $platform.e4x.XML) {
+							return new $platform.e4x.XML( e4xRead.call(this) );
+						} else if ($platform.e4x && v == $platform.e4x.XMLList) {
+							return new $platform.e4x.XMLList( e4xRead.call(this) );
+						}
+					},
+					{
+						string: function() {
+							return o.read.string();
+						}
+					}
+				)
+			}
+		}
+
+		/** @type { slime.$api.loader.old.resource.Exports } */
+		var ResourceExport = Object.assign(
+			Resource,
+			{
+				/** @type { slime.$api.loader.old.resource.Exports["ReadInterface"]} */
+				ReadInterface: {
+					string: function(content) {
+						return {
+							string: function() {
+								return content;
+							}
+						}
+					}
+				}
+			}
+		);
+
 		/** @type { slime.$api.fp.Mapping<slime.Resource,slime.runtime.loader.Code> } */
 		var adaptResource = function(object) {
 			/** @type { slime.Resource & { js: { name: string, code: string } } } */
@@ -39,17 +109,17 @@
 			}
 		};
 
-		/** @type { (entry: slime.old.loader.Entry) => entry is slime.old.loader.ResourceEntry } */
+		/** @type { (entry: slime.loader.old.loader.Entry) => entry is slime.loader.old.loader.ResourceEntry } */
 		var isResourceEntry = function(entry) {
 			return Boolean(entry["resource"]);
 		}
 
 		/**
-		 * @this { slime.old.Loader }
-		 * @param { slime.old.loader.Source } p
+		 * @this { slime.loader.old.Loader }
+		 * @param { slime.loader.old.Source } p
 		 */
 		var old = function(p) {
-			if (!p.Resource) p.Resource = Resource;
+			if (!p.Resource) p.Resource = ResourceExport;
 
 			this.toString = function() {
 				return p.toString();
@@ -66,7 +136,7 @@
 				return new p.Resource(descriptor);
 			}
 
-			/** @type { slime.old.Loader["get"] } */
+			/** @type { slime.loader.old.Loader["get"] } */
 			if (p.get) this.get = function(path) {
 				var rsource = this.source.get(path);
 				var rv = get(rsource);
@@ -88,19 +158,19 @@
 			}
 
 			if (p.get) {
-				/** @type { slime.old.Loader["run"] } */
+				/** @type { slime.loader.old.Loader["run"] } */
 				this.run = function retarget(path,context,target) {
 					var resource = this.get(path);
 					if (!resource) throw new Error("Not found: " + path + " when executing " + "run" + " in " + this);
 					return methods.run.call(target,adaptResource(resource),context);
 				};
-				/** @type { slime.old.Loader["value"] } */
+				/** @type { slime.loader.old.Loader["value"] } */
 				this.value = function retarget(path,context,target) {
 					var resource = this.get(path);
 					if (!resource) throw new Error("Not found: " + path + " when executing " + "value" + " in " + this);
 					return methods.old.value.call(target,adaptResource(resource),context);
 				};
-				/** @type { slime.old.Loader["file"] } */
+				/** @type { slime.loader.old.Loader["file"] } */
 				this.file = function retarget(path,context,target) {
 					var resource = this.get(path);
 					if (!resource) throw new Error("Not found: " + path + " when executing " + "file" + " in " + this);
@@ -127,14 +197,14 @@
 			};
 
 			var getModuleScope = function($context,locations) {
-				/** @type { slime.old.loader.Scope } */
+				/** @type { slime.loader.old.Scope } */
 				var inner = createScriptScope($context);
 				inner.$loader = Child(locations.prefix);
 				return inner;
 			}
 
 			if (p.get) {
-				/** @type { slime.old.Loader["module"] } */
+				/** @type { slime.loader.old.Loader["module"] } */
 				this.module = function(path,$context,target) {
 					var locations = getModuleLocations(path);
 					var inner = getModuleScope($context,locations);
@@ -148,7 +218,7 @@
 
 			var inModule = (
 				/**
-					* @this { slime.old.Loader }
+					* @this { slime.loader.old.Loader }
 					* @param { string } path
 					* @param { any } $context
 					* @param { any } target
@@ -169,7 +239,7 @@
 			}
 
 			if (p.get) {
-				/** @type { slime.old.Loader["script"] } */
+				/** @type { slime.loader.old.Loader["script"] } */
 				this.script = function(path) {
 					var $loader = this;
 					var sync = function(c) {
@@ -231,7 +301,7 @@
 					};
 
 					/**
-						* @returns { new (p: any) => slime.old.Loader }
+						* @returns { new (p: any) => slime.loader.old.Loader }
 						*/
 					var castToConstructor = function(v) {
 						return v;
@@ -242,7 +312,7 @@
 				return rv;
 			})(this,p);
 
-			/** @type { slime.old.Loader["Child"] } */
+			/** @type { slime.loader.old.Loader["Child"] } */
 			this.Child = $api.experimental(Child);
 
 			if (p.list) {
@@ -268,7 +338,7 @@
 					}
 				}
 
-				/** @type { slime.old.Loader["list"] } */
+				/** @type { slime.loader.old.Loader["list"] } */
 				this.list = function(m) {
 					if (!m) m = {};
 					if (!m.filter) m.filter = function() { return true; };
@@ -343,9 +413,9 @@
 
 		$export({
 			api: {
-				/** @type { slime.runtime.Exports["old"]["loader"]["source"] } */
+				/** @type { slime.$api.loader.old.old.Exports["loader"]["source"] } */
 				source: {
-					/** @type { slime.runtime.Exports["old"]["loader"]["source"]["object"] } */
+					/** @type { slime.$api.loader.old.old.Exports["loader"]["source"]["object"] } */
 					object: function(o) {
 						var getLocation = function(path) {
 							var target = o;
@@ -403,7 +473,7 @@
 				},
 				from: {
 					synchronous: function(synchronous) {
-						/** @type { slime.old.loader.Source } */
+						/** @type { slime.loader.old.Source } */
 						var source = {
 							get: function(path) {
 								var delegate = synchronous.get(path.split("/"));
@@ -454,8 +524,9 @@
 					Resource: adaptResource
 				}
 			},
-			constructor: old
+			constructor: old,
+			Resource: ResourceExport
 		});
 	}
 //@ts-ignore
-)($api,toExportScope,Resource,createScriptScope,methods,$export);
+)($context,$export);

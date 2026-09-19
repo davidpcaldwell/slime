@@ -228,14 +228,14 @@ namespace slime {
 				 *
 				 * @param p A URL which should be used as the base URL of the loader.
 				 */
-				new (p: string): slime.old.Loader
+				new (p: string): slime.loader.old.Loader
 
 				/**
 				 * Creates a SLIME {@link slime.Loader | Loader}; see {@link slime.loader.Source}.
 				 */
-				new (p: slime.old.loader.Source): slime.old.Loader
+				new (p: slime.loader.old.Source): slime.loader.old.Loader
 
-				series: slime.runtime.Exports["old"]["loader"]["series"]
+				series: slime.$api.loader.old.Exports["old"]["loader"]["series"]
 				getCode: any
 				fetch: any
 			}
@@ -290,23 +290,27 @@ namespace slime {
 		)(fifty);
 
 		export interface Exports {
-			/**
-			 * See {@link slime.runtime.Exports.namespace}.
-			 */
-			namespace: slime.runtime.Exports["namespace"]
+			namespace: (path: string) => object
 		}
 
 		(
 			function(
 				fifty: slime.fifty.test.Kit
 			) {
+				const { verify } = fifty;
 				const inonit: Runtime = fifty.global.window["inonit"];
 				const window = fifty.global.window as Window & { testNamespaces: any }
-				fifty.tests.exports.namespace = {};
 
 				const test = function(value: boolean) {
 					fifty.verify(value).is(true);
 				};
+
+				fifty.tests.exports.namespace = fifty.test.Parent();
+
+				fifty.tests.exports.namespace.empty = function() {
+					var top = inonit.loader.namespace("");
+					verify(top).is(window);
+				}
 
 				fifty.tests.exports.namespace.happy = function() {
 					test(typeof(window.testNamespaces) == "undefined");
@@ -349,7 +353,7 @@ namespace slime {
 			/**
 			 * See {@link slime.Loader.value}. Note that the first argument will be interpreted relative to the current page.
 			 */
-			value: slime.old.Loader["value"]
+			value: slime.loader.old.Loader["value"]
 
 			get: slime.Loader["get"]
 		}
@@ -380,10 +384,10 @@ namespace slime {
 			/**
 			 * A loader that loads resources using the current page as the base URL for the loader.
 			 */
-			loader: slime.old.Loader
+			loader: slime.loader.old.Loader
 
 			test: {
-				run: slime.runtime.Exports["run"]
+				run: slime.$api.loader.old.Exports["run"]
 			}
 
 			//	(undocumented) According to very old documentation, used to support development-related functions.
@@ -417,4 +421,4 @@ namespace slime {
 		}
 	}
 //@ts-ignore
-)(fifty)
+)(fifty);

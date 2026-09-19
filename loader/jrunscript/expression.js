@@ -106,17 +106,17 @@
 					scope: scope
 				},null);
 
-				rv.$api.mime.Type.fromName = mimeTypeFromNameDecorate(rv.$api.mime.Type.fromName, rv.$api.mime.Type.codec.declaration);
+				rv.mime.Type.fromName = mimeTypeFromNameDecorate(rv.mime.Type.fromName, rv.mime.Type.codec.declaration);
 
 				var _coffeescript = $loader.getCoffeeScript();
 				if (_coffeescript) {
 					var target = {};
 					$engine.execute({ name: "coffee-script.js", js: String(_coffeescript) }, {}, target);
-					rv.compiler.update(function(was) {
-						return rv.$api.fp.switch([
+					rv.scripts.compiler.update(function(was) {
+						return rv.fp.switch([
 							was,
-							rv.$api.scripts.Compiler.from.simple({
-								accept: rv.$api.scripts.Code.isMimeType("application/vnd.coffeescript"),
+							rv.scripts.Compiler.from.simple({
+								accept: rv.scripts.Code.isMimeType("application/vnd.coffeescript"),
 								name: function(code) { return code.name; },
 								read: function(code) { return code.read(); },
 								compile: target.CoffeeScript.compile
@@ -136,11 +136,11 @@
 
 				var _typescript = $loader.getTypescript();
 				if (_typescript) {
-					rv.compiler.update(function(was) {
-						return rv.$api.fp.switch([
+					rv.scripts.compiler.update(function(was) {
+						return rv.fp.switch([
 							was,
-							rv.$api.scripts.Compiler.from.simple({
-								accept: rv.$api.scripts.Code.isMimeType("application/x.typescript"),
+							rv.scripts.Compiler.from.simple({
+								accept: rv.scripts.Code.isMimeType("application/x.typescript"),
 								name: function(code) { return code.name; },
 								read: function(code) { return code.read(); },
 								compile: function(code) { return String(_typescript.compile(code)); }
@@ -153,10 +153,11 @@
 			}
 		)();
 
-		var $exports_java = slime.file(
-			new slime.Resource({
+		/** @type { slime.jrunscript.runtime.java.Exports } */
+		var $exports_java = slime.loader.old.file(
+			new slime.loader.old.Resource({
 				name: "slime://loader/jrunscript/java.js",
-				read: slime.Resource.ReadInterface.string(String($loader.getLoaderCode("jrunscript/java.js")))
+				read: slime.loader.old.Resource.ReadInterface.string(String($loader.getLoaderCode("jrunscript/java.js")))
 			}), {
 				engine: $bridge,
 				classpath: $loader.getClasspath()
@@ -164,21 +165,34 @@
 		);
 
 		/** @type { slime.jrunscript.runtime.io.Exports } */
-		var $exports_io = slime.file(
-			new slime.Resource({
+		var $exports_io = slime.loader.old.file(
+			new slime.loader.old.Resource({
 				name: "slime://loader/jrunscript/io.js",
-				read: slime.Resource.ReadInterface.string(String($loader.getLoaderCode("jrunscript/io.js")))
+				read: slime.loader.old.Resource.ReadInterface.string(String($loader.getLoaderCode("jrunscript/io.js")))
 			}), {
 				_streams: _streams,
 				api: {
 					java: $exports_java,
-					Resource: slime.Resource
+					Resource: slime.loader.old.Resource
 				}
 			}
 		);
 
+		var properties = (
+			function(/** @type { slime.jrunscript.native.java.util.Properties }*/_properties) {
+				return {
+					get: function(key) {
+						//	TODO	Logic duplicated in rhino/jrunscript/api.js; unify
+						var _value = _properties.getProperty(key);
+						if (_value === null) return null;
+						return String(_value);
+					}
+				}
+			}
+		)(Packages.java.lang.System.getProperties());
+
 		var getTypeFromPath = function(path) {
-			return slime.$api.mime.Type.fromName(path);
+			return slime.mime.Type.fromName(path);
 		}
 
 		/**
@@ -232,16 +246,18 @@
 			return (p.read && (p.read["binary"] || p.read["text"])) || p["write"];
 		}
 
-		/** @type { slime.jrunscript.runtime.Exports["Resource"] } */
-		var Resource = (function(was) {
+		/** @type { slime.$api.jrunscript.Global["jrunscript"]["loader"]["old"]["Resource"] } */
+		var $api_jrunscript_loader_old_Resource = (function(was) {
 			var rv = (
 				/**
 				 * @param { slime.jrunscript.runtime.old.resource.HistoricSupportedDescriptor } p
 				 * @constructor
 				 */
-				function(p) {
+				function Resource(p) {
 					if (Object.keys(p).length == 2 && p.type && p.name) {
-						debugger;
+						$api.deprecate(function() {
+							return void(0);
+						})();
 					}
 
 					if (isStreamDescriptor(p)) {
@@ -260,7 +276,7 @@
 					}
 
 					if (isJrunscriptDescriptor(p) && !p.read) {
-						slime.$api.deprecate(function() {
+						slime.deprecate(function() {
 							//	'read' is mandatory in TypeScript but not present, why?
 							//	TODO	leads to a lot of extra && p.read && p.read.foo below
 						})();
@@ -304,7 +320,7 @@
 					//	TODO	probably should allow name property to be passed in and then passed through
 					if (isLoadedDescriptor(p)) {
 						if (!this.type) {
-							this.type = slime.$api.mime.Type.fromName(p._loaded.path);
+							this.type = slime.mime.Type.fromName(p._loaded.path);
 						}
 
 						if (typeof(p.length) == "undefined") Object.defineProperty(
@@ -368,7 +384,7 @@
 					}
 
 					/** @type { slime.js.Cast<slime.Resource["read"]> } */
-					var cast = slime.$api.fp.cast.unsafe;
+					var cast = slime.fp.cast.unsafe;
 
 					this.read = cast(this.read);
 
@@ -394,7 +410,7 @@
 									if (mode == $exports_io.Streams.text) return text();
 									if (mode == String) return text().asString();
 									if (mode == Packages.java.util.Properties) return _properties(text().java.adapt());
-									if (mode == global.XML) return slime.$api.deprecate(function() {
+									if (mode == global.XML) return slime.deprecate(function() {
 										return XML(text().asString())
 									})();
 								}
@@ -448,7 +464,7 @@
 					// cache length and modified
 					if (isJrunscriptDescriptor(p) && Object.prototype.hasOwnProperty.call(p, "length")) {
 						Object.defineProperty(this,"length",{
-							get: slime.$api.fp.impure.Input.memoized(function() {
+							get: slime.fp.impure.Input.memoized(function() {
 								if (typeof(p.length) == "number") {
 									return p.length;
 								} else if (typeof(p.length) == "undefined" && binary) {
@@ -479,7 +495,7 @@
 					if (isJrunscriptDescriptor(p) && Object.prototype.hasOwnProperty.call(p, "modified")) {
 						this.modified = void(0);
 						Object.defineProperty(this,"modified",{
-							get: slime.$api.fp.impure.Input.memoized(function() {
+							get: slime.fp.impure.Input.memoized(function() {
 								return p.modified;
 							}),
 							enumerable: true
@@ -588,9 +604,7 @@
 					ReadInterface: was.ReadInterface
 				}
 			);
-		})(slime.Resource);
-
-		var $exports_Resource = Resource;
+		})(slime.loader.old.Resource);
 
 		// //	Convert a Java inonit.script.engine.Code.Loader.Resource to a resource
 		// //	TODO	should this logic be pushed into loader.io? Probably
@@ -671,7 +685,7 @@
 			return p["_source"];
 		}
 
-		/** @type { (_source: slime.jrunscript.native.inonit.script.engine.Code.Loader) => slime.old.loader.Source<slime.jrunscript.runtime.internal.JavaCodeLoaderSource> } */
+		/** @type { (_source: slime.jrunscript.native.inonit.script.engine.Code.Loader) => slime.loader.old.Source<slime.jrunscript.runtime.internal.JavaCodeLoaderSource> } */
 		function adaptCodeLoader(_source) {
 			return {
 				get: function(path) {
@@ -707,26 +721,26 @@
 				toString: function() {
 					return "Java loader: " + _source.toString();
 				},
-				Resource: $exports_Resource
+				Resource: $api_jrunscript_loader_old_Resource
 			}
 		}
 
-		/** @type { (p: slime.jrunscript.runtime.internal.JavaCodeLoaderSource) => slime.old.loader.Source<slime.jrunscript.runtime.internal.JavaCodeLoaderSource> } */
+		/** @type { (p: slime.jrunscript.runtime.internal.JavaCodeLoaderSource) => slime.loader.old.Source<slime.jrunscript.runtime.internal.JavaCodeLoaderSource> } */
 		function adaptJavaCodeLoaderSource(p) {
 			return adaptCodeLoader(p._source);
 		}
 
-		/** @type { (p: slime.jrunscript.runtime.internal.ZipFileSource) => slime.old.loader.Source } */
+		/** @type { (p: slime.jrunscript.runtime.internal.ZipFileSource) => slime.loader.old.Source } */
 		function adaptZipFileSource(p) {
 			return adaptCodeLoader(Packages.inonit.script.engine.Code.Loader.zip(p.zip._file));
 		}
 
-		/** @type { (p: slime.jrunscript.runtime.internal.ZipResourceSource) => slime.old.loader.Source } */
+		/** @type { (p: slime.jrunscript.runtime.internal.ZipResourceSource) => slime.loader.old.Source } */
 		function adaptZipResourceSource(p) {
 			return adaptCodeLoader(Packages.inonit.script.engine.Code.Loader.zip(p.zip.resource.java.adapt(p.zip.resource.name)));
 		}
 
-		/** @type { (p: slime.jrunscript.runtime.internal.JavaFileSource) => slime.old.loader.Source } */
+		/** @type { (p: slime.jrunscript.runtime.internal.JavaFileSource) => slime.loader.old.Source } */
 		function adaptJavaFileSource(p) {
 			return adaptCodeLoader(Packages.inonit.script.engine.Code.Loader.create(p._file));
 		}
@@ -736,7 +750,7 @@
 			return p["resources"];
 		}
 
-		/** @type { (p: slime.jrunscript.runtime.internal.DeprecatedResourcesSource) => slime.old.loader.Source } */
+		/** @type { (p: slime.jrunscript.runtime.internal.DeprecatedResourcesSource) => slime.loader.old.Source } */
 		function adaptResourcesSource(p) {
 			return {
 				get: function(path) {
@@ -777,33 +791,33 @@
 						}
 					}
 				},
-				Resource: $exports_Resource
+				Resource: $api_jrunscript_loader_old_Resource
 			}
 		}
 
 		/**
 		 *
 		 * @param { slime.jrunscript.runtime.internal.Source } p
-		 * @returns { slime.old.loader.Source<slime.jrunscript.runtime.internal.CustomSource> }
+		 * @returns { slime.loader.old.Source<slime.jrunscript.runtime.internal.CustomSource> }
 		 */
 		function adaptLoaderArgument(p) {
 			if (isZipFileSource(p)) return adaptZipFileSource(p);
 			if (isZipResourceSource(p)) return adaptZipResourceSource(p);
 			if (isJavaFileSource(p)) return adaptJavaFileSource(p);
 			if (isJavaCodeLoaderSource(p)) return adaptJavaCodeLoaderSource(p);
-			if (isResourcesSource(p)) return slime.$api.deprecate(adaptResourcesSource)(p);
+			if (isResourcesSource(p)) return slime.deprecate(adaptResourcesSource)(p);
 			//	TODO	no known static or dynamic uses or test coverage
-			if (p["_url"]) return slime.$api.deprecate(adaptCodeLoader)(Packages.inonit.script.engine.Code.Loader.create(p["_url"]));
+			if (p["_url"]) return slime.deprecate(adaptCodeLoader)(Packages.inonit.script.engine.Code.Loader.create(p["_url"]));
 
 			//	TODO	this line was present previously and makes jrunscript file Loaders work, but does not make a lot of sense
 			//			at the moment
-			p.Resource = $exports_Resource;
+			p.Resource = $api_jrunscript_loader_old_Resource;
 			return p;
 		}
 
 		/**
 		 *
-		 * @param { slime.old.loader.Source } source
+		 * @param { slime.loader.old.Source } source
 		 * @returns { source is slime.jrunscript.native.inonit.script.engine.Code.Loader }
 		 */
 		var isJavaCodeLoader = function(source) {
@@ -813,7 +827,7 @@
 
 		/**
 		 *
-		 * @param { slime.old.Loader } self
+		 * @param { slime.loader.old.Loader } self
 		 * @returns { slime.jrunscript.native.inonit.script.engine.Code.Loader }
 		 */
 		var toJavaCodeLoader = function(self) {
@@ -843,16 +857,16 @@
 		var $exports_Loader = (
 			/**
 			 *
-			 * @param { slime.runtime.Exports["old"]["Loader"] } was
+			 * @param { slime.$api.loader.old.Exports["old"]["Loader"] } was
 			 * @returns
 			 */
 			function(was) {
 				/**
-				 * @type { slime.runtime.exports.Old["Loader"] }
+				 * @type { slime.$api.loader.old.old.Exports["Loader"] }
 				 */
 				var rv = Object.assign(
 					/**
-					 * @this { slime.old.Loader }
+					 * @this { slime.loader.old.Loader }
 					 */
 					function(p) {
 						if (!p) throw new TypeError("source argument required for Loader.");
@@ -877,7 +891,7 @@
 				);
 				return rv;
 			}
-		)(slime.old.Loader);
+		)(slime.loader.old.old.Loader);
 
 		/** @type { slime.jrunscript.runtime.Exports["classpath"] } */
 		var $exports_classpath = (
@@ -963,13 +977,13 @@
 							},
 							get: function(path) {
 								var _file = _loader.getFile(path.join("/"));
-								if (!_file) return slime.$api.fp.Maybe.from.nothing();
-								return slime.$api.fp.Maybe.from.some(_file)
+								if (!_file) return slime.fp.Maybe.from.nothing();
+								return slime.fp.Maybe.from.some(_file)
 							},
 							list: (_loader.getEnumerator()) ? function(path) {
 								var prefix = (path.length) ? path.join("/") : "";
 								var _list = _loader.getEnumerator().list(prefix);
-								if (!_list) return slime.$api.fp.Maybe.from.nothing();
+								if (!_list) return slime.fp.Maybe.from.nothing();
 								var rv = Array.prototype.map.call(_list, function(x) { return String(x); }).map(function(string) {
 									var folder = (string.substring(string.length-1) == "/");
 									var name = (folder) ? string.substring(0,string.length-1) : string;
@@ -980,14 +994,14 @@
 									}
 									return item;
 								});
-								return slime.$api.fp.Maybe.from.some(rv);
+								return slime.fp.Maybe.from.some(rv);
 							} : void(0),
 							code: function(_resource) {
 								var name = String(_resource.getSourceName());
 								return {
 									name: name,
 									type: function() {
-										return slime.$api.mime.Type.fromName(name);
+										return slime.mime.Type.fromName(name);
 									},
 									read: function() {
 										var _stream = _resource.getInputStream();
@@ -999,10 +1013,10 @@
 					}
 				},
 				entries: function(p) {
-					return slime.$api.fp.pipe(
-						slime.$api.fp.split({
+					return slime.fp.pipe(
+						slime.fp.split({
 							listing: slime.loader.synchronous.resources(p.filter),
-							loader: slime.$api.fp.identity
+							loader: slime.fp.identity
 						}),
 						function(inputs) {
 							return inputs.listing.map(
@@ -1024,12 +1038,12 @@
 							},
 							length: function() {
 								var length = _resource.getLength();
-								if (length === null) return slime.$api.fp.Maybe.from.nothing();
-								return slime.$api.fp.Maybe.from.some(length.longValue());
+								if (length === null) return slime.fp.Maybe.from.nothing();
+								return slime.fp.Maybe.from.some(length.longValue());
 							},
 							modified: function() {
 								var _date = _resource.getLastModified();
-								return (_date) ? slime.$api.fp.Maybe.from.some(_date.getTime()) : slime.$api.fp.Maybe.from.nothing();
+								return (_date) ? slime.fp.Maybe.from.some(_date.getTime()) : slime.fp.Maybe.from.nothing();
 							}
 						}
 					}
@@ -1037,9 +1051,9 @@
 			},
 			Entry: {
 				mostRecentlyModified: function() {
-					var CORRECT = slime.$api.fp.Maybe.from.some(true);
-					var SWAP = slime.$api.fp.Maybe.from.some(false);
-					var EQUAL = slime.$api.fp.Maybe.from.nothing();
+					var CORRECT = slime.fp.Maybe.from.some(true);
+					var SWAP = slime.fp.Maybe.from.some(false);
+					var EQUAL = slime.fp.Maybe.from.nothing();
 					return function(array) {
 						var entry = array[0];
 						var other = array[1];
@@ -1060,7 +1074,7 @@
 				Loader: {
 					from: {
 						synchronous: function(p) {
-							/** @param { slime.runtime.loader.Location } resource */
+							/** @param { slime.runtime.loader.synchronous.Location } resource */
 							return function(resource) {
 								var loaded = p.loader.get(resource.path.concat([resource.name]));
 								if (loaded.present) return {
@@ -1076,25 +1090,33 @@
 		};
 
 		/** @type { slime.jrunscript.runtime.Exports["$api"]} */
-		var $api = Object.assign(slime.$api, { jrunscript: { io: $exports_io } });
+		var $api = Object.assign(
+			slime,
+			{
+				jrunscript: {
+					loader: {
+						old: {
+							Resource: $api_jrunscript_loader_old_Resource
+						}
+					},
+					java: $exports_java,
+					io: $exports_io,
+					properties: properties
+				}
+			}
+		);
 
 		return (
 			/** @returns { slime.jrunscript.runtime.Exports } */
 			function() {
 				return $api.fp.now(
 					{
-						run: slime.run,
-						old: slime.old,
-						compiler: slime.compiler,
 						loader: slime.loader,
-						file: slime.file,
-						value: slime.value,
-						namespace: slime.namespace,
-						$platform: slime.$platform,
 						$api: $api,
+						$platform: $api.platform,
 
 						Loader: $exports_Loader,
-						Resource: $exports_Resource,
+						Resource: $api_jrunscript_loader_old_Resource,
 
 						java: $exports_java,
 						io: $exports_io,
@@ -1105,7 +1127,7 @@
 					$api.Object.defineProperty({
 						name: "mime",
 						descriptor: {
-							get: $api.deprecate($api.fp.Thunk.value(slime.$api.mime))
+							get: $api.deprecate($api.fp.Thunk.value(slime.mime))
 						}
 					})
 				)

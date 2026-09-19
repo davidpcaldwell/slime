@@ -85,7 +85,7 @@ namespace slime.jsh.httpd {
 				/**
 				 * A loader that loads Java web application resources by path.
 				 */
-				resources?: slime.old.Loader
+				resources?: slime.loader.old.Loader
 
 				//	TODO	add reference to URL patterns from servlet specification -->
 
@@ -93,14 +93,14 @@ namespace slime.jsh.httpd {
 				 * An object whose property names are interpreted as URL patterns and property values are interpreted as servlet
 				 * declarations.
 				 */
-				servlets?: { [pattern: string]: servlet.Descriptor }
+				servlets?: { [pattern: string]: Descriptor }
 			}
 
 			/**
 			 * A servlet that implements an entire webapp, in contrast to a servlet that serves as part of a webapp.
 			 */
 			export interface WebappServlet<T extends Descriptor = Descriptor> {
-				resources?: slime.old.Loader
+				resources?: slime.loader.old.Loader
 				servlet: T
 			}
 
@@ -151,7 +151,7 @@ namespace slime.jsh.httpd {
 		 *
 		 * Configures the given servlet as a single top-level servlet in this Tomcat server.
 		 */
-		servlet: (servlet: servlet.Descriptor & { resources?: slime.old.Loader }) => void
+		servlet: (servlet: servlet.Descriptor & { resources?: slime.loader.old.Loader }) => void
 
 		//	TODO	See jsh/test/manual/httpd.lifecycle.jsh.js for tests of the below.
 
@@ -196,7 +196,7 @@ namespace slime.jsh.httpd {
 		export type Webapps = SingleWebapp | MultipleWebapps | servlet.configuration.WebappServlet
 
 		/** @deprecated Should be declaring webapps at time of server creation. */
-		export type AcceptOldForm = Webapps | NoWebapps
+		export type WebappsWithOldOptionalForm = Webapps | NoWebapps
 
 		export interface Configuration {
 			/**
@@ -246,7 +246,7 @@ namespace slime.jsh.httpd {
 			 * @param p (optional; default is an object with no properties) An object specifying the configuration of the embedded
 			 * server.
 			 */
-			(p?: tomcat.Configuration & tomcat.AcceptOldForm): Tomcat
+			(p?: tomcat.Configuration & tomcat.WebappsWithOldOptionalForm): Tomcat
 
 			/**
 			 * Starts a server that serves files from a particular directory.
@@ -407,7 +407,7 @@ namespace slime.jsh.httpd {
 				 * @param servlet
 				 * @returns
 				 */
-				inWebapp: (resources: slime.old.Loader, servlet: slime.jsh.httpd.servlet.Descriptor) => servlet.configuration.WebappServlet<servlet.DescriptorUsingLoad>
+				inWebapp: (resources: slime.loader.old.Loader, servlet: slime.jsh.httpd.servlet.Descriptor) => servlet.configuration.WebappServlet<servlet.DescriptorUsingLoad>
 			}
 		}
 

@@ -44,7 +44,7 @@
 					$api.fp.Thunk.map(
 						jsh.internal.api.rhino.compatible,
 						function(library) {
-							return library.local( jsh.shell.jsh.lib.pathname.os.adapt() );
+							return library.local(library.directory(jsh.shell.jsh.lib.pathname.os.adapt()));
 						},
 						function(locations) {
 							if (locations == null) return null;

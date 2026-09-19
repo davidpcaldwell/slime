@@ -11,7 +11,7 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.tools.git.Context } $context
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.jrunscript.tools.git.Exports } $exports
 	 */
 	function($api,$context,$loader,$exports) {
@@ -173,7 +173,7 @@
 		 * @param { slime.jrunscript.tools.git.Invocation } invocation
 		 * @param { string } pathname
 		 * @param { slime.jrunscript.shell.invocation.Argument["stdio"] } stdio
-		 * @returns { slime.jrunscript.shell.run.old.Invocation }
+		 * @returns { slime.jrunscript.shell.run.minus2.Invocation }
 		 */
 		var createShellInvocation = function(program,config,pathname,invocation,stdio) {
 			return $context.api.shell.Invocation.from.argument({

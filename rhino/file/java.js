@@ -9,12 +9,13 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
+	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
 	 * @param { slime.$api.jrunscript.Global } $api
 	 * @param { slime.jrunscript.file.internal.java.Context } $context
 	 * @param { slime.Loader } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.file.internal.java.Exports> } $export
 	 */
-	function(Packages,$api,$context,$loader,$export) {
+	function(Packages,JavaAdapter,$api,$context,$loader,$export) {
 		/** @type { slime.jrunscript.file.internal.spi.Script } */
 		var code = $loader.script("java-spi.js");
 
@@ -241,10 +242,10 @@
 					}
 				}
 
-				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["remove"] } */
-				this.remove = function(peer) {
-					peer["delete"]();
-				}
+				// /** @type { slime.jrunscript.file.internal.java.FilesystemProvider["remove"] } */
+				// this.remove = function(peer,events) {
+				// 	peer["delete"](true,events);
+				// }
 
 				/** @type { slime.jrunscript.file.internal.java.FilesystemProvider["move"] } */
 				this.move = function(fromPeer,to) {
@@ -353,7 +354,7 @@
 			/**
 			 *
 			 * @param { string } pathname
-			 * @param { slime.$api.event.Emitter<{ notFound: void }> } events
+			 * @param { slime.$api.event.Producer<{ notFound: void }> } events
 			 */
 			var openInputStream = function(pathname,events) {
 				var peer = java.newPeer(pathname);
@@ -389,7 +390,7 @@
 			/**
 			 *
 			 * @param { string } pathname
-			 * @param { slime.$api.event.Emitter<{ notFound: void }> } events
+			 * @param { slime.$api.event.Producer<{ notFound: void }> } events
 			 * @returns
 			 */
 			var maybeInputStream = function(pathname,events) {
@@ -451,6 +452,35 @@
 							});
 						},
 						remove: function() {
+							function directory_remove_impure(p) {
+								return $api.fp.world.old.tell(function(events) {
+									var peer = java.newPeer(p.pathname);
+									peer.delete(
+										new JavaAdapter(
+											Packages.inonit.script.runtime.io.Filesystem.Node.DeleteEvents,
+											{
+												error: function(file, message) {
+													events.fire("error", {
+														file: String(file.getScriptPath()),
+														message: String(message)
+													})
+												}
+											}
+										)
+									);
+									// peer.delete(
+									// 	true,
+									// 	new JavaAdapter(
+									// 		Packages.inonit.script.runtime.io.Filesystem.Node.DeleteEvents,
+									// 		{
+									// 			removing: function(file) {},
+									// 			removed: function(file) {}
+									// 		}
+									// 	)
+									// );
+								});
+							}
+
 							return directory_remove_impure({
 								pathname: pathname
 							})
@@ -517,13 +547,6 @@
 					if (!peer.exists()) {
 						java.createDirectoryAt(peer);
 					}
-				});
-			}
-
-			function directory_remove_impure(p) {
-				return $api.fp.world.old.tell(function() {
-					var peer = java.newPeer(p.pathname);
-					peer.delete();
 				});
 			}
 
@@ -595,7 +618,7 @@
 			 *
 			 * @param { string } source
 			 * @param { string } destination
-			 * @returns { slime.$api.fp.world.Action<void> }
+			 * @returns { slime.$api.fp.world.Action<{}> }
 			 */
 			function copy(source,destination) {
 				return function() {
@@ -618,7 +641,7 @@
 			/**
 			 *
 			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
-			 * @param { slime.$api.event.Emitter<{ created: string }> } events
+			 * @param { slime.$api.event.Producer<{ created: string }> } events
 			 */
 			var createAt = function(peer,events) {
 				java.createDirectoryAt(peer);
@@ -628,7 +651,7 @@
 			/**
 			 *
 			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
-			 * @param { slime.$api.event.Emitter<{ created: string }> } events
+			 * @param { slime.$api.event.Producer<{ created: string }> } events
 			 */
 			var ensureParent = function(peer,events) {
 				var parent = java.getParent(peer);
@@ -637,6 +660,69 @@
 					createAt(parent,events);
 				}
 			};
+
+			/**
+			 * @type { slime.jrunscript.file.world.Filesystem["remove"] }
+			 */
+			var remove = (
+				function() {
+					/** @type { (forOrdinaryFile: boolean) => slime.jrunscript.file.world.Filesystem["remove"]["file"] } */
+					var both = function(forOrdinaryFile) {
+						return function(/** @type { { pathname: string } } */p) {
+							return function(events) {
+								var peer = java.newPeer(p.pathname);
+
+								if (!peer.isSymlink()) {
+									var exists = peer.exists();
+									if (!exists) {
+										events.fire(
+											"error",
+											"remove failed - does not exist: " + p.pathname
+										);
+										return $api.fp.Maybe.from.nothing();
+									}
+									var isDirectory = peer.isDirectory();
+									if (forOrdinaryFile && isDirectory) {
+										events.fire(
+											"error",
+											"remove failed - expected file, was directory: " + p.pathname
+										);
+										return $api.fp.Maybe.from.nothing();
+									}
+									if (!forOrdinaryFile && !isDirectory) {
+										events.fire(
+											"error",
+											"remove failed - expected directory, was file: " + p.pathname
+										);
+										return $api.fp.Maybe.from.nothing();
+									}
+								}
+
+								var result = peer.delete(
+									new JavaAdapter(
+										Packages.inonit.script.runtime.io.Filesystem.Node.DeleteEvents,
+										{
+											error: function(message) {
+												events.fire(
+													"error",
+													String(message)
+												);
+											}
+										}
+									)
+								);
+
+								return (result) ? $api.fp.Maybe.from.some(void(0)) : $api.fp.Maybe.from.nothing();
+							}
+						};
+					}
+
+					return {
+						file: both(true),
+						directory: both(false)
+					};
+				}
+			)();
 
 			/** @type { slime.jrunscript.file.internal.java.Exports["filesystems"]["os"] } */
 			var filesystem = {
@@ -694,6 +780,7 @@
 						var peer = java.newPeer(p.pathname);
 						if (!peer.exists()) return $api.fp.Maybe.from.nothing();
 						var list = peer.list();
+						if (list === null) return $api.fp.Maybe.from.nothing();
 						return $api.fp.Maybe.from.some(
 							$context.api.java.Array.adapt(list).map(
 								/** @type { slime.$api.fp.Mapping<slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node,string> } */
@@ -712,9 +799,11 @@
 						java.move(java.newPeer(p.from), java.newPeer(p.to));
 					}
 				},
-				remove: function(p) {
+				remove: remove,
+				isSymlink: function(p) {
 					return function(events) {
-						java.remove(java.newPeer(p.pathname));
+						var peer = java.newPeer(p.pathname);
+						return $api.fp.Maybe.from.some(peer.isSymlink());
 					}
 				},
 				attributes: (
@@ -848,16 +937,6 @@
 						return copy_impure(p.from,p.to);
 					}
 				},
-				Directory: {
-					remove: function(p) {
-						return $api.fp.world.old.tell(function(e) {
-							var peer = java.newPeer(p.pathname);
-							if (!peer.exists()) e.fire("notFound");
-							if (peer.exists() && !peer.isDirectory()) throw new Error();
-							if (peer.exists() && peer.isDirectory()) java.remove(peer);
-						});
-					}
-				},
 				os: {
 					toString: function(path) {
 						var provider = java;
@@ -918,4 +997,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,$api,$context,$loader,$export);
+)(Packages,JavaAdapter,$api,$context,$loader,$export);

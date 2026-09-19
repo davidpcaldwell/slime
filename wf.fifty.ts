@@ -46,7 +46,7 @@ namespace slime.project.wf {
 				}
 			};
 		//@ts-ignore
-		})(fifty)
+		})(fifty);
 	}
 
 	type Options = {}
@@ -73,6 +73,123 @@ namespace slime.project.wf {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { jsh } = fifty.global;
+
+			fifty.tests.help = function() {
+				var wf = fifty.jsh.file.object.getRelativePath("wf").file;
+
+				var help = jsh.shell.run({
+					command: wf,
+					arguments: ["--help"],
+					stdio: {
+						output: String,
+						error: String
+					},
+					evaluate: function(result) { return result; }
+				});
+				fifty.verify(help).status.is(0);
+				fifty.verify(help).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("status - Shows repository and project status.") != -1
+						&& output.indexOf("check - Runs linting and TypeScript checks.") != -1
+						&& output.indexOf("docker.run - Runs a Docker Compose service command.") != -1
+					;
+				}).is(true);
+				fifty.verify(help).stdio.error.evaluate(function(output: string) {
+					var project = output.indexOf("Project:");
+					var development = output.indexOf("Development:");
+					var checks = output.indexOf("Checks:");
+					var documentation = output.indexOf("Documentation:");
+					var git = output.indexOf("Git:");
+					var docker = output.indexOf("Docker:");
+					return project != -1
+						&& project < development
+						&& development < checks
+						&& checks < documentation
+						&& documentation < git
+						&& git < docker
+						&& output.indexOf("initialize - Initializes this SLIME checkout for development.") < output.indexOf("status - Shows repository and project status.")
+						&& output.indexOf("lint - Runs the configured lint check.") < output.indexOf("check - Runs linting and TypeScript checks.")
+					;
+				}).is(true);
+				fifty.verify(help).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Wrote new dependencies TypeDoc includes") == -1;
+				}).is(true);
+
+				var commandHelp = jsh.shell.run({
+					command: wf,
+					arguments: ["git.branch", "--help"],
+					stdio: {
+						output: String,
+						error: String
+					},
+					evaluate: function(result) { return result; }
+				});
+				fifty.verify(commandHelp).status.is(0);
+				fifty.verify(commandHelp).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("git.branch <branch>") != -1;
+				}).is(true);
+
+				var noCommand = jsh.shell.run({
+					command: wf,
+					arguments: [],
+					stdio: {
+						output: String,
+						error: String
+					},
+					evaluate: function(result) { return result; }
+				});
+				fifty.verify(noCommand).status.is(1);
+				fifty.verify(noCommand).stdio.error.evaluate(function(output: string) {
+					return output.indexOf("Available commands:") != -1
+						&& output.indexOf("Wrote new dependencies TypeDoc includes") == -1
+					;
+				}).is(true);
+
+				fifty.run(function initializationIsDeferredForHelp() {
+					var project = fifty.jsh.file.object.temporary.directory();
+					project.getRelativePath("wf.js").write([
+						"//@ts-check",
+						"(",
+						"function(jsh,$context,$exports) {",
+						"  $exports.initialize = function() {",
+						"    $context.base.getRelativePath('initialized').write('initialized', { append: false });",
+						"  };",
+						"  $exports.status = jsh.script.cli.defineCommand(function() {}, {",
+						"    category: 'Project',",
+						"    summary: 'Shows fixture status.'",
+						"  });",
+						"}",
+						")(jsh,$context,$exports);"
+					].join("\n"), { append: false });
+
+					function fixtureWf(arguments: string[]) {
+						return jsh.shell.run({
+							command: fifty.jsh.file.object.getRelativePath("tools/wf.bash").file,
+							arguments: arguments,
+							environment: Object.assign({}, jsh.shell.environment, {
+								PROJECT: project.pathname.toString(),
+								JSH_USER_JDKS: "/dev/null"
+							}),
+							stdio: {
+								output: String,
+								error: String
+							},
+							evaluate: function(result) { return result; }
+						});
+					}
+
+					var fixtureHelp = fixtureWf(["--help"]);
+					fifty.verify(fixtureHelp).status.is(0);
+					fifty.verify(project.getFile("initialized")).is.type("null");
+
+					var fixtureNoCommand = fixtureWf([]);
+					fifty.verify(fixtureNoCommand).status.is(1);
+					fifty.verify(project.getFile("initialized")).is.type("null");
+
+					var fixtureCommand = fixtureWf(["status"]);
+					fifty.verify(fixtureCommand).status.is(0);
+					fifty.verify(project.getFile("initialized")).is.type("object");
+				});
+			}
 
 			fifty.tests.manual.issue407 = function() {
 				var target = test.fixtures.clone();
@@ -213,6 +330,8 @@ namespace slime.project.wf {
 			}
 
 			fifty.tests.suite = function() {
+				fifty.run(fifty.tests.help);
+
 				fifty.run(function ensureInitializeInstallsEslint() {
 					var fresh = test.fixtures.clone();
 					test.fixtures.configure(fresh);
@@ -228,6 +347,28 @@ namespace slime.project.wf {
 						fifty.global.jsh.shell.console(result.stdio.error);
 					}
 					fifty.verify(fresh).directory.getSubdirectory("node_modules/eslint").is.type("object");
+
+					var java = fresh.directory.getSubdirectory("local/jdk/default/bin").getFile("java");
+					fifty.verify(java).is.type("object");
+
+					var javaVersion = jsh.shell.run({
+						command: java,
+						arguments: ["-version"],
+						stdio: {
+							error: String
+						},
+						evaluate: function(output) {
+							return output.stdio.error;
+						}
+					});
+
+					fifty.verify(javaVersion).evaluate(function(output) {
+						var match = /version "([^"]+)"/.exec(output);
+						if (!match) return "";
+						if (match[1].indexOf("1.8.") == 0) return "8";
+						var major = /^(\d+)/.exec(match[1]);
+						return (major) ? major[1] : "";
+					}).is("25");
 				});
 
 				fifty.run(fifty.tests.requireGitIdentityDuringInitialize);

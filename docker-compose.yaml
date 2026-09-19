@@ -4,27 +4,22 @@
 #
 #	END LICENSE
 
-name: slime
-
-# SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
-# command: /bin/bash /slime/wf check --docker
-# SLIME_WF_JDK_VERSION = 8 | 11 | 17 | 21
 services:
-  # Produces a stateful, persistent SLIME container that begins as a blank box with the source directory mounted. Local changes
+  # Produces a stateful, persistent SLIME container with a built-in Webtop desktop and the source directory mounted. Local changes
   # (to the local/ subdirectory, like installing JDKs, Rhino, Tomcat, and so forth) will persist between runs.
   #
   # Also used by the devcontainer implementation.
   #
-  # The primary user interface for the container is the novnc interface, which can be reached at http://localhost:7902/vnc.html.
-  # The chrome and firefox services are still started so that the container can emulate the CI tests for debugging CI-only failures
-  # via the contributor/devcomtainer/check script.
+  # The primary user interface for the container is Webtop (HTTP on 3000 and HTTPS on 3001 in-container).
+  # Browser tests run from this service using local browser processes.
   local:
     build: .
     environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
       TZ: ${TZ}
-      DISPLAY: desktop:0.0
-    command: sleep infinity
     working_dir: /slime
+    shm_size: 1gb
     volumes:
       - type: bind
         source: .
@@ -34,34 +29,17 @@ services:
         target: /slime/local
       - type: bind
         source: ./local/docker/home
-        target: /root
+        target: /config
+      - type: bind
+        source: ./local/devcontainer
+        target: /config/.devcontainer
+      - type: bind
+        source: ${SLIME_AGENT_INSTRUCTIONS_HOST_PATH:-${HOME}/.slime/contributor/agents}
+        target: /config/.agents
     ports:
-      - 8000:8000
-    depends_on:
-      - desktop
-      - chrome
-      - firefox
-
-  chrome:
-    image: seleniarm/standalone-chromium
-    ports:
-      - 7900:7900
-
-  firefox:
-    image: seleniarm/standalone-firefox
-    ports:
-      - 7901:7900
-
-  desktop:
-    image: theasp/novnc:latest
-    environment:
-      RUN_XTERM: no
-    env_file:
-      # Can specify DISPLAY_WIDTH and DISPLAY_HEIGHT for the desktop in the below file; defaults are 1024 and 768.
-      - path: local/devcontainer/desktop.env
-        required: false
-    ports:
-      - 8080
+      - "8000"
+      - "3000"
+      - "3001"
 
 volumes:
   local:

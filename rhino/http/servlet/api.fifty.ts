@@ -29,7 +29,7 @@ namespace slime.servlet {
 		 * resources) from the servlet resource loader. Note that unlike Java servlet resource loaders, SLIME loaders do not use a
 		 * leading slash as part of the resource path.
 		 */
-		loader?: slime.old.Loader
+		loader?: slime.loader.old.Loader
 
 		/**
 		 * @deprecated
@@ -105,7 +105,7 @@ namespace slime.servlet {
 		 * * `httpd.loader.file("WEB-INF/myapp/code.js")`, or
 		 * * `$loader.file("code.js")`.
 		 */
-		$loader: slime.old.Loader
+		$loader: slime.loader.old.Loader
 
 		/**
 		 * The `$parameters` object contains the set of servlet initialization parameters available to the servlet. These are set
@@ -119,17 +119,23 @@ namespace slime.servlet {
 	}
 
 	export namespace internal {
+		export interface ByEnvironment<T> {
+			rhino?: (p: slime.jrunscript.native.inonit.script.servlet.Rhino.Host) => T
+			servlet: (p: slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject) => T
+			script: (p: slime.servlet.internal.$host.jsh) => T
+		}
+
 		export interface Loaders {
 			api: slime.Loader
 
 			//	TODO absent for now in jsh-level servlets, but see comment in api.js about $loader
-			script?: slime.old.Loader
+			script?: slime.loader.old.Loader
 
 			/**
 			 * The global servlet resource loader; the loader that becomes `httpd.loader`. If not present, `httpd.loader`
 			 * will not be present.
 			 */
-			container?: slime.old.Loader
+			container?: slime.loader.old.Loader
 		}
 
 		export namespace $host {
@@ -139,12 +145,6 @@ namespace slime.servlet {
 				api?: slime.servlet.internal.api
 
 				loaders?: Loaders
-
-				Loader: {
-					tools: {
-						toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
-					}
-				}
 
 				/**
 				 * The set of parameters to provide to the servlet. Note that unlike native Java servlets, `jsh`-embedded servlets
@@ -175,6 +175,21 @@ namespace slime.servlet {
 		}
 
 		export type $host = slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject | $host.jsh
+
+		export interface Context {
+			context: httpd["context"]
+			loaders: Loaders
+			api: api
+			$slime: httpd["$slime"]
+			reload: httpd["$reload"]
+
+			//	TODO	jsh allows any type, not just string. Should consider how to deal with this.
+			parameters: { [x: string]: string }
+
+			loadServletScriptIntoScope: (scope: slime.servlet.Scope) => void
+			Servlet: (script: slime.servlet.Script) => slime.servlet.internal.server.Servlet
+			register: (servlet: slime.servlet.internal.server.Servlet) => void
+		}
 	}
 
 	(

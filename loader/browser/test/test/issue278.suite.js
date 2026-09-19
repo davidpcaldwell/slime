@@ -5,7 +5,7 @@
 //	END LICENSE
 
 (
-	function() {
+	function(parameters) {
 		var issue278 = false;
 		for (var i=0; i<parameters.controls.length; i++) {
 			if (parameters.controls[i].name == "issue278") {
@@ -31,4 +31,4 @@
 			}
 		});
 	}
-)();
+)(parameters);

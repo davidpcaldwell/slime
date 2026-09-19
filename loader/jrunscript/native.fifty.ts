@@ -29,14 +29,16 @@ namespace slime.jrunscript {
 					equals(other: any): boolean
 					toCharArray(): any
 					getBytes(): any
+					getBytes(encoding: string): any
 					endsWith(suffix: java.lang.String): boolean
+					substring(start: number, end?: number): java.lang.String
 				}
 
 				export interface Number extends Object {}
 
 				export interface Byte extends Number {}
 
-				export interface Class {
+				export interface Class extends Object {
 					isInstance(object: any): boolean
 					getDeclaredField(name: string): reflect.Field
 					getDeclaredMethod(name: string, types?: slime.jrunscript.native.java.lang.Class[]): reflect.Method
@@ -44,6 +46,7 @@ namespace slime.jrunscript {
 					getSuperclass(): Class
 					getInterfaces(): Class[]
 					getProtectionDomain(): any
+					getModule?(): any
 				}
 
 				export interface ClassLoader {
@@ -78,13 +81,14 @@ namespace slime.jrunscript {
 				}
 			}
 			export namespace io {
-				export interface InputStream {
-					read(): any
-					getClass(): any
-					close()
+				export interface InputStream extends slime.jrunscript.native.java.lang.Object {
+					read: () => number
+					close: () => void
 				}
+
 				export interface ByteArrayInputStream extends InputStream {
 				}
+
 				export interface OutputStream extends java.lang.Object {
 					write(b: number)
 					flush()
@@ -130,6 +134,9 @@ namespace slime.jrunscript {
 				export namespace file {
 					export interface Path {
 						getFileSystem(): FileSystem
+						resolve: (other: Path) => Path
+						normalize: () => Path
+						toAbsolutePath: () => Path
 					}
 
 					export interface FileSystem {
@@ -185,7 +192,7 @@ namespace slime.jrunscript {
 					getHeaderField(i: number): slime.jrunscript.native.java.lang.String
 				}
 
-				export interface URL {
+				export interface URL extends slime.jrunscript.native.java.lang.Object {
 					getQuery(): slime.jrunscript.native.java.lang.String
 					getProtocol(): slime.jrunscript.native.java.lang.String
 					toExternalForm(): slime.jrunscript.native.java.lang.String
@@ -346,6 +353,19 @@ namespace slime.jrunscript {
 			}
 		}
 
+		export namespace javax.servlet {
+			export interface ServletContext {
+				getMimeType(file: string): slime.jrunscript.native.java.lang.String
+				getResourcePaths(path: string): slime.jrunscript.native.java.util.Set<slime.jrunscript.native.java.lang.String>
+				getResource(path: string): slime.jrunscript.native.java.net.URL
+			}
+
+			export interface ServletConfig {
+				getInitParameterNames(): slime.jrunscript.native.java.util.Enumeration<slime.jrunscript.native.java.lang.String>
+				getInitParameter(name: string): slime.jrunscript.native.java.lang.String
+			}
+		}
+
 		export namespace javax.mail {
 			export namespace internet {
 				export interface MimeMultipart {
@@ -416,7 +436,8 @@ namespace slime.jrunscript {
 					export interface HostObject {
 						register: (_script: slime.jrunscript.native.inonit.script.servlet.Servlet.Script) => void
 						getLoader: () => slime.jrunscript.native.inonit.script.engine.Loader
-						getServlet: () => slime.jrunscript.native.inonit.script.servlet.Servlet
+						getServletContext: () => slime.jrunscript.native.javax.servlet.ServletContext
+						getServletConfig: () => slime.jrunscript.native.javax.servlet.ServletConfig
 					}
 				}
 
@@ -522,7 +543,9 @@ namespace slime.jrunscript {
 				ClassLoader: any
 				Boolean: any
 				Object: any
-				Class: any
+				Class: JavaClass<slime.jrunscript.native.java.lang.Class,{
+					forName: (name: string) => slime.jrunscript.native.java.lang.Class
+				}>
 				Void: any
 				Runtime: any
 				Integer: any
@@ -576,11 +599,7 @@ namespace slime.jrunscript {
 					}
 				}
 				URI: any
-				URL: {
-					new (base: slime.jrunscript.native.java.net.URL, relative: string): slime.jrunscript.native.java.net.URL
-					new (url: slime.jrunscript.native.java.lang.String): slime.jrunscript.native.java.net.URL
-					new (url: string): slime.jrunscript.native.java.net.URL
-				}
+				URL: JavaClass<slime.jrunscript.native.java.net.URL>
 				URLEncoder: any
 				URLDecoder: any
 				URLClassLoader: any
@@ -620,6 +639,12 @@ namespace slime.jrunscript {
 
 						setLastModifiedTime(path: slime.jrunscript.native.java.nio.file.Path, time: slime.jrunscript.native.java.nio.file.attribute.FileTime)
 						getLastModifiedTime(path: slime.jrunscript.native.java.nio.file.Path): slime.jrunscript.native.java.nio.file.attribute.FileTime
+					}
+					Paths: {
+						get: {
+							(s: slime.jrunscript.native.java.lang.String): slime.jrunscript.native.java.nio.file.Path
+							(s: string): slime.jrunscript.native.java.nio.file.Path
+						}
 					}
 					FileSystems: any
 					attribute: {
@@ -768,6 +793,9 @@ namespace slime.jrunscript {
 						Filesystem: {
 							create: () => slime.jrunscript.native.inonit.script.runtime.io.Filesystem
 							Optimizations: any
+							Node: {
+								DeleteEvents: JavaClass<slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node.DeleteEvents>
+							}
 						}
 					}
 					Throwables: any
@@ -803,6 +831,11 @@ namespace slime.jrunscript {
 				}
 				jsh: {
 					Shell: any
+					Worker: {
+						Event: {
+							Listener: any
+						}
+					}
 					launcher: any
 				}
 				servlet: {
@@ -811,21 +844,7 @@ namespace slime.jrunscript {
 					}>
 				}
 			}
-			system: {
-				OperatingSystem: {
-					Environment: JavaClass<slime.jrunscript.native.inonit.system.OperatingSystem.Environment,{
-						SYSTEM: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
-						create: any
-					}>
-					get: () => slime.jrunscript.native.inonit.system.OperatingSystem
-				}
-				Command: {
-					Context: any
-					Configuration: any
-				}
-				Logging: any
-				Subprocess: any
-			}
+			system: slime.jrunscript.Packages.inonit.system,
 			tools: {
 				Profiler: any
 			}

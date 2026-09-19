@@ -8,7 +8,9 @@ namespace slime.jsh.shell {
 	export namespace internal {
 		export interface Context {
 			exit: any
-			stdio: any
+
+			stdio: slime.jrunscript.shell.context.Stdio
+
 			_getSystemProperties: () => slime.jrunscript.native.java.util.Properties
 
 			/**
@@ -34,7 +36,7 @@ namespace slime.jsh.shell {
 
 		export type Exports = Omit<slime.jsh.shell.Exports,"tools">
 
-		export type Script = slime.loader.Script<Context,slime.jsh.shell.Exports>
+		export type Script = slime.runtime.loader.Scoped<Context,slime.jrunscript.shell.Exports & slime.jsh.shell.Exports>
 	}
 
 	export namespace test {
@@ -44,9 +46,25 @@ namespace slime.jsh.shell {
 		//@ts-ignore
 		})(fifty);
 	}
+}
 
+namespace slime.jrunscript.shell.context {
 	/**
-	 * An implementation of {@link slime.jrunscript.shell.Exports} that adds additional APIs that are available when running under
+	 * Represents a process output stream to which bytes and characters can be written.
+	 */
+	export type Console = OutputStream & {
+		/**
+		 * Writes a string to the stream and then flushes the stream.
+		 *
+		 * @param string A string to write to this console.
+		 */
+		write: (string: string) => void
+	}
+}
+
+namespace slime.jsh.shell {
+	/**
+	 * Builds upon {@link slime.jrunscript.shell.Exports}, providing additional APIs that are available when running under
 	 * the `jsh` shell.
 	 */
 	export interface Exports {}
@@ -62,14 +80,23 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports extends slime.jrunscript.shell.Exports {
+	export interface Exports {
+		//	TODO	think this through, there are similar concepts elsewhere, for example, in the launcher, and this ought to be
+		//			possible to implement directly in the jrunscript.shell module
+		//
+		//			there is also related code in jsh-data.jsh.js that could be generalized
+		//
+		//			finally, this appears to have no callers, so we deprecate it.  Leaving in because it contains potentially useful
+		// 			code and is used in a manual test.
 		/**
+		 * @deprecated This API should be improved and moved to the jrunscript.shell module.
+		 *
 		 * The JavaScript engine executing the loader process for the shell, e.g., `rhino`, `nashorn`.
 		 */
 		engine: string
 	}
 
-	export interface Exports extends slime.jrunscript.shell.Exports {
+	export interface Exports {
 		/**
 		 * Exits from this shell. This ordinarily terminates the process, although some shells (for example, those launched by the
 		 * `jsh.shell.jsh` method) can sometimes be run in-process.
@@ -100,7 +127,7 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export interface Exports extends slime.jrunscript.shell.Exports {
+	export interface Exports {
 		/**
 		 * The standard I/O streams for this shell.
 		 */
@@ -119,7 +146,7 @@ namespace slime.jsh.shell {
 		stderr: Exports["stdio"]["error"]
 	}
 
-	export interface Exports extends slime.jrunscript.shell.Exports {
+	export interface Exports {
 		/**
 		 * Writes a message to the shell's standard output stream, followed by a line terminator.
 		 */
@@ -214,13 +241,13 @@ namespace slime.jsh.shell {
 
 				workingDirectory?: Parameters<slime.jrunscript.shell.Exports["run"]>[0]["directory"]
 
-				evaluate?: slime.jrunscript.shell.run.old.evaluate<T>
+				evaluate?: slime.jrunscript.shell.run.minus2.evaluate<T>
 
 				/**
 				 * A callback function that will be invoked when the subprocess exits. The function will be invoked with an argument
 				 * containing information about the subprocess.
 				 */
-				onExit?: slime.jrunscript.shell.run.old.evaluate<T>
+				onExit?: slime.jrunscript.shell.run.minus2.evaluate<T>
 			}
 		}
 	}
@@ -229,7 +256,7 @@ namespace slime.jsh.shell {
 		export type Mode = Omit<old.shell.Argument<any>,"command"|"arguments">
 	}
 
-	export interface Exports extends slime.jrunscript.shell.Exports {
+	export interface Exports {
 		/**
 		 * @deprecated Replaced by `run`.
 		 *
@@ -280,7 +307,7 @@ namespace slime.jsh.shell {
 	}
 
 	export interface Exports {
-		jsh: JshInvoke & JshShellJsh
+		jsh: JshOldInvoke & JshShellJsh
 	}
 
 	(
@@ -313,18 +340,27 @@ namespace slime.jsh.shell {
 	export type Installation = ExternalInstallation | PackagedInstallation
 
 	export type ExternalInstallationProgram = {
-		shell: ExternalInstallation,
+		shell: ExternalInstallation
 		script: string
 	}
 
+	/**
+	 * A _Program_ is somewhat analogous to an operating system executable in this context; it represents a complete specification
+	 * of an invocation of the script, including information about the associated shell. This program can still be executed with
+	 * arbitrary arguments, environment, working directory, system properties, and so forth.
+	 */
 	export type Program = ExternalInstallationProgram | PackagedInstallation
 
-	export type Intention = (
-		Program
-		& Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "directory">
+	export type ScriptInvocation = (
+		Pick<slime.jrunscript.shell.run.Intention,"arguments" | "environment" | "directory">
 		& {
 			properties?: slime.jrunscript.java.Properties
 		}
+	)
+
+	export type Intention = (
+		Program
+		& ScriptInvocation
 		& Pick<slime.jrunscript.shell.run.Intention,"stdio">
 	)
 
@@ -412,7 +448,7 @@ namespace slime.jsh.shell {
 			};
 
 			var getJavaHome = function() {
-				var h = jsh.shell.java.Jdk.from.javaHome();
+				var h = jsh.shell.java.Jdk.from.javaHome;
 				return jsh.file.Pathname(h.base).directory;
 			}
 
@@ -531,7 +567,7 @@ namespace slime.jsh.shell {
 						environment: function(was) {
 							var PATH = (function() {
 								var now = jsh.shell.PATH.pathnames;
-								var jdk = jsh.shell.java.Jdk.from.javaHome();
+								var jdk = jsh.shell.java.Jdk.from.javaHome;
 								var bin = jsh.file.Pathname(jdk.base + "/" + "bin");
 								now.unshift(bin);
 								return jsh.file.Searchpath(now);
@@ -569,7 +605,7 @@ namespace slime.jsh.shell {
 						environment: function(was) {
 							//	TODO	maybe we should standardize all this to make it easier to work with native executable
 							//			launcher
-							var jdk = jsh.shell.java.Jdk.from.javaHome();
+							var jdk = jsh.shell.java.Jdk.from.javaHome;
 							var PATH = (function() {
 								var now = jsh.shell.PATH.pathnames;
 								var bin = jsh.file.Pathname(jdk.base + "/" + "bin");
@@ -643,9 +679,9 @@ namespace slime.jsh.shell {
 	//@ts-ignore
 	)(fifty);
 
-	type Argument = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node | slime.jrunscript.file.File | slime.jrunscript.file.Directory
-
 	export namespace oo {
+		type Argument = string | slime.jrunscript.file.Pathname | slime.jrunscript.file.Node | slime.jrunscript.file.File | slime.jrunscript.file.Directory
+
 		export interface EngineResult {
 			status: number
 
@@ -683,7 +719,7 @@ namespace slime.jsh.shell {
 		// 	//			etc. and make sure everything was strictly encapsulated.
 		// 	stdio: Invocation["stdio"]
 		// }
-		export type ForkResult = slime.jrunscript.shell.run.old.Result & {
+		export type ForkResult = slime.jrunscript.shell.run.minus2.Result & {
 			/**
 			 * The operating system command invoked.
 			 */
@@ -743,7 +779,7 @@ namespace slime.jsh.shell {
 			 */
 			evaluate?: evaluate<Result,R>
 
-			on?: slime.jrunscript.shell.run.old.Argument["on"]
+			on?: slime.jrunscript.shell.run.minus2.Argument["on"]
 		}
 
 		export interface EngineInvocation<R = EngineResult> extends Invocation<R> {
@@ -765,7 +801,7 @@ namespace slime.jsh.shell {
 
 	//	TODO	add tests for packaged shell
 	//	TODO	add tests for remote shell
-	export interface JshInvoke {
+	export interface JshOldInvoke {
 		<R>(p: oo.ForkInvocation<R>): R
 		<R>(p: oo.EngineInvocation<R>): R
 	}
@@ -803,7 +839,7 @@ namespace slime.jsh.shell {
 						var pathnames = jsh.shell.PATH.pathnames;
 						pathnames.unshift(
 							jsh.file.Pathname(
-								jsh.shell.java.Jdk.from.javaHome().base
+								jsh.shell.java.Jdk.from.javaHome.base
 							).directory.getRelativePath("bin")
 						);
 						return jsh.file.Searchpath(pathnames).toString();
@@ -972,7 +1008,7 @@ namespace slime.jsh.shell {
 		debug: any
 	}
 
-	export interface Exports extends slime.jrunscript.shell.Exports {
+	export interface Exports {
 		//	TODO	shell?
 		//	TODO	deprecate this after possibly creating, and then definitely pointing to some kind of replacement, probably
 		// 			based on jsh.internal.bootstrap

@@ -53,7 +53,7 @@
 					var nodes = $api.fp.world.now.ask(filesystem.listDirectory({ pathname: target.pathname }));
 					if (!nodes.present) throw new Error("Could not list: " + target.pathname);
 
-					/** @type { (pathname: string, question: slime.$api.fp.world.Sensor<{ pathname: string },void,slime.$api.fp.Maybe<boolean>>) => boolean } */
+					/** @type { (pathname: string, question: slime.$api.fp.world.Sensor<{ pathname: string },{},slime.$api.fp.Maybe<boolean>>) => boolean } */
 					var presentBoolean = function(pathname,question) {
 						var maybe = $api.fp.world.now.question(question, { pathname: pathname });
 						if (!maybe.present) throw new Error();
@@ -62,7 +62,7 @@
 
 					return $api.fp.Maybe.from.some(
 						nodes.value.map(
-							/** @type { slime.$api.fp.Mapping<string,slime.runtime.loader.Node> } */
+							/** @type { slime.$api.fp.Mapping<string,slime.runtime.loader.synchronous.Node> } */
 							function(node) {
 								var pathname = $context.library.Location.relative(node)(target).pathname;
 								return {

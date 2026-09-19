@@ -118,84 +118,139 @@
 			}
 
 			//	Might be redundant (this is set in main.js) or, per comment above, might be used in packaged scripts? Unknown.
-			if ($$api.slime.settings.get("jsh.launcher.debug") && !$$api.debug.on) {
+			if ($$api.slime.settings.byName("jsh.launcher.debug").getLauncherProperty() && !$$api.debug.on) {
 				$$api.debug.on = true;
 				$$api.debug("debugging enabled");
 			}
 
-			$$api.jsh = {
-				exit: void(0),
-				engines: void(0),
-				shell: void(0),
-				Built: void(0),
-				Unbuilt: void(0),
-				Packaged: void(0),
-				Classpath: void(0)
-			};
-
-			$$api.jsh.exit = $$api.engine.resolve({
-				rhino: function(status) {
-					var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
-					_field.setAccessible(true);
-					if (status === null) {
-						_field.set(null, new Packages.java.lang.Integer(Packages.inonit.script.jsh.launcher.Engine.Rhino.NULL_EXIT_STATUS));
-					} else {
-						_field.set(null, new Packages.java.lang.Integer(status));
-					}
-				},
-				nashorn: function(status) {
-					if (status !== null) {
-						Packages.java.lang.System.exit(status);
-					}
-				},
-				//	TODO	the below is untested
-				graal: function(status) {
-					if (status !== null) {
-						Packages.java.lang.System.exit(status);
-					}
-				}
-			});
-
-			$$api.jsh.engines = {
+			/** @type { slime.jsh.internal.launcher.Jsh["engines"] } */
+			var engines = {
 				rhino: {
 					main: "inonit.script.jsh.Rhino",
-					resolve: function(o) {
-						return o.rhino;
+					exit: function(status) {
+						var _field = Packages.java.lang.Class.forName("org.mozilla.javascript.tools.shell.Main").getDeclaredField("exitCode");
+						_field.setAccessible(true);
+						if (status === null) {
+							_field.set(null, new Packages.java.lang.Integer(Packages.inonit.script.jsh.launcher.Engine.Rhino.NULL_EXIT_STATUS));
+						} else {
+							_field.set(null, new Packages.java.lang.Integer(status));
+						}
 					}
 				},
 				nashorn: {
 					main: "inonit.script.jsh.Nashorn",
-					resolve: function(o) {
-						return o.nashorn;
+					exit: function(status) {
+						if (status !== null) {
+							Packages.java.lang.System.exit(status);
+						}
 					}
 				},
 				graal: {
 					main: "inonit.script.jsh.Graal",
-					resolve: function(o) {
-						return o.graal;
+					//	TODO	the below is untested
+					exit: function(status) {
+						if (status !== null) {
+							Packages.java.lang.System.exit(status);
+						}
 					}
 				}
 			};
 
-			//	Below structure supports both native Java and JavaScript arrays; might be able to simplify and
-			//	have callers convert argument to JavaScript
-			/** @type { new (_urls?: Omit<slime.jrunscript.Array<slime.jrunscript.native.java.net.URL>,"getClass"> ) => any } */
-			var Classpath = function(_urls) {
-				var colon = String(Packages.java.io.File.pathSeparator);
+			/** @type { slime.$api.fp.Mapping<slime.jsh.internal.launcher.invocation.Input, slime.jsh.internal.launcher.invocation.Output> } */
+			var invocation = function(input) {
+				var tokens = input.command.split(/\s+/);
 
-				this.append = function(classpath) {
-					this._urls.push.apply(this._urls,classpath._urls);
+				/**
+				 * @param { string } path
+				 * @returns { string }
+				 */
+				var toAbsolute = function(path) {
+					if (/^\//.test(path)) {
+						return path;
+					}
+					return String(
+						new Packages.java.io.File(
+							input.pwd,
+							path
+						).getCanonicalFile().toString()
+					);
+				};
+
+				/**
+				 *
+				 * @param { string } token
+				 * @returns { boolean }
+				 */
+				var isMain = function(token) {
+					if (/\/rhino\/jrunscript\/api\.js$/.test(token)) return true;
+					return false;
+				};
+
+				var rv = {
+					jrunscript: String(input.jrunscript.toString()),
+					classpath: [],
+					properties: {},
+					main: void(0)
 				}
 
-				this._urls = (function(_urls) {
-					var rv = [];
-					if (_urls) {
-						for (var i=0; i<_urls.length; i++) {
-							rv.push(_urls[i]);
-						}
+				var isJavaProperty = function(token) {
+					return /^-D/.test(token);
+				};
+
+				var parseJavaProperty = function(token) {
+					var eq = token.indexOf("=");
+					if (eq == -1) {
+						return {
+							name: token.substring(2),
+							value: ""
+						};
+					} else {
+						return {
+							name: token.substring(2, eq),
+							value: token.substring(eq + 1)
+						};
 					}
-					return rv;
-				})(_urls);
+				};
+
+				for (var i = 0; i < tokens.length; i++) {
+					if (isMain(tokens[i])) {
+						rv.main = toAbsolute(tokens[i]);
+					}
+					if (isJavaProperty(tokens[i])) {
+						var nv = parseJavaProperty(tokens[i]);
+						rv.properties[nv.name] = nv.value;
+					}
+					if (tokens[i] == "-classpath") {
+						//	TODO	none of this will work, really, if there are spaces in the classpath. Is there a more robust
+						//			way?
+						var classpath = tokens[++i];
+						//	TODO	what is appropriate platform value for this separator?
+						var items = classpath.split(":");
+
+						rv.classpath = items.map(function(item) {
+							var _context = Packages.java.nio.file.Paths.get(
+								$$api.properties.get("user.dir")
+							);
+							var _declared = Packages.java.nio.file.Paths.get(
+								item
+							);
+
+							//	TODO	toRealPath also available
+							var _result = _context.resolve(_declared).normalize().toAbsolutePath().toString();
+
+							return String(_result);
+						});
+					}
+				}
+
+				return rv;
+			};
+
+			//	Below structure supports both native Java and JavaScript arrays; might be able to simplify and
+			//	have callers convert argument to JavaScript
+			/** @type { slime.jsh.internal.launcher.Jsh["Classpath"] } */
+			var Classpath = function(_urls) {
+				var colon = String(Packages.java.io.File.pathSeparator);
 
 				var files = function() {
 					var rv = [];
@@ -221,15 +276,108 @@
 					return rv;
 				};
 
-				this.local = function() {
-					return files.call(this).join(colon);
+				return {
+					append: function(classpath) {
+						this._urls.push.apply(this._urls,classpath._urls);
+					},
+					_urls: (function(_urls) {
+						var rv = [];
+						if (_urls) {
+							for (var i=0; i<_urls.length; i++) {
+								rv.push(_urls[i]);
+							}
+						}
+						return rv;
+					})(_urls),
+					local: function() {
+						return files.call(this).join(colon);
+					}
 				}
 			};
 
-			//	TODO	Merge below with above
-			$$api.jsh.Classpath = Classpath;
+			$$api.jsh = {
+				engines: engines,
+				exit: $$api.engine.resolve({
+					rhino: engines.rhino.exit,
+					nashorn: engines.nashorn.exit,
+					graal: engines.graal.exit
+				}),
+				Classpath: Classpath,
+				Unbuilt: void(0),
+				Built: void(0),
+				Packaged: void(0),
+				shell: void(0),
+				invocation: (
+					function() {
+						var fromArray = function(prefix) {
+							var rv = [];
+							var index = 0;
+							var more = true;
+							do {
+								var next = $$api.properties.get(prefix + "." + index);
+								if (next) {
+									rv.push(next);
+									index++;
+								} else {
+									more = false;
+								}
+							} while (more);
+							return rv;
+						};
 
-			$$api.script.resolve("javac.js").load();
+						var fromProperties = function(prefix) {
+							var all = $$api.properties.list();
+							var matching = all.filter(function(property) {
+								return property.name.indexOf(prefix + ".") == 0;
+							}).map(function(property) {
+								return {
+									name: property.name.substring((prefix + ".").length),
+									value: property.value
+								};
+							});
+							return matching.reduce(function(rv,property) {
+								rv[property.name] = property.value;
+								return rv;
+							},{});
+						}
+
+						return {
+							toProperties: function() {
+								var output = invocation({
+									command: $$api.properties.get("sun.java.command"),
+									jrunscript: $$api.java.install.jrunscript,
+									pwd: $$api.properties.get("user.dir")
+								});
+								/** @type { { [name: string]: string } } */
+								var rv = {};
+								var set = function(name, value) {
+									rv[name] = value;
+								};
+								set("jsh.launcher.invocation.jrunscript", output.jrunscript);
+								for (var x in output.properties) {
+									set("jsh.launcher.invocation.properties." + x, output.properties[x]);
+								}
+								for (var i=0; i<output.classpath.length; i++) {
+									set("jsh.launcher.invocation.classpath." + i, output.classpath[i]);
+								}
+								set("jsh.launcher.invocation.main", output.main);
+								return rv;
+							},
+							fromSystemProperties: function() {
+								return {
+									jrunscript: $$api.properties.get("jsh.launcher.invocation.jrunscript"),
+									properties: fromProperties("jsh.launcher.invocation.properties"),
+									classpath: fromArray("jsh.launcher.invocation.classpath"),
+									main: $$api.properties.get("jsh.launcher.invocation.main")
+								};
+							}
+						}
+					}
+				)(),
+				test: {
+					invocation: invocation
+				}
+			};
 
 			//	setting is a string representing the jsh.shell.lib property value
 			//	rhino is an explicitly-set classpath for Rhino, which we currently do only on unbuilt shells since that would be
@@ -265,20 +413,20 @@
 					//	TODO	these first two cases may be redundant; the p.rhino may be passed because it's the value of\
 					//			jsh.engine.rhino.classpath
 					if (p.rhino) return SpecifiedLibrary(p.rhino);
-					if ($$api.slime.settings.get("jsh.engine.rhino.classpath")) {
+					if ($$api.slime.settings.byName("jsh.engine.rhino.classpath").getLauncherProperty()) {
 						return SpecifiedLibrary(
 							[
-								new Packages.java.io.File($$api.slime.settings.get("jsh.engine.rhino.classpath")).toURI().toURL()
+								new Packages.java.io.File($$api.slime.settings.byName("jsh.engine.rhino.classpath").getLauncherProperty()).toURI().toURL()
 							]
 						);
 					} else if (setting && lib.file) {
 						var library = $$api.rhino.forJava(javaMajorVersion);
 						return {
 							download: function() {
-								return library.download( new Packages.java.io.File(lib.file, "") )
+								return library.download( new Packages.java.io.File(lib.file, "rhino/" + library.version) )
 							},
 							local: function() {
-								return library.local( new Packages.java.io.File(lib.file, "") )
+								return library.local( new Packages.java.io.File(lib.file, "rhino/" + library.version) )
 							}
 						}
 					}
@@ -309,6 +457,8 @@
 			$$api.jsh.Unbuilt = function(p) {
 				if (!p) throw new TypeError("Required: arguments[0]");
 
+				$$api.script.resolve("javac.js").load();
+
 				var src = p.src || $$api.slime.src;
 
 				var File = Packages.java.io.File;
@@ -317,13 +467,14 @@
 					return "Unbuilt: src=" + src + " lib.url=" + ( p.lib ? p.lib.url : void(0) ) + "lib.file=" + (p.lib ? p.lib.file : void(0)) + " rhino=" + p.rhino;
 				}
 
-				$$api.slime.settings.default(
-					"jsh.shell.lib",
-					src.getPath("local/jsh/lib")
+				$$api.slime.settings.byName(
+					"jsh.shell.lib"
+				).default(
+					function() { return src.getPath("local/jsh/lib"); }
 				);
 
 				var libraries = Libraries({
-					setting: $$api.slime.settings.get("jsh.shell.lib"),
+					setting: $$api.slime.settings.byName("jsh.shell.lib").getLauncherProperty(),
 					rhino: p.rhino
 				})
 
@@ -335,8 +486,8 @@
 				}
 
 				var profiler = (function() {
-					if ($$api.slime.settings.get("jsh.shell.profiler")) {
-						return new Packages.java.io.File($$api.slime.settings.get("jsh.shell.profiler"));
+					if ($$api.slime.settings.byName("jsh.shell.profiler").getLauncherProperty()) {
+						return new Packages.java.io.File($$api.slime.settings.byName("jsh.shell.profiler").getLauncherProperty());
 					}
 				})();
 
@@ -362,15 +513,15 @@
 					if (rhino && !rhino.length) rhino = null;
 
 					var isGraalCompatible = Boolean(p.source >= 17 && p.target >= 17)
-					var classpath = new Classpath();
-					if (rhino && rhino.length) classpath.append(new Classpath(rhino));
+					var classpath = Classpath();
+					if (rhino && rhino.length) classpath.append(Classpath(rhino));
 					if (graal && isGraalCompatible) {
 						var _polyglotLibraries = new Packages.java.io.File(graal, "lib/polyglot").listFiles();
 						var polyglotLibraries = [];
 						for (var i=0; i<_polyglotLibraries.length; i++) {
 							polyglotLibraries.push(_polyglotLibraries[i]);
 						}
-						classpath.append(new Classpath(polyglotLibraries.map(function(_file) { return _file.toURI().toURL(); })));
+						classpath.append(Classpath(polyglotLibraries.map(function(_file) { return _file.toURI().toURL(); })));
 					}
 					if (classpath._urls.length == 0) classpath = null;
 
@@ -409,7 +560,7 @@
 				/** @type { slime.jsh.internal.launcher.Installation["shellClasspath"] } */
 				var shellClasspath = function(p) {
 					if (!src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
-					var setting = $$api.slime.settings.get("jsh.shell.classes");
+					var setting = $$api.slime.settings.byName("jsh.shell.classes").getLauncherProperty();
 					/** @type { slime.jrunscript.native.java.io.File } */
 					var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : $$api.io.tmpdir();
 					if (!LOADER_CLASSES.exists()) LOADER_CLASSES.mkdirs();
@@ -433,7 +584,7 @@
 									}
 								)();
 
-								var rhinoClasspath = (rhino && rhino.length) ? new Classpath(rhino) : null;
+								var rhinoClasspath = (rhino && rhino.length) ? Classpath(rhino) : null;
 
 								$$api.log("Looking for loader source files under " + src + " ...");
 
@@ -509,13 +660,14 @@
 					return "Built: home=" + home;
 				}
 
-				$$api.slime.settings.default(
-					"jsh.shell.lib",
-					String(new Packages.java.io.File(home, "lib").getCanonicalPath())
+				$$api.slime.settings.byName(
+					"jsh.shell.lib"
+				).default(
+					function() { return String(new Packages.java.io.File(home, "lib").getCanonicalPath()); }
 				);
 
 				var libraries = Libraries({
-					setting: $$api.slime.settings.get("jsh.shell.lib"),
+					setting: $$api.slime.settings.byName("jsh.shell.lib").getLauncherProperty(),
 				});
 
 				//	TODO	should we allow Contents/Home here?
@@ -575,7 +727,7 @@
 				//	executing engine
 				var $$api_jsh_engine = (function() {
 					var engines = $$api.jsh.engines;
-					var specified = $$api.slime.settings.get("jsh.engine");
+					var specified = $$api.slime.settings.byName("jsh.engine").getLauncherProperty();
 					if (specified) {
 						return (function(setting) {
 							return engines[setting];
@@ -588,7 +740,7 @@
 					var getRhinoClasspath = function() {
 						var classpath = peer.getRhinoClasspath();
 						if (classpath) {
-							return new Classpath(classpath);
+							return Classpath(classpath);
 						} else {
 							return null;
 						}
@@ -614,17 +766,19 @@
 					this.rhino = (getRhinoClasspath()) ? getRhinoClasspath().local() : null;
 
 					this.classpath = function() {
-						var rv = new Classpath();
+						var rv = Classpath();
 
-						$$api_jsh_engine.resolve({
+						$$api.engine.resolve({
 							rhino: function() {
 								rv.append(getRhinoClasspath());
 							},
 							nashorn: function() {
+							},
+							graal: function() {
 							}
 						})();
 
-						rv.append(new Classpath(shell.shellClasspath()));
+						rv.append(Classpath(shell.shellClasspath()));
 
 						return rv;
 					};
@@ -638,7 +792,7 @@
 				}
 
 				$$api.debug("Launcher environment = " + JSON.stringify($$api.shell.environment, void(0), "    "));
-				$$api.debug("Launcher working directory = " + Packages.java.lang.System.getProperty("user.dir"));
+				$$api.debug("Launcher working directory = " + $$api.properties.get("user.dir"));
 				$$api.debug("Launcher system properties = " + Packages.java.lang.System.getProperties());
 
 				$$api.debug("Creating command ...");
@@ -647,7 +801,7 @@
 				var container = (function() {
 					//	TODO	test whether next line necessary
 					if ($$api.jsh.shell.packaged) return "jvm";
-					if ($$api.slime.settings.get("jsh.shell.container")) return $$api.slime.settings.get("jsh.shell.container");
+					if ($$api.slime.settings.byName("jsh.shell.container").getLauncherProperty()) return $$api.slime.settings.byName("jsh.shell.container").getLauncherProperty();
 					return "classloader";
 				})();
 				if (container == "jvm") {
@@ -666,7 +820,7 @@
 				})();
 
 				//	Describe the shell
-				if ($$api.jsh.shell.rhino) $$api.slime.settings.set("jsh.engine.rhino.classpath", $$api.jsh.shell.rhino);
+				if ($$api.jsh.shell.rhino) $$api.slime.settings.byName("jsh.engine.rhino.classpath").set($$api.jsh.shell.rhino);
 
 				$$api.slime.settings.sendPropertiesTo(command);
 

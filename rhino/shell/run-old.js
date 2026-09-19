@@ -14,33 +14,13 @@
 	 */
 	function($api,$context,$export) {
 		/**
-		 *
-		 * @param { slime.jrunscript.shell.run.intention.Input } p
-		 * @return { slime.jrunscript.runtime.io.InputStream }
-		 */
-		var toInputStream = (
-			function($context) {
-				return function(p) {
-					if (typeof(p) == "string") {
-						var buffer = new $context.library.io.Buffer();
-						buffer.writeText().write(p);
-						buffer.close();
-						return buffer.readBinary();
-					} else {
-						return p;
-					}
-				};
-			}
-		)({ library: { io: $context.api.io }});
-
-		/**
 		 * @param { slime.jrunscript.shell.invocation.old.Stdio } p
 		 * @return { slime.jrunscript.shell.internal.invocation.StdioWithInputFixed }
 		 */
 		var updateForStringInput = function(p) {
 			/** @type { slime.jrunscript.shell.run.StdioConfiguration } */
 			return {
-				input: toInputStream(p.input),
+				input: $context.scripts.run.internal.toInputStream(p.input),
 				output: p.output,
 				error: p.error
 			};
@@ -163,7 +143,7 @@
 								directory: (p.directory) ? p.directory.toString() : defaults.directory,
 								stdio: {
 									input: (function() {
-										if (p.stdio && p.stdio.input) return toInputStream(p.stdio.input);
+										if (p.stdio && p.stdio.input) return $context.scripts.run.internal.toInputStream(p.stdio.input);
 										return null;
 									})(),
 									output: (p.stdio && p.stdio.output) ? p.stdio.output : defaults.stdio.output,
@@ -289,14 +269,14 @@
 					}
 				};
 			}
-		)($api,{ library: { io: $context.api.io }})
+		)($api, { library: { io: $context.api.io }, scripts: $context.scripts })
 
 		/**
 		 * Returns a stdio object given the argument, using the `stdio` property of the argument if it is available, then using
 		 * the deprecated `stdin`, `stdout`, and `stderr` if needed, and finelly returning an empty object. May return `null` if
 		 * the `stdio` property is `null`.
 		 *
-		 * @param { slime.jrunscript.shell.run.old.Argument } p
+		 * @param { slime.jrunscript.shell.run.minus2.Argument } p
 		 * @return { slime.jrunscript.shell.invocation.old.Argument["stdio"] }
 		 */
 		function extractStdioIncludingEmptyAndDeprecatedForms(p) {
@@ -350,7 +330,7 @@
 		 * @param { Pick<slime.jrunscript.shell.invocation.old.Argument, "stdio" | "environment" | "directory"> } p
 		 * @param { slime.jrunscript.java.Environment } parentEnvironment
 		 * @param { slime.jrunscript.shell.parent.Stdio } parentStdio
-		 * @returns { slime.jrunscript.shell.run.old.Context }
+		 * @returns { slime.jrunscript.shell.run.minus2.Context }
 		 */
 		var toContext = function(p, parentEnvironment, parentStdio) {
 
@@ -400,7 +380,7 @@
 		/**
 		 *
 		 * @param { Parameters<slime.jrunscript.shell.Exports["run"]>[0] } p
-		 * @param { slime.jrunscript.shell.run.old.Events } events
+		 * @param { slime.jrunscript.shell.run.minus2.Events } events
 		 */
 		var run = function(p,events) {
 			var as;
@@ -510,7 +490,7 @@
 			var directory = (typeof(context.directory) == "string") ? $context.api.file.Pathname(context.directory).directory : context.directory;
 
 			/**
-			 * @type { slime.jrunscript.shell.run.old.Argument }
+			 * @type { slime.jrunscript.shell.run.minus2.Argument }
 			 */
 			var input = {
 				command: invocation.result.command,

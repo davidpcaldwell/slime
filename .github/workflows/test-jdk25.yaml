@@ -1,0 +1,48 @@
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+name: test-jdk25
+on:
+  pull_request:
+    branches:
+      - '**'
+  push:
+    branches:
+      - main
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Use Docker to create image, and then run the linting and tests
+        env:
+          SLIME_TEST_NO_WF_SUBMODULE_RESET: 1
+        run: |
+          mkdir -p local
+          set -o pipefail
+          contributor/suite-docker-jrunscript 25 2>&1 | tee local/jrunscript.txt
+      - name: Show timing summary in logs (60s or 2%+)
+        if: success()
+        run: |
+          echo "::group::Fifty timing summary (>=60s or >=2% of total)"
+          contributor/fifty-timing-lines.bash --threshold-seconds 60 --threshold-percentage 2 --stdout local/jrunscript.txt | tee local/jrunscript-timing-60s-or-2pct.txt
+          echo "::endgroup::"
+      - name: Upload timing artifact (60s or 2%+)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jdk25-fifty-timing-60s-or-2pct
+          path: local/jrunscript-timing-60s-or-2pct.txt

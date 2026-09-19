@@ -56,9 +56,8 @@
 		var answer = mapping({
 			url: "http://127.0.0.1:" + tomcat.port + "/foo"
 		});
-		var string = answer.stream.content.string.simple($api.jrunscript.io.Charset.default);
+		var string = answer.stream.read.string.simple($api.jrunscript.io.Charset.default);
 		try {
-			var body = JSON.parse(string);
 			jsh.shell.echo(JSON.stringify({
 				status: answer.status,
 				headers: answer.headers,

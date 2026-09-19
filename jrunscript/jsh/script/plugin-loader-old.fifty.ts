@@ -24,5 +24,5 @@ namespace slime.jsh.script.internal.loader_old {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

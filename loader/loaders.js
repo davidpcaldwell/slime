@@ -8,14 +8,15 @@
 (
 	/**
 	 *
-	 * @param { slime.runtime.internal.loader.Scope["Executor"] } Executor
-	 * @param { slime.runtime.internal.loader.Scope["methods"] } methods
-	 * @param { slime.runtime.internal.loader.Scope["createScriptScope"] } createScriptScope
-	 * @param { slime.runtime.internal.loader.Scope["$api"] } $api
-	 *
-	 * @param { slime.old.loader.Export<slime.runtime.internal.loader.Exports> } $export
+	 * @param { slime.runtime.internal.loader.Context } $context
+	 * @param { slime.loader.old.Export<slime.runtime.loader.Exports> } $export
 	 */
-	function(Executor,methods,createScriptScope,$api,$export) {
+	function($context,$export) {
+		var $api = $context.$api;
+		var Executor = $context.Executor;
+		var methods = $context.methods;
+		var createScriptScope = $context.createScriptScope;
+
 		/**
 		 * @type { slime.runtime.loader.Exports["Store"] }
 		 */
@@ -164,21 +165,10 @@
 						return resources(loader, filter, []);
 					}
 				}
-			},
-			object: {
-				Synchronous: function(loader) {
-					return {
-						script: function(path) {
-							return api.synchronous.scripts(loader)(path);
-						}
-					}
-				}
 			}
 		};
 
-		$export({
-			api: api
-		});
+		$export(api);
 	}
 //@ts-ignore
-)(Executor,methods,createScriptScope,$api,$export);
+)($context,$export);

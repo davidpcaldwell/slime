@@ -139,14 +139,29 @@
 				directoryExists: directoryExists,
 				fileExists: fileExists,
 				move: $api.TODO(),
-				remove: function(p) {
-					return function(events) {
-						//	TODO	what should happen if it doesn't exist?
-						//	TODO	what should happen if it's a directory?
-						var at = state[p.pathname];
-						if (at) {
-							delete state[p.pathname];
+				remove: (
+					function() {
+						var both = function(p) {
+							return function(events) {
+								//	TODO	what should happen if it doesn't exist?
+								//	TODO	what should happen if it's a directory?
+								var at = state[p.pathname];
+								if (at) {
+									delete state[p.pathname];
+								}
+								return $api.fp.Maybe.from.some(void(0));
+							};
 						}
+
+						return {
+							file: both,
+							directory: both
+						}
+					}
+				)(),
+				isSymlink: function(p) {
+					return function(events) {
+						return $api.fp.Maybe.from.some(false);
 					}
 				},
 				fileSize: $api.TODO(),
@@ -192,9 +207,6 @@
 						}
 						return name;
 					}
-				},
-				Directory: {
-					remove: $api.TODO()
 				},
 				File: {
 					read: {

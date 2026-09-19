@@ -98,6 +98,9 @@ namespace slime.jrunscript.runtime.io {
 	}
 
 	export namespace text {
+		/**
+		 * A character encoding, which represents both a bytes-to-characters mapping (a {@link Charset}) and a line terminator.
+		 */
 		export interface Encoding {
 			charset: Charset
 			newline: string
@@ -115,6 +118,8 @@ namespace slime.jrunscript.runtime.io {
 
 	export interface Exports {
 		InputStream: {
+			//	TODO	should the below APIs be under a .from() namespace? Or with this being stateful, maybe not
+
 			java: (p: slime.jrunscript.native.java.io.InputStream) => InputStream
 
 			/**
@@ -150,7 +155,7 @@ namespace slime.jrunscript.runtime.io {
 					string: "foo"
 				});
 
-				var string = input.content.string.simple(utf8);
+				var string = input.read.string.simple(utf8);
 
 				verify(string).is("foo");
 			}
@@ -162,26 +167,28 @@ namespace slime.jrunscript.runtime.io {
 	 * A stream from which bytes may be read.
 	 */
 	export interface InputStream {
-		//	TODO	rename to read, we have overloaded content to represent a tree
-
-		content: {
+		read: {
 			string: {
-				simple: (charset: Charset) => string
+				/**
+				 * Reads the entire content of this stream as a single string.
+				 *
+				 * @param charset A charset to use to decode bytes as characters; if omitted, the platform default `Charset` will be
+				 * used.
+				 * @returns A string.
+				 */
+				simple: (charset?: Charset) => string
 			}
 
 			ArrayBuffer: {
 				simple: () => ArrayBuffer
 			}
 		}
-
-		/**
-		 * Closes the underlying stream.
-		 */
-		close: () => void
 	}
 
 	(
 		function(
+			//	TODO	should Packages be available through the Fifty (`fifty.jsh`) object?
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
@@ -190,11 +197,25 @@ namespace slime.jrunscript.runtime.io {
 
 			fifty.tests.exports.InputStream.object = fifty.test.Parent();
 
-			fifty.tests.exports.InputStream.object.content = fifty.test.Parent();
+			fifty.tests.exports.InputStream.object.read = fifty.test.Parent();
 
-			fifty.tests.exports.InputStream.object.content.ArrayBuffer = fifty.test.Parent();
+			fifty.tests.exports.InputStream.object.read.string = fifty.test.Parent();
 
-			fifty.tests.exports.InputStream.object.content.ArrayBuffer.simple = function() {
+			fifty.tests.exports.InputStream.object.read.string.simple = function() {
+				var buffer = new Packages.java.io.ByteArrayOutputStream();
+				var out = new Packages.java.io.OutputStreamWriter(buffer);
+				out.write("hello");
+				out.close();
+				var input = test.subject.InputStream.java(
+					test.javaInputStreamOf( Array.prototype.slice.call(buffer.toByteArray()) )
+				);
+				var string = input.read.string.simple();
+				verify(string).is("hello");
+			}
+
+			fifty.tests.exports.InputStream.object.read.ArrayBuffer = fifty.test.Parent();
+
+			fifty.tests.exports.InputStream.object.read.ArrayBuffer.simple = function() {
 				var len = 19;
 				var array = [];
 				for (var i=0; i<len; i++) {
@@ -205,7 +226,7 @@ namespace slime.jrunscript.runtime.io {
 					test.javaInputStreamOf(array)
 				);
 
-				var ab = inputStream.content.ArrayBuffer.simple();
+				var ab = inputStream.read.ArrayBuffer.simple();
 
 				verify(ab).evaluate($api.fp.property("byteLength")).is(len);
 
@@ -219,11 +240,11 @@ namespace slime.jrunscript.runtime.io {
 				var input = test.subject.InputStream.string.default("it");
 				input.close();
 				//	TODO	looks like test would fail under Nashorn, which propagates errors differently
-				verify(input).evaluate( function(i) { return i.content.string.simple(test.subject.Charset.standard.utf8); }).threw.type(Error);
+				verify(input).evaluate( function(i) { return i.read.string.simple(test.subject.Charset.standard.utf8); }).threw.type(Error);
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 
 	export interface PipeEvents {
 		readProgress: number
@@ -233,7 +254,7 @@ namespace slime.jrunscript.runtime.io {
 
 	export interface InputStream {
 		pipe: {
-			simple: $api.fp.impure.Effect<OutputStream>
+			simple: $api.fp.impure.Effector<OutputStream>
 			all: $api.fp.world.Means<OutputStream, PipeEvents>
 		}
 	}
@@ -284,6 +305,13 @@ namespace slime.jrunscript.runtime.io {
 	)(Packages,fifty);
 
 	export interface InputStream {
+		/**
+		 * Closes the underlying stream.
+		 */
+		close: () => void
+	}
+
+	export interface InputStream {
 		/** Operations that bridge to Java constructs. */
 		java: {
 			/** Returns a Java `java.io.InputStream` equivalent to this stream. */
@@ -295,7 +323,9 @@ namespace slime.jrunscript.runtime.io {
 			//			callers can switch to that.
 			array: () => slime.jrunscript.Array<slime.jrunscript.native.java.lang.Byte>
 		}
+	}
 
+	export interface InputStream {
 		/**
 		 * @deprecated Use `Reader.stream` to create a `Reader` from an `InputStream`.
 		 *
@@ -313,7 +343,7 @@ namespace slime.jrunscript.runtime.io {
 	 */
 	export interface OutputStream {
 		pipe: {
-			simple: $api.fp.impure.Effect<InputStream>
+			simple: $api.fp.impure.Effector<InputStream>
 			all: $api.fp.world.Means<InputStream, PipeEvents>
 		}
 
@@ -337,7 +367,7 @@ namespace slime.jrunscript.runtime.io {
 			adapt: () => slime.jrunscript.native.java.io.OutputStream
 		}
 
-		//	Possibly unused
+		//	TODO	Possibly unused; hard to search for downstream usages because of String.prototype.split
 		split: (other: any) => OutputStream
 	}
 
@@ -437,12 +467,12 @@ namespace slime.jrunscript.runtime.io {
 
 	(
 		function(
-			$platform: slime.runtime.Platform,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
+			const { $api } = fifty.global;
 
-			if ($platform.e4x) {
+			if ($api.platform.e4x) {
 				fifty.tests.E4X = function() {
 					var buffer = new test.subject.Buffer();
 					buffer.writeBinary().character().write("<a><b/></a>");
@@ -453,7 +483,7 @@ namespace slime.jrunscript.runtime.io {
 			}
 		}
 	//@ts-ignore
-	)($platform,fifty);
+	)(fifty);
 
 	export interface Exports {
 		Writer: {
@@ -658,7 +688,7 @@ namespace slime.jrunscript.runtime.io {
 				});
 				writer.write("bar!");
 				writer.close();
-				var string = b.readBinary().content.string.simple(utf8);
+				var string = b.readBinary().read.string.simple(utf8);
 				verify(string).is("bar!");
 			}
 		}
@@ -717,7 +747,7 @@ namespace slime.jrunscript.runtime.io {
 						newline: "\n"
 					}),
 					$api.fp.property("all"),
-					$api.fp.world.Means.effect({
+					$api.fp.world.Means.effector({
 						progress: function(e) {
 							all = e.detail;
 						}
@@ -732,40 +762,53 @@ namespace slime.jrunscript.runtime.io {
 					var input = test.subject.InputStream.string.default(original);
 					var all: string = "";
 					var lines: string[] = [];
+					var doneCount = 0;
 					var processor = $api.fp.now(
 						test.subject.wo.text({
 							charset: test.subject.Charset.default,
 							newline: "\n"
 						}),
 						$api.fp.property("lines"),
-						$api.fp.world.Means.effect({
+						$api.fp.world.Means.effector({
 							progress: function(e) {
 								all += e.detail;
 							},
 							line: function(e) {
 								lines.push(e.detail);
+							},
+							done: function() {
+								doneCount++;
 							}
 						})
 					);
+
+					verify(doneCount).is(0);
+
 					processor(input);
+
 					verify(all).is(original);
+
 					verify(lines).length.is(3);
 					verify(lines)[0].is("foo");
 					verify(lines)[1].is("bar");
 					verify(lines)[2].is("baz");
+
+					verify(doneCount).is(1);
 				});
 
 				fifty.run(function terminator() {
 					var input = test.subject.InputStream.string.default(original + "\n");
+
 					var all: string = "";
 					var lines: string[] = [];
+
 					var processor = $api.fp.now(
 						test.subject.wo.text({
 							charset: test.subject.Charset.default,
 							newline: "\n"
 						}),
 						$api.fp.property("lines"),
-						$api.fp.world.Means.effect({
+						$api.fp.world.Means.effector({
 							progress: function(e) {
 								all += e.detail;
 							},
@@ -774,9 +817,13 @@ namespace slime.jrunscript.runtime.io {
 							}
 						})
 					);
+
 					processor(input);
+
 					verify(all).is(original + "\n");
+
 					verify(lines).length.is(4);
+
 					verify(lines)[0].is("foo");
 					verify(lines)[1].is("bar");
 					verify(lines)[2].is("baz");

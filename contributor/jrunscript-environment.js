@@ -10,10 +10,12 @@
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.jsh.Global & { test: any } } jsh
+	 * @param { slime.project.internal.jrunscript_environment.Context } $context
 	 * @param { slime.loader.Export<slime.project.internal.jrunscript_environment.Exports> } $export
 	 */
-	function(Packages,$api,jsh,$export) {
+	function(Packages,$api,$context,$export) {
+		var jsh = $context.jsh;
+
 		/** @type { (specified: slime.jrunscript.file.Pathname) => slime.$api.fp.impure.Input<slime.jrunscript.file.Pathname> } */
 		var configureBuiltShellLocation = function(specified) {
 			return $api.fp.impure.Input.memoized(function() {
@@ -161,23 +163,13 @@
 				)();
 
 				this.unbuilt = new function() {
-					this.src = p.src;
-
-					this.lib = p.src.getRelativePath("local/jsh/lib").createDirectory({
+					p.src.getRelativePath("local/jsh/lib").createDirectory({
 						exists: function(dir) {
 							return false;
 						}
 					});
 
-					Object.defineProperty(this, "data", {
-						get: $api.fp.impure.Input.memoized(
-							$api.fp.impure.Input.from.mapping({
-								mapping: getShellData,
-								argument: p.src
-							})
-						),
-						enumerable: true
-					});
+					this.src = p.src;
 				};
 
 				var packagingShell = this.built;
@@ -286,11 +278,9 @@
 					}
 				}
 			}
-
-			this.noselfping = p.noselfping;
 		}
 
 		$export(Environment);
 	}
 //@ts-ignore
-)(Packages,$api,jsh,$export);
+)(Packages,$api,$context,$export);

@@ -5,29 +5,62 @@
 //	END LICENSE
 
 namespace slime.jsh.httpd {
-	export interface Resources {
-		add: (m: { directory?: slime.jrunscript.file.Directory, loader?: slime.old.Loader, prefix: string }) => void
+	export namespace resources {
+		export interface MappingDescriptor {
+			directory?: slime.jrunscript.file.Directory
+			loader?: slime.loader.old.Loader
+			prefix: string
+		}
+	}
 
-		/** @deprecated */
-		map: {
-			(prefix: string, pathname: slime.jrunscript.file.Pathname): void
-			/** @deprecated Use the string, Pathname version */
-			(prefix: string, pathname: slime.jrunscript.file.Directory): void
+	export namespace resources.internal {
+		export interface Mapping {
+			descriptor: jsh.httpd.resources.MappingDescriptor
+			toString: () => string
+
+			get: (path: string) => slime.resource.Descriptor
+			list: (path: string) => slime.loader.old.loader.Entry[]
 		}
 
-		/**
-		 * Allows the execution of mapping information stored in a separate file; Executes the given {@link resources.Mapping} with
-		 * a {@link resources.Scope} created by combining information
-		 * from the mapping with the given scope argument, if any.
-		 */
-		file: (
-			file: resources.Mapping,
-			scope?: { [x: string]: any }
-		) => void
+		export type MappingConstructor = (p: jsh.httpd.resources.MappingDescriptor) => Mapping
+	}
 
-		loader: slime.old.Loader<slime.old.loader.Source, slime.Resource> | slime.old.Loader<any, slime.Resource> & { resource: any }
+	export namespace resources {
+		export interface Builder {
+			add: (m: jsh.httpd.resources.MappingDescriptor) => void
 
-		build: (to: slime.jrunscript.file.Directory) => void
+			/** @deprecated */
+			map: {
+				(prefix: string, pathname: slime.jrunscript.file.Pathname): void
+				/** @deprecated Use the string, Pathname version */
+				(prefix: string, pathname: slime.jrunscript.file.Directory): void
+			}
+
+			/**
+			 * Allows the execution of mapping information stored in a separate file; Executes the given {@link resources.Mapping} with
+			 * a {@link resources.Scope} created by combining information
+			 * from the mapping with the given scope argument, if any.
+			 */
+			file: (
+				file: resources.Mapping,
+				scope?: { [x: string]: any }
+			) => void
+		}
+
+		export interface Index {
+			loader: slime.jsh.httpd.servlet.configuration.WebappServlet["resources"]
+
+			build: (to: slime.jrunscript.file.Directory) => void
+		}
+	}
+
+	/**
+	 * An object that is capable of loading resources, as well as enumerating all resources it can load so that they can be written
+	 * out (for example, to a webapp directory).
+	 *
+	 * Resources objects consist of an ordered list of *mappings* which are searched, in order, for a given resource.
+	 */
+	export interface Resources extends resources.Builder, resources.Index {
 	}
 
 	export namespace resources {
@@ -48,8 +81,8 @@ namespace slime.jsh.httpd {
 		export interface Scope {
 			$mapping: slime.jrunscript.file.File
 			/** @deprecated */
-			map: Resources["map"]
-			add?: Resources["add"]
+			map: resources.Builder["map"]
+			add?: resources.Builder["add"]
 		}
 
 		export interface Exports {
@@ -77,7 +110,7 @@ namespace slime.jsh.httpd {
 				}
 			}
 
-			export type Script = slime.loader.Script<Context,slime.jsh.httpd.resources.Exports>
+			export type Script = slime.runtime.loader.Scoped<Context,slime.jsh.httpd.resources.Exports>
 		}
 	}
 
@@ -99,7 +132,7 @@ namespace slime.jsh.httpd {
 					var verify = fifty.verify;
 					var jsh = fifty.global.jsh;
 					verify(subject.Constructor,"code").is.type("function");
-					var one: { loader: slime.old.Loader, add: any } = new subject.Constructor();
+					var one: { loader: slime.loader.old.Loader, add: any } = new subject.Constructor();
 					var top = fifty.jsh.file.object.getRelativePath(".").directory;
 					one.add({ prefix: "WEB-INF/generic/", directory: top.getSubdirectory("java") });
 					one.add({ prefix: "WEB-INF/mozilla/", directory: top.getSubdirectory("rhino") });
@@ -140,7 +173,7 @@ namespace slime.jsh.httpd {
 					});
 					verify(test,"test").is.not(null);
 					verify(test,"test").length.is(1);
-					var first = test[0] as slime.old.loader.LoaderEntry;
+					var first = test[0] as slime.loader.old.loader.LoaderEntry;
 					verify(first).loader.is.not(null);
 					var file = first.loader.file("resource/1.file.js");
 					verify(file,"file").evaluate(asObject).is.not(null);
@@ -151,7 +184,7 @@ namespace slime.jsh.httpd {
 					var verify = fifty.verify;
 					var jsh = fifty.global.jsh;
 
-					var mapping: { loader: slime.old.Loader, build: any } = subject.script(fifty.jsh.file.object.getRelativePath("test/resource/1.vcs.js").file);
+					var mapping: { loader: slime.loader.old.Loader, build: any } = subject.script(fifty.jsh.file.object.getRelativePath("test/resource/1.vcs.js").file);
 					verify(mapping).is.not(null);
 					verify(mapping).loader.is.not(null);
 					verify(mapping).loader.evaluate.property("list").is.type("function");

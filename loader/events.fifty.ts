@@ -4,38 +4,15 @@
 //
 //	END LICENSE
 
-namespace slime.runtime.internal.events {
-	export interface Context {
-		deprecate: slime.$api.Global["deprecate"]
-	}
-
-	export interface Exports {
-		/**
-		 * Implements the `$api.events` API.
-		 */
-		exports: slime.$api.exports.Events
-
-		/**
-		 * Helper function, not exported to `$api`, which assists in implementing various wo constructs in `$api.fp.world`.
-		 */
-		handle: <E,T>(p: {
-			implementation: (events: slime.$api.event.Emitter<E>) => T,
-			handlers: slime.$api.event.Handlers<E>
-		}) => T
-	}
-
-	export namespace test {
-		export const subject = (function(fifty: slime.fifty.test.Kit) {
-			var code: Script = fifty.$loader.script("events.js");
-			var subject = code({
-				deprecate: fifty.global.$api.deprecate
-			});
-			return subject;
-		//@ts-ignore
-		})(fifty);
-	}
-
-	export type Script = slime.loader.Script<Context,Exports>
+namespace slime.runtime.internal.events.test {
+	export const subject = (function(fifty: slime.fifty.test.Kit) {
+		var code: Script = fifty.$loader.script("events.js");
+		var subject = code({
+			deprecate: fifty.global.$api.deprecate
+		});
+		return subject;
+	//@ts-ignore
+	})(fifty);
 }
 
 namespace slime.$api {
@@ -280,7 +257,26 @@ namespace slime.$api {
 	)(fifty);
 
 	export namespace event {
-		export interface Emitter<D> {
+		/**
+		 * A function that receives events.
+		 */
+		export type Handler<T> = (e: Event<T>) => void
+	}
+
+	export namespace event {
+		export interface Producer<D> {
+			/**
+			 * Causes this object to fire an event to its listeners.
+			 *
+			 * @param type An event _type_.
+			 * @param detail An event _detail_, which can be any type, and will be used as the `detail` property of the created
+			 * event.
+			 */
+			fire: <K extends keyof D>(type: K, detail?: D[K]) => void
+		}
+
+		//	TODO	survey usages of this and replace them with Producer where possible
+		export interface Emitter<D> extends Producer<D> {
 			listeners: {
 				/**
 				 * Adds an event listener that will be notified about a particular <dfn>type</dfn> of events.
@@ -298,23 +294,7 @@ namespace slime.$api {
 				 */
 				remove: <K extends keyof D>(type: K, handler: event.Handler<D[K]>) => void
 			}
-
-			/**
-			 * Causes this object to fire an event to its listeners.
-			 *
-			 * @param type An event _type_.
-			 * @param detail An event _detail_, which can be any type, and will be used as the `detail` property of the created
-			 * event.
-			 */
-			fire: <K extends keyof D>(type: K, detail?: D[K]) => void
 		}
-	}
-
-	export namespace event {
-		/**
-		 * A function that receives events.
-		 */
-		export type Handler<T> = (e: Event<T>) => void
 	}
 
 	export namespace event {
@@ -339,7 +319,7 @@ namespace slime.$api {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace exports {
+	export namespace event {
 		(
 			function(
 				fifty: slime.fifty.test.Kit
@@ -358,12 +338,15 @@ namespace slime.$api {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Events {
+		export interface Exports {
 			/**
 			 * Creates an {@link slime.$api.event.Emitter} that can be used to fire events to a set of listeners. Event emitters can be
 			 * arranged in a hierarchy.
 			 *
-			 * @param p
+			 * @param p.parent (optional) A parent emitter to which events fired on the created emitter will also be fired.
+			 * @param p.source (optional) An arbitrary value that will be used as the `source` property of events fired on the created emitter.
+			 * If not specified, the created emitter itself will be used as the source.
+			 * @param p.on (optional) A {@link slime.$api.event.Handlers} object whose properties will be added as listeners to the created emitter.
 			 * @returns An {@link slime.$api.event.Emitter} configured using the given argument.
 			 */
 			emitter: <D>(p?:
@@ -371,13 +354,8 @@ namespace slime.$api {
 					/** (optional; default is the created {@link slime.$api.event.Emitter}) */
 					source?: {}
 					on?: slime.$api.event.Handlers<D>
-				} & (
-					{
-						//	TODO	should turn this into mutually exclusive OR
-						parent?: slime.$api.event.Emitter<D>
-						getParent?: () => slime.$api.event.Emitter<D>
-					}
-				)
+					parent?: slime.$api.event.Emitter<D>
+				}
 			) => slime.$api.event.Emitter<D>
 		}
 
@@ -459,7 +437,7 @@ namespace slime.$api {
 		//@ts-ignore
 		)(fifty);
 
-		export interface Events {
+		export interface Exports {
 			Function: <P,E,R>(f: (p: P, events: slime.$api.event.Emitter<E>) => R, defaultListeners?: slime.$api.event.Handlers<E>) => (argument: P, receiver?: slime.$api.event.Function.Receiver<E>) => R
 		}
 
@@ -518,6 +496,12 @@ namespace slime.$api {
 		//@ts-ignore
 		)(fifty);
 
+		export interface Exports {
+			Managed: {
+				create: <D>(p: { source?: any, handlers: Handlers<D> }) => slime.runtime.internal.events.Receiver<D>
+			}
+		}
+
 		declare const marker: unique symbol;
 
 		/**
@@ -526,7 +510,7 @@ namespace slime.$api {
 		 */
 		export type Attached<D> = slime.$api.event.Emitter<D> & { [marker]: true }
 
-		export interface Events {
+		export interface Exports {
 			Handlers: {
 				/**
 				 * Allows a caller to create an {@link slime.$api.event.Emitter} given a {@link slime.$api.event.Handlers} and independently
@@ -603,4 +587,33 @@ namespace slime.$api {
 		}
 	//@ts-ignore
 	)(fifty);
+}
+
+namespace slime.runtime.internal.events {
+	export interface Context {
+		deprecate: slime.$api.Global["deprecate"]
+	}
+
+	export interface Exports {
+		/**
+		 * Implements the `$api.events` API.
+		 */
+		exports: slime.$api.event.Exports
+
+		/**
+		 * Helper function, not exported to `$api`, which assists in implementing various wo constructs in `$api.fp.world`.
+		 */
+		handle: <E,T>(p: {
+			implementation: (events: slime.$api.event.Emitter<E>) => T,
+			handlers: slime.$api.event.Handlers<E>
+		}) => T
+	}
+
+	export interface Receiver<D> {
+		attach: () => void
+		detach: () => void
+		emitter: slime.$api.event.Emitter<D>
+	}
+
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

@@ -27,9 +27,9 @@
 							found: function(e) {
 								var found = e.detail;
 								if (found.present) {
-									jsh.shell.console("Found: " + JSON.stringify(found.value));
+									jsh.shell.console("Found: ESLint " + JSON.stringify(found.value));
 								} else {
-									jsh.shell.console("Found: <not present>");
+									jsh.shell.console("ESLint not found.");
 								}
 							},
 							installed: function(e) {
@@ -42,7 +42,7 @@
 					});
 
 					$api.fp.world.Action.now({
-						action: modules.require({ name: "@eslint/js" }),
+						action: modules.require({ name: "@eslint/js", version: "9.13.0" }),
 					});
 
 					var module = $api.fp.world.Question.now({

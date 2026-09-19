@@ -58,7 +58,7 @@ namespace slime.jrunscript {
  *
  * However, so that code does not have to be developed twice - once for the bootstrap script and once for the SLIME Java runtime -
  * the bootstrap script can also be embedded in the SLIME Java runtime using the `embed.js` script, which packages the bootstrap
- * script as an ordinary {@link slime.loader.Script} that can be loaded by the SLIME Java runtime.
+ * script as an ordinary {@link slime.runtime.loader.Scoped} that can be loaded by the SLIME Java runtime.
  *
  * In the context of the `jsh` shell, which is invoked with the `jsh` query parameter, the bootstrap script builds the Java portions
  * of the `jsh` loader process and launches the `jsh` loader configured appropriately.
@@ -235,6 +235,14 @@ namespace slime.internal.jrunscript.bootstrap {
 		}
 	}
 
+	export interface PerEngine<T> {
+		rhino: T
+		nashorn: T
+		graal: T
+
+		jdkrhino?: T
+	}
+
 	export interface Api<J> {
 		debug: {
 			(message: string): void
@@ -244,7 +252,17 @@ namespace slime.internal.jrunscript.bootstrap {
 		console: any
 
 		log: any
+	}
 
+	export interface Api<J> {
+		properties: {
+			get: (name: string) => string
+			set: (name: string, value: string) => void
+			list: () => { name: string, value: string }[]
+		}
+	}
+
+	export interface Api<J> {
 		engine: {
 			toString: () => string
 
@@ -256,14 +274,7 @@ namespace slime.internal.jrunscript.bootstrap {
 			 *
 			 * @returns The value of the property representing the JavaScript engine which is running.
 			 */
-			resolve: <T>(option: {
-				rhino: T
-				nashorn: T
-				graal: T
-
-				//	legacy compatibility with pre-JDK 8 Rhino; now unsupported
-				jdkrhino?: T
-			}) => T
+			resolve: <T>(option: PerEngine<T>) => T
 
 			readUrl: Environment["readUrl"]
 
@@ -339,6 +350,9 @@ namespace slime.internal.jrunscript.bootstrap {
 			}
 		}
 
+		/**
+		 * The currently executing script.
+		 */
 		script: Script
 
 		arguments: string[]
@@ -388,17 +402,16 @@ namespace slime.internal.jrunscript.bootstrap {
 		//@ts-ignore
 		)(Packages,fifty);
 
-	}
-
-	export interface JavaCommand {
-		fork: () => void
-		home: (home: slime.internal.jrunscript.bootstrap.java.Install) => void
-		vm: (argument: string) => void
-		systemProperty: (name: string, value: string) => void
-		classpath: (url: slime.jrunscript.native.java.net.URL) => void
-		main: (className: string) => void
-		argument: (argument: string) => void
-		run: () => number
+		export interface Command {
+			fork: () => void
+			home: (home: slime.internal.jrunscript.bootstrap.java.Install) => void
+			vm: (argument: string) => void
+			systemProperty: (name: string, value: string) => void
+			classpath: (url: slime.jrunscript.native.java.net.URL) => void
+			main: (className: string) => void
+			argument: (argument: string) => void
+			run: () => number
+		}
 	}
 
 	export interface Api<J> {
@@ -424,9 +437,10 @@ namespace slime.internal.jrunscript.bootstrap {
 			Install: (home: slime.jrunscript.native.java.io.File) => java.Install
 
 			getClass: (name: string) => slime.jrunscript.JavaClass
-			Array: any
+			Array: <T extends slime.jrunscript.native.java.lang.Object,C>(p: { type: slime.jrunscript.JavaClass<T,C>, length: number })
+				=> slime.jrunscript.Array<T>
 
-			Command: new () => JavaCommand
+			Command: new () => java.Command
 
 			versions: {
 				getMajorVersion: {
@@ -496,7 +510,8 @@ namespace slime.internal.jrunscript.bootstrap {
 		version: string
 
 		/**
-		 * Downloads the library into the specified directory and returns the URLs of the JAR files that make up the library.
+		 * Downloads the library into the specified directory, creating it if necessary, and returns the URLs of the JAR files
+		 * that make up the library.
 		 */
 		download: (directory: slime.jrunscript.native.java.io.File) => slime.jrunscript.native.java.net.URL[]
 
@@ -607,6 +622,24 @@ namespace slime.internal.jrunscript.bootstrap {
 				var same = (jshReadThisFile == bootstrapReadThisFile);
 				verify(same, "files are the same").is(true);
 			}
+
+			fifty.tests.rhino = function() {
+				var parent = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				var directory = new Packages.java.io.File(parent.pathname.java.adapt(), "missing");
+				var library = jsh.internal.bootstrap.rhino.compatible();
+				var jar = new Packages.java.io.File(directory, "js.jar");
+
+				try {
+					verify(Boolean(directory.exists())).is(false);
+					var downloaded = library.download(directory);
+					verify(Boolean(directory.isDirectory())).is(true);
+					verify(Boolean(jar.isFile())).is(true);
+					verify(downloaded).length.is(1);
+					verify(String(downloaded[0])).is(String(jar.toURI().toURL()));
+				} finally {
+					parent.remove();
+				}
+			};
 
 			fifty.tests.zip = function() {
 				var web = jsh.unit.mock.Web();

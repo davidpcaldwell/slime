@@ -19,12 +19,9 @@ namespace slime.jsh.loader {
 
 	export interface Exports {
 		worker: {
-			/**
-			 * **This API is under development and does not work.**
-			 */
 			create: (p: {
 				script: slime.jrunscript.file.File
-				arguments: []
+				arguments: string[]
 				onmessage: (e: slime.$api.Event<any>) => void
 			}) => Worker
 

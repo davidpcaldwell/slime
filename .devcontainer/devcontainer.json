@@ -18,7 +18,14 @@
 				"github.vscode-pull-request-github"
 			],
 			"settings": {
-				"java.jdt.ls.java.home": "/slime/local/jdk/21",
+				"remote.autoForwardPorts": true,
+				"remote.autoForwardPortsSource": "process",
+				"remote.restoreForwardedPorts": false,
+				"chat.agentFilesLocations": {
+					"~/.copilot/agents": false,
+					"~/.agents": true
+				},
+				"java.jdt.ls.java.home": "/slime/local/jdk/25",
 				"java.configuration.runtimes": [
 					{
 						"name": "JavaSE-1.8",
@@ -35,14 +42,32 @@
 					{
 						"name": "JavaSE-21",
 						"path": "/slime/local/jdk/21"
+					},
+					{
+						"name": "JavaSE-25",
+						"path": "/slime/local/jdk/25",
+						"default": true
 					}
 				]
 			}
 		}
 	},
 	"service": "local",
-	"runServices": ["local"],
+	"remoteUser": "abc",
 	"workspaceFolder": "/slime",
+	"forwardPorts": [
+		3000
+	],
+	"portsAttributes": {
+		"3000": {
+			"label": "Webtop desktop",
+			"protocol": "http",
+			"onAutoForward": "openPreview",
+			"requireLocalPort": false
+		}
+	},
 	"initializeCommand": ".devcontainer/initializeCommand",
-	"postCreateCommand": ".devcontainer/postCreateCommand"
+	"postCreateCommand": ".devcontainer/postCreateCommand",
+	"postStartCommand": ".devcontainer/postStartCommand",
+	"shutdownAction": "stopCompose"
 }

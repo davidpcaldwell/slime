@@ -10,7 +10,7 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.http.client.Context } $context
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.http.client.Exports> } $export
 	 */
 	function(Packages,$api,$context,$loader,$export) {
@@ -227,7 +227,7 @@
 			 *
 			 * @param { slime.web.Url } url
 			 * @param { slime.jrunscript.http.client.Proxies } proxy
-			 * @param { slime.$api.event.Emitter<slime.jrunscript.http.client.Events> } events
+			 * @param { slime.$api.event.Producer<slime.jrunscript.http.client.Events> } events
 			 * @returns
 			 */
 			var openUrlConnection = function(url,proxy,events) {
@@ -286,7 +286,7 @@
 			var execute = (
 				/**
 				 *
-				 * @param { slime.$api.event.Emitter<slime.jrunscript.http.client.Events> } e
+				 * @param { slime.$api.event.Producer<slime.jrunscript.http.client.Events> } e
 				 */
 				function(e) {
 					var url = p.request.url;

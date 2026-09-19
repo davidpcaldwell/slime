@@ -6,12 +6,11 @@
 
 (
 	function(
-		verify: slime.definition.verify.Verify,
-		tests: slime.fifty.test.tests
+		fifty: slime.fifty.test.Kit
 	) {
-		tests.types.Object = function(object: { a: number }) {
-			verify(object).a.is(1);
+		fifty.tests.types.Object = function(object: { a: number }) {
+			fifty.verify(object).a.is(1);
 		}
 	}
 //@ts-ignore
-)(verify, tests)
+)(fifty);

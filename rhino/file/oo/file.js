@@ -248,16 +248,14 @@
 					if (!getParent().directory) {
 						getParent().createDirectory(mode);
 					}
-					$context.library.Location.directory.require(location).simple({
+					$context.library.Location.directory.require({
 						recursive: true
-					});
+					}).simple(location);
 				} else {
 					if (!getParent().directory) {
 						throw new Error("Could not create: " + toString() + "; parent directory does not exist.");
 					}
-					$context.library.Location.directory.require(location).simple({
-						recursive: false
-					});
+					$context.library.Location.directory.require({ recursive: false }).simple(location);
 				}
 
 				return getDirectory();
@@ -291,7 +289,7 @@
 
 			/**
 			 *
-			 * @param { any } pathname
+			 * @param { Pathname } pathname
 			 * @param { string } relativePathPrefix
 			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } _peer
 			 */
@@ -335,7 +333,7 @@
 				var setLastModified = function(date) {
 					var set = $api.fp.now(
 						parameters.filesystem.attributes.times.modified.set({ pathname: location.pathname }),
-						$api.fp.world.Means.effect()
+						$api.fp.world.Means.effector()
 					)
 					set(date.getTime());
 				}
@@ -372,7 +370,9 @@
 				this.remove = function () {
 					//	TODO	Should probably invalidate this object somehow
 					//	TODO	Should this return a value of some kind?
-					parameters.provider.remove(_peer);
+					var remove = $context.library.Location.remove({ recursive: true }).maybe;
+					var maybe = remove(pathname.os.adapt());
+					if (!maybe.present) throw new Error("Could not remove " + this);
 				}
 
 				this.move = function (toPathname, mode) {
@@ -534,13 +534,23 @@
 				this.directory = void (0);
 			}
 
+			/**
+			 *
+			 * @param { Pathname } pathname
+			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
+			 */
 			var Link = function (pathname, peer) {
 				Node.call(this, pathname, parameters.provider.separators.pathname + ".." + parameters.provider.separators.pathname, peer);
 
 				this.directory = null;
 			}
 
-			var File = function File(pathname, peer) {
+			/**
+			 *
+			 * @param { Pathname } pathname
+			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } _peer
+			 */
+			var File = function File(pathname, _peer) {
 				Node.call(this, pathname, parameters.provider.separators.pathname + ".." + parameters.provider.separators.pathname);
 
 				this.directory = false;
@@ -549,10 +559,10 @@
 					name: pathname.toString(),
 					read: {
 						binary: function () {
-							return parameters.provider.read.binary(peer);
+							return parameters.provider.read.binary(_peer);
 						},
 						text: function () {
-							return parameters.provider.read.character(peer);
+							return parameters.provider.read.character(_peer);
 						}
 					}
 				};
@@ -583,6 +593,11 @@
 			}
 			// File.prototype = new Node(this,$filesystem.separators.pathname + ".." + $filesystem.separators.pathname);
 
+			/**
+			 *
+			 * @param { Pathname } pathname
+			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
+			 */
 			var Directory = function (pathname, peer) {
 				this.getRelativePath = void (0);
 				this.toString = void (0);

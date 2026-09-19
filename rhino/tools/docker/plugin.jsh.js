@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.jsh.Global } jsh
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
 	function(jsh,$loader,plugin) {
@@ -42,11 +42,11 @@
 					}
 				});
 
-				var location = jsh.file.Pathname("/Applications/Docker.app");
 
 				jsh.tools.docker = {
 					engine: module.engine,
 					require: function() {
+						var location = jsh.file.Pathname("/Applications/Docker.app");
 						return module.install({
 							library: {
 								shell: jsh.shell,
@@ -62,7 +62,7 @@
 
 				/**
 				 *
-				 * @param { slime.jsh.shell.Exports } shell
+				 * @param { slime.jsh.Global["shell"] } shell
 				 * @returns { slime.jsh.Tools["kubectl"]["json"] }
 				 */
 				var jshFacade = function(shell) {

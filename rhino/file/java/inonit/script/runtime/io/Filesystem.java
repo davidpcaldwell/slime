@@ -135,7 +135,14 @@ public abstract class Filesystem {
 		public abstract Node getParent() throws IOException;
 
 		public abstract Node[] list() throws IOException;
-		public abstract void delete() throws IOException;
+
+		public static abstract class DeleteEvents {
+			public abstract void error(String message);
+		}
+
+		public abstract boolean isSymlink() throws IOException;
+		public abstract boolean delete(DeleteEvents events) throws IOException;
+
 		public abstract void move(Node to) throws IOException;
 		public abstract void mkdir() throws IOException;
 
@@ -286,7 +293,7 @@ public abstract class Filesystem {
 
 			public Node[] list() throws IOException {
 				File[] files = this.canonicalizedAbsoluteFile.listFiles();
-				if (files == null) throw new RuntimeException("listing is null for " + this.canonicalizedAbsoluteFile);
+				if (files == null) return null;
 				Node[] rv = new Node[files.length];
 				for (int i=0; i<files.length; i++) {
 					rv[i] = new NodeImpl(files[i]);
@@ -294,38 +301,28 @@ public abstract class Filesystem {
 				return rv;
 			}
 
-			private boolean isSymlink(File file) throws IOException {
-				return !file.getCanonicalFile().getParentFile().equals(file.getParentFile().getCanonicalFile());
+			//	TODO	with nio APIs, there is probably a better way to detect symlinks
+			private boolean isSymlink(File file) {
+				return Files.isSymbolicLink(file.toPath());
 			}
 
-			private boolean delete(File file) {
-				if (file.isDirectory()) {
-					File[] contents = file.listFiles();
-					//	Do not delete contents of this directory if this directory is a symbolic link
-					try {
-						if (!isSymlink(file)) {
-							//	delete contents
-							for (int i=0; i<contents.length; i++) {
-								boolean success = delete(contents[i]);
-								if (!success) {
-									LOG.log(Level.WARNING, "Failed to delete " + contents[i]);
-									return false;
-								}
-							}
-						}
-					} catch (IOException e) {
-						LOG.log(Level.WARNING, "Error deleting file " + file, e);
-						return false;
-					}
+			public boolean isSymlink() {
+				return isSymlink(this.canonicalizedAbsoluteFile);
+			}
+
+			private boolean delete(File file, DeleteEvents events) {
+				try {
+					java.nio.file.Files.delete(file.toPath());
+					return true;
+				} catch (IOException e) {
+					LOG.log(Level.WARNING, "Error deleting file " + file, e);
+					events.error(e.getClass().getName() + ": " + e.getMessage());
+					return false;
 				}
-				boolean rv = file.delete();
-				if (!rv) LOG.log(Level.WARNING, "Failed to delete " + file);
-				return rv;
 			}
 
-			public void delete() throws IOException {
-				boolean success = delete(this.canonicalizedAbsoluteFile);
-				if (!success) throw new IOException("Failed to delete: " + this.canonicalizedAbsoluteFile);
+			public boolean delete(DeleteEvents events) throws IOException {
+				return delete(this.canonicalizedAbsoluteFile, events);
 			}
 
 			private void copy(File from, File to) throws IOException {

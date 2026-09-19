@@ -109,6 +109,29 @@
 			}
 		)(this);
 
+		var properties = (function() {
+			return {
+				get: function(name) {
+					var _value = Packages.java.lang.System.getProperty(name);
+					return (_value !== null) ? String(_value) : null;
+				},
+				set: function(name,value) {
+					Packages.java.lang.System.setProperty(name, value);
+				},
+				list: function() {
+					var rv = [];
+					var _props = Packages.java.lang.System.getProperties();
+					var e = _props.propertyNames();
+					while (e.hasMoreElements()) {
+						var name = String(e.nextElement());
+						var value = String(_props.getProperty(name));
+						rv.push({ name: name, value: value });
+					}
+					return rv;
+				}
+			}
+		})();
+
 		//	The below would initialize the logging configuration to be empty, rather than the JDK default. The only logging done is for
 		//	remote shells, which otherwise would produce an uncomfortably long silence before the program started running. So they are
 		//	instead a little bit chatty. A user could configure this by configuring Java logging. Alternatively, I suppose we could
@@ -150,6 +173,7 @@
 			debug: void(0),
 			console: void(0),
 			log: void(0),
+			properties: void(0),
 			engine: void(0),
 			github: void(0),
 			Script: void(0),
@@ -513,6 +537,8 @@
 		if (configuration && configuration.engine && configuration.engine.script) {
 			$engine.script = configuration.engine.script;
 		}
+
+		$api.properties = properties;
 
 		$api.engine = (
 			function(global) {
@@ -1563,6 +1589,13 @@
 						return getMajorVersion(version);
 					};
 
+					var getJrunscript = function() {
+						if (new File(home, "bin/jrunscript").exists()) return new File(home, "bin/jrunscript");
+						if (new File(home, "bin/jrunscript.exe").exists()) return new File(home, "bin/jrunscript.exe");
+						if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
+						if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
+					}
+
 					var rv = {
 						toString: function() {
 							return "Java home: " + home;
@@ -1573,10 +1606,8 @@
 							if (new File(home, "bin/java.exe").exists()) return new File(home, "bin/java.exe");
 						})(),
 						jrunscript: (function() {
-							if (new File(home, "bin/jrunscript").exists()) return new File(home, "bin/jrunscript");
-							if (new File(home, "bin/jrunscript.exe").exists()) return new File(home, "bin/jrunscript.exe");
-							if (new File(home, "../bin/jrunscript").exists()) return new File(home, "../bin/jrunscript");
-							if (new File(home, "../bin/jrunscript.exe").exists()) return new File(home, "../bin/jrunscript.exe");
+							var it = getJrunscript();
+							return (it) ? it.getCanonicalFile() : void(0);
 						})(),
 						compile: void(0),
 						getMajorVersion: getMajorVersionForJdkViaJavaDashVersion
@@ -1604,6 +1635,7 @@
 				var getClass = function(name) {
 					return $engine.getClass(name);
 				}
+				/** @type { slime.internal.jrunscript.bootstrap.Api<{}>["java"]["Array"] } */
 				var Array = function(p) {
 					return $engine.newArray(p.type,p.length);
 				}
@@ -1844,6 +1876,19 @@
 			}
 		)();
 
+		//Packages.java.lang.System.err.println(String(Packages.java.lang.System.getProperties()));
+		// Packages.java.lang.System.getProperties().store(Packages.java.lang.System.err, "System properties");
+		// Packages.java.lang.System.err.println("jrunscript = " + $api.java.install.jrunscript);
+		// Packages.java.lang.System.err.println("sun.java.command = " + Packages.java.lang.System.getProperty("sun.java.command"));
+		// Packages.java.lang.System.err.println("$api.arguments = " + JSON.stringify($api.arguments));
+		// var global = (function() { return this; }).call(null);
+		// var javax_script_argv = [];
+		// for (var i=0; i<global["javax.script.argv"].length; i++) {
+		// 	javax_script_argv.push(String(global["javax.script.argv"][i]));
+		// }
+		// Packages.java.lang.System.err.println("javax.script.argv = " + JSON.stringify(javax_script_argv));
+		// Packages.java.lang.System.exit(1);
+
 		$api.io = {
 			copy: io.copy,
 			tmpdir: function(p) {
@@ -2077,6 +2122,9 @@
 							var location = JarLocation(_directory, jarname);
 							if (!location.exists()) {
 								if (download) {
+									if (!_directory.exists() && !_directory.mkdirs()) {
+										throw new Error("Could not create library directory " + _directory);
+									}
 									$api.io.download({
 										url: url,
 										to: location

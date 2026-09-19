@@ -40,6 +40,16 @@ namespace slime.tools.code {
 		isSource: isSource
 	}
 
+	export interface Settings {
+		excludes: slime.tools.code.Excludes
+
+		isGenerated: slime.$api.fp.Predicate<slime.tools.code.File>
+	}
+
+	export namespace settings {
+		export type Script = slime.runtime.loader.Scoped<void,Settings>
+	}
+
 	export interface Exports {
 		Project: {
 			from: {
@@ -52,6 +62,13 @@ namespace slime.tools.code {
 					root: slime.jrunscript.file.Location
 					submodules: boolean
 					excludes?: Pick<Excludes,"isSource">
+				}) => Project
+
+				root: (p: {
+					root: slime.jrunscript.file.Location
+					git: {
+						submodules: boolean
+					}
 				}) => Project
 			}
 
@@ -178,9 +195,9 @@ namespace slime.tools.code {
 		file: slime.jrunscript.file.Location
 	}
 
-	export type isText = (p: slime.tools.code.File) => boolean | undefined
+	export type isText = slime.$api.fp.Partial<slime.tools.code.File, boolean>
 
-	export type oldIsSource = (p: slime.tools.code.File) => slime.$api.fp.Maybe<boolean>
+	export type oldIsSource = slime.$api.fp.Partial<slime.tools.code.File,boolean>
 
 	export type isSource = slime.$api.fp.Partial<slime.jrunscript.file.Location,boolean>
 
@@ -280,7 +297,7 @@ namespace slime.tools.code {
 
 	export interface Exports {
 		filename: {
-			isText: (name: string) => boolean | undefined
+			isText: (name: string) => slime.$api.fp.Maybe<boolean>
 			isVcsGenerated: (name: string) => boolean
 			isIdeGenerated: (name: string) => boolean
 		}
@@ -365,10 +382,15 @@ namespace slime.tools.code {
 
 			fifty.tests.filename = fifty.test.Parent();
 
+			const maybeToValue = <T>(m: slime.$api.fp.Maybe<T>): T => {
+				if (m.present) return m.value;
+				return void(0);
+			};
+
 			fifty.tests.filename.isText = function() {
-				verify(test).subject.filename.isText("foo.txt").is(true);
-				verify(test).subject.filename.isText("foo.wav").is(false);
-				verify(test).subject.filename.isText("foo").is(void(0));
+				verify(test).subject.filename.isText("foo.txt").evaluate(maybeToValue).is(true);
+				verify(test).subject.filename.isText("foo.wav").evaluate(maybeToValue).is(false);
+				verify(test).subject.filename.isText("foo").evaluate(maybeToValue).is(void(0));
 			}
 
 			fifty.tests.checkSingleFinalNewline = function() {
@@ -398,7 +420,7 @@ namespace slime.tools.code {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 
 	export namespace internal {
 		export interface functions {

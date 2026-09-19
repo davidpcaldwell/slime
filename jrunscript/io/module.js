@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.$api.jrunscript.Global } $api
 	 * @param { slime.jrunscript.io.Context } $context
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.io.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {
@@ -44,7 +44,11 @@
 			mime: code.mime({
 				nojavamail: $context.nojavamail,
 				$slime: {
-					Resource: $context.$slime.Resource
+					$api: {
+						jrunscript: {
+							loader: $api.jrunscript.loader
+						}
+					}
 				},
 				api: {
 					java: $context.api.java,
@@ -58,7 +62,7 @@
 		var InputStream = {
 			string: function(stream) {
 				return function() {
-					return stream.content.string.simple($api.jrunscript.io.Charset.default);
+					return stream.read.string.simple($api.jrunscript.io.Charset.default);
 				};
 			},
 			from: {
@@ -77,7 +81,7 @@
 				$context.$slime.jrunscript.Resource
 			),
 			Loader: $context.$slime.Loader,
-			old: $context.$slime.old,
+			old: $context.$slime.$api.loader.old.old,
 			java: {
 				adapt: $api.jrunscript.io.Streams.java.adapt
 			},

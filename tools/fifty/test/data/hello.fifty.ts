@@ -4,7 +4,7 @@
 //
 //	END LICENSE
 
-namespace slime.fifty.internal.test {
+namespace slime.fifty.internal.test.data {
 	export interface Context {
 	}
 
@@ -25,5 +25,5 @@ namespace slime.fifty.internal.test {
 	//@ts-ignore
 	)($fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

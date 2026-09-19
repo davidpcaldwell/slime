@@ -10,7 +10,7 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
 	function(Packages,$api,jsh,$loader,plugin) {

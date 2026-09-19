@@ -176,6 +176,7 @@ namespace slime.$api.fp {
 	export interface Exports {
 		Thunk: {
 			memoize: <T>(f: Thunk<T>) => Thunk<T>
+			force: <T>(f: Thunk<T>) => T
 			map: Thunk_map
 			value: Thunk_value
 			now: Thunk_now
@@ -198,6 +199,17 @@ namespace slime.$api.fp {
 
 				verify(one).invocations.length.is(1);
 				verify(memoized).invocations.length.is(2);
+			}
+
+			fifty.tests.exports.Thunk.force = function() {
+				const one = fifty.spy.create($api.fp.Thunk.value(1));
+
+				var x = $api.fp.Thunk.force(one.function);
+				var y = $api.fp.Thunk.force(one.function);
+
+				verify(x).is(1);
+				verify(y).is(1);
+				verify(one).invocations.length.is(2);
 			}
 
 			fifty.tests.exports.Thunk.now = function() {
@@ -345,7 +357,7 @@ namespace slime.$api.fp {
 
 	export interface Exports {
 		/**
-		 * Given a property key, creates a function that will operate on objects with the semantics of the optional chaining
+		 * Given a property key, creates a function that will operate on objects with the semantics of the [optional chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)
 		 * operator (`?.`). If the value passed to the returned function is `null` or undefined, the returned function will return
 		 * undefined; if the value passed to the returned function is an object, the value of the property specified by the
 		 * given property key will be returned.
@@ -407,8 +419,6 @@ namespace slime.$api.fp {
 
 				verify(halve(2)).is(1);
 			}
-
-			fifty.tests.wip = fifty.tests.exports.flatten;
 		}
 	//@ts-ignore
 	)(fifty);
@@ -444,7 +454,12 @@ namespace slime.$api.fp {
 			split: (delimiter: string) => (string: string) => string[]
 			repeat: (count: number) => (string: string) => string
 			toUpperCase: (string: string) => string
+
+			/**
+			 * @deprecated Replaced by `RegExp.exec`, which has slightly different semantics (uses `Maybe`).
+			 */
 			match: (pattern: RegExp) => (string: string) => RegExpMatchArray
+
 			trim: Transform<string>
 
 			startsWith: (searchString: string, startPosition?: number) => Predicate<string>
@@ -521,10 +536,29 @@ namespace slime.$api.fp {
 		)(fifty);
 
 		export interface String {
+			/**
+			 * A formatter inspired by JavaScript's template literal syntax, but supporting a functional style (and available in
+			 * environments that do not support template literals).
+			 *
+			 * The `format` function, given a mask and a set of functions that operate on a type `T` and return substitution values
+			 * based on that type, returns a function that can format an object of type `T` as a string.
+			 *
+			 * The `mask` property of the parameter is a string that can include `${name}` placeholders, where `name` is the name of
+			 * a substitution.
+			 *
+			 * The `values` property of the parameter is an object whose properties are functions that take an object of type `T`
+			 * and return a value to substitute when that property's name is encountered in the mask. If the `values` property is
+			 * not present, the implementation will supply a `values` that provides the raw value of `t` as the substitution for
+			 * `value`, using the global `String` function to convert it to a string.
+			 *
+			 * @param p A set of parameters, including a mask and a values object with functions that produce named subsitution
+			 * values
+			 * @returns A function that can format an object of type `T` as a string using the parameters.
+			 */
 			format: <T>(p: {
 				mask: string
-				values: ((t: T) => string)[]
-			}) => (t: T) => string
+				values?: { [key: string]: (t: T) => string }
+			}) => (p: T) => string
 		}
 
 		(
@@ -538,13 +572,18 @@ namespace slime.$api.fp {
 					var name = { first: "David", middle: "Paul", last: "Caldwell" };
 					var asName: slime.$api.fp.Identity<typeof name> = $api.fp.identity;
 					var mi = $api.fp.pipe(asName, $api.fp.property("middle"), function(s) { return s.substring(0,1) });
+					var variables = {
+						first: name.first,
+						last: $api.fp.now(name.last, $api.fp.string.toUpperCase),
+						mi: mi
+					};
 					var formatter: (t: typeof name) => string = $api.fp.string.format({
-						mask: "(), () ().",
-						values: [
-							$api.fp.pipe($api.fp.property("last"), $api.fp.string.toUpperCase),
-							$api.fp.property("first"),
-							mi
-						]
+						mask: "${last}, ${first} ${mi}.",
+						values: {
+							first: $api.fp.property("first"),
+							last: $api.fp.pipe($api.fp.property("last"), $api.fp.string.toUpperCase),
+							mi: mi
+						}
 					});
 					var formatted = formatter(name);
 					verify(formatted).is("CALDWELL, David P.");
@@ -589,25 +628,190 @@ namespace slime.$api.fp {
 
 	export type Data = { [x: string]: Data } | string | number | boolean | null | Data[]
 
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.Object = fifty.test.Parent();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export namespace object {
+		export namespace property {
+			export interface Exports {
+				update: <T, K extends keyof T>(p: {
+					property: K
+					change: slime.$api.fp.Transform<T[K]>
+				}) => slime.$api.fp.Transform<T>
+
+				/**
+				 * @experimental Provides similar functionality to `Mapping.properties`; the only difference here is that we copy
+				 * existing properties automatically, which may have some use cases. Need to figure out best way to generalize.
+				 *
+				 * Given an object specifying functions that can be used to produce property values from an existing object, returns
+				 * a function that will take an existing object as an argument and return an augmented version of that object as
+				 * the result. Note that a new object will be returned; the argument will be treated as immutable.
+				 */
+				set: <T extends {}, R extends {}>(p: { [k in keyof R]: slime.$api.fp.Mapping<T,R[k]> }) => (t: T) => (T & { [k in keyof R]: R[k] })
+
+				maybe: {
+					<T,K extends keyof T>(k: K): (t: T) => slime.$api.fp.Maybe<T[K]>
+					<T,K extends keyof T,KK extends keyof T[K]>(k: K,kk: KK): (t: T) => slime.$api.fp.Maybe<T[K][KK]>
+				}
+
+				get: {
+					<T,K extends keyof T>(k: K): (t: T) => T[K]
+					<T,K extends keyof T,KK extends keyof T[K]>(k: K,kk: KK): (t: T) => T[K][KK]
+				}
+			}
+
+			(
+				function(
+					fifty: slime.fifty.test.Kit
+				) {
+					const { verify } = fifty;
+					const { $api } = fifty.global;
+					const subject = fifty.global.$api.fp.Object;
+
+					type X = { a: number, b: string };
+					type Y = { a: number, b: string, foo: () => number };
+
+					fifty.tests.Object.property = fifty.test.Parent();
+
+					fifty.tests.Object.property.update = function() {
+						var before: X = { a: 2, b: "hey" };
+						verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
+						verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
+						var disallowed: Y = { a: 2, b: "hey", foo: function() { return 3; }};
+						// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
+						// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
+					};
+
+					fifty.tests.Object.property.set = function() {
+						var before: X = { a: 1, b: "b" };
+
+						var after = $api.fp.now(
+							before,
+							subject.property.set({
+								c: function(t) {
+									return true;
+								},
+								d: function(t) {
+									return String(t.a);
+								}
+							})
+						);
+
+						verify(after).a.is(1);
+						verify(after).b.is("b");
+						verify(after).c.is(true);
+						verify(after).d.is("1");
+					};
+
+					fifty.tests.Object.property.alternativeToSet = function() {
+						var before: X = { a: 1, b: "b" };
+
+						var after = $api.fp.now(
+							before,
+							$api.fp.Mapping.properties({
+								a: $api.fp.property("a"),
+								b: $api.fp.property("b"),
+								c: function(t) {
+									return true;
+								},
+								d: function(t) {
+									return String(t.a);
+								}
+							})
+						);
+
+						verify(after).a.is(1);
+						verify(after).b.is("b");
+						verify(after).c.is(true);
+						verify(after).d.is("1");
+					};
+
+					type T = { a?: { b?: number } };
+					var o: T[] = [
+						{},
+						{ a: {} },
+						{ a: { b: 0 } }
+					];
+
+					fifty.tests.Object.property.maybe = function() {
+						var cases = o.map(function(t) {
+							return {
+								a: $api.fp.now(t, subject.property.maybe("a")),
+								b1: $api.fp.now(t, subject.property.maybe("a"), $api.fp.Maybe.map(subject.property.maybe("b")),
+									function flatten(m) {
+										if (!m.present) return $api.fp.Maybe.from.nothing();
+										return m.value;
+									}
+								),
+								b2: $api.fp.now(t, subject.property.maybe("a", "b"))
+							}
+						});
+						verify(cases)[0].a.present.is(false);
+						verify(cases)[0].b1.present.is(false);
+						verify(cases)[0].b2.present.is(false);
+						verify(cases)[1].a.present.is(true);
+						verify(cases)[1].b1.present.is(false);
+						verify(cases)[1].b2.present.is(false);
+						verify(cases)[2].a.present.is(true);
+						verify(cases)[2].b1.present.is(true);
+						verify(cases)[2].b2.present.is(true);
+						var two = {
+							b1: cases[2].b1,
+							b2: cases[2].b2
+						};
+						if (two.b1.present) {
+							verify(two.b1).value.is(0);
+						}
+						if (two.b2.present) {
+							verify(two.b2).value.is(0);
+						}
+					};
+
+					fifty.tests.Object.property.get = function() {
+						var cases = o.map(function(t) {
+							return {
+								a: $api.fp.now(t, subject.property.get("a")),
+								b: $api.fp.now(t, subject.property.get("a", "b"))
+							};
+						});
+						verify(cases)[0].a.is(void(0));
+						verify(cases)[0].b.is(void(0));
+						verify(cases)[1].a.is.type("object");
+						verify(cases)[1].b.is(void(0));
+						verify(cases)[2].a.is.type("object");
+						verify(cases)[2].b.is(0);
+					};
+				}
+			//@ts-ignore
+			)(fifty);
+		}
+	}
+
 	export interface Exports {
 		Object: {
 			/**
 			 * Given a property name and a function that transforms the value of that property, returns a function that transforms
 			 * the value of the containing object.
 			 */
-			property: {
-				update: <T, K extends keyof T>(p: {
-					property: K
-					change: slime.$api.fp.Transform<T[K]>
-				}) => slime.$api.fp.Transform<T>
+			property: slime.$api.fp.object.property.Exports
 
-				set: <T, K extends string, V>(p: { [k in K]: slime.$api.fp.Mapping<T,V> }) => (t: T) => (T & { [k in K]: V })
-
-				maybe: {
-					<T,K extends keyof T>(k: K): (t: T) => slime.$api.fp.Maybe<T[K]>
-					<T,K extends keyof T,KK extends keyof T[K]>(k: K,kk: KK): (t: T) => slime.$api.fp.Maybe<T[K][KK]>
-				}
-			}
+			/**
+			 * Creates a function that takes an argument and will map objects to new objects with the same properties as the
+			 * original, along with the properties of the argument (the properties of the argument take precedence). Note that this
+			 * differs from the behavior of the similar Object.assign, which updates the original object with the new properties.
+			 *
+			 * @param p An object whose properties should be added to the objects passed to the returned function
+			 *
+			 * @returns A function that takes an object and returns a new object with the properties of that object, along with
+			 * the properties of `p` (which will overwrite the properties of the argument if there are any conflicts).
+			 */
+			with: <P extends object, T extends object>(p: P) => (t: T) => Omit<T, keyof P> & P
 
 			/** @deprecated This can be replaced by the stock ECMAScript `Object.entries`. */
 			entries: ObjectConstructor["entries"]
@@ -620,93 +824,41 @@ namespace slime.$api.fp {
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
-			const { verify, run } = fifty;
-			const { $api } = fifty.global;
+			const { verify } = fifty;
 
-			const subject = fifty.global.$api.fp.Object;
+			fifty.tests.Object.with = function() {
+				var p: { a: number, b: string } = { a: 1, b: "2" } as const;
+				var t: { a: number, c: boolean } = { a: 2, c: true } as const;
 
-			fifty.tests.Object = function() {
-				type X = { a: number, b: string };
-				type Y = { a: number, b: string, foo: () => number };
+				var combined = fifty.global.$api.fp.Object.with(p)(t) as typeof p & typeof t;
+				verify(combined).a.is(1);
+				verify(combined).b.is("2");
+				verify(combined).c.is(true);
+				verify(combined).evaluate(function(c) { return c === p; }).is(false);
+				verify(combined).evaluate(function(c) { return c === t; }).is(false);
 
-				run(function property_set() {
-					var before: X = { a: 1, b: "b" };
-					//	TODO	for some reason type inference doesn't work for this case
-					var after = $api.fp.now.map(
-						before,
-						subject.property.set({
-							c: function(t) {
-								return true;
-							}
-						})
-					);
+				var combined2 = fifty.global.$api.fp.Object.with(t)(p) as typeof p & typeof t;
+				verify(combined2).a.is(2);
+				verify(combined2).b.is("2");
+				verify(combined2).c.is(true);
+				verify(combined2).evaluate(function(c) { return c === p; }).is(false);
+				verify(combined2).evaluate(function(c) { return c === t; }).is(false);
 
-					verify(after).a.is(1);
-					verify(after).b.is("b");
-					verify(after).c.is(true);
-				});
+				//	Note that Object.assign updates the *original* object, not returning a whole new one.
+				var assigned = Object.assign(t, p);
+				verify(assigned).evaluate(function(a) { return a === t; }).is(true);
+			}
 
-				run(function property_update() {
-					var before: X = { a: 2, b: "hey" };
-					verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
-					verify(before).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
-					var disallowed: Y = { a: 2, b: "hey", foo: function() { return 3; }};
-					// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).a.is(4);
-					// verify(disallowed).evaluate(subject.property.update({ property: "a", change: function(n) { return n*2; }})).b.is("hey");
-				});
-
-				run(function fromEntries() {
-					var array = [ ["a", 2], ["b", 3] ];
-					var result: { a: number, b: number } = fifty.global.$api.fp.result(
-						array,
-						Object.fromEntries
-					) as { a: number, b: number };
-					verify(result).a.is(2);
-					verify(result).b.is(3);
-					verify(result).evaluate.property("b").is(3);
-					verify(result).evaluate.property("c").is(void(0));
-				});
-
-				run(function property_maybe() {
-					type T = { a?: { b?: number } };
-					var o: T[] = [
-						{},
-						{ a: {} },
-						{ a: { b: 0 } }
-					];
-
-					var cases = o.map(function(t) {
-						return {
-							a: $api.fp.now.map(t, subject.property.maybe("a")),
-							b1: $api.fp.now.map(t, subject.property.maybe("a"), $api.fp.Maybe.map(subject.property.maybe("b")),
-								function flatten(m) {
-									if (!m.present) return $api.fp.Maybe.from.nothing();
-									return m.value;
-								}
-							),
-							b2: $api.fp.now.map(t, subject.property.maybe("a", "b"))
-						}
-					});
-					verify(cases)[0].a.present.is(false);
-					verify(cases)[0].b1.present.is(false);
-					verify(cases)[0].b2.present.is(false);
-					verify(cases)[1].a.present.is(true);
-					verify(cases)[1].b1.present.is(false);
-					verify(cases)[1].b2.present.is(false);
-					verify(cases)[2].a.present.is(true);
-					verify(cases)[2].b1.present.is(true);
-					verify(cases)[2].b2.present.is(true);
-					var two = {
-						b1: cases[2].b1,
-						b2: cases[2].b2
-					};
-					if (two.b1.present) {
-						verify(two.b1).value.is(0);
-					}
-					if (two.b2.present) {
-						verify(two.b2).value.is(0);
-					}
-				});
+			fifty.tests.Object.fromEntries = function() {
+				var array = [ ["a", 2], ["b", 3] ];
+				var result: { a: number, b: number } = fifty.global.$api.fp.now(
+					array,
+					Object.fromEntries
+				) as { a: number, b: number };
+				verify(result).a.is(2);
+				verify(result).b.is(3);
+				verify(result).evaluate.property("b").is(3);
+				verify(result).evaluate.property("c").is(void(0));
 			}
 		}
 	//@ts-ignore
@@ -715,6 +867,10 @@ namespace slime.$api.fp {
 	export type Nothing = Readonly<{ present: false }>
 	export type Some<T> = Readonly<{ present: true, value: T }>
 	export type Maybe<T> = Some<T> | Nothing
+
+	export type Success<T> = Readonly<{ ok: true, value: T }>
+	export type Failure<E> = Readonly<{ ok: false, error: E }>
+	export type Result<E,T> = Success<T> | Failure<E>
 
 	export interface Exports {
 		Maybe: {
@@ -746,6 +902,17 @@ namespace slime.$api.fp {
 				): (a: A) => Maybe<C>
 			}
 		}
+
+		Result: {
+			from: {
+				success: <T>(t: T) => Success<T>
+				failure: <E>(e: E) => Failure<E>
+			}
+
+			map: <E,T,R>(f: (t: T) => R) => (r: Result<E,T>) => Result<E,R>
+			flatMap: <E,T,E2,R>(f: (t: T) => Result<E2,R>) => (r: Result<E,T>) => Result<E|E2,R>
+			mapError: <E,E2,T>(f: (e: E) => E2) => (r: Result<E,T>) => Result<E2,T>
+		}
 	}
 
 	(
@@ -775,6 +942,44 @@ namespace slime.$api.fp {
 				if (quarter4.present) verify(quarter4).value.is(1);
 				verify(quarterEvenly(2)).present.is(false);
 				verify(quarterEvenly(1)).present.is(false);
+			}
+
+			fifty.tests.exports.Result = fifty.test.Parent();
+
+			fifty.tests.exports.Result.map = function() {
+				var doubled = $api.fp.now(
+					$api.fp.Result.from.success(2),
+					$api.fp.Result.map(function(n: number) { return n*2; })
+				);
+				verify(doubled).evaluate.property("ok").is(true);
+				if (doubled.ok) verify(doubled).value.is(4);
+
+				var failed = $api.fp.now(
+					$api.fp.Result.from.failure("boom"),
+					$api.fp.Result.map(function(n: number) { return n*2; })
+				);
+				verify(failed).evaluate.property("ok").is(false);
+				if ("error" in failed) verify(failed.error).is("boom");
+			}
+
+			fifty.tests.exports.Result.flatMap = function() {
+				var half = function(n: number): Result<string,number> {
+					if (n%2 == 0) return $api.fp.Result.from.success(n/2);
+					return $api.fp.Result.from.failure("odd");
+				}
+
+				var quarter = $api.fp.pipe(
+					half,
+					$api.fp.Result.flatMap(half)
+				);
+
+				var fromFour = quarter(4);
+				verify(fromFour).evaluate.property("ok").is(true);
+				if (fromFour.ok) verify(fromFour).value.is(1);
+
+				var fromTwo = quarter(2);
+				verify(fromTwo).evaluate.property("ok").is(false);
+				if ("error" in fromTwo) verify(fromTwo.error).is("odd");
 			}
 		}
 	//@ts-ignore
@@ -1377,6 +1582,8 @@ namespace slime.$api.fp {
 			prettify: (p: {
 				space: Parameters<slime.external.lib.es5.JSON["stringify"]>[2]
 			}) => (json: string) => string
+
+			parse: <T>(f: (data: slime.$api.fp.Data) => T) => (json: string) => T
 		}
 	}
 
@@ -1391,6 +1598,8 @@ namespace slime.$api.fp {
 			modify: (modifier: (pattern: string) => string) => (original: RegExp) => RegExp
 
 			exec: (regexp: RegExp) => Partial<string,RegExpExecArray>
+
+			test: (regexp: RegExp) => Mapping<string,boolean>
 		}
 	}
 
@@ -1437,16 +1646,103 @@ namespace slime.$api.fp {
 				var two = matcher("ac");
 				verify(two).present.is(false);
 			}
+
+
+			fifty.tests.exports.RegExp.test = function() {
+				var pattern = /a(b+)c/;
+
+				var tester = subject.test(pattern);
+
+				var one = tester("abbc");
+				verify(one).is(true);
+
+				var two = tester("ac");
+				verify(two).is(false);
+			}
 		}
 	//@ts-ignore
 	)(fifty);
 
+	type BuildStep = (x: unknown) => unknown
+
+	type BuildStepChain<Input, Steps extends readonly BuildStep[]> = (
+		Steps extends readonly [infer S, ...infer Rest]
+			? S extends (x: Input) => infer Next
+				? Rest extends readonly BuildStep[]
+					? [S, ...BuildStepChain<Next, Rest>]
+					: never
+				: never
+			: []
+	)
+
+	type BuildResult<Input, Steps extends readonly BuildStep[]> = (
+		Steps extends readonly [infer S, ...infer Rest]
+			? S extends (x: Input) => infer Next
+				? Rest extends readonly BuildStep[]
+					? BuildResult<Next, Rest>
+					: never
+				: never
+			: Input
+	)
+
+	type NowFunctionFirstDeprecated = {
+		/**
+		 * @deprecated Use {@link Exports.build | `$api.fp.build`} when the first argument to `now` is a function value.
+		 */
+		<
+			F extends slime.external.lib.es5.TypescriptFunction,
+			S1Out
+		>(
+			f: F,
+			s1: (f: F) => S1Out
+		): S1Out
+
+		/**
+		 * @deprecated Use {@link Exports.build | `$api.fp.build`} when the first argument to `now` is a function value.
+		 */
+		<
+			F extends slime.external.lib.es5.TypescriptFunction,
+			S1Out,
+			S1 extends (f: F) => S1Out,
+			SRest extends readonly BuildStep[]
+		>(
+			f: F,
+			s1: S1,
+			...rest: BuildStepChain<S1Out, SRest>
+		): BuildResult<S1Out, SRest>
+	}
+
 	export interface Exports {
 		/**
-		 * Returns the result of invoking a function on an argument. `now(p, f)` is syntactic sugar for `f(p)`, and
-		 * `now(p, f, g) is syntactic sugar for `g(f(p))`.
+		 * Returns the result of transforming a function value through one or more combinators.
+		 * `build(f, g)` is syntactic sugar for `g(f)`, and `build(f, g, h)` is syntactic sugar for `h(g(f))`.
 		 */
-		now: Now_map & {
+		build: {
+			<
+				F extends slime.external.lib.es5.TypescriptFunction,
+				S1Out
+			>(
+				f: F,
+				s1: (f: F) => S1Out
+			): S1Out
+
+			<
+				F extends slime.external.lib.es5.TypescriptFunction,
+				S1Out,
+				S1 extends (f: F) => S1Out,
+				SRest extends readonly BuildStep[]
+			>(
+				f: F,
+				s1: S1,
+				...rest: BuildStepChain<S1Out, SRest>
+			): BuildResult<S1Out, SRest>
+		}
+
+		/**
+		 * Returns the result of invoking a function on an argument. `now(p, f)` is syntactic sugar for `f(p)`, and
+		 * `now(p, f, g)` is syntactic sugar for `g(f(p))`.
+		 */
+		now: NowFunctionFirstDeprecated & Now_map & {
 			/**
 			 * @deprecated Replaced by {@link Exports.now}.
 			 */
@@ -1465,6 +1761,35 @@ namespace slime.$api.fp {
 		) {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
+
+			fifty.tests.exports.build = function() {
+				var buildUntyped = $api.fp.build as any;
+
+				var times2 = function(n: number): number {
+					return n * 2;
+				};
+
+				var logging = function(f: (n: number) => number) {
+					return function(p: number): number {
+						return f(p);
+					};
+				};
+
+				var loggedTimes2 = $api.fp.build(times2, logging);
+				verify(loggedTimes2(3)).is(6);
+
+				verify(times2).evaluate(function(f) {
+					return buildUntyped(f);
+				}).threw.type(TypeError);
+
+				verify(3).evaluate(function(n) {
+					return buildUntyped(n, logging);
+				}).threw.type(TypeError);
+
+				verify(times2).evaluate(function(f) {
+					return buildUntyped(f, 42);
+				}).threw.type(TypeError);
+			};
 
 			fifty.tests.exports.now = function() {
 				var f = function(i: number): string {
@@ -1849,6 +2174,7 @@ namespace slime.$api.fp {
 				fifty.load("$api-fp-Mapping.fifty.ts");
 				fifty.load("$api-fp-stream.fifty.ts");
 				fifty.load("$api-fp-impure.fifty.ts");
+				fifty.load("$api-fp-wo.fifty.ts");
 			}
 		}
 	//@ts-ignore
@@ -1870,5 +2196,5 @@ namespace slime.$api.fp.internal {
 
 	export type Exports = Omit<slime.$api.fp.Exports,"methods">
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

@@ -175,10 +175,10 @@
 							throw new TypeError("Required: p.configuration.typescript.version");
 						}
 
-						$context.library.node.require.simple();
+						$context.library.jsh.node.require.simple();
 
 						$api.fp.world.Action.now({
-							action: $context.library.node.Installation.modules($context.library.node.installation)
+							action: $context.library.jsh.node.Installation.modules($context.library.jsh.node.installation)
 								.require({ name: "typescript", version: p.configuration.typescript.version })
 							,
 						});
@@ -192,7 +192,7 @@
 						);
 
 						$api.fp.world.Action.now({
-							action: $context.library.node.Installation.modules($context.library.node.installation).require({
+							action: $context.library.jsh.node.Installation.modules($context.library.jsh.node.installation).require({
 								name: "typedoc",
 								version: $api.fp.now.invoke(p.configuration.typescript.version, typedocVersionForTypescript)
 							}),
@@ -271,7 +271,7 @@
 							directory: project.pathname
 						};
 
-						var invocation = $context.library.node.Installation.Intention.question(argument);
+						var invocation = $context.library.jsh.node.Installation.Intention.question(argument);
 
 						return invocation;
 					}

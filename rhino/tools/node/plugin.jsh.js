@@ -8,7 +8,7 @@
 (
 	/**
 	 * @param { slime.jsh.plugin.plugins } plugins
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
 	function(plugins,$loader,plugin) {
@@ -21,7 +21,10 @@
 					module: function(p) {
 						/** @type { slime.jrunscript.tools.node.Script } */
 						var script = $loader.script("module.js");
-						return script(p.context);
+						return {
+							present: true,
+							value: script(p.context)
+						};
 					}
 				};
 			}

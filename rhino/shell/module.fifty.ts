@@ -11,18 +11,6 @@ namespace slime.jrunscript.shell {
 	export namespace context {
 		export type OutputStream = Omit<slime.jrunscript.runtime.io.OutputStream, "close">
 
-		/**
-		 * Represents a process output stream to which bytes and characters can be written.
-		 */
-		export type Console = OutputStream & {
-			/**
-			 * Writes a string to the stream and then flushes the stream.
-			 *
-			 * @param string A string to write to this console.
-			 */
-			write: (string: string) => void
-		}
-
 		export interface Stdio {
 			input?: slime.jrunscript.runtime.io.InputStream
 			output: OutputStream
@@ -30,32 +18,20 @@ namespace slime.jrunscript.shell {
 		}
 	}
 
-	export interface Context {
-		/**
-		 * (optional: if omitted, the actual operating system environment will be used.) An object representing the operating system
-		 * environment.
-		 */
-		_environment?: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
-
-		/**
-		 * (optional: if omitted, the actual system properties will be used.) A set of properties representing Java system
-		 * properties.
-		 */
-		_properties?: slime.jrunscript.native.java.util.Properties
-
-		stdio: context.Stdio
-
-		kotlin: {
-			compiler: slime.jrunscript.file.File
+	export interface World {
+		java?: {
+			properties?: slime.jrunscript.native.java.util.Properties
 		}
 
+		subprocess?: context.subprocess.World
+	}
+
+	export interface Context {
 		api: {
 			bootstrap: slime.internal.jrunscript.bootstrap.Global<{}>["$api"]
 			java: slime.jrunscript.java.Exports
 			io: slime.jrunscript.io.Exports
 			file: slime.jrunscript.file.Exports
-
-			//httpd: any
 
 			js: slime.$api.old.Exports
 
@@ -69,9 +45,25 @@ namespace slime.jrunscript.shell {
 			}
 		}
 
-		world?: {
-			subprocess?: context.subprocess.World
+		kotlin?: {
+			compiler: slime.jrunscript.file.File
 		}
+
+		/**
+		 * (optional: if omitted, the actual operating system environment will be used.) An object representing the operating system
+		 * environment.
+		 */
+		_environment?: slime.jrunscript.native.inonit.system.OperatingSystem.Environment
+
+		/**
+		 * (optional: if omitted, the actual Java system properties will be used.) An object representing the Java system
+		 * properties.
+		 */
+		_properties?: slime.jrunscript.native.java.util.Properties
+
+		stdio: context.Stdio
+
+		world?: World
 	}
 
 	export namespace test {
@@ -163,6 +155,57 @@ namespace slime.jrunscript.shell {
 			return fixtures().load(context);
 		//@ts-ignore
 		})(Packages, fifty);
+
+		export const module = (function(fifty: slime.fifty.test.Kit) {
+			//	TODO	repeats a bunch of code from plugin; should clean that up if we get this working
+
+			const { jsh } = fifty.global;
+
+			var toShellContextOutputStream = function(outputStream: slime.jrunscript.runtime.io.OutputStream ): slime.jrunscript.shell.context.OutputStream {
+				return {
+					pipe: outputStream.pipe,
+					character: function() {
+						return outputStream.character();
+					},
+					java: {
+						adapt: function() {
+							return outputStream.java.adapt();
+						}
+					},
+					split: function(other) {
+						return outputStream.split(other);
+					}
+				}
+			};
+
+			return function(world?: World) {
+				const script: slime.jrunscript.shell.Script = fifty.$loader.script("module.js");
+				const $slime = jsh.unit.$slime;
+				return script({
+					api: {
+						bootstrap: jsh.internal.bootstrap,
+						java: jsh.java,
+						io: jsh.io,
+						file: jsh.file,
+						js: jsh.js,
+						document: jsh.js.document,
+						xml: {
+							parseFile: function(file) {
+								return new jsh.document.Document({ string: file.read(String) });
+							}
+						}
+					},
+					kotlin: null,
+					stdio: {
+						input: jsh.io.Streams.java.adapt($slime.getStdio().getStandardInput()),
+						output: toShellContextOutputStream(jsh.io.Streams.java.adapt($slime.getStdio().getStandardOutput())),
+						error: toShellContextOutputStream(jsh.io.Streams.java.adapt($slime.getStdio().getStandardError()))
+					},
+					world: world
+				});
+			}
+		//@ts-ignore
+		})(fifty);
 	}
 
 	/**
@@ -182,61 +225,149 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export namespace exports {
-		export interface subprocess {}
+	export interface Exports {
 	}
 
 	export interface Exports {
-		subprocess: exports.subprocess
+		context: {
+			java: {
+				/**
+				 * The working directory, from the Java virtual machine's point of view (that is, the `user.dir` system property).
+				 */
+				directory: string
+
+				user: {
+					name: string
+					home: string
+				}
+			}
+		}
 	}
 
-	export namespace exports {
-		export interface subprocess {
-			action: slime.$api.fp.world.Means<run.Intention,run.TellEvents>
-			question: slime.$api.fp.world.Sensor<run.Intention,run.AskEvents,run.Exit>
-		}
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
 
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { $api, jsh } = fifty.global;
+			fifty.tests.exports.context = fifty.test.Parent();
 
-				const subject = jsh.shell;
+			fifty.tests.exports.context.java = fifty.test.Parent();
 
-				fifty.tests.manual.subprocess = {};
-
-				fifty.tests.manual.subprocess.question = $api.fp.impure.Process.create({
-					input: $api.fp.impure.Input.map(
-						$api.fp.impure.Input.value({
-							command: "ls",
-							stdio: {
-								output: "string"
+			fifty.tests.exports.context.java.directory = function() {
+				var module = test.module({
+					java: {
+						properties: (
+							function() {
+								var rv = new Packages.java.util.Properties();
+								rv.setProperty("user.dir", "/tmp/testdir");
+								rv.setProperty("user.name", "foo");
+								rv.setProperty("user.home", "/home/foo");
+								return rv;
 							}
-						} as slime.jrunscript.shell.run.Intention),
-						$api.fp.world.mapping(subject.subprocess.question)
-					),
-					output: $api.fp.pipe(
-						$api.fp.JSON.stringify({ space: 4 }),
-						jsh.shell.console
-					)
+						)()
+					}
 				});
+
+				verify(module).context.java.directory.is("/tmp/testdir");
 			}
-		//@ts-ignore
-		)(fifty);
+
+			fifty.tests.exports.context.java.user = function() {
+				var module = test.module({
+					java: {
+						properties: (
+							function() {
+								var rv = new Packages.java.util.Properties();
+								rv.setProperty("user.dir", "/bin");
+								rv.setProperty("user.name", "foo");
+								rv.setProperty("user.home", "/home/foo");
+								return rv;
+							}
+						)()
+					}
+				});
+
+				verify(module).context.java.user.name.is("foo");
+				verify(module).context.java.user.home.is("/home/foo");
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
+	export interface Exports {
+		/**
+		 * APIs for interacting with this shell's operating system process.
+		 */
+		process: {
+			directory: {
+				/**
+				 * @deprecated This doesn't really do what it says it does; it should be replaced by calls to
+				 * `context.java.directory.get()`.
+				 *
+				 * Returns the pathname of the shell's current working directory.
+				 */
+				get: slime.$api.fp.impure.External<string>
+			}
+		}
+	}
+
+	(
+		function(
+			Packages: slime.jrunscript.Packages,
+			fifty: slime.fifty.test.Kit
+		) {
+			const { $api, jsh } = fifty.global;
+
+			fifty.tests.manual.process = {};
+
+			fifty.tests.manual.process.directory = function() {
+				jsh.shell.console( jsh.shell.process.directory.get() );
+
+				var ls = $api.fp.impure.Input.value(
+					{
+						command: "ls",
+						stdio: {
+							output: "string"
+						}
+					},
+					$api.fp.world.Sensor.old.mapping({ sensor: jsh.shell.subprocess.question }),
+					function(p) { return p; },
+					$api.fp.property("stdio"),
+					$api.fp.property("output")
+				);
+
+				jsh.shell.console("Contents: " + ls());
+			}
+		}
+	//@ts-ignore
+	)(Packages,fifty);
+
+	export interface Exports {
+		/**
+		 * Functions pertaining to {@link Console}s.
+		 */
+		Console: console.Exports
 	}
 
 	export interface Exports {
 		/**
-		 * APIs that pertain to {@link Intention}s.
+		 * APIs for launching subprocesses using {@link Intention}s and receiving events and exit information from the processes.
 		 */
-		Intention: exports.Intention
+		subprocess: subprocess.Exports
 	}
 
-	export namespace exports {
-		export interface Intention {
+	export interface Exports {
+		/**
+		 * APIs that pertain to creating {@link Intention}s.
+		 */
+		Intention: intention.Exports
+	}
+
+	export namespace intention {
+		export interface Exports {
 			/**
-			 * An empty object to which derivations of this module may add methods.
+			 * An empty object to which derivations of this module may add methods for creating {@link Intention}s.
 			 */
 			from: {
 			}
@@ -328,7 +459,6 @@ namespace slime.jrunscript.shell {
 						document: jsh.js.document,
 						xml: void(0)
 					},
-					_properties: void(0),
 					kotlin: void(0),
 					stdio: {
 						output: jsh.shell.stdio.output,
@@ -343,71 +473,18 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 
 	interface Result {
+		status: number
+
 		stdio?: {
 			output?: string
 		}
 	}
 
 	export namespace java {
-		export interface Exports {
+		export interface Exports extends Invoke {
 			//	TODO	The old comment stated that this argument was the same as the argument to `shell`, with classpath, jar, and
 			//			main added. This seems likely to be wrong but looking at the implementation may reveal whether the types
 			//			are related in the implementation.
-			/**
-			 * Launches a Java program.
-			 */
-			<R>(p: {
-				vmarguments?: any
-				properties?: any
-
-				/**
-				 * The classpath to pass to the Java process.
-				 */
-				classpath: slime.jrunscript.file.Searchpath
-
-				/**
-				 * The name of the main class to execute.
-				 */
-				main: string
-
-				arguments?: any
-				environment?: any
-				stdio?: any
-				directory?: any
-				evaluate: (result: Result) => R
-			}): R
-
-			/**
-			 * Launches a Java program.
-			 */
-			(p: {
-				vmarguments?: any
-				properties?: any
-				classpath: any
-				main: any
-				arguments?: any
-				environment?: any
-				stdio?: any
-				directory?: any
-			}): Result
-
-			/**
-			 * Launches a Java program.
-			 */
-			(p: {
-				vmarguments?: any
-				properties?: any
-
-				/**
-				 * A JAR file to pass to `java -jar`.
-				 */
-				jar: slime.jrunscript.file.File
-				arguments?: any
-				environment?: any
-				stdio?: any
-				evaluate: any
-			}): Result
-
 			version: string
 
 			keytool: any
@@ -423,6 +500,63 @@ namespace slime.jrunscript.shell {
 			 * The home directory of the Java installation used to run this shell.
 			 */
 			home: slime.jrunscript.file.Directory
+		}
+	}
+
+	export namespace java {
+		export namespace invoke {
+			export interface Argument {
+				vmarguments?: string[]
+				properties?: Record<string,string>
+				arguments?: slime.jrunscript.shell.invocation.old.Token[]
+				environment?: slime.jrunscript.shell.invocation.Argument["environment"]
+				stdio?: slime.jrunscript.shell.older.Invocation["stdio"]
+				directory?: slime.jrunscript.file.Directory
+			}
+
+			export interface WithEvaluate<R> extends Argument {
+				/**
+				 * The classpath to pass to the Java process.
+				 */
+				classpath: slime.jrunscript.file.Searchpath
+
+				/**
+				 * The name of the main class to execute.
+				 */
+				main: string
+
+				evaluate: (result: Result) => R
+			}
+
+			export interface Basic extends Argument {
+				classpath: any
+				main: any
+			}
+
+			export interface Jar<R = Result> extends Argument {
+				/**
+				 * A JAR file to pass to `java -jar`.
+				 */
+				jar: slime.jrunscript.file.File
+				evaluate?: (result: Result) => R
+			}
+		}
+
+		export interface Invoke {
+			/**
+			 * Launches a Java program.
+			 */
+			<R>(p: invoke.WithEvaluate<R>): R
+
+			/**
+			 * Launches a Java program.
+			 */
+			(p: invoke.Basic): Result
+
+			/**
+			 * Launches a Java program.
+			 */
+			<R>(p: invoke.Jar<R>): R
 		}
 	}
 
@@ -466,22 +600,6 @@ namespace slime.jrunscript.shell {
 	)(fifty);
 
 	export interface Exports {
-		process: {
-			directory: {
-				/**
-				 * Returns the pathname of the current working directory.
-				 */
-				get: slime.$api.fp.impure.Input<string>
-
-				/**
-				 * Changes the working directory.
-				 */
-				set: slime.$api.fp.impure.Output<string>
-			}
-		}
-	}
-
-	export interface Exports {
 		/**
 		 * @deprecated Replaced by `process.directory`.
 		 *
@@ -489,41 +607,6 @@ namespace slime.jrunscript.shell {
 		 */
 		PWD: slime.jrunscript.file.Directory
 	}
-
-	(
-		function(
-			Packages: slime.jrunscript.Packages,
-			fifty: slime.fifty.test.Kit
-		) {
-			const { $api, jsh } = fifty.global;
-
-			fifty.tests.manual.process = {};
-
-			fifty.tests.manual.process.directory = function() {
-				jsh.shell.console( jsh.shell.process.directory.get() );
-
-				var ls = $api.fp.impure.Input.value(
-					{
-						command: "ls",
-						stdio: {
-							output: "string"
-						}
-					},
-					$api.fp.world.Sensor.old.mapping({ sensor: jsh.shell.subprocess.question }),
-					function(p) { return p; },
-					$api.fp.property("stdio"),
-					$api.fp.property("output")
-				);
-
-				jsh.shell.console("Before: " + ls());
-
-				jsh.shell.process.directory.set("/etc");
-
-				jsh.shell.console("After: " + ls());
-			}
-		}
-	//@ts-ignore
-	)(Packages,fifty);
 
 	export interface Exports {
 		/**
@@ -573,6 +656,9 @@ namespace slime.jrunscript.shell {
 		 * An object representing the current operating system.
 		 */
 		os: {
+			/**
+			 * The Java view of the operating system name; corresponds to the Java system property `os.name`.
+			 */
 			name: string
 			arch: string
 			version: string
@@ -707,7 +793,7 @@ namespace slime.jrunscript.shell {
 
 	export namespace jrunscript {
 		export namespace old {
-			export type Invocation = Omit<slime.jrunscript.shell.run.old.Argument,"command"|"arguments"> & {
+			export type Invocation = Omit<slime.jrunscript.shell.run.minus2.Argument,"command"|"arguments"> & {
 				/**
 				 * Provides arguments to the script invocation (including the script as the first argument). These arguments
 				 * will be augmented by those indicated by the `vmarguments` and `properties` properties.
@@ -812,22 +898,9 @@ namespace slime.jrunscript.shell {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
 
-			fifty.tests.manual.kotlin = function() {
-				if (!jsh.shell.jsh.lib.getSubdirectory("kotlin")) {
-					var intention: slime.jsh.shell.Intention = {
-						shell: {
-							src: fifty.jsh.file.relative("../..").pathname
-						},
-						script: fifty.jsh.file.relative("../../jrunscript/jsh/tools/install/kotlin.jsh.js").pathname
-					};
-					var shellIntention = jsh.shell.jsh.Intention.toShellIntention(intention);
-					var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
-					run(shellIntention);
-				}
-			}
-
 			fifty.tests.exports.kotlin = function() {
 				if (jsh.shell.jsh.lib.getSubdirectory("kotlin")) {
+					//	TODO	duplicative of test/kotlin.jsh.js; merge to be more DRY
 					var PATH = jsh.shell.PATH.pathnames;
 					PATH.unshift(jsh.shell.java.home.getRelativePath("bin"));
 					var result: { status: number, stdio: { error: string } } = jsh.shell.kotlin({
@@ -845,6 +918,40 @@ namespace slime.jrunscript.shell {
 					verify("No Kotlin.").is("No Kotlin.");
 				}
 			}
+
+			fifty.tests.manual.kotlin = function() {
+				if (jsh.shell.jsh.lib.getSubdirectory("kotline")) {
+					jsh.shell.console("Removing Kotlin installation ...");
+					jsh.shell.jsh.lib.getSubdirectory("kotlin").remove();
+					jsh.shell.console("Removed Kotlin installation.");
+				}
+				if (!jsh.shell.jsh.lib.getSubdirectory("kotlin")) {
+					var installIntention: slime.jsh.shell.Intention = {
+						shell: {
+							src: fifty.jsh.file.relative("../..").pathname
+						},
+						script: fifty.jsh.file.relative("../../jrunscript/jsh/tools/install/kotlin.jsh.js").pathname
+					};
+					var shellIntention = jsh.shell.jsh.Intention.toShellIntention(installIntention);
+					var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+					run(shellIntention);
+				}
+
+				var fixtures: slime.jsh.test.Script = fifty.$loader.script("../../jrunscript/jsh/fixtures.ts");
+				var shells = fixtures().shells(fifty);
+				var unbuilt = shells.unbuilt();
+				var intention = unbuilt.invoke({
+					script: fifty.jsh.file.relative("test/kotlin.jsh.js").pathname,
+					stdio: {
+						output: "string"
+					}
+				});
+				var run = $api.fp.now(jsh.shell.subprocess.question, $api.fp.world.Sensor.mapping());
+				var exit = run( intention );
+				var result: { status: number, stdio: { error: string } } = JSON.parse( exit.stdio.output );
+				verify(result).status.is(0);
+				verify(result).stdio.error.is("Hello from SLIME Kotlin!\n");
+			}
 		}
 	//@ts-ignore
 	)(fifty);
@@ -852,7 +959,7 @@ namespace slime.jrunscript.shell {
 	export interface Exports {
 		rhino: any
 
-		/** @deprecated Replaced by the {@link slime.jrunscript.shell.exports.subprocess subprocess} APIs. */
+		/** @deprecated Replaced by the {@link slime.jrunscript.shell.subprocess.Exports subprocess} APIs. */
 		world: {
 			/**
 			 * @deprecated Replaced by the {@link Context} `world.subprocess` property, which allows a mock (or other) implementation to
@@ -862,12 +969,12 @@ namespace slime.jrunscript.shell {
 			 * argument and returns an object describing what the mocked subprocess should do. The system will use this object to create
 			 * the appropriate `Tell` and fire the appropriate events to the caller.
 			 */
-			mock: (delegate: (invocation: shell.run.old.Invocation) => shell.run.Mock) => slime.$api.fp.world.old.Action<run.old.Invocation,run.TellEvents>
+			mock: (delegate: (invocation: shell.run.minus2.Invocation) => shell.run.Mock) => slime.$api.fp.world.old.Action<run.minus2.Invocation,run.TellEvents>
 
 			/** @deprecated */
-			question: slime.$api.fp.world.Sensor<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
+			question: slime.$api.fp.world.Sensor<slime.jrunscript.shell.run.minus2.Invocation, slime.jrunscript.shell.run.AskEvents, slime.jrunscript.shell.run.Exit>
 			/** @deprecated */
-			action: slime.$api.fp.world.Means<slime.jrunscript.shell.run.old.Invocation, slime.jrunscript.shell.run.TellEvents>
+			action: slime.$api.fp.world.Means<slime.jrunscript.shell.run.minus2.Invocation, slime.jrunscript.shell.run.TellEvents>
 		}
 	}
 
@@ -931,7 +1038,7 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>;
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>;
 
 	export interface Exports {
 		/** @deprecated */
@@ -1342,5 +1449,5 @@ namespace slime.jrunscript.shell {
 			}
 		}
 	//@ts-ignore
-	)(fifty)
+	)(fifty);
 }

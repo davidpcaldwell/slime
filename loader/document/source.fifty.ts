@@ -195,14 +195,14 @@ namespace slime.runtime.document.internal.source {
 		internal: internal.Export
 	}
 
-	export type Script = slime.loader.Script<void,Exports>
+	export type Script = slime.runtime.loader.Scoped<void,Exports>
 
 	export namespace internal {
 		export namespace test {
 			export const subject: slime.runtime.document.internal.source.Exports = (function(fifty: fifty.test.Kit) {
 				return fifty.$loader.module("source.js");
 			//@ts-ignore
-			})(fifty)
+			})(fifty);
 		}
 		export interface Position {
 			document: string
@@ -223,7 +223,7 @@ namespace slime.runtime.document.internal.source {
 
 		export type Parser<T extends Parent> = (
 			state: State<T>,
-			events: slime.$api.event.Emitter<ParseEvents>,
+			events: slime.$api.event.Producer<ParseEvents>,
 			finished: (state: State<T>) => boolean
 		) => State<T>
 	}

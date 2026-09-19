@@ -7,7 +7,7 @@
 //@ts-check
 (
 	/**
-	 *
+	/**
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
 	 * @param { slime.$api.Global } $api

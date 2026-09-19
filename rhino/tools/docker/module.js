@@ -318,6 +318,7 @@
 								var query = $api.fp.result(
 									p.query,
 									$api.fp.pipe(
+										function(a) { return a || {}; },
 										Object.entries,
 										$api.fp.Array.map(function(entry) {
 											return { name: entry[0], value: String(entry[1]) }

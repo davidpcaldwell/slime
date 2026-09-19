@@ -13,7 +13,7 @@
 	 * @param { slime.jsh.plugin.Scope["plugins"] } plugins
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.$slime } $slime
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
 	function(Packages,$api,plugins,jsh,$slime,$loader,plugin) {
@@ -24,6 +24,10 @@
 			load: function() {
 				/** @type { slime.jrunscript.shell.Exports } */
 				var module = plugins.shell;
+
+				/** @type { slime.jrunscript.shell.context.Stdio } */
+				var stdio = plugins.stdio;
+
 				/**
 				 * @type { slime.jsh.shell.internal.Context }
 				 */
@@ -37,7 +41,7 @@
 						bootstrap: jsh.internal.bootstrap
 					},
 					PATH: module.PATH,
-					stdio: plugins.stdio,
+					stdio: stdio,
 					_getSystemProperties: function() {
 						return $slime.getSystemProperties();
 					},
@@ -99,7 +103,7 @@
 						compile: api.compile
 					});
 
-					$slime.compiler.update(
+					$slime.$api.scripts.compiler.update(
 						function(was) {
 							return $api.fp.switch([
 								subprocess,

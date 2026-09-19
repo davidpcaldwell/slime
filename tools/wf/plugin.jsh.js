@@ -10,20 +10,21 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { Readonly<Pick<slime.jsh.Global,"file"|"shell"|"ui"|"tools"|"script"|"project">> & Pick<slime.jsh.Global,"wf"> } jsh
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
 	function($api,$slime,jsh,$loader,plugin) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.file && jsh.shell && jsh.shell.tools && jsh.ui && jsh.tools && jsh.tools.git && jsh.project && jsh.project.dependencies);
+				return Boolean(
+					jsh.file && jsh.shell && jsh.shell.tools && jsh.ui && jsh.tools && jsh.tools.git
+					&& jsh.project && jsh.project.code && jsh.project.dependencies
+				);
 			},
 			load: function() {
 				var code = {
 					/** @type { slime.jsh.wf.internal.module.Script } */
-					module: $loader.script("module.js"),
-					/** @type { slime.jsh.wf.standard.Script } */
-					standard: $loader.script("plugin-standard.jsh.js")
+					module: $loader.script("module.js")
 				};
 
 				var library = {
@@ -297,7 +298,7 @@
 					$api.fp.impure.Process.compose
 				);
 
-				/** @type { slime.jsh.wf.ProjectView } */
+				/** @type { Omit<slime.jsh.wf.ProjectView,"initialize"> } */
 				var project = {
 					base: inputs.base,
 					Submodule: {
@@ -455,34 +456,10 @@
 								if (!jsh.shell.environment.IN_GIT_HOOK) initializeSubmodulesProcess()();
 							}
 						}
-					},
-					/**
-					 * @type { slime.jsh.wf.Exports["project"]["initialize"] }
-					 */
-					initialize: code.standard({
-						library: {
-							file: jsh.file,
-							git: jsh.tools.git,
-						},
-						jsh: jsh,
-						api: {
-							checks: function() {
-								return jsh_wf_checks;
-							},
-							git: function() {
-								return jsh_wf_git;
-							},
-							project: function() {
-								//	TODO	weird self-reference indicating this object should be restructured
-								return project;
-							},
-							typescript: function() {
-								return jsh_wf_typescript;
-							}
-						}
-					})
+					}
 				};
 
+				/** @type { Omit<slime.jsh.wf.Exports["cli"],"initialize"> } */
 				var jsh_wf_cli = {
 					$f: {
 						command: {
@@ -562,10 +539,6 @@
 							);
 						}
 					},
-					/**
-					 * @type { slime.jsh.wf.Exports["project"]["initialize"] }
-					 */
-					initialize: $api.deprecate(project.initialize)
 				};
 
 				var guiAsk = function(pp) {
@@ -579,18 +552,12 @@
 				};
 
 				var fetch = $api.fp.impure.Input.memoized(function() {
-					var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/git/git-credential-tokens-directory.bash").toString();
-
 					var repository = jsh.tools.git.oo.Repository({ directory: inputs.base() });
 					jsh.shell.console("Fetching all updates ...");
 					repository.fetch({
 						all: true,
 						prune: true,
-						recurseSubmodules: true,
-						credentialHelpers: [
-							"cache",
-							credentialHelper
-						]
+						recurseSubmodules: true
 					}, {
 						remote: function(e) {
 							var remote = e.detail;
@@ -693,44 +660,55 @@
 					//	TODO	would this really be required? To serve it, maybe, but to run it?
 					jsh.shell.tools.tomcat.jsh.require.simple();
 
-					var getVersion = $api.fp.world.Sensor.old.mapping({
-						sensor: jsh.shell.tools.node.Installation.getVersion
-					});
+					var nodeInstallationToVersion = jsh.shell.tools.node.Installation.getVersion.simple;
 
 					$api.fp.world.Action.now({
 						action: jsh.shell.tools.node.require.action,
 						handlers: {
 							found: function(e) {
-								jsh.shell.console("Found Node.js " + getVersion(e.detail) + ".");
+								jsh.shell.console("Found Node.js " + nodeInstallationToVersion(e.detail) + ".");
 							},
 							removed: function(e) {
 								jsh.shell.console("Removed Node.js " + e.detail.version);
 							},
 							installed: function(e) {
-								jsh.shell.console("Installed Node.js " + getVersion(e.detail) + ".");
+								jsh.shell.console("Installed Node.js " + nodeInstallationToVersion(e.detail) + ".");
 							}
 						}
 					});
 
-					var version = library.module.project.typescript.version(project);
+					/** @type { slime.$api.fp.Identity<slime.jsh.wf.Project> } */
+					var asProject = $api.fp.identity;
 
-					var configuration = library.module.project.typescript.configurationFile(project);
-					if (!configuration.present) throw new Error("Not found: TypeScript configuration file.");
+					var getTypescriptConfiguration = $api.fp.pipe(
+						asProject,
+						$api.fp.Mapping.properties({
+							version: library.module.project.typescript.version,
+							configuration: $api.fp.pipe(
+								$api.fp.now(
+									library.module.project.typescript.configurationFile,
+									$api.fp.Partial.impure.exception(function(project) {
+										return new Error(
+											"Not found: TypeScript configuration file for project " + project.base + "."
+										);
+									})
+								),
+								$api.fp.property("pathname")
+							)
+						})
+					);
 
 					/** @type { slime.jsh.wf.internal.module.typedoc.Invocation } */
 					var typedocInvocation = {
 						stdio: stdio,
 						configuration: {
-							typescript: {
-								version: version,
-								configuration: configuration.value.pathname
-							}
+							typescript: getTypescriptConfiguration(project)
 						},
 						project: project.base,
 						out: out
 					};
-					var getShellInvocation = library.module.typescript.typedoc.invocation(typedocInvocation);
-					return getShellInvocation;
+
+					return library.module.typescript.typedoc.invocation(typedocInvocation);
 				}
 
 				/** @type { slime.jsh.wf.Exports["typescript"] } */
@@ -887,7 +865,7 @@
 					}
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["noUntrackedFiles"] } */
+				/** @type { slime.jsh.wf.checks.Exports["noUntrackedFiles"] } */
 				function noUntrackedFiles(p) {
 					return $api.fp.world.old.ask(function(events) {
 						events.fire("console", "Verifying no untracked files ...");
@@ -902,8 +880,29 @@
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["requireGitIdentity"] } */
+				/** @type { slime.jsh.wf.checks.Exports["requireGitIdentity"] } */
 				function requireGitIdentity(p) {
+					var git = jsh.tools.git.program({ command: "git" }).repository(p.repository.directory.pathname.toString());
+
+					/** @type { slime.jrunscript.tools.git.Command<void,{ [name: string]: string }> } */
+					var configList = {
+						invocation: function() {
+							return {
+								command: "config",
+								arguments: ["--list"]
+							};
+						},
+						result: function(output) {
+							return output.split("\n").reduce(function(rv,line) {
+								var equals = line.indexOf("=");
+								if (equals > -1) {
+									rv[line.substring(0, equals)] = line.substring(equals + 1);
+								}
+								return rv;
+							},{});
+						}
+					};
+
 					/**
 					 *
 					 * @param { { [name: string]: string } } config
@@ -914,35 +913,33 @@
 
 					return $api.fp.world.old.ask(function(events) {
 						events.fire("debug", "Verifying git identity ...");
-						var config = p.repository.config({
-							arguments: ["--list"]
-						});
+						var config = git.command(configList).argument().run();
 						if (!config["user.name"] && p.get && p.get.name) {
 							events.fire("console", "Getting user.name for " + p.repository);
-							p.repository.config({
-								arguments: ["user.name", p.get.name({ repository: p.repository })]
-							});
+							git.command(setConfigValue).argument({
+								name: "user.name",
+								value: p.get.name({ repository: p.repository })
+							}).run();
 						} else {
 							events.fire("debug", "Found user.name " + config["user.name"] + " for " + p.repository);
 						}
 						if (!config["user.email"] && p.get && p.get.email) {
 							events.fire("console", "Getting user.email for " + p.repository);
-							p.repository.config({
-								arguments: ["user.email", p.get.email({ repository: p.repository })]
-							});
+							git.command(setConfigValue).argument({
+								name: "user.email",
+								value: p.get.email({ repository: p.repository })
+							}).run();
 						} else {
 							events.fire("debug", "Found user.email " + config["user.email"] + " for " + p.repository);
 						}
-						var after = p.repository.config({
-							arguments: ["--list"]
-						});
-						if (!after["user.name"]) events.fire("console", "git repository configuration missing user.name");
-						if (!after["user.email"]) events.fire("console", "git repository configuration missing user.email");
+						var after = git.command(configList).argument().run();
+						if (!after["user.name"]) events.fire("console", "git repository " + p.repository + " configuration missing user.name");
+						if (!after["user.email"]) events.fire("console", "git repository " + p.repository + " configuration missing user.email");
 						return hasGitIdentity(after);
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["noModifiedSubmodules"] } */
+				/** @type { slime.jsh.wf.checks.Exports["noModifiedSubmodules"] } */
 				function noModifiedSubmodules(p) {
 					return $api.fp.world.old.ask(function(events) {
 						events.fire("console", "Verifying submodules unmodified ...")
@@ -1015,7 +1012,7 @@
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["noDetachedHead"] } */
+				/** @type { slime.jsh.wf.checks.Exports["noDetachedHead"] } */
 				function noDetachedHead(p) {
 					return $api.fp.world.old.ask(function(events) {
 						events.fire("console", "Verifying not a detached HEAD ...");
@@ -1027,8 +1024,8 @@
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["upToDateWithOrigin"] } */
-				function upToDateWiithOrigin(p) {
+				/** @type { slime.jsh.wf.checks.Exports["upToDateWithOrigin"] } */
+				function upToDateWithOrigin(p) {
 					/**
 					 *
 					 * @param { string } repository
@@ -1048,7 +1045,6 @@
 						events.fire("console", "Verifying up to date with origin ...");
 						var remote = "origin";
 						var origin = jsh.tools.git.program({ command: "git" })
-							.config({ "credential.helper": jsh.shell.jsh.src.getRelativePath("rhino/tools/git/git-credential-tokens-directory.bash").toString() })
 							.repository(inputs.project())
 							.command(jsh.tools.git.commands.remote.show)
 							.argument(remote)
@@ -1088,7 +1084,7 @@
 					});
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["lint"] } */
+				/** @type { slime.jsh.wf.checks.Exports["lint"] } */
 				function lint(p) {
 					if (!p) p = {};
 					var isText = (p.isText) ? p.isText : jsh.project.code.files.isText;
@@ -1261,7 +1257,7 @@
 					};
 				}
 
-				/** @type { slime.jsh.wf.exports.Checks["tsc"] } */
+				/** @type { slime.jsh.wf.checks.Exports["tsc"] } */
 				function tsc() {
 					return function(events) {
 						events.fire("console", "Verifying with TypeScript compiler ...");
@@ -1289,6 +1285,7 @@
 								}
 							}
 						);
+						events.fire("console", "tsc.jsh.js exited with status: " + result.status);
 						return (result.status == 0);
 					};
 				}
@@ -1298,12 +1295,12 @@
 					requireGitIdentity: requireGitIdentity,
 					noModifiedSubmodules: noModifiedSubmodules,
 					noDetachedHead: noDetachedHead,
-					upToDateWithOrigin: upToDateWiithOrigin,
+					upToDateWithOrigin: upToDateWithOrigin,
 					tsc: tsc,
 					lint: lint,
 					/** @type { slime.jsh.wf.Exports["checks"]["precommit"] } */
 					precommit: function(p) {
-						return $api.fp.world.old.ask(function(events) {
+						return function(events) {
 							var repository = fetch();
 
 							var success = true;
@@ -1345,7 +1342,7 @@
 
 							//	Without this, we can't merge an updated main branch into a feature branch; this perhaps is a logical
 							//	error in the check itself
-							if (!jsh.shell.environment.WF_PRECOMMIT_ALLOW_OUTDATED_BRANCH) success = success && upToDateWiithOrigin({
+							if (!jsh.shell.environment.WF_PRECOMMIT_ALLOW_OUTDATED_BRANCH) success = success && upToDateWithOrigin({
 								repository: repository
 							})({
 								console: function(e) {
@@ -1382,7 +1379,7 @@
 							}
 
 							return success;
-						});
+						};
 					}
 				}
 
@@ -1474,7 +1471,7 @@
 
 				jsh.wf = {
 					Project: Project,
-					project: project,
+					project: Object.assign(project, { initialize: void(0) }),
 					git: jsh_wf_git,
 					typescript: jsh_wf_typescript,
 					inputs: jsh_wf_inputs,
@@ -1482,9 +1479,47 @@
 					requireGitIdentity: jsh_wf_requireGitIdentity,
 					prohibitUntrackedFiles: jsh_wf_prohibitUntrackedFiles,
 					prohibitModifiedSubmodules: jsh_wf_prohibitModifiedSubmodules,
-					cli: jsh_wf_cli,
+					cli: Object.assign(jsh_wf_cli, { initialize: void(0) } ),
 					error: jsh_wf_error
 				}
+			}
+		});
+
+		plugin({
+			isReady: function() {
+				return Boolean(jsh.wf);
+			},
+			load: function() {
+				var code = {
+					/** @type { slime.jsh.wf.standard.Script } */
+					standard: $loader.script("plugin-standard.jsh.js")
+				};
+
+				jsh.wf.project.initialize = code.standard({
+					library: {
+						file: jsh.file,
+						git: jsh.tools.git,
+					},
+					jsh: jsh,
+					api: {
+						checks: jsh.wf.checks,
+						git: jsh.wf.git,
+						project: function() {
+							//	TODO	weird self-reference indicating this object should be restructured
+							return jsh.wf.project;
+						},
+						typescript: {
+							typedoc: {
+								now: jsh.wf.typescript.typedoc.now
+							}
+						}
+					}
+				});
+
+				/**
+				 * @type { slime.jsh.wf.Exports["project"]["initialize"] }
+				 */
+				jsh.wf.cli.initialize = $api.deprecate(jsh.wf.project.initialize);
 			}
 		})
 	}

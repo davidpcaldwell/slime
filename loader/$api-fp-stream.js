@@ -164,6 +164,7 @@
 						};
 					}
 					return function(stream) {
+						if (!stream) throw new Error("No stream passed to Stream.map(mapping)");
 						return MappedStream(stream,mapping);
 					}
 				},

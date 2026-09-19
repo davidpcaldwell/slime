@@ -4,6 +4,12 @@
 //
 //	END LICENSE
 
+namespace slime.jsh.internal.launcher {
+	export interface JavaAdditions {
+		compile: slime.jsh.internal.launcher.javac.compile
+	}
+}
+
 namespace slime.jsh.internal.launcher.javac {
 	export type compile = (p: {
 		files: slime.jrunscript.native.java.net.URL[]

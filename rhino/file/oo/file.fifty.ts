@@ -91,7 +91,6 @@ namespace slime.jrunscript.file {
 	//@ts-ignore
 	)(fifty);
 
-
 	export interface Pathname {
 		/**
 		 * The name of this file, excluding any path information; for example, `"ls"` if this Pathname represents `/bin/ls`.
@@ -883,7 +882,16 @@ namespace slime.jrunscript.file {
 				const { context, module, newTemporaryDirectory, createFile, createDirectory, filesystem } = fixtures;
 
 				var scope = (
-					function(scope) {
+					function(scope: {
+						linkdir: slime.jrunscript.file.Directory
+						_linkdir: slime.jrunscript.native.java.io.File
+						hostdir: slime.jrunscript.native.java.io.File
+						before: number,
+						_createFile: (_dir: slime.jrunscript.native.java.io.File, path: string) => void
+						filelink: slime.jrunscript.file.File
+						dirlink: slime.jrunscript.file.Directory
+						ln: slime.jrunscript.file.File
+					}) {
 						var module = fixtures.module;
 						var filesystem = fixtures.filesystem;
 						var createFile = fixtures.createFile;
@@ -929,7 +937,7 @@ namespace slime.jrunscript.file {
 							scope._linkdir = linkdir;
 							scope.linkdir = filesystem.java.adapt(scope._linkdir).directory;
 							scope.hostdir = hostdir;
-							var _createFile = function(_dir,path) {
+							var _createFile = function(_dir: slime.jrunscript.native.java.io.File, path: string) {
 								var dir = filesystem.java.adapt(_dir).directory;
 								createFile(dir,path);
 							}
@@ -1238,5 +1246,5 @@ namespace slime.jrunscript.file.internal.file {
 		list: slime.jrunscript.file.Exports["list"]
 	}
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

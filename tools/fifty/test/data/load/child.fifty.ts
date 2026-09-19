@@ -7,13 +7,11 @@
 (
 	function(
 		fifty: slime.fifty.test.Kit,
-		tests: slime.fifty.test.tests,
-		load: slime.fifty.test.load
 	) {
-		tests.suite = function() {
+		fifty.tests.suite = function() {
 			fifty.verify("child").is("child")
-			load("grandchild.fifty.ts", "types.Object", { a: 1 });
+			fifty.load("grandchild.fifty.ts", "types.Object", { a: 1 });
 		}
 	}
 //@ts-ignore
-)(fifty, tests, load);
+)(fifty);
