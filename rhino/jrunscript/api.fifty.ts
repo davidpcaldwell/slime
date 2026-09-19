@@ -491,7 +491,8 @@ namespace slime.internal.jrunscript.bootstrap {
 		version: string
 
 		/**
-		 * Downloads the library into the specified directory and returns the URLs of the JAR files that make up the library.
+		 * Downloads the library into the specified directory, creating it if necessary, and returns the URLs of the JAR files
+		 * that make up the library.
 		 */
 		download: (directory: slime.jrunscript.native.java.io.File) => slime.jrunscript.native.java.net.URL[]
 

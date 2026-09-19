@@ -78,7 +78,7 @@
 					jsh.internal.api.Library
 				);
 				return jsh.file.Searchpath(
-					rhino.download(jsh.shell.jsh.lib.pathname.os.adapt()).map(toPathname)
+					rhino.download(rhino.directory(jsh.shell.jsh.lib.pathname.os.adapt())).map(toPathname)
 				)
 			};
 
@@ -252,7 +252,10 @@
 				//	for now we will use the Rhino corresponding to the executing version of Java
 				build.rhino = $api.fp.Thunk.now(
 					jsh.internal.api.rhino.compatible,
-					function(library) { return library.download(destination.shell.getRelativePath("lib").os.adapt() ); },
+					function(library) {
+						var lib = destination.shell.getRelativePath("lib").os.adapt();
+						return library.download(library.directory(lib));
+					},
 					$api.fp.Array.map( toPathname ),
 					jsh.file.Searchpath
 				);

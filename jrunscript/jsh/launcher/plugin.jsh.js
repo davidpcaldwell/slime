@@ -47,6 +47,14 @@
 
 					return {
 						version: bootstrap.version,
+						directory: function(directory) {
+							return jsh.file.Location.from.java.File(
+								new Packages.java.io.File(
+									jsh.file.Location.java.File.simple(directory),
+									"rhino/" + bootstrap.version
+								)
+							);
+						},
 						download: $api.fp.pipe(
 							jsh.file.Location.java.File.simple,
 							bootstrap.download,

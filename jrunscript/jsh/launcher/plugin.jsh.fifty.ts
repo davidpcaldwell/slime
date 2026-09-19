@@ -45,6 +45,7 @@ namespace slime.jsh {
 namespace slime.internal.jrunscript.bootstrap.api {
 	export interface Library {
 		version: string
+		directory: (root: slime.jrunscript.file.Location) => slime.jrunscript.file.Location
 		download: (directory: slime.jrunscript.file.Location) => slime.jrunscript.file.Location[]
 		local: (directory: slime.jrunscript.file.Location) => slime.jrunscript.file.Location[]
 	}
