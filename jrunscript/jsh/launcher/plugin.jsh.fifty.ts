@@ -61,7 +61,7 @@ namespace slime.internal.jrunscript.bootstrap.api {
 					jsh.internal.bootstrap.rhino.compatible(),
 					jsh.internal.api.Library
 				);
-				var local = rhino.local( fifty.jsh.file.relative("../../../local/jsh/lib") );
+				var local = rhino.local(rhino.directory(fifty.jsh.file.relative("../../../local/jsh/lib")));
 				jsh.shell.console(String(local.map(function(it) { return it.pathname; })));
 			}
 		}

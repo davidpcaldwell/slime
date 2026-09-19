@@ -270,8 +270,12 @@
 			console("Copying Rhino libraries ...");
 			//	TODO	this isn't probably compatible with the direction we are going for libraries, but is likely to work at
 			//			present, but the -rhino option is going away anyway
+			var library = jsh.internal.api.rhino.compatible();
+			var directory = destination.shell
+				.getRelativePath("lib/rhino/" + library.version)
+				.createDirectory({ recursive: true });
 			build.rhino.pathnames.forEach( function(pathname,index,array) {
-				pathname.file.copy(destination.shell.getSubdirectory("lib").getRelativePath(pathname.basename));
+				pathname.file.copy(directory.getRelativePath(pathname.basename));
 			});
 		} else {
 			console("Rhino libraries not present; building for Nashorn only.");

@@ -604,6 +604,24 @@ namespace slime.internal.jrunscript.bootstrap {
 				verify(same, "files are the same").is(true);
 			}
 
+			fifty.tests.rhino = function() {
+				var parent = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				var directory = new Packages.java.io.File(parent.pathname.java.adapt(), "missing");
+				var library = jsh.internal.bootstrap.rhino.compatible();
+				var jar = new Packages.java.io.File(directory, "js.jar");
+
+				try {
+					verify(Boolean(directory.exists())).is(false);
+					var downloaded = library.download(directory);
+					verify(Boolean(directory.isDirectory())).is(true);
+					verify(Boolean(jar.isFile())).is(true);
+					verify(downloaded).length.is(1);
+					verify(String(downloaded[0])).is(String(jar.toURI().toURL()));
+				} finally {
+					parent.remove();
+				}
+			};
+
 			fifty.tests.zip = function() {
 				var web = jsh.unit.mock.Web();
 				web.add(jsh.unit.mock.web.Github({
