@@ -13,16 +13,34 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function(Packages,$api,jsh) {
-		var getRhinoInstallation = function() {
-			if (jsh.internal.api.rhino.compatible().local(jsh.shell.jsh.lib.pathname.os.adapt())) {
-				var installed = jsh.internal.api.rhino.compatible().local(jsh.shell.jsh.lib.pathname.os.adapt());
-				if (installed.length != 1) throw new Error("Unreachable.");
-				jsh.shell.console("Adding Rhino to arguments for building shell ...");
-				return jsh.file.Pathname(installed[0].pathname);
-			} else {
-				jsh.shell.console("Rhino not found in " + jsh.shell.jsh.lib + ".");
-				return void(0);
+		var compatibleRhino = function() {
+			var library = jsh.internal.api.rhino.compatible();
+			var directory = library.directory(jsh.shell.jsh.lib.pathname.os.adapt());
+			var local = library.local(directory);
+			if (!local && jsh.shell.jsh.home) {
+				// Temporary shells built with -rhino retain the explicitly supplied JAR at lib/js.jar.
+				var bundled = new Packages.java.io.File(
+					jsh.file.Location.java.File.simple(jsh.shell.jsh.lib.pathname.os.adapt()),
+					"js.jar"
+				);
+				if (bundled.exists()) {
+					local = [jsh.file.Location.from.os(String(bundled))];
+				}
 			}
+			return {
+				library: library,
+				local: local
+			};
+		};
+
+		var getRhinoInstallation = function() {
+			var rhino = compatibleRhino();
+			var installed = rhino.local || rhino.library.download(
+				rhino.library.directory(jsh.shell.jsh.lib.pathname.os.adapt())
+			);
+			if (installed.length != 1) throw new Error("Unreachable.");
+			jsh.shell.console("Adding Rhino to arguments for building shell ...");
+			return jsh.file.Pathname(installed[0].pathname);
 		};
 
 		if (!jsh.shell.jsh.home) {
@@ -85,14 +103,14 @@
 		jsh.shell.console("Using built shell at " + JSH + " to package.");
 
 		if (UNZIP_RHINO_WHEN_PACKAGING) {
-			var installedRhino = jsh.internal.api.rhino.compatible().local(jsh.shell.jsh.lib.pathname.os.adapt());
+			var installedRhino = compatibleRhino().local;
 			if (!installedRhino) throw new Error("No Rhino present.");
 			installedRhino.forEach(function(rhino) {
 				jsh.file.unzip({ zip: jsh.file.Pathname(rhino.pathname).file, to: to });
 			});
 		}
 		if (!parameters.options.norhino) {
-			var installedRhino = jsh.internal.api.rhino.compatible().local(jsh.shell.jsh.lib.pathname.os.adapt());
+			var installedRhino = compatibleRhino().local;
 			if (!installedRhino) throw new Error("No Rhino present.");
 			if (installedRhino.length != 1) throw new Error("Unreachable.");
 			var rhino = jsh.file.Pathname(installedRhino[0].pathname).file;

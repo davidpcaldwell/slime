@@ -18,7 +18,8 @@
 			}
 		});
 
-		var installed = jsh.internal.api.rhino.compatible().local( jsh.shell.jsh.lib.pathname.os.adapt() );
+		var library = jsh.internal.api.rhino.compatible();
+		var installed = library.local(library.directory(jsh.shell.jsh.lib.pathname.os.adapt()));
 
 		if (parameters.options.initialize) {
 			if (installed) {

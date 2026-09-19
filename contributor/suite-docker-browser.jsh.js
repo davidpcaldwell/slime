@@ -74,6 +74,7 @@
 					this.jsapi.parts[browser.id] = jsh.unit.Suite.Fork({
 						name: browser.name + " jsapi",
 						run: jsh.shell.jsh,
+						fork: true,
 						//	TODO	was environment.jsh.home, but that seemed to be a bug, so replacing with what value actually
 						//			seemed to be.
 						shell: void(0),

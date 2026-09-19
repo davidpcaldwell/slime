@@ -491,7 +491,8 @@ namespace slime.internal.jrunscript.bootstrap {
 		version: string
 
 		/**
-		 * Downloads the library into the specified directory and returns the URLs of the JAR files that make up the library.
+		 * Downloads the library into the specified directory, creating it if necessary, and returns the URLs of the JAR files
+		 * that make up the library.
 		 */
 		download: (directory: slime.jrunscript.native.java.io.File) => slime.jrunscript.native.java.net.URL[]
 
@@ -602,6 +603,24 @@ namespace slime.internal.jrunscript.bootstrap {
 				var same = (jshReadThisFile == bootstrapReadThisFile);
 				verify(same, "files are the same").is(true);
 			}
+
+			fifty.tests.rhino = function() {
+				var parent = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				var directory = new Packages.java.io.File(parent.pathname.java.adapt(), "missing");
+				var library = jsh.internal.bootstrap.rhino.compatible();
+				var jar = new Packages.java.io.File(directory, "js.jar");
+
+				try {
+					verify(Boolean(directory.exists())).is(false);
+					var downloaded = library.download(directory);
+					verify(Boolean(directory.isDirectory())).is(true);
+					verify(Boolean(jar.isFile())).is(true);
+					verify(downloaded).length.is(1);
+					verify(String(downloaded[0])).is(String(jar.toURI().toURL()));
+				} finally {
+					parent.remove();
+				}
+			};
 
 			fifty.tests.zip = function() {
 				var web = jsh.unit.mock.Web();

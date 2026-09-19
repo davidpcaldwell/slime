@@ -1902,6 +1902,9 @@
 							var location = JarLocation(_directory, jarname);
 							if (!location.exists()) {
 								if (download) {
+									if (!_directory.exists() && !_directory.mkdirs()) {
+										throw new Error("Could not create library directory " + _directory);
+									}
 									$api.io.download({
 										url: url,
 										to: location
