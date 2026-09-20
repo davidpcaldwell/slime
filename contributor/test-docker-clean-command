@@ -31,9 +31,25 @@ set -x
 
 # TODO Can we simply check in wf initialize to see whether a `.git` directory exists, and obviate the need for SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT?
 
-docker compose -f docker-compose.yaml -f docker-compose.test.yaml \
+#	-p slime pins the Compose project name so the built image tag (slime-local) is deterministic regardless of the checkout
+#	directory name; this lets the separate `docker buildx build` step below (which populates/reads the GitHub Actions cache)
+#	produce an image that `docker compose run` can find and reuse without needing to rebuild it.
+#
+#	SLIME_DOCKER_SKIP_BUILDX_BUILD lets local/manual invocations fall back to the old plain `docker compose ... run --build`
+#	behavior (no separate buildx step, no GitHub Actions cache), since buildx's `type=gha` cache backend only works when running
+#	inside GitHub Actions (it relies on the ACTIONS_CACHE_URL/ACTIONS_RUNTIME_TOKEN environment provided by the runner).
+if [ -z "${SLIME_DOCKER_SKIP_BUILDX_BUILD:-}" ]; then
+	docker buildx build \
+		--cache-from type=gha \
+		--cache-to type=gha,mode=max \
+		--tag slime-local \
+		--load \
+		.
+fi
+
+docker compose -p slime -f docker-compose.yaml -f docker-compose.test.yaml \
 	run \
-	--build \
+	${SLIME_DOCKER_SKIP_BUILDX_BUILD:+--build} \
 	-e DOCKER_HOST_UNAME=$(uname) \
 	-e SLIME_TEST_REQUIRE_DISPLAY \
 	-e S6_KEEP_ENV=1 \

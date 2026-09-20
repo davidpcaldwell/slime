@@ -27,6 +27,8 @@ jobs:
           docker-images: true
       - name: Check out repository code
         uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Use Docker to create image, and then run browser suite
         env:
           SLIME_TEST_NO_WF_SUBMODULE_RESET: 1
