@@ -23,7 +23,10 @@ public class Main {
 	//	the rest of the loader has initialized.
 	private static final class Profile {
 		private static boolean isEnabled() {
-			return explicit("jsh.launcher.profile") != null;
+			String value = explicit("jsh.launcher.profile");
+			//	An empty (but present) value is treated as disabled, matching the bash gate's `[ -n ... ]` and the JavaScript
+			//	helpers' Boolean(value), so the master switch behaves consistently across all startup phases.
+			return value != null && value.length() > 0;
 		}
 
 		private static String explicit(String name) {
@@ -36,7 +39,7 @@ public class Main {
 
 		private static PrintStream destination() {
 			String path = explicit("jsh.launcher.profile.log");
-			if (path == null) return System.err;
+			if (path == null || path.length() == 0) return System.err;
 			try {
 				return new PrintStream(new FileOutputStream(path, true));
 			} catch (FileNotFoundException e) {

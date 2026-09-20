@@ -159,7 +159,7 @@
 						write("[jsh.profile] phase=" + phase + " t=" + now());
 					},
 					/**
-					 * The current checkpoint clock value, in epoch nanoseconds, comparable across processes. Used internally to
+					 * The current checkpoint clock value, in epoch milliseconds, comparable across processes. Used internally to
 					 * propagate a fork-decision timestamp to a forked loader VM via the internal jsh.launcher.profile.origin system
 					 * property (not itself a documented setting).
 					 */

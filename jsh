@@ -19,6 +19,31 @@ fi
 #	Emits epoch milliseconds (to match the resolution used by the JVM-side checkpoints in $api.timing / Main.java's Profile
 #	helper, both based on System.currentTimeMillis()). `date +%N` (nanoseconds) is used because it is portable to both GNU and
 #	BSD/macOS date, unlike GNU-only formats like `%3N`; the nanosecond value is then truncated to milliseconds in the shell.
+#
+#	jsh.launcher.profile / jsh.launcher.profile.log can also be enabled solely via the (experimental)
+#	JSH_LAUNCHER_PROPERTY_ARGUMENTS mechanism (e.g. -Djsh.launcher.profile=1), which otherwise would only be visible to the
+#	JVM/JavaScript layers and not to this bash script; parse it here so a property-only enablement still produces bash.*
+#	checkpoints and a consistent log destination.
+jsh_profile_property() {
+	local name="$1"
+	local arg value
+	for arg in ${JSH_LAUNCHER_PROPERTY_ARGUMENTS}; do
+		case "${arg}" in
+			"-D${name}="*)
+				value="${arg#-D${name}=}"
+				;;
+		esac
+	done
+	printf '%s' "${value}"
+}
+
+if [ -z "${JSH_LAUNCHER_PROFILE}" ]; then
+	JSH_LAUNCHER_PROFILE=$(jsh_profile_property "jsh.launcher.profile")
+fi
+if [ -z "${JSH_LAUNCHER_PROFILE_LOG}" ]; then
+	JSH_LAUNCHER_PROFILE_LOG=$(jsh_profile_property "jsh.launcher.profile.log")
+fi
+
 jsh_profile_checkpoint() {
 	if [ -n "${JSH_LAUNCHER_PROFILE}" ]; then
 		local phase="$1"
