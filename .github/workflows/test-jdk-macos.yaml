@@ -18,7 +18,7 @@ jobs:
     # https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Run the linting and the tests
         env:
           SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
