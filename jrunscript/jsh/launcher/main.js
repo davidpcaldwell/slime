@@ -55,6 +55,8 @@
 		$api.debug("Source: " + $api.slime.src);
 		$api.debug("Bootstrap script: " + $api.script);
 
+		$api.timing.checkpoint("main.js.start");
+
 		(
 			function() {
 				var argv = this["javax.script.argv"];
@@ -434,7 +436,9 @@
 		$api.slime.settings.applyTo(command);
 
 		var compilerMajorVersion = (jshLoaderJavaMajorVersion < jshLauncherJavaMajorVersion) ? jshLoaderJavaMajorVersion : jshLauncherJavaMajorVersion;
+		$api.timing.checkpoint("main.js.shellClasspath.start");
 		var _shellUrls = shell.shellClasspath({ source: compilerMajorVersion, target: compilerMajorVersion });
+		$api.timing.checkpoint("main.js.shellClasspath.end");
 		$api.debug("_shellUrls = " + _shellUrls);
 		for (var i=0; i<_shellUrls.length; i++) {
 			_urls.push(_shellUrls[i]);
@@ -470,7 +474,14 @@
 		});
 		$api.debug("Fork = " + fork);
 
-		if (fork) command.fork();
+		$api.timing.checkpoint("main.js.fork-decision");
+
+		if (fork) {
+			//	Internal-only property (not a documented setting) used solely to let a forked loader VM compute elapsed time
+			//	since this process decided to fork, isolating pure process-spawn + JVM bootstrap cost for the second VM.
+			if ($api.timing.enabled) command.systemProperty("jsh.launcher.profile.origin", String($api.timing.now()));
+			command.fork();
+		}
 
 		classpath._urls.forEach(command.classpath);
 
@@ -501,6 +512,7 @@
 		if ($api.embed) return;
 
 		$api.debug("command = " + command);
+		$api.timing.checkpoint("main.js.command.run");
 		var status = command.run();
 		//	This basically hard-codes the exit at the VM level, meaning this script cannot be embedded.
 		$api.debug("exit status = " + status);

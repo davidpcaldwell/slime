@@ -17,6 +17,58 @@ import inonit.script.engine.*;
 public class Main {
 	private static final Logger LOG = Logger.getLogger(Main.class.getName());
 
+	//	Emits startup checkpoint timing (see jsh.launcher.profile / JSH_LAUNCHER_PROFILE), if enabled, to correlate the forked
+	//	loader VM's own bootstrap cost with the launcher-side checkpoints emitted in main.js and the jsh bash script. Kept
+	//	deliberately minimal (no dependency on the shell/plugin infrastructure) so it can run as early as possible, before any of
+	//	the rest of the loader has initialized.
+	private static final class Profile {
+		private static boolean isEnabled() {
+			return explicit("jsh.launcher.profile") != null;
+		}
+
+		private static String explicit(String name) {
+			String property = System.getProperty(name);
+			if (property != null) return property;
+			String env = System.getenv(name.replace(".", "_").toUpperCase());
+			if (env != null) return env;
+			return null;
+		}
+
+		private static PrintStream destination() {
+			String path = explicit("jsh.launcher.profile.log");
+			if (path == null) return System.err;
+			try {
+				return new PrintStream(new FileOutputStream(path, true));
+			} catch (FileNotFoundException e) {
+				return System.err;
+			}
+		}
+
+		static void checkpoint(String phase) {
+			if (!isEnabled()) return;
+			destination().println("[jsh.profile] phase=" + phase + " t=" + System.currentTimeMillis());
+		}
+
+		//	Reports elapsed time since the launcher (main.js) decided to fork this VM, isolating pure process-spawn + JVM
+		//	bootstrap cost for the forked loader VM. jsh.launcher.profile.origin is an internal-only property (epoch
+		//	milliseconds) set by main.js; it is not a documented setting.
+		static void checkpointSinceFork(String phase) {
+			if (!isEnabled()) return;
+			String origin = System.getProperty("jsh.launcher.profile.origin");
+			if (origin == null) {
+				checkpoint(phase);
+				return;
+			}
+			try {
+				long originMillis = Long.parseLong(origin);
+				long nowMillis = System.currentTimeMillis();
+				destination().println("[jsh.profile] phase=" + phase + " t=" + nowMillis + " delta_since_fork_ms=" + (nowMillis - originMillis));
+			} catch (NumberFormatException e) {
+				checkpoint(phase);
+			}
+		}
+	}
+
 	//	TODO	refactor into locateCodeSource() method
 	private static abstract class Location {
 		//	TODO	duplicated in rhino/http/client
@@ -531,6 +583,7 @@ public class Main {
 	}
 
 	public static void cli(Shell.Engine engine, String[] args) throws Shell.Invocation.CheckedException {
+		Profile.checkpointSinceFork("java.main.start");
 		if (!inonit.system.Logging.get().isSpecified()) {
 			inonit.system.Logging.get().initialize(new java.util.Properties());
 		}

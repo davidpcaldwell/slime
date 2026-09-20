@@ -12,6 +12,36 @@ if [ -n "${JSH_LAUNCHER_COMMAND_DEBUG}" ]; then
 	set -x
 fi
 
+#	Startup checkpoint timing (see JSH_LAUNCHER_PROFILE / jsh.launcher.profile). This is intended to be cheap enough to leave on
+#	routinely to diagnose startup performance, unlike JSH_LAUNCHER_COMMAND_DEBUG / jsh.launcher.debug, which produce verbose
+#	diagnostic output not intended for routine use.
+#
+#	Emits epoch milliseconds (to match the resolution used by the JVM-side checkpoints in $api.timing / Main.java's Profile
+#	helper, both based on System.currentTimeMillis()). `date +%N` (nanoseconds) is used because it is portable to both GNU and
+#	BSD/macOS date, unlike GNU-only formats like `%3N`; the nanosecond value is then truncated to milliseconds in the shell.
+jsh_profile_checkpoint() {
+	if [ -n "${JSH_LAUNCHER_PROFILE}" ]; then
+		local phase="$1"
+		local seconds nanos t
+		seconds=$(date +%s 2>/dev/null)
+		nanos=$(date +%N 2>/dev/null)
+		#	If %N is unsupported, some date implementations emit the literal "N"; fall back to 0 milliseconds in that case.
+		case "${nanos}" in
+			*N|"") nanos=0 ;;
+		esac
+		#	Strip leading zeros so bash arithmetic does not misinterpret the value as octal (e.g. "087044000" is invalid octal).
+		nanos=$((10#${nanos}))
+		t=$(( seconds * 1000 + nanos / 1000000 ))
+		if [ -n "${JSH_LAUNCHER_PROFILE_LOG}" ]; then
+			printf '[jsh.profile] phase=%s t=%s\n' "${phase}" "${t}" >>"${JSH_LAUNCHER_PROFILE_LOG}"
+		else
+			printf '[jsh.profile] phase=%s t=%s\n' "${phase}" "${t}" >&2
+		fi
+	fi
+}
+
+jsh_profile_checkpoint "bash.start"
+
 UNAME=$(uname)
 ARCH=$(arch)
 
@@ -505,6 +535,8 @@ check_path() {
 
 JRUNSCRIPT=$(check_environment)
 
+jsh_profile_checkpoint "bash.jdk-detection.start"
+
 if [ -z "${JRUNSCRIPT}" ]; then
 	JRUNSCRIPT=$(check_local)
 fi
@@ -539,6 +571,9 @@ fi
 #
 #	But it works with JDK 8, 11, 17, 21, and 25, so it's better than nothing.
 JDK_MAJOR_VERSION=$(get_jrunscript_java_major_version ${JRUNSCRIPT})
+
+jsh_profile_checkpoint "bash.jdk-detection.end"
+
 if [ "${JDK_MAJOR_VERSION}" -gt 8 ] && [ "${JDK_MAJOR_VERSION}" -lt 15 ]; then
 	export JSH_NASHORN_DEPRECATION_ARGUMENT="-Dnashorn.args=--no-deprecation-warning"
 	JRUNSCRIPT="${JRUNSCRIPT} ${JSH_NASHORN_DEPRECATION_ARGUMENT}"
@@ -555,6 +590,11 @@ if [ "${JDK_MAJOR_VERSION}" -ge 15 ]; then
 	# JRUNSCRIPT="${BIN}/java -jar ${JSH_BOOTSTRAP_RHINO} -opt -1"
 	JRUNSCRIPT="${JRUNSCRIPT} -classpath $(get_bootstrap_nashorn_classpath):${JSH_BOOTSTRAP_NASHORN}"
 fi
+
+#	Exported so that the JavaScript layer (which maps JSH_LAUNCHER_PROFILE to the jsh.launcher.profile setting) and any forked
+#	loader VM see the same values.
+export JSH_LAUNCHER_PROFILE
+export JSH_LAUNCHER_PROFILE_LOG
 
 if [ "$1" == "--shell-configure" ]; then
 	export JRUNSCRIPT
@@ -615,7 +655,9 @@ if [ "$0" == "bash" ]; then
 
 	JSH_NETWORK_ARGUMENTS="${HTTP_PROXY_HOST_ARGUMENT} ${HTTP_PROXY_PORT_ARGUMENT} ${HTTPS_PROXY_HOST_ARGUMENT} ${HTTPS_PROXY_PORT_ARGUMENT} ${JSH_GITHUB_USER_ARGUMENT} ${JSH_GITHUB_PASSWORD_ARGUMENT}"
 	export JSH_SHELL_LIB
+	jsh_profile_checkpoint "bash.jvm1.spawn"
 	run_jrunscript ${JSH_LAUNCHER_PROPERTY_ARGUMENTS} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/jrunscript/api.js?jsh')" "$@"
 else
+	jsh_profile_checkpoint "bash.jvm1.spawn"
 	run_jrunscript ${JSH_LAUNCHER_PROPERTY_ARGUMENTS} "$(dirname $0)/rhino/jrunscript/api.js" jsh "$@"
 fi
