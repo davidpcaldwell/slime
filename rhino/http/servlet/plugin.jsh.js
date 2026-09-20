@@ -306,20 +306,27 @@
 								//	maxThreads
 								_https.setScheme("https");
 								_https.setSecure(true);
-								_https.setAttribute("SSLEnabled", "true");
+								_https.setProperty("SSLEnabled", "true");
+								var sslHostConfig = new Packages.org.apache.tomcat.util.net.SSLHostConfig();
+								var sslCertificate = new Packages.org.apache.tomcat.util.net.SSLHostConfigCertificate(
+									sslHostConfig,
+									Packages.org.apache.tomcat.util.net.SSLHostConfigCertificate.Type.UNDEFINED
+								);
 								//	TODO	some DRY violations; see keygen() above
 								if (!p.https.keystore) {
 									var file = keygen();
-									_https.setAttribute("keystoreFile", file.toString());
-									_https.setAttribute("keystorePass", "inonit");
-									_https.setAttribute("keyAlias", "tomcat");
+									sslCertificate.setCertificateKeystoreFile(file.toString());
+									sslCertificate.setCertificateKeystorePassword("inonit");
+									sslCertificate.setCertificateKeyAlias("tomcat");
 								} else {
-									_https.setAttribute("keystoreFile", p.https.keystore.file.toString());
-									_https.setAttribute("keystorePass", p.https.keystore.password);
-									_https.setAttribute("keystoreType", "PKCS12");
+									sslCertificate.setCertificateKeystoreFile(p.https.keystore.file.toString());
+									sslCertificate.setCertificateKeystorePassword(p.https.keystore.password);
+									sslCertificate.setCertificateKeystoreType("PKCS12");
 								}
-								_https.setAttribute("clientAuth", "false");
-								_https.setAttribute("sslProtocol", "TLS");
+								sslHostConfig.setCertificateVerification("none");
+								sslHostConfig.setSslProtocol("TLS");
+								sslHostConfig.addCertificate(sslCertificate);
+								_https.addSslHostConfig(sslHostConfig);
 								_tomcat.getService().addConnector(_https);
 								rv.https = {
 									port: hport
