@@ -11,10 +11,10 @@ import javax.script.*;
 import inonit.script.engine.*;
 
 class Nashorn extends Servlet.ScriptContainer {
-	private Servlet servlet;
+	private ServletCore servlet;
 	private Loader.Classes classes;
 
-	@Override void initialize(Servlet servlet) {
+	@Override void initialize(ServletCore servlet) {
 		this.servlet = servlet;
 		this.classes = Loader.Classes.create(
 			getLoaderClassesConfiguration()
@@ -41,7 +41,7 @@ class Nashorn extends Servlet.ScriptContainer {
 	public static class HostObject extends Servlet.HostObject {
 		private Loader.Classes classes;
 
-		HostObject(Servlet servlet, Loader.Classes classes) {
+		HostObject(ServletCore servlet, Loader.Classes classes) {
 			super(servlet);
 			this.classes = classes;
 		}

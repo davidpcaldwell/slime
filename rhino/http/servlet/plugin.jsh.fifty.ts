@@ -8,7 +8,7 @@ namespace slime.jsh.httpd {
 	export type Dependencies = Pick<slime.jsh.Global,"loader"|"js"|"web"|"file"> & {
 		java: slime.jrunscript.java.Exports
 		io: slime.jsh.Global["io"]
-		shell: Pick<slime.jsh.Global["shell"],"HOME"|"TMPDIR"|"run"|"java"|"jsh"|"environment"|"echo"|"console"|"inject">
+		shell: Pick<slime.jsh.Global["shell"],"HOME"|"TMPDIR"|"run"|"java"|"jsh"|"environment"|"echo"|"console"|"inject"|"tools">
 	}
 
 	/**

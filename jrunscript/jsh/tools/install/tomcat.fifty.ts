@@ -17,6 +17,13 @@ namespace slime.jsh.shell.tools.tomcat {
 		findApache: slime.jsh.Global["tools"]["install"]["apache"]["find"]
 	}
 
+	export namespace version {
+		export type Compatibility = {
+			tomcat: string|number
+			java: number
+		}
+	}
+
 	export namespace old {
 		export type World = Pick<slime.jsh.shell.tools.tomcat.World,"getLatestVersion"|"findApache">
 	}
@@ -149,6 +156,7 @@ namespace slime.jsh.shell.tools.tomcat {
 	//			property.
 	export interface Installed {
 		base: string
+		library?: string
 	}
 
 	export namespace install {
@@ -290,6 +298,14 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 			getVersionFromReleaseNotes: (releaseNotes: string) => string
 
 			getLatestVersion: slime.$api.fp.world.Sensor<number,{ online: { major: number, latest: slime.$api.fp.Maybe<string> } },string>
+
+			getDefaultMajorVersionForJava: (major: number) => number
+
+			getRequiredJavaMajorVersion: (tomcatMajor: number) => number
+
+			isCompatible: (p: slime.jsh.shell.tools.tomcat.version.Compatibility) => boolean
+
+			getLayout: (installation: slime.jsh.shell.tools.tomcat.Installed, version: string) => slime.jsh.shell.tools.tomcat.Installed
 		}
 	}
 
@@ -359,6 +375,10 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				findApache: function(o) {
 					if (o.path == "tomcat/tomcat-9/v9.0.98/bin/apache-tomcat-9.0.98.zip") return MockDistribution("9.0.98");
 					if (o.path == "tomcat/tomcat-9/v9.0.99/bin/apache-tomcat-9.0.99.zip") return MockDistribution("9.0.99");
+					if (o.path == "tomcat/tomcat-10/v10.0.98/bin/apache-tomcat-10.0.98.zip") return MockDistribution("10.0.98");
+					if (o.path == "tomcat/tomcat-10/v10.0.99/bin/apache-tomcat-10.0.99.zip") return MockDistribution("10.0.99");
+					if (o.path == "tomcat/tomcat-11/v11.0.98/bin/apache-tomcat-11.0.98.zip") return MockDistribution("11.0.98");
+					if (o.path == "tomcat/tomcat-11/v11.0.99/bin/apache-tomcat-11.0.99.zip") return MockDistribution("11.0.99");
 					throw new Error("Mock: " + o.path);
 				}
 			};
@@ -378,8 +398,33 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				verify(version).is("3.4.5");
 			}
 
+			fifty.tests.versionSelection = function() {
+				verify(subject.test.getDefaultMajorVersionForJava(8)).is(9);
+				verify(subject.test.getDefaultMajorVersionForJava(11)).is(10);
+				verify(subject.test.getDefaultMajorVersionForJava(16)).is(10);
+				verify(subject.test.getDefaultMajorVersionForJava(17)).is(11);
+
+				verify(subject.test.getRequiredJavaMajorVersion(9)).is(8);
+				verify(subject.test.getRequiredJavaMajorVersion(10)).is(11);
+				verify(subject.test.getRequiredJavaMajorVersion(11)).is(17);
+
+				verify(subject.test.isCompatible({ tomcat: "9.0.122", java: 8 })).is(true);
+				verify(subject.test.isCompatible({ tomcat: "10.1.60", java: 8 })).is(false);
+				verify(subject.test.isCompatible({ tomcat: "10.1.60", java: 11 })).is(true);
+				verify(subject.test.isCompatible({ tomcat: "11.0.26", java: 11 })).is(false);
+				verify(subject.test.isCompatible({ tomcat: "11.0.26", java: 17 })).is(true);
+			}
+
+			fifty.tests.layout = function() {
+				var root = mock.lib.getRelativePath("tomcat").toString();
+				verify(subject.test.getLayout({ base: root }, "9.0.122")).base.is(mock.lib.getRelativePath("tomcat/9").toString());
+				verify(subject.test.getLayout({ base: root }, "10.1.60")).base.is(mock.lib.getRelativePath("tomcat/10").toString());
+				verify(subject.test.getLayout({ base: root }, "11.0.26")).base.is(mock.lib.getRelativePath("tomcat/11").toString());
+			}
+
 			fifty.tests.install = function() {
 				var installation = { base: mock.lib.getRelativePath("tomcat").toString() };
+				var target = subject.test.getLayout(installation, majorVersion + ".0.99");
 
 				var events: slime.$api.Event<any>[] = [];
 				$api.fp.world.now.action(
@@ -392,9 +437,9 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				verify(events)[1].type.is("installing");
 				verify(events)[2].type.is("installed");
 				verify(events)[2].detail.evaluate(function(detail): string { return detail.version; }).is(majorVersion + ".0.99");
-				verify(mock.lib).getSubdirectory("tomcat").getFile("a").is.type("object");
-				verify(mock.lib).getSubdirectory("tomcat").getFile("b").is.type("null");
-				var installed = subject.Installation.getVersion(installation);
+				verify(jsh.file.Pathname(target.base).directory).getFile("a").is.type("object");
+				verify(jsh.file.Pathname(target.base).directory).getFile("b").is.type("null");
+				var installed = subject.Installation.getVersion(target);
 				var version = orNull(installed);
 				verify(version).is(majorVersion + ".0.99");
 				mock.lib.getSubdirectory("tomcat").remove();
@@ -405,13 +450,14 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 				const LATEST = majorVersion + ".0.99";
 
 				var installation = { base: mock.lib.getRelativePath("tomcat").toString() };
+				var target = subject.test.getLayout(installation, VERSION);
 				var events = ["unzipping","installing","installed","found"];
 
 				$api.fp.world.now.action(
 					subject.Installation.install(installation),
 					{ world: mock, version: VERSION }
 				);
-				var installed = subject.Installation.getVersion(installation);
+				var installed = subject.Installation.getVersion(target);
 				verify(installed).evaluate(orNull).is(VERSION);
 
 				var noreplace = [];
@@ -420,12 +466,11 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 					{ world: mock },
 					new Captor(noreplace,events)
 				);
-				installed = subject.Installation.getVersion(installation);
+				installed = subject.Installation.getVersion(target);
 				verify(installed).evaluate(orNull).is(VERSION);
 				verify(noreplace).length.is(1);
 				verify(noreplace)[0].detail.evaluate(function(detail): string { return detail.version; }).is(VERSION);
 
-				debugger;
 				var replace = [];
 				$api.fp.world.now.action(
 					subject.Installation.require(installation),
@@ -435,7 +480,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 					},
 					new Captor(replace,events)
 				)
-				installed = subject.Installation.getVersion(installation);
+				installed = subject.Installation.getVersion(subject.test.getLayout(installation, LATEST));
 				verify(installed).evaluate(orNull).is(LATEST);
 				verify(replace).length.is(4);
 
@@ -563,9 +608,12 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.getVersion);
+				fifty.run(fifty.tests.versionSelection);
+				fifty.run(fifty.tests.layout);
 
 				fifty.run(function alreadyInstalled() {
 					var installation = { base: mock.lib.getRelativePath("tomcat").toString() };
+					var target = subject.test.getLayout(installation, majorVersion + ".0.99");
 					$api.fp.world.now.action(
 						subject.Installation.install(installation),
 						{ world: mock }
@@ -579,6 +627,7 @@ namespace slime.jsh.shell.tools.internal.tomcat {
 					verify(events).length.is(1);
 					verify(events)[0].type.is("found");
 					verify(events)[0].detail.evaluate(function(detail): string { return detail.version; }).is(majorVersion + ".0.99");
+					verify(subject.Installation.getVersion(target)).evaluate(orNull).is(majorVersion + ".0.99");
 					mock.lib.getSubdirectory("tomcat").remove();
 				});
 

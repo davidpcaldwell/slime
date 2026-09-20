@@ -239,12 +239,23 @@
 						});
 						var CATALINA_HOME;
 						if (jsh.shell.environment.CATALINA_HOME) CATALINA_HOME = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+						if (!CATALINA_HOME && jsh.shell.tools && jsh.shell.tools.tomcat) {
+							var installation = jsh.shell.tools.tomcat.Installation.from.jsh();
+							if (installation) CATALINA_HOME = jsh.file.Pathname(installation.base).directory;
+						}
 						if (!CATALINA_HOME) CATALINA_HOME = jsh.shell.jsh.lib.getSubdirectory("tomcat");
 						if (!CATALINA_HOME) {
 							throw new Error("Could not find Tomcat directory to locate servlet API");
 						}
 						jsh.shell.echo("CATALINA_HOME = " + CATALINA_HOME);
 						classpath.pathnames.push(CATALINA_HOME.getRelativePath("lib/servlet-api.jar"));
+						var tomcatMajorVersion = (function() {
+							var notes = CATALINA_HOME.getFile("RELEASE-NOTES").read(String);
+							var match = /Apache Tomcat Version (\d+)\./.exec(notes);
+							if (!match) throw new Error("Could not determine Tomcat major version from " + CATALINA_HOME.getFile("RELEASE-NOTES"));
+							return Number(match[1]);
+						})();
+						var servletApi = (tomcatMajorVersion >= 10) ? "jakarta" : "javax";
 						var sourcepath = jsh.file.Searchpath([]);
 						sourcepath.pathnames.push(SLIME.getRelativePath("rhino/system/java"));
 						sourcepath.pathnames.push(SLIME.getRelativePath("loader/jrunscript/java"));
@@ -253,12 +264,13 @@
 						if (p.rhino) {
 							sourcepath.pathnames.push(SLIME.getRelativePath("jrunscript/host/rhino/java"));
 						}
+						sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/" + servletApi + "/java"));
 						sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/java"));
 						if (p.rhino) {
 							sourcepath.pathnames.push(SLIME.getRelativePath("rhino/http/servlet/rhino/java"));
 						}
 						var sources = [
-							SERVLET.getRelativePath("java/inonit/script/servlet/Servlet.java"),
+							SERVLET.getRelativePath(servletApi + "/java/inonit/script/servlet/Servlet.java"),
 							SERVLET.getRelativePath("java/inonit/script/servlet/Nashorn.java")
 						];
 						if (p.rhino) {

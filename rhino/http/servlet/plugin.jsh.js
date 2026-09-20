@@ -19,7 +19,10 @@
 	function(Packages,JavaAdapter,$slime,$api,jsh,plugin,$loader) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.js && jsh.web && jsh.java && jsh.java.log && jsh.io && jsh.io.mime && jsh.shell && jsh.file);
+				return Boolean(
+					jsh.js && jsh.web && jsh.java && jsh.java.log && jsh.io && jsh.io.mime && jsh.shell && jsh.file
+					&& jsh.shell.tools && jsh.shell.tools.tomcat
+				);
 			},
 			load: function() {
 				if (!jsh.httpd) {
@@ -182,34 +185,34 @@
 
 				var CATALINA_HOME = (function() {
 					if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+					if (jsh.shell.tools && jsh.shell.tools.tomcat) {
+						var installation = jsh.shell.tools.tomcat.Installation.from.jsh();
+						if (installation) return jsh.file.Pathname(installation.base).directory;
+					}
 					if (jsh.shell.jsh.lib && jsh.shell.jsh.lib.getSubdirectory("tomcat")) return jsh.shell.jsh.lib.getSubdirectory("tomcat");
 				})();
 
 				//	TODO	allow system property in addition to environment variable?
 				var TOMCAT_CLASS = (function() {
-					try {
-						var TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
-						if (!TOMCAT_CLASS && CATALINA_HOME) {
-							[
-								"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
-								"lib/catalina.jar"
-								,"lib/annotations-api.jar"
-								//	below added for Tomcat 8
-								,"lib/tomcat-jni.jar"
-								,"lib/tomcat-util-scan.jar"
-								,"lib/jaspic-api.jar"
-							].forEach(function(path) {
+					var TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
+					if (!TOMCAT_CLASS && CATALINA_HOME) {
+						[
+							"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
+							"lib/catalina.jar"
+							,"lib/annotations-api.jar"
+							//	below added for Tomcat 8
+							,"lib/tomcat-jni.jar"
+							,"lib/tomcat-util-scan.jar"
+							,"lib/jaspic-api.jar"
+							,"lib/tomcat-jaspic-api.jar"
+						].forEach(function(path) {
+							if (CATALINA_HOME.getRelativePath(path).file) {
 								jsh.loader.java.add(CATALINA_HOME.getRelativePath(path));
-							});
-							debugger;
-							TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
-						}
-						return TOMCAT_CLASS;
-					} catch (e) {
-						debugger;
-						//	TODO	probably Tomcat version is too new
-						return null;
+							}
+						});
+						TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
 					}
+					return TOMCAT_CLASS;
 				})();
 
 				jsh.java.log.named("jsh.httpd").CONFIG("When trying to load Tomcat: class = %s CATALINA_HOME = %s", TOMCAT_CLASS, CATALINA_HOME);

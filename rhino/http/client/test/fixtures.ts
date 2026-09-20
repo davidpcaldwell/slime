@@ -56,6 +56,7 @@ namespace slime.jrunscript.http.client.test {
 					var TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
 					var CATALINA_HOME = (function() {
 						if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+						if (jsh.shell.tools && jsh.shell.tools.tomcat) return jsh.file.Pathname(jsh.shell.tools.tomcat.Installation.from.jsh().base).directory;
 						if (jsh.shell.jsh.lib && jsh.shell.jsh.lib.getSubdirectory("tomcat")) return jsh.shell.jsh.lib.getSubdirectory("tomcat");
 					})();
 					if (!TOMCAT_CLASS && CATALINA_HOME) {
