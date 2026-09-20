@@ -194,23 +194,23 @@ install_graalvm() {
 }
 
 install_jdk_8_corretto() {
-	install_jdk_corretto "8.412.08.1" $1
+	install_jdk_corretto "8.504.01.1" $1
 }
 
 install_jdk_11_corretto() {
-	install_jdk_corretto "11.0.23.9.1" $1
+	install_jdk_corretto "11.0.32.10.1" $1
 }
 
 install_jdk_17_corretto() {
-	install_jdk_corretto "17.0.11.9.1" $1
+	install_jdk_corretto "17.0.20.10.1" $1
 }
 
 install_jdk_21_corretto() {
-	install_jdk_corretto "21.0.3.9.1" $1
+	install_jdk_corretto "21.0.12.9.1" $1
 }
 
 install_jdk_25_corretto() {
-	install_jdk_corretto "25.0.4.7.1" $1
+	install_jdk_corretto "25.0.4.8.1" $1
 }
 
 install_jdk_8() {
