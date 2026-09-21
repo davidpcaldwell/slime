@@ -38,18 +38,29 @@ set -x
 #	SLIME_DOCKER_SKIP_BUILDX_BUILD lets local/manual invocations fall back to the old plain `docker compose ... run --build`
 #	behavior (no separate buildx step, no GitHub Actions cache), since buildx's `type=gha` cache backend only works when running
 #	inside GitHub Actions (it relies on the ACTIONS_CACHE_URL/ACTIONS_RUNTIME_TOKEN environment provided by the runner).
+#
+#	`ignore-error=true` on the cache-to exporter means a cache write that cannot be completed (for example, on a pull_request
+#	run triggered from a fork, where the Actions runtime token cannot write to this repository's cache) only forgoes the
+#	optimization rather than failing the whole build; --cache-from continues to work in that scenario since forks can still
+#	read the cache populated by non-fork runs.
+#
+#	If the buildx step itself fails outright (for instance, if --cache-from cannot be read at all), fall back to having
+#	`docker compose run --build` build the image the old way, so a caching problem degrades to "no speedup" rather than a
+#	hard CI failure.
+SLIME_DOCKER_BUILDX_BUILD_FAILED=
 if [ -z "${SLIME_DOCKER_SKIP_BUILDX_BUILD:-}" ]; then
 	docker buildx build \
 		--cache-from type=gha \
-		--cache-to type=gha,mode=max \
+		--cache-to type=gha,mode=max,ignore-error=true \
 		--tag slime-local \
 		--load \
-		.
+		. || SLIME_DOCKER_BUILDX_BUILD_FAILED=1
 fi
 
 docker compose -p slime -f docker-compose.yaml -f docker-compose.test.yaml \
 	run \
 	${SLIME_DOCKER_SKIP_BUILDX_BUILD:+--build} \
+	${SLIME_DOCKER_BUILDX_BUILD_FAILED:+--build} \
 	-e DOCKER_HOST_UNAME=$(uname) \
 	-e SLIME_TEST_REQUIRE_DISPLAY \
 	-e S6_KEEP_ENV=1 \
