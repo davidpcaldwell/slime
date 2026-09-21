@@ -12,6 +12,9 @@ if [ -n "${JSH_LAUNCHER_COMMAND_DEBUG}" ]; then
 	set -x
 fi
 
+UNAME=$(uname)
+ARCH=$(arch)
+
 #	Startup checkpoint timing (see JSH_LAUNCHER_PROFILE / jsh.launcher.profile). This is intended to be cheap enough to leave on
 #	routinely to diagnose startup performance, unlike JSH_LAUNCHER_COMMAND_DEBUG / jsh.launcher.debug, which produce verbose
 #	diagnostic output not intended for routine use.
@@ -24,6 +27,10 @@ fi
 #	JSH_LAUNCHER_PROPERTY_ARGUMENTS mechanism (e.g. -Djsh.launcher.profile=1), which otherwise would only be visible to the
 #	JVM/JavaScript layers and not to this bash script; parse it here so a property-only enablement still produces bash.*
 #	checkpoints and a consistent log destination.
+#
+#	This block is deliberately placed after UNAME/ARCH are computed above (rather than at the very top of the script) so that,
+#	under JSH_LAUNCHER_COMMAND_DEBUG (set -x), the first traced statement remains the pre-existing "uname" invocation; a test
+#	(setting.JSH_LAUNCHER_COMMAND_DEBUG in jrunscript/jsh/_.fifty.ts) asserts on that first traced line.
 jsh_profile_property() {
 	local name="$1"
 	local arg value
@@ -66,9 +73,6 @@ jsh_profile_checkpoint() {
 }
 
 jsh_profile_checkpoint "bash.start"
-
-UNAME=$(uname)
-ARCH=$(arch)
 
 if test -z "$0:-"; then
 	>&2 echo "\$0 not set; exiting."
