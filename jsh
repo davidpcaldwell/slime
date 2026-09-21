@@ -15,63 +15,15 @@ fi
 UNAME=$(uname)
 ARCH=$(arch)
 
-#	Startup checkpoint timing (see JSH_LAUNCHER_PROFILE / jsh.launcher.profile). This is intended to be cheap enough to leave on
-#	routinely to diagnose startup performance, unlike JSH_LAUNCHER_COMMAND_DEBUG / jsh.launcher.debug, which produce verbose
-#	diagnostic output not intended for routine use.
-#
-#	Emits epoch milliseconds (to match the resolution used by the JVM-side checkpoints in $api.timing / Main.java's Profile
-#	helper, both based on System.currentTimeMillis()). `date +%N` (nanoseconds) is used because it is portable to both GNU and
-#	BSD/macOS date, unlike GNU-only formats like `%3N`; the nanosecond value is then truncated to milliseconds in the shell.
-#
-#	jsh.launcher.profile / jsh.launcher.profile.log can also be enabled solely via the (experimental)
-#	JSH_LAUNCHER_PROPERTY_ARGUMENTS mechanism (e.g. -Djsh.launcher.profile=1), which otherwise would only be visible to the
-#	JVM/JavaScript layers and not to this bash script; parse it here so a property-only enablement still produces bash.*
-#	checkpoints and a consistent log destination.
-#
-#	This block is deliberately placed after UNAME/ARCH are computed above (rather than at the very top of the script) so that,
-#	under JSH_LAUNCHER_COMMAND_DEBUG (set -x), the first traced statement remains the pre-existing "uname" invocation; a test
-#	(setting.JSH_LAUNCHER_COMMAND_DEBUG in jrunscript/jsh/_.fifty.ts) asserts on that first traced line.
-jsh_profile_property() {
-	local name="$1"
-	local arg value
-	for arg in ${JSH_LAUNCHER_PROPERTY_ARGUMENTS}; do
-		case "${arg}" in
-			"-D${name}="*)
-				value="${arg#-D${name}=}"
-				;;
-		esac
-	done
-	printf '%s' "${value}"
-}
-
-if [ -z "${JSH_LAUNCHER_PROFILE}" ]; then
-	JSH_LAUNCHER_PROFILE=$(jsh_profile_property "jsh.launcher.profile")
-fi
-if [ -z "${JSH_LAUNCHER_PROFILE_LOG}" ]; then
-	JSH_LAUNCHER_PROFILE_LOG=$(jsh_profile_property "jsh.launcher.profile.log")
-fi
-
-jsh_profile_checkpoint() {
-	if [ -n "${JSH_LAUNCHER_PROFILE}" ]; then
-		local phase="$1"
-		local seconds nanos t
-		seconds=$(date +%s 2>/dev/null)
-		nanos=$(date +%N 2>/dev/null)
-		#	If %N is unsupported, some date implementations emit the literal "N"; fall back to 0 milliseconds in that case.
-		case "${nanos}" in
-			*N|"") nanos=0 ;;
-		esac
-		#	Strip leading zeros so bash arithmetic does not misinterpret the value as octal (e.g. "087044000" is invalid octal).
-		nanos=$((10#${nanos}))
-		t=$(( seconds * 1000 + nanos / 1000000 ))
-		if [ -n "${JSH_LAUNCHER_PROFILE_LOG}" ]; then
-			printf '[jsh.profile] phase=%s t=%s\n' "${phase}" "${t}" >>"${JSH_LAUNCHER_PROFILE_LOG}"
-		else
-			printf '[jsh.profile] phase=%s t=%s\n' "${phase}" "${t}" >&2
-		fi
-	fi
-}
-
+#	Startup checkpoint timing (JSH_LAUNCHER_PROFILE / jsh.launcher.profile). Kept on very few lines (avoiding one function/line
+#	per statement) because contributor/dependencies/module.js locates NASHORN_VERSION= later in this file via recursive
+#	(non-tail-call) Nashorn stream processing whose stack usage is proportional to that line's position; adding many lines above
+#	it risks a StackOverflowError. Also placed after UNAME/ARCH (not at the very top) so "++ uname" remains the first `set -x`
+#	trace line, as asserted by setting.JSH_LAUNCHER_COMMAND_DEBUG in jrunscript/jsh/_.fifty.ts.
+jsh_profile_property() { local name="$1" arg value; for arg in ${JSH_LAUNCHER_PROPERTY_ARGUMENTS}; do case "${arg}" in "-D${name}="*) value="${arg#-D${name}=}" ;; esac; done; printf '%s' "${value}"; }
+[ -z "${JSH_LAUNCHER_PROFILE}" ] && JSH_LAUNCHER_PROFILE=$(jsh_profile_property "jsh.launcher.profile")
+[ -z "${JSH_LAUNCHER_PROFILE_LOG}" ] && JSH_LAUNCHER_PROFILE_LOG=$(jsh_profile_property "jsh.launcher.profile.log")
+jsh_profile_checkpoint() { if [ -n "${JSH_LAUNCHER_PROFILE}" ]; then local phase="$1" seconds nanos t; seconds=$(date +%s 2>/dev/null); nanos=$(date +%N 2>/dev/null); case "${nanos}" in *N|"") nanos=0 ;; esac; nanos=$((10#${nanos})); t=$(( seconds * 1000 + nanos / 1000000 )); if [ -n "${JSH_LAUNCHER_PROFILE_LOG}" ]; then printf '[jsh.profile] phase=%s t=%s\n' "${phase}" "${t}" >>"${JSH_LAUNCHER_PROFILE_LOG}"; else printf '[jsh.profile] phase=%s t=%s\n' "${phase}" "${t}" >&2; fi; fi; }
 jsh_profile_checkpoint "bash.start"
 
 if test -z "$0:-"; then
