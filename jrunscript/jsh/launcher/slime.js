@@ -445,6 +445,15 @@
 				//			super-easy to install a configuration at runtime
 				Setting("jsh.launcher.debug", LAUNCHER);
 
+				//	Determines whether the launcher (and, in the forked-VM case, the loader) emits startup checkpoint timing
+				//	information. Unlike jsh.launcher.debug, this is intended to be cheap enough to leave on to diagnose startup
+				//	performance, rather than a source of verbose diagnostic output.
+				Setting("jsh.launcher.profile", BOTH);
+
+				//	Optional destination file for checkpoint timing output; if unset, output goes to standard error. Sent to the
+				//	loader also so that a forked loader VM writes to the same destination as the launcher.
+				Setting("jsh.launcher.profile.log", BOTH);
+
 				//	Intended to be used to select configuration for loader, whether to use separate VM or not. Unclear whether it
 				//	is actually used currently
 				//	TODO	figure it out

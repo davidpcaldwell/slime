@@ -14,6 +14,44 @@
 	 * @param { slime.jrunscript.native.inonit.script.jsh.Shell } $jsh
 	 */
 	function(global,Packages,JavaAdapter,$jsh) {
+		//	Startup checkpoint timing (jsh.launcher.profile / JSH_LAUNCHER_PROFILE). Self-contained (does not depend on $api,
+		//	which is not available in this script) so it works identically whether this script is running in the same JVM as
+		//	the launcher (Rhino, classloader launch) or in a forked loader VM (Nashorn/Graal).
+		var profile = (function() {
+			var explicit = function(name) {
+				var _property = Packages.java.lang.System.getProperty(name);
+				if (_property !== null) return String(_property);
+				var _env = Packages.java.lang.System.getenv(name.replace(/\./g, "_").toUpperCase());
+				if (_env !== null) return String(_env);
+				return null;
+			};
+
+			var enabled = Boolean(explicit("jsh.launcher.profile"));
+
+			var destination = (function() {
+				if (!enabled) return null;
+				var path = explicit("jsh.launcher.profile.log");
+				if (!path) return null;
+				return new Packages.java.io.PrintStream(
+					new Packages.java.io.FileOutputStream(path, true)
+				);
+			})();
+
+			return {
+				checkpoint: function(phase) {
+					if (!enabled) return;
+					var line = "[jsh.profile] phase=" + phase + " t=" + Packages.java.lang.System.currentTimeMillis();
+					if (destination) {
+						destination.println(line);
+					} else {
+						Packages.java.lang.System.err.println(line);
+					}
+				}
+			};
+		})();
+
+		profile.checkpoint("jsh.js.start");
+
 		var internal = {
 			/** @type { (status: number) => never } */
 			exit: void(0),
@@ -511,10 +549,12 @@
 			)();
 
 			(function loadPlugins() {
+				profile.checkpoint("jsh.js.loadPlugins.start");
 				var _sources = $slime.getInterface().getPluginSources();
 				for (var i=0; i<_sources.length; i++) {
 					plugins.load({ loader: new $slime.Loader({ _source: _sources[i] }) });
 				}
+				profile.checkpoint("jsh.js.loadPlugins.end");
 			})();
 
 			//	TODO	below could be turned into jsh plugin loaded at runtime by jsapi; would need to make getLibrary accessible through
@@ -538,6 +578,8 @@
 				main = defined;
 			}
 		);
+
+		profile.checkpoint("jsh.js.script.start");
 
 		global.jsh.loader.run(
 			{
@@ -571,6 +613,8 @@
 				internal.exit(status);
 			}
 		}
+
+		profile.checkpoint("jsh.js.script.end");
 
 		$jsh.events();
 	}
