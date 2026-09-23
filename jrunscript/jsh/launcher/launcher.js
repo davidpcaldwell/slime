@@ -493,11 +493,35 @@
 
 				var installationSpecifiedRhino = p.rhino;
 
-				//	As of bbc58b79a49b6b5ae2b56c48486e85cbd1e31eb5, used by jsh/etc/build.jsh.js, as well as shellClasspath method below
-				/**
-				 * @type { ReturnType<slime.jsh.internal.launcher.Jsh["Unbuilt"]>["compileLoader"] }
-				 */
-				var compileLoader = function(p) {
+				var loaderSourceDirectories = function(p) {
+					var directories = [];
+					directories.push(src.File("loader/jrunscript/java"));
+					if (p.rhino) directories.push(src.File("loader/jrunscript/rhino/java"));
+					if (p.graal) directories.push(src.File("loader/jrunscript/graal/java"));
+					directories.push(src.File("rhino/system/java"));
+					directories.push(src.File("jrunscript/jsh/loader/java"));
+					if (p.rhino) directories.push(src.File("jrunscript/jsh/loader/rhino/java"));
+					if (p.graal) directories.push(src.File("jrunscript/jsh/loader/graal/java"));
+					return directories;
+				};
+
+				var loaderSourceFiles = function(p) {
+					var rv = [];
+					loaderSourceDirectories(p).forEach(function(directory) {
+						rv = rv.concat(src.getSourceFilesUnder(directory));
+					});
+					rv.sort(function(a,b) {
+						var aa = String(a.getCanonicalPath());
+						var bb = String(b.getCanonicalPath());
+						if (aa < bb) return -1;
+						if (aa > bb) return 1;
+						return 0;
+					});
+					return rv;
+				};
+
+				var loaderCompileInputs = function(p) {
+					if (!p) p = {};
 					var rhino = (
 						function() {
 							//	Right now, to preserve existing build.jsh.js behavior, we defer to the value for Rhino specified in
@@ -525,20 +549,27 @@
 					}
 					if (classpath._urls.length == 0) classpath = null;
 
-					//var rhino = (this.rhino && this.rhino.length) ? new Classpath(this.rhino) : null;
-					// TODO: below will probably eventually be a classpath, but it may be more complex if graal javac is required to compile
-					// graal classes
-					// TODO: should we be compiling classes for engines we are not using?
-					//var graal = this.graal;
+					return {
+						source: p.source,
+						target: p.target,
+						classpath: classpath,
+						files: loaderSourceFiles({
+							rhino: rhino,
+							graal: graal && isGraalCompatible
+						})
+					};
+				};
+
+				//	As of bbc58b79a49b6b5ae2b56c48486e85cbd1e31eb5, used by jsh/etc/build.jsh.js, as well as shellClasspath method below
+				/**
+				 * @type { ReturnType<slime.jsh.internal.launcher.Jsh["Unbuilt"]>["compileLoader"] }
+				 */
+				var compileLoader = function(p) {
 					if (!p) p = {};
 					if (!p.to) p.to = $$api.io.tmpdir();
-					var toCompile = src.getSourceFilesUnder(src.File("loader/jrunscript/java"));
-					if (rhino) toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("loader/jrunscript/rhino/java")));
-					if (graal && isGraalCompatible) toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("loader/jrunscript/graal/java")));
-					toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("rhino/system/java")));
-					toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("jrunscript/jsh/loader/java")));
-					if (rhino) toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("jrunscript/jsh/loader/rhino/java")));
-					if (graal && isGraalCompatible) toCompile = toCompile.concat(src.getSourceFilesUnder(src.File("jrunscript/jsh/loader/graal/java")));
+					var inputs = loaderCompileInputs(p);
+					var classpath = inputs.classpath;
+					var toCompile = inputs.files;
 					var classpathArguments = (classpath) ? ["-classpath", classpath.local()] : [];
 					var targetArguments = (p && p.target) ? ["-target", String(p.target)] : [];
 					var sourceArguments = (p && p.source) ? ["-source", String(p.source)] : [];
@@ -557,23 +588,201 @@
 					return p.to;
 				};
 
+				var loaderCache = (function() {
+					var manifestName = ".jsh-loader-cache.json";
+					var lockName = ".jsh-loader-cache.lock";
+
+					var sentinel = function(directory) {
+						return new Packages.java.io.File(directory, "inonit/script/engine/Code.class");
+					};
+
+					var classpathUrls = function(classpath) {
+						if (!classpath) return [];
+						return classpath._urls.map(function(url) {
+							var rv = {
+								url: String(url.toExternalForm())
+							};
+							if (String(url.getProtocol()) == "file") {
+								var file = new Packages.java.io.File(url.toURI());
+								rv.size = Number(file.length());
+								rv.sha256 = digest(file);
+							}
+							return rv;
+						});
+					};
+
+					var digest = function(file) {
+						// @ts-ignore
+						var md = Packages.java.security.MessageDigest.getInstance("SHA-256");
+						var stream = new Packages.java.io.FileInputStream(file);
+						try {
+							var buffer = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Byte.TYPE, 8192);
+							var read;
+							while ((read = stream.read(buffer)) != -1) {
+								md.update(buffer, 0, read);
+							}
+						} finally {
+							stream.close();
+						}
+						var bytes = md.digest();
+						var rv = [];
+						for (var i=0; i<bytes.length; i++) {
+							var value = bytes[i];
+							if (value < 0) value += 256;
+							if (value < 16) rv.push("0");
+							rv.push(value.toString(16));
+						}
+						return rv.join("");
+					};
+
+					var fileManifest = function(file) {
+						return {
+							path: String(file.getCanonicalPath()),
+							size: Number(file.length()),
+							sha256: digest(file)
+						};
+					};
+
+					var manifest = function(inputs) {
+						return {
+							format: 1,
+							compiler: Number($$api.java.getMajorVersion()),
+							source: (inputs.source) ? Number(inputs.source) : null,
+							target: (inputs.target) ? Number(inputs.target) : null,
+							classpath: classpathUrls(inputs.classpath),
+							files: inputs.files.map(fileManifest)
+						};
+					};
+
+					var asComparableString = function(object) {
+						return JSON.stringify(object);
+					};
+
+					var read = function(file) {
+						if (!file.exists()) return null;
+						try {
+							var reader = new Packages.java.io.FileReader(file);
+							try {
+								var chars = [];
+								var character;
+								while ((character = reader.read()) != -1) {
+									chars.push(String.fromCharCode(character));
+								}
+								return JSON.parse(chars.join(""));
+							} finally {
+								reader.close();
+							}
+						} catch (e) {
+							return null;
+						}
+					};
+
+					var write = function(file, object) {
+						var temporary = new Packages.java.io.File(file.getParentFile(), file.getName() + "." + Number(new Date().getTime()) + ".tmp");
+						var writer = new Packages.java.io.FileWriter(temporary);
+						try {
+							writer.write(JSON.stringify(object, null, "\t"));
+							writer.write("\n");
+						} finally {
+							writer.close();
+						}
+						if (!temporary.renameTo(file)) {
+							if (file.exists()) file["delete"]();
+							if (!temporary.renameTo(file)) throw new Error("Could not write loader cache manifest: " + file);
+						}
+					};
+
+					var removeTree = function(file) {
+						if (file.isDirectory()) {
+							var files = file.listFiles();
+							if (files) {
+								for (var i=0; i<files.length; i++) {
+									removeTree(files[i]);
+								}
+							}
+						}
+						if (!file["delete"]() && file.exists()) throw new Error("Could not remove loader cache file: " + file);
+					};
+
+					var clear = function(directory) {
+						var files = directory.listFiles();
+						if (!files) return;
+						for (var i=0; i<files.length; i++) {
+							if (String(files[i].getName()) != lockName) removeTree(files[i]);
+						}
+					};
+
+					var locked = function(directory, f) {
+						if (!directory.exists()) directory.mkdirs();
+						var lockFile = new Packages.java.io.File(directory, lockName);
+						var stream = new Packages.java.io.FileOutputStream(lockFile, true);
+						var channel = stream.getChannel();
+						var lock = channel.lock();
+						try {
+							return f();
+						} finally {
+							lock.release();
+							channel.close();
+							stream.close();
+						}
+					};
+
+					return {
+						use: function(p) {
+							return locked(p.directory, function() {
+								var manifestFile = new Packages.java.io.File(p.directory, manifestName);
+								var inputs = loaderCompileInputs({
+									source: p.source,
+									target: p.target
+								});
+								var expected = manifest(inputs);
+								var actual = read(manifestFile);
+								var valid = (
+									sentinel(p.directory).exists()
+									&& actual
+									&& asComparableString(actual) == asComparableString(expected)
+								);
+
+								if (valid) {
+									$$api.debug("Found valid loader class cache.");
+								} else {
+									$$api.debug("Compiling loader class cache.");
+									clear(p.directory);
+									compileLoader({
+										to: p.directory,
+										source: p.source,
+										target: p.target
+									});
+									var after = manifest(loaderCompileInputs({
+										source: p.source,
+										target: p.target
+									}));
+									if (asComparableString(expected) == asComparableString(after)) {
+										write(manifestFile, after);
+									} else if (manifestFile.exists()) {
+										manifestFile["delete"]();
+									}
+								}
+							});
+						}
+					};
+				})();
+
 				/** @type { slime.jsh.internal.launcher.Installation["shellClasspath"] } */
 				var shellClasspath = function(p) {
 					if (!src) throw new Error("Could not detect SLIME source root for unbuilt shell.")
+					var source = (p) ? p.source : void(0);
+					var target = (p) ? p.target : void(0);
 					var setting = $$api.slime.settings.byName("jsh.shell.classes").getLauncherProperty();
 					/** @type { slime.jrunscript.native.java.io.File } */
-					var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : $$api.io.tmpdir();
+					var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : new Packages.java.io.File(src.getPath("local/jsh/lib/loader"));
 					if (!LOADER_CLASSES.exists()) LOADER_CLASSES.mkdirs();
 					if (src.File) {
-						if (setting && LOADER_CLASSES.exists() && new Packages.java.io.File(LOADER_CLASSES, "inonit/script/engine/Code.class").exists()) {
-							$$api.debug("Found already-compiled files.");
-						} else {
-							this.compileLoader({
-								to: LOADER_CLASSES,
-								source: p.source,
-								target: p.target
-							});
-						}
+						loaderCache.use({
+							directory: LOADER_CLASSES,
+							source: source,
+							target: target
+						});
 					} else {
 						(
 							function() {
