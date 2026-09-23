@@ -567,6 +567,7 @@
 				var compileLoader = function(p) {
 					if (!p) p = {};
 					if (!p.to) p.to = $$api.io.tmpdir();
+					if (!p.to.exists()) p.to.mkdirs();
 					var inputs = loaderCompileInputs(p);
 					var classpath = inputs.classpath;
 					var toCompile = inputs.files;
