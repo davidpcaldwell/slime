@@ -611,6 +611,17 @@
 						});
 					};
 
+					var toHex = function(bytes) {
+						var rv = [];
+						for (var i=0; i<bytes.length; i++) {
+							var value = bytes[i];
+							if (value < 0) value += 256;
+							if (value < 16) rv.push("0");
+							rv.push(value.toString(16));
+						}
+						return rv.join("");
+					};
+
 					var digest = function(file) {
 						// @ts-ignore
 						var md = Packages.java.security.MessageDigest.getInstance("SHA-256");
@@ -624,15 +635,14 @@
 						} finally {
 							stream.close();
 						}
-						var bytes = md.digest();
-						var rv = [];
-						for (var i=0; i<bytes.length; i++) {
-							var value = bytes[i];
-							if (value < 0) value += 256;
-							if (value < 16) rv.push("0");
-							rv.push(value.toString(16));
-						}
-						return rv.join("");
+						return toHex(md.digest());
+					};
+
+					var stringDigest = function(string) {
+						// @ts-ignore
+						var md = Packages.java.security.MessageDigest.getInstance("SHA-256");
+						md.update(new Packages.java.lang.String(string).getBytes("UTF-8"));
+						return toHex(md.digest());
 					};
 
 					var fileManifest = function(file) {
@@ -712,6 +722,31 @@
 						}
 					};
 
+					var valid = function(directory, expected) {
+						var manifestFile = new Packages.java.io.File(directory, manifestName);
+						var actual = read(manifestFile);
+						return (
+							sentinel(directory).exists()
+							&& actual
+							&& asComparableString(actual) == asComparableString(expected)
+						);
+					};
+
+					var find = function(root, key, expected) {
+						var files = root.listFiles();
+						if (!files) return null;
+						for (var i=0; i<files.length; i++) {
+							if (
+								files[i].isDirectory()
+								&& String(files[i].getName()).indexOf(key + ".") == 0
+								&& valid(files[i], expected)
+							) {
+								return files[i];
+							}
+						}
+						return null;
+					};
+
 					var locked = function(directory, f) {
 						if (!directory.exists()) directory.mkdirs();
 						var lockFile = new Packages.java.io.File(directory, lockName);
@@ -729,38 +764,43 @@
 
 					return {
 						use: function(p) {
-							return locked(p.directory, function() {
-								var manifestFile = new Packages.java.io.File(p.directory, manifestName);
+							return locked(p.root, function() {
 								var inputs = loaderCompileInputs({
 									source: p.source,
 									target: p.target
 								});
 								var expected = manifest(inputs);
-								var actual = read(manifestFile);
-								var valid = (
-									sentinel(p.directory).exists()
-									&& actual
-									&& asComparableString(actual) == asComparableString(expected)
-								);
+								var key = stringDigest(asComparableString(expected));
+								var cached = find(p.root, key, expected);
 
-								if (valid) {
+								if (cached) {
 									$$api.debug("Found valid loader class cache.");
+									return cached;
 								} else {
 									$$api.debug("Compiling loader class cache.");
-									clear(p.directory);
-									compileLoader({
-										to: p.directory,
-										source: p.source,
-										target: p.target
-									});
-									var after = manifest(loaderCompileInputs({
-										source: p.source,
-										target: p.target
-									}));
-									if (asComparableString(expected) == asComparableString(after)) {
-										write(manifestFile, after);
-									} else if (manifestFile.exists()) {
-										manifestFile["delete"]();
+									var name = key + "." + Number(new Date().getTime());
+									var temporary = new Packages.java.io.File(p.root, "." + name + ".tmp");
+									var complete = new Packages.java.io.File(p.root, name);
+									try {
+										compileLoader({
+											to: temporary,
+											source: p.source,
+											target: p.target
+										});
+										var after = manifest(loaderCompileInputs({
+											source: p.source,
+											target: p.target
+										}));
+										if (asComparableString(expected) != asComparableString(after)) {
+											throw new Error("Loader cache inputs changed while compiling.");
+										}
+										write(new Packages.java.io.File(temporary, manifestName), after);
+										if (!temporary.renameTo(complete)) throw new Error("Could not finalize loader cache directory: " + complete);
+										return complete;
+									} catch (e) {
+										if (temporary.exists()) clear(temporary);
+										if (temporary.exists()) temporary["delete"]();
+										throw e;
 									}
 								}
 							});
@@ -775,14 +815,24 @@
 					var target = (p) ? p.target : void(0);
 					var setting = $$api.slime.settings.byName("jsh.shell.classes").getLauncherProperty();
 					/** @type { slime.jrunscript.native.java.io.File } */
-					var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : new Packages.java.io.File(src.getPath("local/jsh/lib/loader"));
-					if (!LOADER_CLASSES.exists()) LOADER_CLASSES.mkdirs();
+					var LOADER_CLASSES = (setting) ? new Packages.java.io.File(setting, "loader") : ((src.File) ? null : $$api.io.tmpdir());
+					if (LOADER_CLASSES && !LOADER_CLASSES.exists()) LOADER_CLASSES.mkdirs();
 					if (src.File) {
-						loaderCache.use({
-							directory: LOADER_CLASSES,
-							source: source,
-							target: target
-						});
+						if (setting && LOADER_CLASSES.exists() && new Packages.java.io.File(LOADER_CLASSES, "inonit/script/engine/Code.class").exists()) {
+							$$api.debug("Found already-compiled files.");
+						} else if (setting) {
+							this.compileLoader({
+								to: LOADER_CLASSES,
+								source: source,
+								target: target
+							});
+						} else {
+							LOADER_CLASSES = loaderCache.use({
+								root: new Packages.java.io.File(src.getPath("local/jsh/lib/loader")),
+								source: source,
+								target: target
+							});
+						}
 					} else {
 						(
 							function() {
