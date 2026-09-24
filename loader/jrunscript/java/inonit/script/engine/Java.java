@@ -822,6 +822,47 @@ public class Java {
 			removeAt(getClassLocationString(name));
 		}
 
+		private static class AtomicFileOutputStream extends OutputStream {
+			private final File destination;
+			private final File temporary;
+			private final FileOutputStream delegate;
+			private boolean closed;
+
+			AtomicFileOutputStream(File destination) throws FileNotFoundException {
+				this.destination = destination;
+				this.temporary = new File(destination.getParentFile(), "." + destination.getName() + "." + System.currentTimeMillis() + "." + Thread.currentThread().getId() + ".tmp");
+				this.delegate = new FileOutputStream(temporary);
+			}
+
+			@Override public void write(int b) throws IOException {
+				delegate.write(b);
+			}
+
+			@Override public void write(byte[] b) throws IOException {
+				delegate.write(b);
+			}
+
+			@Override public void write(byte[] b, int off, int len) throws IOException {
+				delegate.write(b, off, len);
+			}
+
+			@Override public void flush() throws IOException {
+				delegate.flush();
+			}
+
+			@Override public void close() throws IOException {
+				if (closed) return;
+				closed = true;
+				delegate.close();
+				if (destination.exists()) {
+					if (!temporary.delete() && temporary.exists()) throw new IOException("Could not remove temporary class file: " + temporary);
+				} else if (!temporary.renameTo(destination)) {
+					if (!destination.exists()) throw new IOException("Could not finalize class file: " + destination);
+					if (!temporary.delete() && temporary.exists()) throw new IOException("Could not remove temporary class file: " + temporary);
+				}
+			}
+		}
+
 		static Store memory() {
 			return new Store() {
 				private HashMap<String,InMemoryWritableFile> map = new HashMap<String,InMemoryWritableFile>();
@@ -850,47 +891,6 @@ public class Java {
 		static Store file(final File file) {
 			return new Store() {
 				private File transaction;
-
-				private class AtomicFileOutputStream extends OutputStream {
-					private final File destination;
-					private final File temporary;
-					private final FileOutputStream delegate;
-					private boolean closed;
-
-					AtomicFileOutputStream(File destination) throws FileNotFoundException {
-						this.destination = destination;
-						this.temporary = new File(destination.getParentFile(), "." + destination.getName() + "." + System.currentTimeMillis() + "." + Thread.currentThread().getId() + ".tmp");
-						this.delegate = new FileOutputStream(temporary);
-					}
-
-					@Override public void write(int b) throws IOException {
-						delegate.write(b);
-					}
-
-					@Override public void write(byte[] b) throws IOException {
-						delegate.write(b);
-					}
-
-					@Override public void write(byte[] b, int off, int len) throws IOException {
-						delegate.write(b, off, len);
-					}
-
-					@Override public void flush() throws IOException {
-						delegate.flush();
-					}
-
-					@Override public void close() throws IOException {
-						if (closed) return;
-						closed = true;
-						delegate.close();
-						if (destination.exists()) {
-							if (!temporary.delete() && temporary.exists()) throw new IOException("Could not remove temporary class file: " + temporary);
-						} else if (!temporary.renameTo(destination)) {
-							if (!destination.exists()) throw new IOException("Could not finalize class file: " + destination);
-							if (!temporary.delete() && temporary.exists()) throw new IOException("Could not remove temporary class file: " + temporary);
-						}
-					}
-				}
 
 				private File outputRoot() {
 					return (transaction == null) ? file : transaction;
