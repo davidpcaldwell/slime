@@ -19,10 +19,15 @@
 	function(Packages,JavaAdapter,$slime,$api,jsh,plugin,$loader) {
 		plugin({
 			isReady: function() {
-				return Boolean(
+				if (!(
 					jsh.js && jsh.web && jsh.java && jsh.java.log && jsh.io && jsh.io.mime && jsh.shell && jsh.file
-					&& jsh.shell.tools && jsh.shell.tools.tomcat
-				);
+				)) return false;
+
+				if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) return true;
+				if (jsh.shell.environment.CATALINA_HOME) return true;
+				var legacy = (jsh.shell.jsh && jsh.shell.jsh.lib) ? jsh.shell.jsh.lib.getSubdirectory("tomcat") : void(0);
+				if (legacy && legacy.getRelativePath("lib/catalina.jar").file) return true;
+				return Boolean(jsh.shell.tools && jsh.shell.tools.tomcat);
 			},
 			load: function() {
 				if (!jsh.httpd) {
@@ -183,13 +188,31 @@
 					jsh: jsh
 				});
 
+				var CATALINA_HOME_SOURCE;
 				var CATALINA_HOME = (function() {
-					if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+					if (jsh.shell.environment.CATALINA_HOME) {
+						CATALINA_HOME_SOURCE = "environment";
+						var directory = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+						if (!directory) throw new Error("CATALINA_HOME is set but is not a directory: " + jsh.shell.environment.CATALINA_HOME);
+						return directory;
+					}
 					if (jsh.shell.tools && jsh.shell.tools.tomcat) {
 						var installation = jsh.shell.tools.tomcat.Installation.from.jsh();
-						if (installation) return jsh.file.Pathname(installation.base).directory;
+						if (installation) {
+							var managed = jsh.file.Pathname(installation.base).directory;
+							if (managed) {
+								CATALINA_HOME_SOURCE = "managed";
+								return managed;
+							}
+						}
 					}
-					if (jsh.shell.jsh.lib && jsh.shell.jsh.lib.getSubdirectory("tomcat")) return jsh.shell.jsh.lib.getSubdirectory("tomcat");
+					if (
+						jsh.shell.jsh && jsh.shell.jsh.lib && jsh.shell.jsh.lib.getSubdirectory("tomcat")
+						&& jsh.shell.jsh.lib.getSubdirectory("tomcat").getRelativePath("lib/catalina.jar").file
+					) {
+						CATALINA_HOME_SOURCE = "legacy";
+						return jsh.shell.jsh.lib.getSubdirectory("tomcat");
+					}
 				})();
 
 				//	TODO	allow system property in addition to environment variable?
@@ -197,7 +220,7 @@
 					var TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
 					if (!TOMCAT_CLASS && CATALINA_HOME) {
 						[
-							"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
+							"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/jakarta.servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
 							"lib/catalina.jar"
 							,"lib/annotations-api.jar"
 							//	below added for Tomcat 8
@@ -214,6 +237,9 @@
 					}
 					return TOMCAT_CLASS;
 				})();
+				if (!TOMCAT_CLASS && CATALINA_HOME_SOURCE == "environment") {
+					throw new Error("CATALINA_HOME is set but Tomcat could not be loaded from it: " + CATALINA_HOME);
+				}
 
 				jsh.java.log.named("jsh.httpd").CONFIG("When trying to load Tomcat: class = %s CATALINA_HOME = %s", TOMCAT_CLASS, CATALINA_HOME);
 

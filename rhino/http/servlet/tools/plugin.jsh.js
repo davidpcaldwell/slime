@@ -248,7 +248,6 @@
 							throw new Error("Could not find Tomcat directory to locate servlet API");
 						}
 						jsh.shell.echo("CATALINA_HOME = " + CATALINA_HOME);
-						classpath.pathnames.push(CATALINA_HOME.getRelativePath("lib/servlet-api.jar"));
 						var tomcatMajorVersion = (function() {
 							var notes = CATALINA_HOME.getFile("RELEASE-NOTES").read(String);
 							var match = /Apache Tomcat Version (\d+)\./.exec(notes);
@@ -256,6 +255,9 @@
 							return Number(match[1]);
 						})();
 						var servletApi = (tomcatMajorVersion >= 10) ? "jakarta" : "javax";
+						var servletApiJar = CATALINA_HOME.getRelativePath("lib/" + ((servletApi == "jakarta") ? "jakarta.servlet-api.jar" : "servlet-api.jar"));
+						if (!servletApiJar.file) throw new Error("Could not find " + servletApi + " Servlet API jar at " + servletApiJar);
+						classpath.pathnames.push(servletApiJar);
 						var sourcepath = jsh.file.Searchpath([]);
 						sourcepath.pathnames.push(SLIME.getRelativePath("rhino/system/java"));
 						sourcepath.pathnames.push(SLIME.getRelativePath("loader/jrunscript/java"));

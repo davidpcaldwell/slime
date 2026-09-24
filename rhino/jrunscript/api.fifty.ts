@@ -667,6 +667,39 @@ namespace slime.internal.jrunscript.bootstrap {
 				}
 			};
 
+			fifty.tests.Object = fifty.test.Parent();
+
+			fifty.tests.Object.assign = function() {
+				var original = Object.assign;
+				var apiPathname = fifty.jsh.file.object.getRelativePath("api.js");
+				var api = apiPathname.file.read(String);
+				var apiUrl = String(apiPathname.java.adapt().toURI().toURL());
+				try {
+					Object.assign = void(0);
+					var configuration: slime.internal.jrunscript.bootstrap.Environment = {
+						Packages: Packages,
+						load: function() {
+							throw new Error("Implement.");
+						}
+					};
+					//@ts-ignore
+					$rhino.script(apiUrl,api,configuration,null);
+
+					var primitiveTarget = Object.assign(1, { x: 1 });
+					verify(typeof(primitiveTarget)).is("object");
+					verify(primitiveTarget.valueOf()).is(1);
+					verify(primitiveTarget.x).is(1);
+
+					var source: { own: number } = Object.create({ inherited: 2 });
+					source.own = 1;
+					var objectTarget: { own: number, inherited?: number } = Object.assign({}, source);
+					verify(objectTarget.own).is(1);
+					verify(objectTarget).evaluate.property("inherited").is(void(0));
+				} finally {
+					Object.assign = original;
+				}
+			};
+
 			fifty.tests.zip = function() {
 				var web = jsh.unit.mock.Web();
 				web.add(jsh.unit.mock.web.Github({
@@ -750,8 +783,24 @@ namespace slime.internal.jrunscript.bootstrap {
 
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports);
+				fifty.run(fifty.tests.Object);
 
-				const subject = fifty.global.jsh.internal.bootstrap;
+				var configuration: slime.internal.jrunscript.bootstrap.Environment = {
+					Packages: Packages,
+					load: function() {
+						throw new Error("Implement.");
+					},
+					$api: {
+						debug: true
+					}
+				};
+				fifty.$loader.run("api.js", {}, configuration);
+				var global: slime.internal.jrunscript.bootstrap.Global<{},{}> = configuration as unknown as slime.internal.jrunscript.bootstrap.Global<{},{}>;
+				fifty.verify(global).is.type("object");
+				fifty.verify(global).$api.is.type("object");
+				fifty.verify(global).$api.script.is.type("object");
+
+				const subject = global.$api;
 
 				var interpret = function(string) {
 					return Object.assign(function(p): { url: string, file: string, zip: string } {

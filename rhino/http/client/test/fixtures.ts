@@ -56,21 +56,34 @@ namespace slime.jrunscript.http.client.test {
 					var TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
 					var CATALINA_HOME = (function() {
 						if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
-						if (jsh.shell.tools && jsh.shell.tools.tomcat) return jsh.file.Pathname(jsh.shell.tools.tomcat.Installation.from.jsh().base).directory;
+						if (jsh.shell.tools && jsh.shell.tools.tomcat) {
+							var installation = jsh.shell.tools.tomcat.Installation.from.jsh();
+							if (installation) {
+								var directory = jsh.file.Pathname(installation.base).directory;
+								if (directory) return directory;
+							}
+						}
 						if (jsh.shell.jsh.lib && jsh.shell.jsh.lib.getSubdirectory("tomcat")) return jsh.shell.jsh.lib.getSubdirectory("tomcat");
 					})();
 					if (!TOMCAT_CLASS && CATALINA_HOME) {
 						[
-							"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
+							"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/jakarta.servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
 							"lib/catalina.jar"
 							,"lib/annotations-api.jar"
 						].forEach(function(path) {
-							jsh.loader.java.add(CATALINA_HOME.getRelativePath(path));
+							if (CATALINA_HOME.getRelativePath(path).file) {
+								jsh.loader.java.add(CATALINA_HOME.getRelativePath(path));
+							}
 						});
 						TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
 					}
 
-					var tomcatPresent = Boolean(TOMCAT_CLASS);
+					var servletApiPackage = (function() {
+						if (jsh.java.getClass("javax.servlet.http.HttpServlet")) return Packages.javax.servlet;
+						if (jsh.java.getClass("jakarta.servlet.http.HttpServlet")) return Packages.jakarta.servlet;
+					})();
+
+					var tomcatPresent = Boolean(TOMCAT_CLASS && servletApiPackage);
 					var global = (function() { return this; })();
 					var tomcat;
 					var servlet;
@@ -130,7 +143,7 @@ namespace slime.jrunscript.http.client.test {
 							var context = tomcat.addContext("/", base.pathname.java.adapt().getCanonicalPath());
 							var addServletMapping = addServletMappingTo(context);
 							Packages.org.apache.catalina.startup.Tomcat.addServlet(context,"aName",new JavaAdapter(
-								Packages.javax.servlet.http.HttpServlet,
+								servletApiPackage.http.HttpServlet,
 								servlet
 							));
 							addServletMapping("/*","aName");
@@ -143,7 +156,7 @@ namespace slime.jrunscript.http.client.test {
 						servlet = global.servlet;
 					}
 
-					var Cookie = Packages.javax.servlet.http.Cookie;
+					var Cookie = servletApiPackage.http.Cookie;
 
 					scope.$Context = function(gae) {
 						var js = $jsapi.loader.module("../../../js/object/");
@@ -183,7 +196,7 @@ namespace slime.jrunscript.http.client.test {
 					scope.context = context;
 					scope.module = $jsapi.loader.module("module.js", context);
 
-					scope.Cookie = Packages.javax.servlet.http.Cookie;
+					scope.Cookie = servletApiPackage.http.Cookie;
 					scope.skip = function(verify,message) {
 						if (typeof(verify) == "string") {
 							jsh.shell.console("DEPRECATED: skip(string) in api.html");
