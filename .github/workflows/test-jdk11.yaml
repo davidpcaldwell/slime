@@ -15,6 +15,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@main
@@ -30,4 +34,5 @@ jobs:
       - name: Use Docker to create image, and then run the linting and tests
         env:
           SLIME_TEST_NO_WF_SUBMODULE_RESET: 1
+          SLIME_TEST_JRUNSCRIPT_SHARD: ${{ matrix.shard }}
         run: contributor/suite-docker-jrunscript 11
