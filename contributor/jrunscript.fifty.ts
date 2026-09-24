@@ -43,7 +43,7 @@
 				var specified = jsh.shell.environment.SLIME_TEST_JRUNSCRIPT_SHARD;
 				if (!specified) return null;
 				var number = Number(specified);
-				if (!(number >= 1 && number <= 4)) throw new TypeError("SLIME_TEST_JRUNSCRIPT_SHARD must be 1-4; was: " + specified);
+				if (!(number >= 1 && number <= 3)) throw new TypeError("SLIME_TEST_JRUNSCRIPT_SHARD must be 1-3; was: " + specified);
 				return number;
 			})();
 
@@ -55,66 +55,66 @@
 
 			//	TODO	expression.fifty.ts, particularly in the realm of $api.platform, has engine-specific stuff; would be good to
 			//			test it per-engine
-			if (runsShard(4)) fifty.load("../loader/expression.fifty.ts");
+			if (runsShard(1)) fifty.load("../loader/expression.fifty.ts");
 
-			if (runsShard(3)) fifty.load("../loader/jrunscript/expression.fifty.ts");
-			if (runsShard(3)) fifty.load("../loader/api/verify.fifty.ts");
+			if (runsShard(2)) fifty.load("../loader/jrunscript/expression.fifty.ts");
+			if (runsShard(2)) fifty.load("../loader/api/verify.fifty.ts");
 			if (runsShard(2)) fifty.load("../loader/api/old/unit.fifty.ts");
-			if (runsShard(3)) fifty.load("../rhino/system/test/Packages.inonit.system.fifty.ts");
-			if (runsShard(4)) fifty.load("../rhino/system/java/inonit/script/runtime/io/Streams.fifty.ts");
-			if (runsShard(3)) fifty.load("../rhino/jrunscript/api.fifty.ts");
-			if (hasJsoup && runsShard(4)) fifty.load("../loader/document/module.fifty.ts");
-			if (runsShard(4)) fifty.load("../js/document/module.fifty.ts");
-			if (runsShard(4)) fifty.load("../js/web/module.fifty.ts");
-			if (runsShard(2)) fifty.load("../js/codec/ini.fifty.ts");
+			if (runsShard(1)) fifty.load("../rhino/system/test/Packages.inonit.system.fifty.ts");
+			if (runsShard(1)) fifty.load("../rhino/system/java/inonit/script/runtime/io/Streams.fifty.ts");
+			if (runsShard(1)) fifty.load("../rhino/jrunscript/api.fifty.ts");
+			if (hasJsoup && runsShard(2)) fifty.load("../loader/document/module.fifty.ts");
+			if (runsShard(3)) fifty.load("../js/document/module.fifty.ts");
+			if (runsShard(3)) fifty.load("../js/web/module.fifty.ts");
+			if (runsShard(3)) fifty.load("../js/codec/ini.fifty.ts");
 			if (runsShard(3)) fifty.load("../js/time/module.fifty.ts");
-			if (runsShard(4)) fifty.load("../js/object/module.fifty.ts");
-			if (runsShard(3)) fifty.load("../jrunscript/host/module.fifty.ts");
+			if (runsShard(1)) fifty.load("../js/object/module.fifty.ts");
+			if (runsShard(2)) fifty.load("../jrunscript/host/module.fifty.ts");
 			if (runsShard(1)) fifty.load("../jrunscript/io/module.fifty.ts");
 			if (runsShard(2)) fifty.load("../jrunscript/io/plugin.jsh.fifty.ts");
-			if (runsShard(1)) fifty.load("../jrunscript/tools/install/module.fifty.ts");
-			if (runsShard(4)) fifty.load("../rhino/document/plugin.jsh.fifty.ts");
-			if (runsShard(4)) fifty.load("../rhino/ip/module.fifty.ts");
-			if (runsShard(4)) fifty.load("../rhino/http/client/module.fifty.ts");
-			if (runsShard(2)) fifty.load("../rhino/file/module.fifty.ts");
+			if (runsShard(2)) fifty.load("../jrunscript/tools/install/module.fifty.ts");
+			if (runsShard(3)) fifty.load("../rhino/document/plugin.jsh.fifty.ts");
+			if (runsShard(3)) fifty.load("../rhino/ip/module.fifty.ts");
+			if (runsShard(3)) fifty.load("../rhino/http/client/module.fifty.ts");
+			if (runsShard(1)) fifty.load("../rhino/file/module.fifty.ts");
 			if (runsShard(1)) fifty.load("../rhino/shell/module.fifty.ts");
-			if (runsShard(4)) fifty.load("../rhino/shell/browser/module.fifty.ts");
+			if (runsShard(1)) fifty.load("../rhino/shell/browser/module.fifty.ts");
 			if (runsShard(1)) fifty.load("../jrunscript/jsh/shell/plugin.jsh.fifty.ts");
-			if (runsShard(3)) fifty.load("../rhino/tools/module.fifty.ts");
+			if (runsShard(1)) fifty.load("../rhino/tools/module.fifty.ts");
 			if (runsShard(2)) fifty.load("../rhino/tools/plugin.jsh.fifty.ts");
-			if (runsShard(2)) fifty.load("../rhino/tools/node/module.fifty.ts");
+			if (runsShard(3)) fifty.load("../rhino/tools/node/module.fifty.ts");
 			if (!jsh.shell.environment.SLIME_TEST_NO_DOCKER && runsShard(2)) fifty.load("../rhino/tools/docker/module.fifty.ts");
-			if (runsShard(2)) fifty.load("../rhino/tools/github/module.fifty.ts");
-			if (hasGit && runsShard(1)) fifty.load("../rhino/tools/git/module.fifty.ts");
-			if (runsShard(2)) fifty.load("../rhino/tools/gcloud/module.fifty.ts");
+			if (runsShard(1)) fifty.load("../rhino/tools/github/module.fifty.ts");
+			if (hasGit && runsShard(2)) fifty.load("../rhino/tools/git/module.fifty.ts");
+			if (runsShard(3)) fifty.load("../rhino/tools/gcloud/module.fifty.ts");
 			if (runsShard(3)) fifty.load("../rhino/tools/jenkins/module.fifty.ts");
-			if (runsShard(3)) fifty.load("../rhino/tools/maven/module.fifty.ts");
+			if (runsShard(2)) fifty.load("../rhino/tools/maven/module.fifty.ts");
 			if (runsShard(2)) fifty.load("../jrunscript/jsh/suite.fifty.ts");
-			if (runsShard(4)) fifty.load("../jrunscript/jsh/launcher/suite.fifty.ts");
-			if (isMkcertImplemented && runsShard(1)) fifty.load("../jrunscript/jsh/test/remote.fifty.ts");
+			if (runsShard(1)) fifty.load("../jrunscript/jsh/launcher/suite.fifty.ts");
+			if (isMkcertImplemented && runsShard(3)) fifty.load("../jrunscript/jsh/test/remote.fifty.ts");
 			if (runsShard(3)) fifty.load("../jrunscript/jsh/loader/jsh.fifty.ts");
-			if (runsShard(4)) fifty.load("../jrunscript/jsh/script/plugin.jsh.fifty.ts");
-			if (isMkcertImplemented && runsShard(1)) fifty.load("../loader/api/old/jsh/plugin.jsh.web.fifty.ts");
-			if (runsShard(2)) fifty.load("../jrunscript/jsh/tools/suite.fifty.ts");
-			if (runsShard(4)) fifty.load("../jrunscript/jsh/tools/install/plugin.jsh.fifty.ts");
+			if (runsShard(2)) fifty.load("../jrunscript/jsh/script/plugin.jsh.fifty.ts");
+			if (isMkcertImplemented && runsShard(3)) fifty.load("../loader/api/old/jsh/plugin.jsh.web.fifty.ts");
+			if (runsShard(3)) fifty.load("../jrunscript/jsh/tools/suite.fifty.ts");
+			if (runsShard(3)) fifty.load("../jrunscript/jsh/tools/install/plugin.jsh.fifty.ts");
 
-			if (runsShard(3)) fifty.load("../rhino/http/servlet/suite.fifty.ts");
-			if (runsShard(3)) fifty.load("../rhino/ui/application.fifty.ts");
+			if (runsShard(1)) fifty.load("../rhino/http/servlet/suite.fifty.ts");
+			if (runsShard(1)) fifty.load("../rhino/ui/application.fifty.ts");
 
-			if (runsShard(4)) fifty.load("../tools/code/module.fifty.ts");
-			if (runsShard(1)) fifty.load("../tools/fifty/module.fifty.ts");
+			if (runsShard(2)) fifty.load("../tools/code/module.fifty.ts");
+			if (runsShard(2)) fifty.load("../tools/fifty/module.fifty.ts");
 
 			//	TODO	For reasons that are baffling, merely loading this file (even though all its tests are conditionally
 			//			disabled) seems to cause issue #896
 			if (false) fifty.load("../tools/wf/plugin.jsh.fifty.ts");
 
-			if (hasGit && isGitClone && runsShard(4)) fifty.load("../tools/wf/plugin-standard.jsh.fifty.ts");
-			if (hasGit && isGitClone && runsShard(4)) fifty.load("../wf.fifty.ts");
+			if (hasGit && isGitClone && runsShard(2)) fifty.load("../tools/wf/plugin-standard.jsh.fifty.ts");
+			if (hasGit && isGitClone && runsShard(2)) fifty.load("../wf.fifty.ts");
 
 			//	TODO	below test is probably pointless, probably doesn't run anything. Should we find a way to short-circuit it?
-			if (!jsh.shell.environment.SLIME_TEST_NO_BROWSER && runsShard(2)) fifty.load("../loader/browser/test/suite.jsh.fifty.ts");
+			if (!jsh.shell.environment.SLIME_TEST_NO_BROWSER && runsShard(3)) fifty.load("../loader/browser/test/suite.jsh.fifty.ts");
 
-			if (runsShard(2)) fifty.load("jrunscript-jsapi.fifty.ts");
+			if (runsShard(3)) fifty.load("jrunscript-jsapi.fifty.ts");
 
 			if (jsh.shell.environment.SLIME_TEST_JRUNSCRIPT_FAIL) fifty.verify(1).is(2);
 		}
