@@ -19,7 +19,15 @@
 	function(Packages,JavaAdapter,$slime,$api,jsh,plugin,$loader) {
 		plugin({
 			isReady: function() {
-				return Boolean(jsh.js && jsh.web && jsh.java && jsh.java.log && jsh.io && jsh.io.mime && jsh.shell && jsh.file);
+				if (!(
+					jsh.js && jsh.web && jsh.java && jsh.java.log && jsh.io && jsh.io.mime && jsh.shell && jsh.file
+				)) return false;
+
+				if (jsh.java.getClass("org.apache.catalina.startup.Tomcat")) return true;
+				if (jsh.shell.environment.CATALINA_HOME) return true;
+				var legacy = (jsh.shell.jsh && jsh.shell.jsh.lib) ? jsh.shell.jsh.lib.getSubdirectory("tomcat") : void(0);
+				if (legacy && legacy.getRelativePath("lib/catalina.jar").file) return true;
+				return Boolean(jsh.shell.tools && jsh.shell.tools.tomcat);
 			},
 			load: function() {
 				if (!jsh.httpd) {
@@ -180,9 +188,31 @@
 					jsh: jsh
 				});
 
+				var CATALINA_HOME_SOURCE;
 				var CATALINA_HOME = (function() {
-					if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
-					if (jsh.shell.jsh.lib && jsh.shell.jsh.lib.getSubdirectory("tomcat")) return jsh.shell.jsh.lib.getSubdirectory("tomcat");
+					if (jsh.shell.environment.CATALINA_HOME) {
+						CATALINA_HOME_SOURCE = "environment";
+						var directory = jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+						if (!directory) throw new Error("CATALINA_HOME is set but is not a directory: " + jsh.shell.environment.CATALINA_HOME);
+						return directory;
+					}
+					if (jsh.shell.tools && jsh.shell.tools.tomcat) {
+						var installation = jsh.shell.tools.tomcat.Installation.from.jsh();
+						if (installation) {
+							var managed = jsh.file.Pathname(installation.base).directory;
+							if (managed) {
+								CATALINA_HOME_SOURCE = "managed";
+								return managed;
+							}
+						}
+					}
+					if (
+						jsh.shell.jsh && jsh.shell.jsh.lib && jsh.shell.jsh.lib.getSubdirectory("tomcat")
+						&& jsh.shell.jsh.lib.getSubdirectory("tomcat").getRelativePath("lib/catalina.jar").file
+					) {
+						CATALINA_HOME_SOURCE = "legacy";
+						return jsh.shell.jsh.lib.getSubdirectory("tomcat");
+					}
 				})();
 
 				//	TODO	allow system property in addition to environment variable?
@@ -190,20 +220,26 @@
 					var TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
 					if (!TOMCAT_CLASS && CATALINA_HOME) {
 						[
-							"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
+							"bin/tomcat-juli.jar", "lib/servlet-api.jar", "lib/jakarta.servlet-api.jar", "lib/tomcat-util.jar", "lib/tomcat-api.jar", "lib/tomcat-coyote.jar",
 							"lib/catalina.jar"
 							,"lib/annotations-api.jar"
 							//	below added for Tomcat 8
 							,"lib/tomcat-jni.jar"
 							,"lib/tomcat-util-scan.jar"
 							,"lib/jaspic-api.jar"
+							,"lib/tomcat-jaspic-api.jar"
 						].forEach(function(path) {
-							jsh.loader.java.add(CATALINA_HOME.getRelativePath(path));
+							if (CATALINA_HOME.getRelativePath(path).file) {
+								jsh.loader.java.add(CATALINA_HOME.getRelativePath(path));
+							}
 						});
 						TOMCAT_CLASS = jsh.java.getClass("org.apache.catalina.startup.Tomcat");
 					}
 					return TOMCAT_CLASS;
 				})();
+				if (!TOMCAT_CLASS && CATALINA_HOME_SOURCE == "environment") {
+					throw new Error("CATALINA_HOME is set but Tomcat could not be loaded from it: " + CATALINA_HOME);
+				}
 
 				jsh.java.log.named("jsh.httpd").CONFIG("When trying to load Tomcat: class = %s CATALINA_HOME = %s", TOMCAT_CLASS, CATALINA_HOME);
 
@@ -296,20 +332,27 @@
 								//	maxThreads
 								_https.setScheme("https");
 								_https.setSecure(true);
-								_https.setAttribute("SSLEnabled", "true");
+								_https.setProperty("SSLEnabled", "true");
+								var sslHostConfig = new Packages.org.apache.tomcat.util.net.SSLHostConfig();
+								var sslCertificate = new Packages.org.apache.tomcat.util.net.SSLHostConfigCertificate(
+									sslHostConfig,
+									Packages.org.apache.tomcat.util.net.SSLHostConfigCertificate.Type.UNDEFINED
+								);
 								//	TODO	some DRY violations; see keygen() above
 								if (!p.https.keystore) {
 									var file = keygen();
-									_https.setAttribute("keystoreFile", file.toString());
-									_https.setAttribute("keystorePass", "inonit");
-									_https.setAttribute("keyAlias", "tomcat");
+									sslCertificate.setCertificateKeystoreFile(file.toString());
+									sslCertificate.setCertificateKeystorePassword("inonit");
+									sslCertificate.setCertificateKeyAlias("tomcat");
 								} else {
-									_https.setAttribute("keystoreFile", p.https.keystore.file.toString());
-									_https.setAttribute("keystorePass", p.https.keystore.password);
-									_https.setAttribute("keystoreType", "PKCS12");
+									sslCertificate.setCertificateKeystoreFile(p.https.keystore.file.toString());
+									sslCertificate.setCertificateKeystorePassword(p.https.keystore.password);
+									sslCertificate.setCertificateKeystoreType("PKCS12");
 								}
-								_https.setAttribute("clientAuth", "false");
-								_https.setAttribute("sslProtocol", "TLS");
+								sslHostConfig.setCertificateVerification("none");
+								sslHostConfig.setSslProtocol("TLS");
+								sslHostConfig.addCertificate(sslCertificate);
+								_https.addSslHostConfig(sslHostConfig);
 								_tomcat.getService().addConnector(_https);
 								rv.https = {
 									port: hport
@@ -376,8 +419,13 @@
 							 */
 							var addServlet = function(context,resources,pattern,servletName,servletDeclaration) {
 								var servletImplementation = jsh.httpd.spi.servlet.inWebapp(resources,servletDeclaration);
+								//	TODO	repeated in rhino/http/servlet/server.js
+								var servletApiPackage = (function() {
+									if (jsh.java.getClass("javax.servlet.http.HttpServlet")) return Packages.javax.servlet;
+									if (jsh.java.getClass("jakarta.servlet.http.HttpServlet")) return Packages.jakarta.servlet;
+								})();
 								Packages.org.apache.catalina.startup.Tomcat.addServlet(context,servletName,new JavaAdapter(
-									Packages.javax.servlet.http.HttpServlet,
+									servletApiPackage.http.HttpServlet,
 									new function() {
 										//	TODO	could use jsh.io here
 										var servlet;
@@ -503,7 +551,13 @@
 								}
 							}
 
+							var stopped = false;
+
 							rv.stop = function() {
+								//	stop() may be invoked both explicitly and from a shutdown hook; the Tomcat lifecycle throws if
+								//	stop() is attempted after destroy().
+								if (stopped) return;
+								stopped = true;
 								_tomcat.stop();
 								//	Destroy was not needed with Tomcat 7, but is needed with 9 (unknown whether needed with 8.5)
 								_tomcat.destroy();

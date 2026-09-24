@@ -12,20 +12,19 @@
 	 * @param { slime.jsh.Global } jsh
 	 */
 	function($api,jsh) {
+		var managed = jsh.shell.tools.tomcat.Installation.from.jsh();
 		var parameters = jsh.script.getopts({
 			options: {
 				version: String,
 				local: jsh.file.Pathname,
 				replace: false,
-				to: jsh.file.Pathname(jsh.shell.tools.tomcat.Installation.from.jsh().base),
+				to: jsh.file.Pathname(managed.base),
 				show: false
 			}
 		});
 
 		/** @type { slime.jsh.shell.tools.tomcat.Installed } */
-		var installation = {
-			base: parameters.options.to.toString()
-		};
+		var installation = (parameters.options.to.toString() == managed.base) ? managed : { base: parameters.options.to.toString() };
 
 		if (parameters.options.show) {
 			var version = jsh.shell.tools.tomcat.Installation.getVersion(

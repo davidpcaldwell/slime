@@ -50,20 +50,27 @@
 		jsh.shell.console("Starting Tomcat ...");
 		tomcat.start();
 
-		var client = jsh.http.World.question(jsh.http.Implementation.from.java.urlconnection);
-		var mapping = $api.fp.now(client, $api.fp.world.Sensor.mapping());
-		jsh.shell.console("Making request ...");
-		var answer = mapping({
-			url: "http://127.0.0.1:" + tomcat.port + "/foo"
-		});
-		var string = answer.stream.read.string.simple($api.jrunscript.io.Charset.default);
-		//jsh.shell.console(string);
-		jsh.shell.echo(JSON.stringify({
-			status: answer.status,
-			headers: answer.headers,
-			body: JSON.parse(string)
-		},void(0),4));
-		tomcat.stop();
+		try {
+			var client = jsh.http.World.question(jsh.http.Implementation.from.java.urlconnection);
+			var mapping = $api.fp.now(client, $api.fp.world.Sensor.mapping());
+			jsh.shell.console("Making request ...");
+			var answer = mapping({
+				url: "http://127.0.0.1:" + tomcat.port + "/foo"
+			});
+			var string = answer.stream.read.string.simple($api.jrunscript.io.Charset.default);
+			try {
+				jsh.shell.echo(JSON.stringify({
+					status: answer.status,
+					headers: answer.headers,
+					body: JSON.parse(string)
+				},void(0),4));
+			} catch (e) {
+				jsh.shell.console("Could not parse JSON: " + string);
+				throw e;
+			}
+		} finally {
+			tomcat.stop();
+		}
 	}
 //@ts-ignore
 )(Packages,$api,jsh);

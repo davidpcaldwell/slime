@@ -226,6 +226,15 @@ namespace slime.internal.jrunscript.bootstrap {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace java {
+		export interface Install {
+			home: slime.jrunscript.native.java.io.File
+			launcher: slime.jrunscript.native.java.io.File
+			jrunscript: slime.jrunscript.native.java.io.File
+			toString: () => string
+		}
+	}
+
 	export interface PerEngine<T> {
 		rhino: T
 		nashorn: T
@@ -433,15 +442,25 @@ namespace slime.internal.jrunscript.bootstrap {
 
 	export interface Api<J> {
 		java: {
-			/**
-			 * @param home A directory containing a Java installation
-			 */
-			Install: (home: slime.jrunscript.native.java.io.File) => java.Install
+			version: {
+				property: {
+					major: (javaVersionProperty: string) => number
+				}
+			}
 
 			/**
 			 * The Java installation used to run this script.
 			 */
-			install: java.Install
+			install: java.Install & {
+				version: {
+					major: () => number
+				}
+			}
+
+			/**
+			 * @param home A directory containing a Java installation
+			 */
+			Install: (home: slime.jrunscript.native.java.io.File) => java.Install
 
 			getClass: (name: string) => slime.jrunscript.JavaClass
 			Array: <T extends slime.jrunscript.native.java.lang.Object,C>(p: { type: slime.jrunscript.JavaClass<T,C>, length: number })
@@ -648,6 +667,39 @@ namespace slime.internal.jrunscript.bootstrap {
 				}
 			};
 
+			fifty.tests.Object = fifty.test.Parent();
+
+			fifty.tests.Object.assign = function() {
+				var original = Object.assign;
+				var apiPathname = fifty.jsh.file.object.getRelativePath("api.js");
+				var api = apiPathname.file.read(String);
+				var apiUrl = String(apiPathname.java.adapt().toURI().toURL());
+				try {
+					Object.assign = void(0);
+					var configuration: slime.internal.jrunscript.bootstrap.Environment = {
+						Packages: Packages,
+						load: function() {
+							throw new Error("Implement.");
+						}
+					};
+					//@ts-ignore
+					$rhino.script(apiUrl,api,configuration,null);
+
+					var primitiveTarget = Object.assign(1, { x: 1 });
+					verify(typeof(primitiveTarget)).is("object");
+					verify(primitiveTarget.valueOf()).is(1);
+					verify(primitiveTarget.x).is(1);
+
+					var source: { own: number } = Object.create({ inherited: 2 });
+					source.own = 1;
+					var objectTarget: { own: number, inherited?: number } = Object.assign({}, source);
+					verify(objectTarget.own).is(1);
+					verify(objectTarget).evaluate.property("inherited").is(void(0));
+				} finally {
+					Object.assign = original;
+				}
+			};
+
 			fifty.tests.zip = function() {
 				var web = jsh.unit.mock.Web();
 				web.add(jsh.unit.mock.web.Github({
@@ -731,6 +783,7 @@ namespace slime.internal.jrunscript.bootstrap {
 
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports);
+				fifty.run(fifty.tests.Object);
 
 				var configuration: slime.internal.jrunscript.bootstrap.Environment = {
 					Packages: Packages,
@@ -747,7 +800,7 @@ namespace slime.internal.jrunscript.bootstrap {
 				fifty.verify(global).$api.is.type("object");
 				fifty.verify(global).$api.script.is.type("object");
 
-				var subject = global.$api;
+				const subject = global.$api;
 
 				var interpret = function(string) {
 					return Object.assign(function(p): { url: string, file: string, zip: string } {

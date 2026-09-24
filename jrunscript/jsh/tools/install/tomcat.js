@@ -14,16 +14,47 @@
 	 * @param { slime.loader.Export<slime.jsh.shell.tools.internal.tomcat.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {
-		var MAJOR_VERSION = 9;
+		var getDefaultMajorVersionForJava = function(javaMajorVersion) {
+			if (javaMajorVersion >= 17) return 11;
+			if (javaMajorVersion >= 11) return 10;
+			if (javaMajorVersion >= 8) return 9;
+			throw new Error("Unsupported Java version " + javaMajorVersion);
+		};
+
+		var getDefaultMajorVersion = function() {
+			return getDefaultMajorVersionForJava($context.jsh.internal.bootstrap.java.install.version.major());
+		};
+
+		var getMajorVersion = function(version) {
+			return $api.fp.now(String(version).split(".")[0], Number);
+		};
+
+		var getRequiredJavaMajorVersion = function(tomcatMajorVersion) {
+			if (tomcatMajorVersion == 11) return 17;
+			if (tomcatMajorVersion == 10) return 11;
+			if (tomcatMajorVersion == 9) return 8;
+			throw new Error("Unsupported Tomcat version: " + tomcatMajorVersion);
+		};
+
+		/**
+		 * @param { { tomcat: string|number, java: number } } p
+		 */
+		var isCompatible = function(p) {
+			return p.java >= getRequiredJavaMajorVersion(getMajorVersion(p.tomcat));
+		};
+
+		var checkCompatible = function(version) {
+			var java = $context.jsh.internal.bootstrap.java.install.version.major();
+			if (!isCompatible({ tomcat: version, java: java })) {
+				throw new Error("Tomcat " + version + " requires Java " + getRequiredJavaMajorVersion(getMajorVersion(version)) + " or later; running Java " + java + ".");
+			}
+		};
 
 		var DEFAULT_VERSION = {
-			//	Tomcat 7/8 are EOL
-			7: "7.0.109",
-			8: "8.5.100",
-			//	As of 2025 May 27
-			9: "9.0.105", // JDK 8+
-			10: "10.1.41", // JDK 11+
-			11: "11.0.7" // JDK 17+
+			//	As of 2026 September 20
+			9: "9.0.122", // JDK 8+
+			10: "10.1.60", // JDK 11+
+			11: "11.0.26" // JDK 17+
 		};
 
 		/** @type { slime.jsh.shell.tools.tomcat.old.World } */
@@ -32,9 +63,10 @@
 			getLatestVersion: function(major) {
 				return function(events) {
 					try {
+						var suffix = (major < 10) ? "0" : "";
 						//	This step would fail for Tomcat 7
 						var downloadRawHtml = new $context.library.http.Client().request({
-							url: "http://tomcat.apache.org/download-" + major + "0.cgi",
+							url: "http://tomcat.apache.org/download-" + major + suffix + ".cgi",
 							evaluate: function(result) {
 								return result.body.stream.character().asString()
 							}
@@ -129,6 +161,15 @@
 			return $api.fp.world.mapping(getLatestVersionUsingWorld(mock));
 		}
 
+		var getLayout = function(installation, version) {
+			var major = getMajorVersion(version);
+			var root = installation.library || installation.base;
+			return {
+				base: root + "/" + String(major),
+				library: root
+			};
+		};
+
 		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["test"]["getVersionFromReleaseNotes"] } */
 		var getVersion = function(releaseNotes) {
 			var lines = releaseNotes.split("\n");
@@ -175,6 +216,8 @@
 					to: to
 				});
 				events.fire("installing",{ to: p_to.toString() });
+				var parent = p_to.parent;
+				if (parent && !parent.directory) parent.createDirectory({ recursive: true });
 				//	TODO	unclear what case this mv addresses; maybe something exotic like moving across filesystems?
 				if ($context.library.shell.PATH.getCommand("mv")) {
 					if (p_to.directory) {
@@ -204,8 +247,11 @@
 			return function(p) {
 				return function(events) {
 					var findApache = (p.world && p.world.findApache) ? p.world.findApache : $context.library.install.apache.find;
-					var version = p.version || getLatestVersion(p.world)(MAJOR_VERSION);
-					var majorVersion = Number(version.split(".")[0]);
+					var world = (p.world) ? p.world : void(0);
+					var majorVersion = (p.version) ? getMajorVersion(p.version) : getDefaultMajorVersion();
+					var version = p.version || getLatestVersion(world)(majorVersion);
+					checkCompatible(version);
+					var target = getLayout(installation, version);
 					var mirror = (p.version) ? "https://archive.apache.org/dist/" : void(0);
 					//	TODO	this does not seem to fail on 404
 					//	TODO	logging console messages for findApache is not ideal, should fire event instead
@@ -224,10 +270,10 @@
 					basicInstall({
 						local: local,
 						version: version,
-						p_to: $context.library.file.Pathname(installation.base)
+						p_to: $context.library.file.Pathname(target.base)
 					})(events);
 					//debugger;
-					var installed = Installation_getVersion(installation);
+					var installed = Installation_getVersion(target);
 					events.fire("installed", {
 						version: (installed.present) ? installed.value : void(0)
 					})
@@ -237,15 +283,16 @@
 
 		var Installation_from_jsh = function() {
 			if (!$context.jsh.shell.jsh.lib) return null;
+			var library = $context.jsh.shell.jsh.lib.getRelativePath("tomcat").os.adapt().pathname;
 			return {
-				base: $context.jsh.shell.jsh.lib.getRelativePath("tomcat").os.adapt().pathname
+				base: getLayout({ base: library }, String(getDefaultMajorVersion()) + ".0.0").base,
+				library: library
 			}
 		}
 
-		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["Installation"]["require"] } */
-		var newRequire = function(installation) {
+		/** @type { slime.jsh.shell.tools.internal.tomcat.require } */
+		var newRequireGeneralize = function(installation) {
 			return function(p) {
-				if (!p) p = {};
 				return function(events) {
 					var replace = p.replace || (function() {
 						return p.version ? function(version) {
@@ -254,8 +301,11 @@
 							return false;
 						}
 					})();
+					var MAJOR_VERSION = p.world.getDefaultMajorVersion();
 					var version = p.version || getLatestVersion(p.world)(MAJOR_VERSION);
-					var installed = Installation_getVersion(installation);
+					checkCompatible(version);
+					var target = getLayout(installation, version);
+					var installed = Installation_getVersion(target);
 					/** @type { boolean } Whether to install the provided version. */
 					var proceed;
 					if (installed.present) {
@@ -265,7 +315,7 @@
 							//	delete existing
 							$api.fp.world.now.action(
 								$context.library.file.Location.directory.remove.wo,
-								$context.library.file.Location.from.os(installation.base)
+								$context.library.file.Location.from.os(target.base)
 							);
 							proceed = true;
 						} else {
@@ -276,13 +326,34 @@
 					}
 					if (proceed) {
 						newInstall(installation)({ world: p.world, version: version })(events);
-						if (installation.base == Installation_from_jsh().base) {
+						if (target.base == Installation_from_jsh().base) {
 							//	TODO	refactor so instead of reloading plugin, plugin exposes a method allowing it to be reloaded
 							//	TODO	probably don't need to do this if it was already installed
 							$context.jsh.loader.plugins($loader.Child("../../../../rhino/http/servlet/"));
 						}
 					}
 				}
+			}
+		};
+
+		/** @type { slime.jsh.shell.tools.internal.tomcat.Exports["Installation"]["require"] } */
+		var newRequire = function(installation) {
+			return function(p) {
+				if (!p) p = {};
+				return newRequireGeneralize(installation)({
+					world: (
+						function() {
+							var was = getWorld(p.world);
+							return {
+								getDefaultMajorVersion: getDefaultMajorVersion,
+								getLatestVersion: was.getLatestVersion,
+								findApache: was.findApache
+							}
+						}
+					)(),
+					replace: p.replace,
+					version: p.version
+				});
 			}
 		}
 
@@ -337,9 +408,7 @@
 				}
 			},
 			world: {
-				getDefaultMajorVersion: function() {
-					return MAJOR_VERSION;
-				},
+				getDefaultMajorVersion: getDefaultMajorVersion,
 				getLatestVersion: world.getLatestVersion,
 				findApache: world.findApache
 			},
@@ -351,7 +420,11 @@
 			test: {
 				getVersionFromReleaseNotes: getVersion,
 				getReleaseNotes: getReleaseNotes,
-				getLatestVersion: getLatestVersionUsingWorld(void(0))
+				getLatestVersion: getLatestVersionUsingWorld(void(0)),
+				getDefaultMajorVersionForJava: getDefaultMajorVersionForJava,
+				getRequiredJavaMajorVersion: getRequiredJavaMajorVersion,
+				isCompatible: isCompatible,
+				getLayout: getLayout
 			}
 		})
 	}

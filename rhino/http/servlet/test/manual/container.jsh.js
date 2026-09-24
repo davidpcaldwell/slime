@@ -33,7 +33,7 @@ jsh.shell.console("Built to " + war);
 // tomcat.start();
 // jsh.shell.console("tomcat started on " + tomcat.port);
 // var port = jsh.ip.tcp.getEphemeralPortNumber();
-var CATALINA_HOME = jsh.shell.jsh.lib.getSubdirectory("tomcat");
+var CATALINA_HOME = jsh.file.Pathname(jsh.shell.tools.tomcat.Installation.from.jsh().base).directory;
 
 CATALINA_HOME.getFile("conf/server.xml").copy(CATALINA_BASE.getRelativePath("conf/server.xml"), {
 	recursive: true

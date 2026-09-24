@@ -20,6 +20,35 @@
 	 * @this { slime.internal.jrunscript.bootstrap.Global<{}> }
 	 */
 	function() {
+		var ToObject = function(v) {
+			//	https://www.ecma-international.org/ecma-262/6.0/#sec-toobject
+			if (typeof(v) == "undefined" || v === null) throw new TypeError("ToObject() cannot be invoked with argument " + v);
+			return Object(v);
+		}
+
+		//	TODO	duplicated in loader/polyfill.js
+		if (!Object.assign) {
+			//	https://www.ecma-international.org/ecma-262/6.0/#sec-object.assign
+			//	TODO	currently the basics can be tested manually with loader/test/test262.jsh.js -file local/test262/test/built-ins/Object/assign/Target-Object.js
+			Object.defineProperty(Object, "assign", {
+				value: function assign(target,firstSource /* to set function .length properly*/) {
+					var rv = ToObject(target);
+					if (arguments.length == 1) return rv;
+					for (var i=1; i<arguments.length; i++) {
+						var source = (typeof(arguments[i]) == "undefined" || arguments[i] === null) ? {} : ToObject(arguments[i]);
+						for (var x in source) {
+							if (Object.prototype.hasOwnProperty.call(source,x)) {
+								rv[x] = source[x];
+							}
+						}
+					}
+					return rv;
+				},
+				writable: true,
+				configurable: true
+			});
+		}
+
 		var load = this.load;
 
 		//	TODO	seems to assume the presence of a global function called 'load' -- should handle this more like other global
@@ -1501,8 +1530,6 @@
 						rv.compile = compile;
 					}
 
-
-
 					return rv;
 				};
 
@@ -1712,15 +1739,39 @@
 					}
 				};
 
+				var myMajor = function(javaVersionProperty) {
+					var oneDotPattern = /^1\.(.*)\./;
+					var majorVersionPattern = /^(\d+)\./;
+					if (oneDotPattern.test(javaVersionProperty)) {
+						return Number(oneDotPattern.exec(javaVersionProperty)[1]);
+					} else if (majorVersionPattern.test(javaVersionProperty)) {
+						return Number(majorVersionPattern.exec(javaVersionProperty)[1])
+					}
+				};
+
 				return {
 					Install: Install,
-					install: install,
+					install: Object.assign(
+						install,
+						{
+							version: {
+								major: function() {
+									return myMajor(String(Packages.java.lang.System.getProperty("java.version")));
+								}
+							}
+						}
+					),
 					getClass: getClass,
 					Array: Array,
 					Command: Command,
 					versions: versions,
 					getMajorVersion: function() {
 						return getMajorVersion(String(Packages.java.lang.System.getProperty("java.version")));
+					},
+					version: {
+						property: {
+							major: myMajor
+						}
 					}
 				}
 			}
