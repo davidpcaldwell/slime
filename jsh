@@ -15,6 +15,17 @@ fi
 UNAME=$(uname)
 ARCH=$(arch)
 
+#	Startup checkpoint timing (JSH_LAUNCHER_PROFILE / jsh.launcher.profile). Kept on very few lines (avoiding one function/line
+#	per statement) because contributor/dependencies/module.js locates NASHORN_VERSION= later in this file via recursive
+#	(non-tail-call) Nashorn stream processing whose stack usage is proportional to that line's position; adding many lines above
+#	it risks a StackOverflowError. Also placed after UNAME/ARCH (not at the very top) so "++ uname" remains the first `set -x`
+#	trace line, as asserted by setting.JSH_LAUNCHER_COMMAND_DEBUG in jrunscript/jsh/_.fifty.ts.
+jsh_profile_property() { local name="$1" arg value; for arg in ${JSH_LAUNCHER_PROPERTY_ARGUMENTS}; do case "${arg}" in "-D${name}="*) value="${arg#-D${name}=}" ;; esac; done; printf '%s' "${value}"; }
+[ -z "${JSH_LAUNCHER_PROFILE}" ] && JSH_LAUNCHER_PROFILE=$(jsh_profile_property "jsh.launcher.profile")
+[ -z "${JSH_LAUNCHER_PROFILE_LOG}" ] && JSH_LAUNCHER_PROFILE_LOG=$(jsh_profile_property "jsh.launcher.profile.log")
+jsh_profile_checkpoint() { if [ -n "${JSH_LAUNCHER_PROFILE}" ]; then local phase="$1" seconds nanos t; seconds=$(date +%s 2>/dev/null); nanos=$(date +%N 2>/dev/null); case "${nanos}" in *N|"") nanos=0 ;; esac; nanos=$((10#${nanos})); t=$(( seconds * 1000 + nanos / 1000000 )); if [ -n "${JSH_LAUNCHER_PROFILE_LOG}" ]; then printf '[jsh.profile] phase=%s t=%s\n' "${phase}" "${t}" >>"${JSH_LAUNCHER_PROFILE_LOG}"; else printf '[jsh.profile] phase=%s t=%s\n' "${phase}" "${t}" >&2; fi; fi; }
+jsh_profile_checkpoint "bash.start"
+
 if test -z "$0:-"; then
 	>&2 echo "\$0 not set; exiting."
 	exit 1
@@ -194,23 +205,23 @@ install_graalvm() {
 }
 
 install_jdk_8_corretto() {
-	install_jdk_corretto "8.412.08.1" $1
+	install_jdk_corretto "8.504.01.1" $1
 }
 
 install_jdk_11_corretto() {
-	install_jdk_corretto "11.0.23.9.1" $1
+	install_jdk_corretto "11.0.32.10.1" $1
 }
 
 install_jdk_17_corretto() {
-	install_jdk_corretto "17.0.11.9.1" $1
+	install_jdk_corretto "17.0.20.10.1" $1
 }
 
 install_jdk_21_corretto() {
-	install_jdk_corretto "21.0.3.9.1" $1
+	install_jdk_corretto "21.0.12.9.1" $1
 }
 
 install_jdk_25_corretto() {
-	install_jdk_corretto "25.0.4.7.1" $1
+	install_jdk_corretto "25.0.4.8.1" $1
 }
 
 install_jdk_8() {
@@ -505,6 +516,8 @@ check_path() {
 
 JRUNSCRIPT=$(check_environment)
 
+jsh_profile_checkpoint "bash.jdk-detection.start"
+
 if [ -z "${JRUNSCRIPT}" ]; then
 	JRUNSCRIPT=$(check_local)
 fi
@@ -539,6 +552,9 @@ fi
 #
 #	But it works with JDK 8, 11, 17, 21, and 25, so it's better than nothing.
 JDK_MAJOR_VERSION=$(get_jrunscript_java_major_version ${JRUNSCRIPT})
+
+jsh_profile_checkpoint "bash.jdk-detection.end"
+
 if [ "${JDK_MAJOR_VERSION}" -gt 8 ] && [ "${JDK_MAJOR_VERSION}" -lt 15 ]; then
 	export JSH_NASHORN_DEPRECATION_ARGUMENT="-Dnashorn.args=--no-deprecation-warning"
 	JRUNSCRIPT="${JRUNSCRIPT} ${JSH_NASHORN_DEPRECATION_ARGUMENT}"
@@ -555,6 +571,11 @@ if [ "${JDK_MAJOR_VERSION}" -ge 15 ]; then
 	# JRUNSCRIPT="${BIN}/java -jar ${JSH_BOOTSTRAP_RHINO} -opt -1"
 	JRUNSCRIPT="${JRUNSCRIPT} -classpath $(get_bootstrap_nashorn_classpath):${JSH_BOOTSTRAP_NASHORN}"
 fi
+
+#	Exported so that the JavaScript layer (which maps JSH_LAUNCHER_PROFILE to the jsh.launcher.profile setting) and any forked
+#	loader VM see the same values.
+export JSH_LAUNCHER_PROFILE
+export JSH_LAUNCHER_PROFILE_LOG
 
 if [ "$1" == "--shell-configure" ]; then
 	export JRUNSCRIPT
@@ -615,7 +636,9 @@ if [ "$0" == "bash" ]; then
 
 	JSH_NETWORK_ARGUMENTS="${HTTP_PROXY_HOST_ARGUMENT} ${HTTP_PROXY_PORT_ARGUMENT} ${HTTPS_PROXY_HOST_ARGUMENT} ${HTTPS_PROXY_PORT_ARGUMENT} ${JSH_GITHUB_USER_ARGUMENT} ${JSH_GITHUB_PASSWORD_ARGUMENT}"
 	export JSH_SHELL_LIB
+	jsh_profile_checkpoint "bash.jvm1.spawn"
 	run_jrunscript ${JSH_LAUNCHER_PROPERTY_ARGUMENTS} ${JSH_NETWORK_ARGUMENTS} -e "load('${JSH_LAUNCHER_GITHUB_PROTOCOL}://raw.githubusercontent.com/davidpcaldwell/slime/${JSH_LAUNCHER_GITHUB_BRANCH}/rhino/jrunscript/api.js?jsh')" "$@"
 else
+	jsh_profile_checkpoint "bash.jvm1.spawn"
 	run_jrunscript ${JSH_LAUNCHER_PROPERTY_ARGUMENTS} "$(dirname $0)/rhino/jrunscript/api.js" jsh "$@"
 fi

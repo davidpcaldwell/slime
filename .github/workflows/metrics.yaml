@@ -15,7 +15,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Run the script
         run: env JSH_LAUNCHER_JDK_HOME=${JAVA_HOME_21_arm64} JSH_JAVA_HOME=${JAVA_HOME_21_arm64} ./jsh tools/code/metrics.jsh.js jsapi
         shell: bash
@@ -24,7 +24,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Run the script
         run: env JSH_LAUNCHER_JDK_HOME=${JAVA_HOME_21_arm64} JSH_JAVA_HOME=${JAVA_HOME_21_arm64} ./jsh tools/code/metrics.jsh.js types
         shell: bash
@@ -33,7 +33,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Run ESLint's default command
         run: env JSH_LAUNCHER_JDK_HOME=${JAVA_HOME_21_arm64} JSH_JAVA_HOME=${JAVA_HOME_21_arm64} ./jsh contributor/eslint.jsh.js
         shell: bash
@@ -45,7 +45,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Run the script
         run: env JSH_LAUNCHER_JDK_HOME=${JAVA_HOME_21_arm64} JSH_JAVA_HOME=${JAVA_HOME_21_arm64} ./jsh tools/code/metrics.jsh.js size
         shell: bash

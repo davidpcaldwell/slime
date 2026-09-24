@@ -263,6 +263,32 @@ namespace slime.internal.jrunscript.bootstrap {
 	}
 
 	export interface Api<J> {
+		/**
+		 * Support for emitting startup checkpoint timing, controlled by the `jsh.launcher.profile` setting
+		 * (`JSH_LAUNCHER_PROFILE` environment variable). Intended to be cheap enough to leave enabled routinely to diagnose
+		 * startup performance.
+		 */
+		timing: {
+			/**
+			 * Whether checkpoint timing is enabled.
+			 */
+			enabled: boolean
+
+			/**
+			 * Records a startup checkpoint, if checkpoint timing is enabled; otherwise a no-op.
+			 *
+			 * @param phase A name identifying the checkpoint, conventionally `<file>.<event>`.
+			 */
+			checkpoint: (phase: string) => void
+
+			/**
+			 * @returns The current checkpoint clock value, in epoch milliseconds, comparable across processes.
+			 */
+			now: () => number
+		}
+	}
+
+	export interface Api<J> {
 		engine: {
 			toString: () => string
 
