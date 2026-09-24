@@ -33,9 +33,14 @@ public abstract class Loader {
 			public abstract boolean canCreateClassLoaders();
 			public abstract ClassLoader getApplicationClassLoader();
 			public abstract File getLocalClassCache();
+
+			public File getSourceClassCache() {
+				return null;
+			}
 		}
 
 		abstract File getLocalClassCache();
+		abstract File getSourceClassCache();
 		abstract ClassLoaderImpl getClassLoader();
 
 		public abstract ClassLoader getApplicationClassLoader();
@@ -84,20 +89,26 @@ public abstract class Loader {
 
 			private Java.Store store;
 
-			private Java.Store getCompileDestination() {
+			private Java.Store getCompileDestination(Code.Loader source) {
 				LOG.log(Loader.class, Level.FINE, "getCompileDestination", null);
 				if (store == null) {
-					if (getLocalClassCache() == null) {
-						return Java.Store.memory();
-					} else {
-						return Java.Store.file(getLocalClassCache());
+					File sourceClassCache = getSourceClassCache();
+					if (sourceClassCache != null) {
+						Java.Store sourceReactive = Java.Store.sourceReactive(sourceClassCache, source);
+						if (sourceReactive != null) return sourceReactive;
 					}
+					File localClassCache = getLocalClassCache();
+					if (localClassCache != null) {
+						Java.Store sourceReactive = Java.Store.sourceReactive(localClassCache, source);
+						if (sourceReactive != null) return sourceReactive;
+					}
+					return Java.Store.memory();
 				}
 				return store;
 			}
 
 			public final Code.Loader compiling(Code.Loader base) {
-				return Java.compiling(base, getCompileDestination(), loader);
+				return Java.compiling(base, getCompileDestination(base), loader);
 			}
 		}
 
@@ -114,6 +125,11 @@ public abstract class Loader {
 					@Override File getLocalClassCache() {
 						LOG.log(Loader.class, Level.FINE, "Local class cache: " + configuration.getLocalClassCache(), null);
 						return configuration.getLocalClassCache();
+					}
+
+					@Override File getSourceClassCache() {
+						LOG.log(Loader.class, Level.FINE, "Source class cache: " + configuration.getSourceClassCache(), null);
+						return configuration.getSourceClassCache();
 					}
 
 					ClassLoaderImpl getClassLoader() {
@@ -136,6 +152,11 @@ public abstract class Loader {
 
 					@Override File getLocalClassCache() {
 						LOG.log(Loader.class, Level.FINE, "Local class cache: null", null);
+						return null;
+					}
+
+					@Override File getSourceClassCache() {
+						LOG.log(Loader.class, Level.FINE, "Source class cache: null", null);
 						return null;
 					}
 

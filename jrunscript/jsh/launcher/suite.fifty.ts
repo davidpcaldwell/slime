@@ -16,6 +16,7 @@ namespace slime.jsh.internal.launcher {
 
 	(
 		function(
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
@@ -95,6 +96,84 @@ namespace slime.jsh.internal.launcher {
 				}).is(true);
 			}
 
+			fifty.tests.unbuilt.moduleClassCache = function() {
+				var cache = jsh.shell.jsh.src.getRelativePath("local/jsh/lib/module-classes");
+				if (cache.java.adapt().exists()) cache.directory.remove();
+
+				var temporary = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				try {
+					var source = temporary.getRelativePath("source").createDirectory();
+					var sourcePathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "source").getCanonicalPath());
+					var script = temporary.getRelativePath("load.jsh.js");
+					var scriptPathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "load.jsh.js").getCanonicalPath());
+
+					var writeJava = function(value: number) {
+						source.getRelativePath("java/cachetest/Value.java").write(
+							[
+								"package cachetest;",
+								"public class Value {",
+								"  public static int value() { return " + value + "; }",
+								"}"
+							].join("\n"),
+							{ append: false, recursive: true }
+						);
+					}
+
+					script.write(
+						[
+						"var source = new Packages.java.io.File(" + JSON.stringify(sourcePathname) + ");",
+						"var loader = { source: Packages.inonit.script.engine.Code.Loader.create(source) };",
+							"jsh.loader.java.add({ src: { loader: loader } });",
+							"jsh.shell.echo(String(Packages.cachetest.Value.value()));"
+						].join("\n"),
+						{ append: false }
+					);
+
+					var run = function() {
+						var intention = test.shells.unbuilt().invoke({
+							script: scriptPathname,
+							stdio: {
+								output: "string"
+							}
+						});
+						var result = $api.fp.world.Sensor.now({
+							sensor: jsh.shell.subprocess.question,
+							subject: intention
+						});
+						verify(result).status.is(0);
+						return result.stdio.output.replace(/\s+$/,"");
+					}
+
+					var valueClassCaches = function() {
+						var root = cache.java.adapt();
+						if (!root.exists()) return [];
+						var files = root.listFiles();
+						return Array.prototype.slice.call(files).filter(function(file) {
+							var classFile: any = new Packages.java.io.File(file, "classes/cachetest/Value.class");
+							return classFile.isFile();
+						}).map(function(file) {
+							return String(file.getCanonicalPath());
+						}).sort();
+					}
+
+					writeJava(1);
+					verify(run()).is("1");
+					var first = valueClassCaches();
+					if (first.length != 1) throw new Error("Expected one cache for Value.class, found " + first.length + ": " + first.join(","));
+
+					verify(run()).is("1");
+					var again = valueClassCaches();
+					if (again.join("\n") != first.join("\n")) throw new Error("Expected second run to reuse " + first.join(",") + ", found " + again.join(","));
+
+					writeJava(2);
+					verify(run()).is("2");
+					var second = valueClassCaches();
+					if (second.length != 2) throw new Error("Expected source edit to create second cache, found " + second.length + ": " + second.join(","));
+				} finally {
+					temporary.remove();
+				}
+			}
+
 			fifty.tests.manual = function() {
 				const { jsh } = fifty.global;
 
@@ -102,5 +181,5 @@ namespace slime.jsh.internal.launcher {
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 }

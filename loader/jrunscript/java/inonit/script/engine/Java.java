@@ -8,6 +8,7 @@ package inonit.script.engine;
 
 import java.io.*;
 import java.net.*;
+import java.security.*;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -123,16 +124,22 @@ public class Java {
 		}
 
 		private boolean compile(JavaFileObject jfo) {
-			javax.tools.JavaCompiler.CompilationTask task = compiler().getTask(
-				null,
-				jfm,
-				null,
-				Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }),
-				null,
-				Arrays.asList(new JavaFileObject[] { jfo })
-			);
-			boolean success = task.call();
-			return success;
+			this.jfm.store().beginCompile();
+			boolean success = false;
+			try {
+				javax.tools.JavaCompiler.CompilationTask task = compiler().getTask(
+					null,
+					jfm,
+					null,
+					Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }),
+					null,
+					Arrays.asList(new JavaFileObject[] { jfo })
+				);
+				success = task.call();
+				return success;
+			} finally {
+				this.jfm.store().finishCompile(success);
+			}
 		}
 
 		private boolean compile(Code.Loader.Resource javaSource) {
@@ -633,6 +640,97 @@ public class Java {
 	}
 
 	static abstract class Store {
+		private static void update(MessageDigest digest, String string) {
+			try {
+				byte[] bytes = string.getBytes("UTF-8");
+				digest.update(bytes);
+				digest.update((byte)0);
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		private static String hex(byte[] bytes) {
+			StringBuilder rv = new StringBuilder();
+			for (int i=0; i<bytes.length; i++) {
+				String s = Integer.toHexString(bytes[i] & 0xff);
+				if (s.length() == 1) rv.append("0");
+				rv.append(s);
+			}
+			return rv.toString();
+		}
+
+		private static boolean addJavaSources(Code.Loader source, String prefix, List<String> names) {
+			Code.Loader.Enumerator enumerator;
+			try {
+				enumerator = source.getEnumerator();
+			} catch (RuntimeException e) {
+				LOG.log(Store.class, Level.FINE, "Could not enumerate Java source cache inputs for " + source, e);
+				return false;
+			}
+			if (enumerator == null) return false;
+			String[] entries = enumerator.list(prefix);
+			if (entries == null) return true;
+			for (int i=0; i<entries.length; i++) {
+				String entry = entries[i];
+				if (entry.endsWith("/")) {
+					if (!addJavaSources(source, prefix + "/" + entry.substring(0, entry.length()-1), names)) return false;
+				} else if (entry.endsWith(".java")) {
+					names.add(prefix + "/" + entry);
+				}
+			}
+			return true;
+		}
+
+		private static String sourceDigest(Code.Loader source) {
+			try {
+				ArrayList<String> names = new ArrayList<String>();
+				if (!addJavaSources(source, "java", names)) return null;
+				if (!addJavaSources(source, "rhino/java", names)) return null;
+				if (names.size() == 0) return null;
+				Collections.sort(names);
+
+				MessageDigest digest = MessageDigest.getInstance("SHA-256");
+				update(digest, "slime-jsh-module-java-cache-v1");
+				update(digest, "compiler-options:-Xlint:unchecked");
+				update(digest, "java.specification.version=" + System.getProperty("java.specification.version"));
+				update(digest, "java.class.version=" + System.getProperty("java.class.version"));
+				ProtectionDomain protectionDomain = Java.class.getProtectionDomain();
+				if (protectionDomain != null && protectionDomain.getCodeSource() != null && protectionDomain.getCodeSource().getLocation() != null) {
+					update(digest, "engine=" + protectionDomain.getCodeSource().getLocation().toExternalForm());
+				}
+
+				for (int i=0; i<names.size(); i++) {
+					String name = names.get(i);
+					Code.Loader.Resource resource = source.getFile(name);
+					if (resource == null) return null;
+					update(digest, name);
+					InputStream in = resource.getInputStream();
+					try {
+						byte[] buffer = new byte[8192];
+						int read;
+						while( (read = in.read(buffer)) != -1 ) {
+							digest.update(buffer, 0, read);
+						}
+					} finally {
+						in.close();
+					}
+				}
+
+				return hex(digest.digest());
+			} catch (NoSuchAlgorithmException e) {
+				throw new RuntimeException(e);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		static Store sourceReactive(File root, Code.Loader source) {
+			String digest = sourceDigest(source);
+			if (digest == null) return null;
+			return file(new File(new File(root, digest), "classes"));
+		}
+
 		private static class InMemoryWritableFile extends Code.Loader.Resource {
 			private MyOutputStream out;
 			private Date modified;
@@ -702,6 +800,12 @@ public class Java {
 
 		abstract OutputStream createOutputStreamAt(String name);
 
+		void beginCompile() {
+		}
+
+		void finishCompile(boolean success) {
+		}
+
 		final OutputStream createOutputStream(String className) {
 			return createOutputStreamAt(getClassLocationString(className));
 		}
@@ -745,23 +849,115 @@ public class Java {
 
 		static Store file(final File file) {
 			return new Store() {
+				private File transaction;
+
+				private class AtomicFileOutputStream extends OutputStream {
+					private final File destination;
+					private final File temporary;
+					private final FileOutputStream delegate;
+					private boolean closed;
+
+					AtomicFileOutputStream(File destination) throws FileNotFoundException {
+						this.destination = destination;
+						this.temporary = new File(destination.getParentFile(), "." + destination.getName() + "." + System.currentTimeMillis() + "." + Thread.currentThread().getId() + ".tmp");
+						this.delegate = new FileOutputStream(temporary);
+					}
+
+					@Override public void write(int b) throws IOException {
+						delegate.write(b);
+					}
+
+					@Override public void write(byte[] b) throws IOException {
+						delegate.write(b);
+					}
+
+					@Override public void write(byte[] b, int off, int len) throws IOException {
+						delegate.write(b, off, len);
+					}
+
+					@Override public void flush() throws IOException {
+						delegate.flush();
+					}
+
+					@Override public void close() throws IOException {
+						if (closed) return;
+						closed = true;
+						delegate.close();
+						if (destination.exists()) {
+							if (!temporary.delete() && temporary.exists()) throw new IOException("Could not remove temporary class file: " + temporary);
+						} else if (!temporary.renameTo(destination)) {
+							if (!destination.exists()) throw new IOException("Could not finalize class file: " + destination);
+							if (!temporary.delete() && temporary.exists()) throw new IOException("Could not remove temporary class file: " + temporary);
+						}
+					}
+				}
+
+				private File outputRoot() {
+					return (transaction == null) ? file : transaction;
+				}
+
+				private void remove(File target) {
+					if (target.isDirectory()) {
+						File[] children = target.listFiles();
+						if (children != null) {
+							for (int i=0; i<children.length; i++) {
+								remove(children[i]);
+							}
+						}
+					}
+					if (target.exists() && !target.delete()) throw new RuntimeException("Could not remove " + target);
+				}
+
+				private void publish(File from, File to) {
+					if (from.isDirectory()) {
+						if (!to.exists() && !to.mkdirs()) throw new RuntimeException("Could not create " + to);
+						File[] children = from.listFiles();
+						if (children != null) {
+							for (int i=0; i<children.length; i++) {
+								publish(children[i], new File(to, children[i].getName()));
+							}
+						}
+					} else {
+						to.getParentFile().mkdirs();
+						if (to.exists()) return;
+						if (!from.renameTo(to) && !to.exists()) throw new RuntimeException("Could not publish " + from + " to " + to);
+					}
+				}
+
 				@Override public String toString() {
 					return "Java.Store: directory = " + file;
 				}
 
+				@Override void beginCompile() {
+					if (transaction != null) throw new IllegalStateException("Compile transaction is already active.");
+					transaction = new File(file.getParentFile(), "." + file.getName() + "." + System.currentTimeMillis() + "." + Thread.currentThread().getId() + ".tmp");
+					if (!transaction.mkdirs()) throw new RuntimeException("Could not create compile transaction directory: " + transaction);
+				}
+
+				@Override void finishCompile(boolean success) {
+					if (transaction == null) return;
+					try {
+						if (success) publish(transaction, file);
+					} finally {
+						File was = transaction;
+						transaction = null;
+						if (was.exists()) remove(was);
+					}
+				}
+
 				@Override OutputStream createOutputStreamAt(String location) {
-					File destination = new File(file, location);
+					File destination = new File(outputRoot(), location);
 					destination.getParentFile().mkdirs();
 					try {
 						LOG.log(Java.class, Level.FINE, "Writing class to " + destination, null);
-						return new FileOutputStream(destination);
+						return new AtomicFileOutputStream(destination);
 					} catch (FileNotFoundException e) {
 						throw new RuntimeException(e);
 					}
 				}
 
 				@Override Code.Loader.Resource readAt(String location) {
-					final File source = new File(file, location);
+					final File source = new File(outputRoot(), location);
 					LOG.log(Java.class, Level.FINE, "Attempting to read class from " + source, null);
 					if (!source.exists()) return null;
 					if (!source.exists()) return null;
