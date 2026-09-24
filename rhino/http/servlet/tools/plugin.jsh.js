@@ -255,8 +255,15 @@
 							return Number(match[1]);
 						})();
 						var servletApi = (tomcatMajorVersion >= 10) ? "jakarta" : "javax";
-						var servletApiJar = CATALINA_HOME.getRelativePath("lib/" + ((servletApi == "jakarta") ? "jakarta.servlet-api.jar" : "servlet-api.jar"));
-						if (!servletApiJar.file) throw new Error("Could not find " + servletApi + " Servlet API jar at " + servletApiJar);
+						//	Tomcat ships the Servlet API as lib/servlet-api.jar for both the javax and jakarta namespaces; the
+						//	namespace is determined by the Tomcat major version, not by the jar name. Some distributions
+						//	instead name the Jakarta jar lib/jakarta.servlet-api.jar, so select whichever is present.
+						var servletApiJar = ["lib/servlet-api.jar", "lib/jakarta.servlet-api.jar"].reduce(function(rv,path) {
+							if (rv) return rv;
+							var pathname = CATALINA_HOME.getRelativePath(path);
+							return (pathname.file) ? pathname : null;
+						}, null);
+						if (!servletApiJar) throw new Error("Could not find " + servletApi + " Servlet API jar under " + CATALINA_HOME.getRelativePath("lib"));
 						classpath.pathnames.push(servletApiJar);
 						var sourcepath = jsh.file.Searchpath([]);
 						sourcepath.pathnames.push(SLIME.getRelativePath("rhino/system/java"));

@@ -160,7 +160,7 @@ namespace slime.jsh.httpd {
 						return 0;
 					});
 					verify(servletList)[0].path.is("Nashorn.java");
-					verify(servletList)[1].path.is("Servlet.java");
+					verify(servletList)[1].path.is("ServletCore.java");
 					var webinf = one.loader.Child("WEB-INF/");
 					debugger;
 					verify(webinf,"webinf").list().length.is(3);

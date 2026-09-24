@@ -551,7 +551,13 @@
 								}
 							}
 
+							var stopped = false;
+
 							rv.stop = function() {
+								//	stop() may be invoked both explicitly and from a shutdown hook; the Tomcat lifecycle throws if
+								//	stop() is attempted after destroy().
+								if (stopped) return;
+								stopped = true;
 								_tomcat.stop();
 								//	Destroy was not needed with Tomcat 7, but is needed with 9 (unknown whether needed with 8.5)
 								_tomcat.destroy();
