@@ -15,6 +15,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@main
@@ -30,6 +34,7 @@ jobs:
       - name: Use Docker to create image, and then run the linting and tests
         env:
           SLIME_TEST_NO_WF_SUBMODULE_RESET: 1
+          SLIME_TEST_JRUNSCRIPT_SHARD: ${{ matrix.shard }}
         run: |
           mkdir -p local
           set -o pipefail
@@ -44,5 +49,5 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: jdk25-fifty-timing-60s-or-2pct
+          name: jdk25-shard${{ matrix.shard }}-fifty-timing-60s-or-2pct
           path: local/jrunscript-timing-60s-or-2pct.txt
