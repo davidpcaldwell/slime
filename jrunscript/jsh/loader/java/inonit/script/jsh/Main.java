@@ -157,7 +157,7 @@ public class Main {
 			}
 		}
 
-		final Shell.Environment environment() {
+		final Shell.Environment environment(Shell.Installation installation) {
 			return Shell.Environment.create(
 				OperatingSystem.Environment.SYSTEM,
 				System.getProperties(),
@@ -171,7 +171,8 @@ public class Main {
 					//	device and bytes will never need to be immediately available
 					new PrintStream(new Logging.OutputStream(System.err, "stderr"))
 				),
-				Shell.Environment.Exit.VM
+				Shell.Environment.Exit.VM,
+				installation.getSourceClassCache()
 			);
 		}
 
@@ -179,7 +180,8 @@ public class Main {
 
 		final Shell.Configuration configuration(String[] arguments) throws Shell.Invocation.CheckedException {
 			LOG.log(Level.INFO, "Creating shell: arguments = %s", Arrays.asList(arguments));
-			return Shell.Configuration.create(installation(this), this.environment(), this.invocation(arguments));
+			Shell.Installation installation = installation(this);
+			return Shell.Configuration.create(installation, this.environment(installation), this.invocation(arguments));
 		}
 	}
 
@@ -317,6 +319,9 @@ public class Main {
 		}
 
 		abstract Code.Loader getPlugins();
+		File getDefaultSourceClassCache() {
+			return null;
+		}
 
 		final Shell.Installation installation() throws IOException {
 			//	TODO	previously user plugins directory was not searched for libraries. Is this right?
@@ -347,6 +352,10 @@ public class Main {
 
 				@Override public Shell.Packaged getPackaged() {
 					return null;
+				}
+
+				@Override public File getSourceClassCache() {
+					return Unpackaged.this.getDefaultSourceClassCache();
 				}
 			};
 		}
@@ -502,6 +511,11 @@ public class Main {
 			} else {
 				return new File(string);
 			}
+		}
+
+		File getDefaultSourceClassCache() {
+			File library = getLibraryDirectory();
+			return (library == null) ? null : new File(library, "module-classes");
 		}
 
 		Code.Loader getPlugins() {

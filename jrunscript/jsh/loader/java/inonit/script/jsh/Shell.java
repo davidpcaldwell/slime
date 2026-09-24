@@ -298,6 +298,10 @@ public class Shell {
 		public abstract Code.Loader[] getExtensions();
 
 		public abstract Packaged getPackaged();
+
+		public File getSourceClassCache() {
+			return null;
+		}
 	}
 
 	public Packaged getPackaged() {
@@ -335,7 +339,8 @@ public class Shell {
 			final OperatingSystem.Environment environment,
 			final Properties properties,
 			final Stdio stdio,
-			final Exit exit
+			final Exit exit,
+			final File sourceClassCache
 		) {
 			return new Environment() {
 				@Override public OperatingSystem.Environment getEnvironment() {
@@ -353,6 +358,10 @@ public class Shell {
 				@Override public Exit getExit() {
 					return exit;
 				}
+
+				@Override public File getSourceClassCache() {
+					return sourceClassCache;
+				}
 			};
 		}
 
@@ -360,6 +369,9 @@ public class Shell {
 		public abstract Properties getSystemProperties();
 		public abstract Stdio getStdio();
 		public abstract Exit getExit();
+		public File getSourceClassCache() {
+			return null;
+		}
 
 		/**
 		 * Used by shell implementations as a convenience to exit the shell via the {@link Exit} implementation.
@@ -423,6 +435,11 @@ public class Shell {
 				@Override public java.io.File getLocalClassCache() {
 					String value = Environment.this.getSystemProperties().getProperty("jsh.shell.classes");
 					return (value != null) ? new File(new File(value), "modules") : null;
+				}
+
+				@Override public java.io.File getSourceClassCache() {
+					String value = Environment.this.getSystemProperties().getProperty("jsh.shell.classes");
+					return (value != null) ? new File(new File(value), "modules") : Environment.this.getSourceClassCache();
 				}
 			};
 		}
