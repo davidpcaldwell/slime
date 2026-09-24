@@ -43,7 +43,9 @@
 				var specified = jsh.shell.environment.SLIME_TEST_JRUNSCRIPT_SHARD;
 				if (!specified) return null;
 				var number = Number(specified);
-				if (!(number >= 1 && number <= 3)) throw new TypeError("SLIME_TEST_JRUNSCRIPT_SHARD must be 1-3; was: " + specified);
+				if (!(number >= 1 && number <= 3 && Math.floor(number) == number)) {
+					throw new TypeError("SLIME_TEST_JRUNSCRIPT_SHARD must be an integer from 1-3; was: " + specified);
+				}
 				return number;
 			})();
 
