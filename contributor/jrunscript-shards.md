@@ -56,3 +56,10 @@ As the suite's contents and timing profile change over time, shard assignment ma
 
 This process does not need to be automated; it is expected to be run manually, infrequently (e.g., if a shard becomes
 persistently much slower or faster than the others).
+
+## Disk space
+
+The sharded `test-jdk*` workflows do not run the `jlumbroso/free-disk-space` step used by other workflows. It was
+added when the whole suite ran in a single job; with the suite sharded, each job does much less work, and the step
+itself cost 2-11 minutes per job (it was the dominant source of variance between shards). If a sharded job starts
+failing with out-of-disk errors, restore that step to the affected workflow.
