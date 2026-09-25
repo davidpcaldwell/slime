@@ -89,17 +89,20 @@ public abstract class Loader {
 
 			private Java.Store store;
 
-			private Java.Store getCompileDestination(Code.Loader source) {
+			private Java.Store getCompileDestination(Code.Loader source, Code.Loader compiling) {
 				LOG.log(Loader.class, Level.FINE, "getCompileDestination", null);
 				if (store == null) {
 					File sourceClassCache = getSourceClassCache();
+					File localClassCache = getLocalClassCache();
+					if (sourceClassCache == null && localClassCache == null) return Java.Store.memory();
+					String dependenciesDigest = loader.getDependenciesDigest(compiling);
+					if (dependenciesDigest == null) return Java.Store.memory();
 					if (sourceClassCache != null) {
-						Java.Store sourceReactive = Java.Store.sourceReactive(sourceClassCache, source);
+						Java.Store sourceReactive = Java.Store.sourceReactive(sourceClassCache, source, dependenciesDigest);
 						if (sourceReactive != null) return sourceReactive;
 					}
-					File localClassCache = getLocalClassCache();
 					if (localClassCache != null) {
-						Java.Store sourceReactive = Java.Store.sourceReactive(localClassCache, source);
+						Java.Store sourceReactive = Java.Store.sourceReactive(localClassCache, source, dependenciesDigest);
 						if (sourceReactive != null) return sourceReactive;
 					}
 					return Java.Store.memory();
@@ -108,7 +111,32 @@ public abstract class Loader {
 			}
 
 			public final Code.Loader compiling(Code.Loader base) {
-				return Java.compiling(base, getCompileDestination(base), loader);
+				return new Code.Loader() {
+					private Code.Loader delegate;
+
+					private synchronized Code.Loader delegate() {
+						if (delegate == null) {
+							delegate = Java.compiling(base, getCompileDestination(base, this), loader);
+						}
+						return delegate;
+					}
+
+					@Override public Resource getFile(String path) throws IOException {
+						return delegate().getFile(path);
+					}
+
+					@Override public Enumerator getEnumerator() {
+						return null;
+					}
+
+					@Override public Code.Locator getLocator() {
+						return null;
+					}
+
+					@Override public synchronized String getCacheIdentity() {
+						return (delegate == null) ? Java.Store.sourceDigest(base, "source", true) : delegate.getCacheIdentity();
+					}
+				};
 			}
 		}
 
@@ -279,6 +307,17 @@ public abstract class Loader {
 			void append(Code.Loader code) {
 				synchronized(locations) {
 					locations.add(code);
+				}
+			}
+
+			String getDependenciesDigest(Code.Loader compiling) {
+				synchronized(locations) {
+					ArrayList<Code.Loader> dependencies = new ArrayList<Code.Loader>();
+					for (int i=0; i<locations.size(); i++) {
+						Code.Loader location = locations.get(i);
+						if (location != compiling) dependencies.add(location);
+					}
+					return Java.Store.dependenciesDigest(dependencies.toArray(new Code.Loader[dependencies.size()]));
 				}
 			}
 		}

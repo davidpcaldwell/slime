@@ -848,7 +848,23 @@
 					};
 
 					this.getEnumerator = function() {
-						throw new Error("Unimplemented: getEnumerator");
+						if (!self.list) return null;
+						return new JavaAdapter(
+							//@ts-ignore Code.Loader.Enumerator is not represented in the generated native type.
+							Packages.inonit.script.engine.Code.Loader.Enumerator,
+							{
+								list: function(prefix) {
+									var path = (prefix == null) ? "" : String(prefix);
+									if (path.length && path.charAt(path.length-1) != "/") path += "/";
+									var loader = (path.length) ? self.Child(path) : self;
+									var entries = loader.list();
+									if (!entries) return null;
+									return entries.map(function(entry) {
+										return entry.path + (("loader" in entry) ? "/" : "");
+									});
+								}
+							}
+						);
 					}
 				}
 			)
