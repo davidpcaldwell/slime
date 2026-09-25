@@ -966,10 +966,21 @@ public class Java {
 			}
 		}
 
-		static Store sourceReactive(File root, Code.Loader source, String dependenciesDigest) {
-			String digest = sourceDigest(source, dependenciesDigest, false);
-			if (digest == null) return null;
-			return file(new File(new File(root, digest), "classes"), digest);
+		static String sourceCacheDigest(String sourceDigest, String dependenciesDigest) {
+			if (sourceDigest == null || dependenciesDigest == null) return null;
+			try {
+				MessageDigest digest = MessageDigest.getInstance("SHA-256");
+				update(digest, "slime-jsh-module-java-cache-inputs-v1");
+				update(digest, sourceDigest);
+				update(digest, dependenciesDigest);
+				return hex(digest.digest());
+			} catch (NoSuchAlgorithmException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		static Store sourceReactive(File root, String digest) {
+			return (digest == null) ? null : file(new File(new File(root, digest), "classes"), digest);
 		}
 
 		private static class InMemoryWritableFile extends Code.Loader.Resource {

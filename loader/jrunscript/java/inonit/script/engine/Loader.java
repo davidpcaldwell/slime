@@ -89,7 +89,7 @@ public abstract class Loader {
 
 			private Java.Store store;
 
-			private Java.Store getCompileDestination(Code.Loader source, Code.Loader compiling) {
+			private Java.Store getCompileDestination(String sourceDigest, Code.Loader compiling) {
 				LOG.log(Loader.class, Level.FINE, "getCompileDestination", null);
 				if (store == null) {
 					File sourceClassCache = getSourceClassCache();
@@ -97,12 +97,14 @@ public abstract class Loader {
 					if (sourceClassCache == null && localClassCache == null) return Java.Store.memory();
 					String dependenciesDigest = loader.getDependenciesDigest(compiling);
 					if (dependenciesDigest == null) return Java.Store.memory();
+					String digest = Java.Store.sourceCacheDigest(sourceDigest, dependenciesDigest);
+					if (digest == null) return Java.Store.memory();
 					if (sourceClassCache != null) {
-						Java.Store sourceReactive = Java.Store.sourceReactive(sourceClassCache, source, dependenciesDigest);
+						Java.Store sourceReactive = Java.Store.sourceReactive(sourceClassCache, digest);
 						if (sourceReactive != null) return sourceReactive;
 					}
 					if (localClassCache != null) {
-						Java.Store sourceReactive = Java.Store.sourceReactive(localClassCache, source, dependenciesDigest);
+						Java.Store sourceReactive = Java.Store.sourceReactive(localClassCache, digest);
 						if (sourceReactive != null) return sourceReactive;
 					}
 					return Java.Store.memory();
@@ -111,12 +113,14 @@ public abstract class Loader {
 			}
 
 			public final Code.Loader compiling(Code.Loader base) {
+				final String sourceIdentity = Java.Store.sourceDigest(base, "source", true);
+				final String cacheSourceIdentity = Java.Store.sourceDigest(base, "source", false);
 				return new Code.Loader() {
 					private Code.Loader delegate;
 
 					private synchronized Code.Loader delegate() {
 						if (delegate == null) {
-							delegate = Java.compiling(base, getCompileDestination(base, this), loader);
+							delegate = Java.compiling(base, getCompileDestination(cacheSourceIdentity, this), loader);
 						}
 						return delegate;
 					}
@@ -134,7 +138,7 @@ public abstract class Loader {
 					}
 
 					@Override public synchronized String getCacheIdentity() {
-						return (delegate == null) ? Java.Store.sourceDigest(base, "source", true) : delegate.getCacheIdentity();
+						return sourceIdentity;
 					}
 				};
 			}
