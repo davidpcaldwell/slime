@@ -104,6 +104,9 @@ namespace slime.jsh.internal.launcher {
 				try {
 					var source = temporary.getRelativePath("source").createDirectory();
 					var sourcePathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "source").getCanonicalPath());
+					var dependencySource = temporary.getRelativePath("dependency/cachetest/Dependency.java");
+					var dependencyClasses = temporary.getRelativePath("dependency-classes").createDirectory();
+					var dependencyClassesPathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "dependency-classes").getCanonicalPath());
 					var script = temporary.getRelativePath("load.jsh.js");
 					var scriptPathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "load.jsh.js").getCanonicalPath());
 
@@ -119,11 +122,28 @@ namespace slime.jsh.internal.launcher {
 						);
 					}
 
+					var writeDependency = function(value: number) {
+						dependencySource.write(
+							[
+								"package cachetest;",
+								"public class Dependency {",
+								"  public static final int VALUE = " + value + ";",
+								"}"
+							].join("\n"),
+							{ append: false, recursive: true }
+						);
+						jsh.java.tools.javac({
+							destination: dependencyClasses.pathname,
+							arguments: [dependencySource]
+						});
+					}
+
 					script.write(
 						[
 						"var source = new Packages.java.io.File(" + JSON.stringify(sourcePathname) + ");",
 						"var loader = { source: Packages.inonit.script.engine.Code.Loader.create(source) };",
 							"jsh.loader.java.add({ src: { loader: loader } });",
+							"jsh.loader.java.add(jsh.file.Pathname(" + JSON.stringify(dependencyClassesPathname) + "));",
 							"jsh.shell.echo(String(Packages.cachetest.Value.value()));"
 						].join("\n"),
 						{ append: false }
@@ -156,6 +176,7 @@ namespace slime.jsh.internal.launcher {
 						}).sort();
 					}
 
+					writeDependency(1);
 					writeJava(1);
 					verify(run()).is("1");
 					var first = valueClassCaches();
@@ -165,10 +186,37 @@ namespace slime.jsh.internal.launcher {
 					var again = valueClassCaches();
 					if (again.join("\n") != first.join("\n")) throw new Error("Expected second run to reuse " + first.join(",") + ", found " + again.join(","));
 
+					var classes = new Packages.java.io.File(first[0], "classes");
+					var valueClass = new Packages.java.io.File(classes, "cachetest/Value.class");
+					var corrupt = new Packages.java.io.FileOutputStream(valueClass);
+					try {
+						corrupt.write(0);
+					} finally {
+						corrupt.close();
+					}
+					var journal = new Packages.java.io.FileOutputStream(new Packages.java.io.File(first[0], ".classes.publish"));
+					try {
+						var journalPath = "cachetest/Value.class";
+						[0, 0, 0, 1, 0, journalPath.length].forEach(function(byte) {
+							journal.write(byte);
+						});
+						for (var i=0; i<journalPath.length; i++) journal.write(journalPath.charCodeAt(i));
+					} finally {
+						journal.close();
+					}
+					verify(run()).is("1");
+					var recovered = valueClassCaches();
+					if (recovered.join("\n") != first.join("\n")) throw new Error("Expected interrupted publication recovery to reuse " + first.join(",") + ", found " + recovered.join(","));
+
+					writeDependency(2);
+					verify(run()).is("1");
+					var second = valueClassCaches();
+					if (second.length != 2) throw new Error("Expected dependency edit to create second cache, found " + second.length + ": " + second.join(","));
+
 					writeJava(2);
 					verify(run()).is("2");
-					var second = valueClassCaches();
-					if (second.length != 2) throw new Error("Expected source edit to create second cache, found " + second.length + ": " + second.join(","));
+					var third = valueClassCaches();
+					if (third.length != 3) throw new Error("Expected source edit to create third cache, found " + third.length + ": " + third.join(","));
 				} finally {
 					temporary.remove();
 				}
