@@ -51,7 +51,6 @@ namespace slime.jsh.internal.launcher {
 
 			fifty.tests.unbuilt.loaderCache = function() {
 				var cache = jsh.shell.jsh.src.getRelativePath("local/jsh/lib/loader").directory;
-				if (cache.pathname.java.adapt().exists()) cache.remove();
 
 				var script = fifty.jsh.file.relative("../test/jsh-data.jsh.js").pathname;
 
@@ -83,25 +82,27 @@ namespace slime.jsh.internal.launcher {
 				}).is(true);
 
 				var firstPathname = first.substring("file:".length).replace(/\/$/,"");
-				jsh.file.Pathname(firstPathname).directory.getRelativePath(".jsh-loader-cache.json").write(
-					"{",
-					{ append: false }
-				);
+				var manifest = jsh.file.Pathname(firstPathname).directory.getRelativePath(".jsh-loader-cache.json");
+				var original = manifest.file.read(String);
+				try {
+					manifest.write("{", { append: false });
 
-				var third = run();
-				verify(third).is.not(first);
-				verify(third.substring(0, expectedPrefix.length)).is(expectedPrefix);
-				verify(third.substring(expectedPrefix.length)).evaluate(function(path) {
-					return /^[0-9a-f]{64}\.\d+\/$/.test(path);
-				}).is(true);
+					var third = run();
+					verify(third).is.not(first);
+					verify(third.substring(0, expectedPrefix.length)).is(expectedPrefix);
+					verify(third.substring(expectedPrefix.length)).evaluate(function(path) {
+						return /^[0-9a-f]{64}\.\d+\/$/.test(path);
+					}).is(true);
+				} finally {
+					manifest.write(original, { append: false });
+				}
 			}
 
 			fifty.tests.unbuilt.moduleClassCache = function() {
-				var cache = jsh.shell.jsh.src.getRelativePath("local/jsh/lib/module-classes");
-				if (cache.java.adapt().exists()) cache.directory.remove();
-
 				var temporary = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				try {
+					var shellClasses = temporary.getRelativePath("shell-classes").createDirectory();
+					var cache = shellClasses.getRelativePath("modules");
 					var source = temporary.getRelativePath("source").createDirectory();
 					var sourcePathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "source").getCanonicalPath());
 					var dependencySource = temporary.getRelativePath("dependency/cachetest/Dependency.java");
@@ -152,6 +153,12 @@ namespace slime.jsh.internal.launcher {
 					var run = function() {
 						var intention = test.shells.unbuilt().invoke({
 							script: scriptPathname,
+							environment: function(environment) {
+								return $api.Object.compose(
+									environment,
+									{ JSH_SHELL_CLASSES: shellClasses.pathname.toString() }
+								);
+							},
 							stdio: {
 								output: "string"
 							}
