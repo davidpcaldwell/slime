@@ -39,20 +39,27 @@
 			//	Shard assignment below was derived from real per-file timing data captured from a recent CI run (see
 			//	contributor/jrunscript-shards.md) and is intentionally hardcoded rather than computed dynamically, so that shard
 			//	membership is stable and reviewable. It should be periodically rebalanced as the suite's timing profile changes.
-			var shard = (function() {
+			//
+			//	SLIME_TEST_JRUNSCRIPT_SHARD may name a single shard (e.g., "2") or a comma-separated list of shards to run in one
+			//	invocation (e.g., "1,3").
+			var shards = (function() {
 				var specified = jsh.shell.environment.SLIME_TEST_JRUNSCRIPT_SHARD;
 				if (!specified) return null;
-				var number = Number(specified);
-				if (!(number >= 1 && number <= 3 && Math.floor(number) == number)) {
-					throw new TypeError("SLIME_TEST_JRUNSCRIPT_SHARD must be an integer from 1-3; was: " + specified);
-				}
-				return number;
+				return specified.split(",").map(function(token) {
+					var number = Number(token);
+					if (!(token.length && number >= 1 && number <= 3 && Math.floor(number) == number)) {
+						throw new TypeError(
+							"SLIME_TEST_JRUNSCRIPT_SHARD must be a comma-separated list of integers from 1-3; was: " + specified
+						);
+					}
+					return number;
+				});
 			})();
 
 			//	Returns true if the given shard number's tests should run in this invocation: either no sharding is in effect
-			//	(`shard` is null), or this file's assigned shard matches the requested shard.
+			//	(`shards` is null), or this file's assigned shard is one of the requested shards.
 			var runsShard = function(assigned) {
-				return (shard === null || shard == assigned);
+				return (shards === null || shards.indexOf(assigned) != -1);
 			};
 
 			//	TODO	expression.fifty.ts, particularly in the realm of $api.platform, has engine-specific stuff; would be good to
