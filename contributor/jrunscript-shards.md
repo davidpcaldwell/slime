@@ -17,10 +17,11 @@ into several shorter jobs that run concurrently.
 suite runs (this is the default, used for local development via `wf test.jrunscript`). If set to
 a number 1-3, only the `fifty.load(...)` calls assigned to that shard run.
 
-Each `test-jdk*.yaml` workflow (including `test-jdk-macos.yaml`) runs a 3-way matrix over
-`SLIME_TEST_JRUNSCRIPT_SHARD`, so what was one ~50-minute job becomes three roughly 10-17 minute jobs that run in
-parallel. Each shard pays its own fixed overhead (Docker build on Linux, JDK/Rhino/TypeScript install -- roughly 1-3
-minutes), so the total wall-clock savings are smaller than 3x, but still substantial.
+Each `test-jdk*.yaml` workflow (including `test-jdk-macos.yaml`) runs a 3-way matrix over `SLIME_TEST_JRUNSCRIPT_SHARD`,
+so each JDK's single long job (~50 minutes on Linux, ~21 minutes on macOS) becomes three jobs that run in parallel:
+roughly 11-15 minutes each on Linux and 6-12 minutes each on macOS. Each shard pays its own fixed overhead (Docker build
+on Linux, JDK/Rhino/TypeScript install -- roughly 1-3 minutes), so the total wall-clock savings are smaller than 3x, but
+still substantial.
 
 The shard count is deliberately 3, not 4: this repository's account is limited to 20 concurrently-running Actions
 jobs. With 5 Linux JDK workflows plus macOS, a 4-shard matrix would occupy 24 concurrent jobs on its own, forcing the
