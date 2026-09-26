@@ -14,20 +14,34 @@ into several shorter jobs that run concurrently.
 ## How it works
 
 `contributor/jrunscript.fifty.ts` reads the `SLIME_TEST_JRUNSCRIPT_SHARD` environment variable. If unset, the entire
-suite runs (this is the default, used for local development via `wf test.jrunscript`). If set to
-a number 1-3, only the `fifty.load(...)` calls assigned to that shard run.
+suite runs (this is the default, used for local development via `wf test.jrunscript`). If set, it must be a shard number
+from 1-3 (e.g., `2`) or a comma-separated list of them (e.g., `1,3`), and only the `fifty.load(...)` calls assigned to
+those shards run.
 
-Each `test-jdk*.yaml` workflow (including `test-jdk-macos.yaml`) runs a 3-way matrix over `SLIME_TEST_JRUNSCRIPT_SHARD`,
-so each JDK's single long job (~50 minutes on Linux, ~21 minutes on macOS) becomes three jobs that run in parallel:
-roughly 11-15 minutes each on Linux and 6-12 minutes each on macOS. Each shard pays its own fixed overhead (Docker build
-on Linux, JDK/Rhino/TypeScript install -- roughly 1-3 minutes), so the total wall-clock savings are smaller than 3x, but
-still substantial.
+Each Linux `test-jdk*.yaml` workflow runs a 3-way matrix over `SLIME_TEST_JRUNSCRIPT_SHARD`, so each JDK's single
+~50-minute job becomes three jobs of roughly 11-15 minutes each that run in parallel. Each shard pays its own fixed
+overhead (Docker build, JDK/Rhino/TypeScript install -- roughly 3 minutes), so the total wall-clock savings are smaller
+than 3x, but still substantial.
 
-The shard count is deliberately 3, not 4: this repository's account is limited to 20 concurrently-running Actions
-jobs. With 5 Linux JDK workflows plus macOS, a 4-shard matrix would occupy 24 concurrent jobs on its own, forcing the
-other workflows that run on the same PR/push (`test-node`, `test-browsers`, `test-jrunscript-engines-jdk25`,
-`check-jdk25`) to queue behind the jrunscript shards. A 3-shard matrix uses 18 jobs, so the full set of 22 jobs
-queues only 2 of them, and only until the short (~5-minute) jobs finish.
+`test-jdk-macos.yaml` uses the same three shards, but in two jobs: one runs shards `1,3` and the other runs shard `2`
+followed by `wf check` (ESLint and TypeScript). macOS runs the suite faster than Linux (~21 minutes unsharded) and its
+setup is short, so both jobs should finish around the same time as the slowest Linux shard.
+
+## Staying within the concurrent job limit
+
+This repository's account is limited to 20 concurrently-running Actions jobs; jobs beyond that queue until a slot frees
+up. A pull request currently runs exactly 20 jobs:
+
+* 15 Linux JDK shard jobs (5 JDKs x 3 shards)
+* 2 macOS jobs (which also run `wf check`)
+* `test-node`, `test-browsers`, and `test-jrunscript-engines-jdk25`
+
+Pushes to `main` also run the 4 `metrics.yaml` jobs (24 total), so a few jobs may briefly queue. This is acceptable because
+`main` runs are not latency-critical the way PR runs are.
+
+Before `wf check` was moved into a macOS job and macOS was reduced to two jobs, runs used 22 jobs; the two that queued
+waited about 6 minutes for a slot, adding roughly 4 minutes to total CI time. When adding a job or workflow, consider
+whether it pushes the total above 20.
 
 ## How the shard assignment was derived
 

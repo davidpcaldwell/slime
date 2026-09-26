@@ -10,7 +10,42 @@
 	) {
 		var jsh = fifty.global.jsh;
 
+		/**
+		 * Parses a `SLIME_TEST_JRUNSCRIPT_SHARD` value into the list of shards to run, or `null` if no sharding is in effect.
+		 *
+		 * @param { string } specified A single shard number (e.g., `"2"`) or a comma-separated list of them (e.g., `"1,3"`).
+		 * @returns { number[] | null }
+		 * @throws { TypeError } If any shard is not an integer from 1-3.
+		 */
+		var parseShards = function(specified) {
+			if (!specified) return null;
+			return specified.split(",").map(function(token) {
+				if (!/^[1-3]$/.test(token)) {
+					throw new TypeError(
+						"SLIME_TEST_JRUNSCRIPT_SHARD must be a comma-separated list of integers from 1-3; was: " + specified
+					);
+				}
+				return Number(token);
+			});
+		};
+
+		fifty.tests.shards = function() {
+			var verify = fifty.verify;
+			var parse = { parse: parseShards };
+
+			verify(parseShards(void(0)) === null, "unset").is(true);
+			verify(parseShards("") === null, "empty").is(true);
+			verify(parseShards("2").join(",") === "2", "single").is(true);
+			verify(parseShards("1,3").join(",") === "1,3", "list").is(true);
+
+			["1,4", "0", "1,,3", "2.5", "a", " 1"].forEach(function(value) {
+				verify(parse).evaluate(function(p) { return p.parse(value); }).threw.type(TypeError);
+			});
+		};
+
 		fifty.tests.suite = function() {
+			fifty.run(fifty.tests.shards);
+
 			var hasJsoup = Boolean(jsh.shell.tools.jsoup.installed);
 
 			var hasGit = (
@@ -39,20 +74,15 @@
 			//	Shard assignment below was derived from real per-file timing data captured from a recent CI run (see
 			//	contributor/jrunscript-shards.md) and is intentionally hardcoded rather than computed dynamically, so that shard
 			//	membership is stable and reviewable. It should be periodically rebalanced as the suite's timing profile changes.
-			var shard = (function() {
-				var specified = jsh.shell.environment.SLIME_TEST_JRUNSCRIPT_SHARD;
-				if (!specified) return null;
-				var number = Number(specified);
-				if (!(number >= 1 && number <= 3 && Math.floor(number) == number)) {
-					throw new TypeError("SLIME_TEST_JRUNSCRIPT_SHARD must be an integer from 1-3; was: " + specified);
-				}
-				return number;
-			})();
+			//
+			//	SLIME_TEST_JRUNSCRIPT_SHARD may name a single shard (e.g., "2") or a comma-separated list of shards to run in one
+			//	invocation (e.g., "1,3").
+			var shards = parseShards(jsh.shell.environment.SLIME_TEST_JRUNSCRIPT_SHARD);
 
 			//	Returns true if the given shard number's tests should run in this invocation: either no sharding is in effect
-			//	(`shard` is null), or this file's assigned shard matches the requested shard.
+			//	(`shards` is null), or this file's assigned shard is one of the requested shards.
 			var runsShard = function(assigned) {
-				return (shard === null || shard == assigned);
+				return (shards === null || shards.indexOf(assigned) != -1);
 			};
 
 			//	TODO	expression.fifty.ts, particularly in the realm of $api.platform, has engine-specific stuff; would be good to
