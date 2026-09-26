@@ -945,7 +945,12 @@
 							//	Currently can be used to add .jar directly to classpath through jsh.loader.java.add
 							//	TODO	determine whether this should be switched to jar._file; used by servlet plugin to put Tomcat classes
 							//			in classpath
-							_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p._file));
+							//	Must use Code.Loader.zip() (not Code.Loader.create()) so that the loader's Enumerator can list the
+							//	jar's contents; Code.Loader.create()'s Enumerator only works for directories, and returns null for
+							//	files, which would otherwise cause dependency-digest computation (used for the source-reactive Java
+							//	module class cache) to fail and silently fall back to a non-persistent, in-memory cache.
+							//	(Code.Loader.jar() has the same behavior but is package-private and cannot be called from here.)
+							_classpath.add(Packages.inonit.script.engine.Code.Loader.zip(p._file));
 						} else if (isJavaFileClasspathEntry(p) && !p._file.exists()) {
 							//	do nothing
 						} else if (isSlimeClasspathEntry(p)) {
