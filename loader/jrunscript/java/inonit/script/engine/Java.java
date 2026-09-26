@@ -647,6 +647,10 @@ public class Java {
 	}
 
 	static abstract class Store {
+		boolean isPersistent() {
+			return false;
+		}
+
 		private static final Map<String,ReentrantLock> FILE_LOCKS = new HashMap<String,ReentrantLock>();
 
 		private static synchronized ReentrantLock getFileLock(File file) throws IOException {
@@ -939,6 +943,10 @@ public class Java {
 				update(digest, "compiler-options:-Xlint:unchecked");
 				update(digest, "java.specification.version=" + System.getProperty("java.specification.version"));
 				update(digest, "java.class.version=" + System.getProperty("java.class.version"));
+				//	java.specification.version and java.class.version alone do not vary across patch releases of the same major JDK
+				//	version (e.g. all Java 17 releases report "17" and "61.0"); include the concrete runtime version so classes
+				//	compiled by different JDK builds are not incorrectly treated as cache-compatible.
+				update(digest, "java.version=" + System.getProperty("java.version"));
 				ProtectionDomain protectionDomain = Java.class.getProtectionDomain();
 				if (protectionDomain != null && protectionDomain.getCodeSource() != null && protectionDomain.getCodeSource().getLocation() != null) {
 					update(digest, "engine=" + protectionDomain.getCodeSource().getLocation().toExternalForm());
@@ -1176,6 +1184,10 @@ public class Java {
 				private Thread transactionThread;
 				private CacheLock transactionLock;
 
+				@Override boolean isPersistent() {
+					return true;
+				}
+
 				@Override String getCacheIdentity() {
 					return cacheIdentity;
 				}
@@ -1365,7 +1377,16 @@ public class Java {
 					CacheLock readLock = (ownTransaction) ? null : Store.lock(file, getLockFile());
 					try {
 						if (!ownTransaction) recoverPublication();
-						final File source = new File((ownTransaction) ? transaction : file, location);
+						File inTransaction = new File((ownTransaction) ? transaction : file, location);
+						//	The digest cache is populated lazily, so a class compiled and published in a previous, already-finished
+						//	transaction may not yet exist in the *current* transaction directory (which starts empty). Fall back to
+						//	the immutable published directory so that a dependency compiled earlier in this shell's lifetime is not
+						//	needlessly (and, since a transaction is already active, erroneously) recompiled.
+						File publishedFallback = new File(file, location);
+						final File source = (ownTransaction && !inTransaction.exists() && publishedFallback.exists())
+							? publishedFallback
+							: inTransaction
+						;
 						LOG.log(Java.class, Level.FINE, "Attempting to read class from " + source, null);
 						if (!source.exists()) return null;
 						return new Code.Loader.Resource() {

@@ -117,10 +117,18 @@ public abstract class Loader {
 				final String cacheSourceIdentity = Java.Store.sourceDigest(base, "source", false);
 				return new Code.Loader() {
 					private Code.Loader delegate;
+					private Java.Store destination;
+					private long classpathGeneration = -1;
 
 					private synchronized Code.Loader delegate() {
-						if (delegate == null) {
-							delegate = Java.compiling(base, getCompileDestination(cacheSourceIdentity, this), loader);
+						long currentGeneration = loader.getClasspathGeneration();
+						if (delegate == null || classpathGeneration != currentGeneration) {
+							Java.Store next = getCompileDestination(cacheSourceIdentity, this);
+							if (delegate == null || destination.isPersistent() || next.isPersistent()) {
+								delegate = Java.compiling(base, next, loader);
+								destination = next;
+							}
+							classpathGeneration = currentGeneration;
 						}
 						return delegate;
 					}
@@ -211,6 +219,7 @@ public abstract class Loader {
 
 			private inonit.script.runtime.io.Streams streams = new inonit.script.runtime.io.Streams();
 			private ArrayList<Code.Loader> locations = new ArrayList<Code.Loader>();
+			private long classpathGeneration;
 
 			private ClassLoaderImpl(ClassLoader parent) {
 				super(parent);
@@ -311,6 +320,13 @@ public abstract class Loader {
 			void append(Code.Loader code) {
 				synchronized(locations) {
 					locations.add(code);
+					classpathGeneration++;
+				}
+			}
+
+			long getClasspathGeneration() {
+				synchronized(locations) {
+					return classpathGeneration;
 				}
 			}
 

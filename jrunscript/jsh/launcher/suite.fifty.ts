@@ -108,6 +108,8 @@ namespace slime.jsh.internal.launcher {
 					var dependencySource = temporary.getRelativePath("dependency/cachetest/Dependency.java");
 					var dependencyClasses = temporary.getRelativePath("dependency-classes").createDirectory();
 					var dependencyClassesPathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "dependency-classes").getCanonicalPath());
+					var jarFile = new Packages.java.io.File(temporary.pathname.java.adapt(), "dependency.jar");
+					var jarPathname = String(jarFile.getCanonicalPath());
 					var script = temporary.getRelativePath("load.jsh.js");
 					var scriptPathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "load.jsh.js").getCanonicalPath());
 
@@ -139,12 +141,24 @@ namespace slime.jsh.internal.launcher {
 						});
 					}
 
+					var writeJar = function(value: number) {
+						var zip = new Packages.java.util.zip.ZipOutputStream(new Packages.java.io.FileOutputStream(jarFile));
+						try {
+							zip.putNextEntry(new Packages.java.util.zip.ZipEntry("root#resource.txt"));
+							zip.write(new Packages.java.lang.String(String(value)).getBytes("UTF-8"));
+							zip.closeEntry();
+						} finally {
+							zip.close();
+						}
+					}
+
 					script.write(
 						[
 						"var source = new Packages.java.io.File(" + JSON.stringify(sourcePathname) + ");",
 						"var loader = { source: Packages.inonit.script.engine.Code.Loader.create(source) };",
 							"jsh.loader.java.add({ src: { loader: loader } });",
 							"jsh.loader.java.add(jsh.file.Pathname(" + JSON.stringify(dependencyClassesPathname) + "));",
+							"jsh.loader.java.add(jsh.file.Pathname(" + JSON.stringify(jarPathname) + "));",
 							"jsh.shell.echo(String(Packages.cachetest.Value.value()));"
 						].join("\n"),
 						{ append: false }
@@ -184,6 +198,7 @@ namespace slime.jsh.internal.launcher {
 					}
 
 					writeDependency(1);
+					writeJar(1);
 					writeJava(1);
 					verify(run()).is("1");
 					var first = valueClassCaches();
@@ -215,15 +230,130 @@ namespace slime.jsh.internal.launcher {
 					var recovered = valueClassCaches();
 					if (recovered.join("\n") != first.join("\n")) throw new Error("Expected interrupted publication recovery to reuse " + first.join(",") + ", found " + recovered.join(","));
 
+					writeJar(2);
+					verify(run()).is("1");
+					var jarChanged = valueClassCaches();
+					if (jarChanged.length != 2) throw new Error("Expected root-level JAR edit to create second cache, found " + jarChanged.length + ": " + jarChanged.join(","));
+
 					writeDependency(2);
 					verify(run()).is("1");
 					var second = valueClassCaches();
-					if (second.length != 2) throw new Error("Expected dependency edit to create second cache, found " + second.length + ": " + second.join(","));
+					if (second.length != 3) throw new Error("Expected dependency edit to create third cache, found " + second.length + ": " + second.join(","));
 
 					writeJava(2);
 					verify(run()).is("2");
 					var third = valueClassCaches();
-					if (third.length != 3) throw new Error("Expected source edit to create third cache, found " + third.length + ": " + third.join(","));
+					if (third.length != 4) throw new Error("Expected source edit to create fourth cache, found " + third.length + ": " + third.join(","));
+				} finally {
+					temporary.remove();
+				}
+			}
+
+			fifty.tests.unbuilt.moduleClassCacheTransaction = function() {
+				var temporary = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				try {
+					var cache = temporary.getRelativePath("cache").createDirectory();
+					cache.getRelativePath("cachetest/A.class").write("A", { append: false, recursive: true });
+					var storeType = Packages.java.lang.Class.forName("inonit.script.engine.Java$Store");
+					var factory = storeType.getDeclaredMethod("file", [Packages.java.lang.Class.forName("java.io.File")]);
+					factory.setAccessible(true);
+					var store: any = factory.invoke(null, [cache.pathname.java.adapt()]);
+					var storeClass = store.getClass();
+					var begin = storeClass.getDeclaredMethod("beginCompile");
+					var finish = storeClass.getDeclaredMethod("finishCompile", [Packages.java.lang.Boolean.TYPE]);
+					var read = storeClass.getDeclaredMethod("readAt", [Packages.java.lang.Class.forName("java.lang.String")]);
+					var write = storeClass.getDeclaredMethod("createOutputStreamAt", [Packages.java.lang.Class.forName("java.lang.String")]);
+					[begin, finish, read, write].forEach(function(method) { method.setAccessible(true); });
+					var readByte = function(resource: any) {
+						var stream = resource.getInputStream();
+						try {
+							return Number(stream.read());
+						} finally {
+							stream.close();
+						}
+					}
+
+					begin.invoke(store, []);
+					try {
+						var published: any = read.invoke(store, [new Packages.java.lang.String("cachetest/A.class")]);
+						verify(readByte(published)).is(65);
+
+						var output: any = write.invoke(store, [new Packages.java.lang.String("cachetest/A.class")]);
+						try {
+							output.write(66);
+						} finally {
+							output.close();
+						}
+						var pending: any = read.invoke(store, [new Packages.java.lang.String("cachetest/A.class")]);
+						verify(readByte(pending)).is(66);
+					} finally {
+						finish.invoke(store, [new Packages.java.lang.Boolean(false)]);
+					}
+					var after: any = read.invoke(store, [new Packages.java.lang.String("cachetest/A.class")]);
+					verify(readByte(after)).is(65);
+				} finally {
+					temporary.remove();
+				}
+			}
+
+			fifty.tests.unbuilt.moduleClassCacheClasspathMutation = function() {
+				var temporary = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				try {
+					var shellClasses = temporary.getRelativePath("shell-classes").createDirectory();
+					var source = temporary.getRelativePath("source").createDirectory();
+					var dependency = temporary.getRelativePath("dependency-classes").createDirectory();
+					var sourcePathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "source").getCanonicalPath());
+					var dependencyPathname = String(dependency.pathname.java.adapt().getCanonicalPath());
+					var script = temporary.getRelativePath("load.jsh.js");
+					var scriptPathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "load.jsh.js").getCanonicalPath());
+					["First", "Second"].forEach(function(name, index) {
+						source.getRelativePath("java/cachetest/" + name + ".java").write(
+							"package cachetest; public class " + name + " { public static int value() { return " + (index + 1) + "; } }",
+							{ append: false, recursive: true }
+						);
+					});
+					script.write(
+						[
+							"var source = new Packages.java.io.File(" + JSON.stringify(sourcePathname) + ");",
+							"var loader = { source: Packages.inonit.script.engine.Code.Loader.create(source) };",
+							"jsh.loader.java.add({ src: { loader: loader } });",
+							"jsh.shell.echo(String(Packages.cachetest.First.value()));",
+							"jsh.loader.java.add(jsh.file.Pathname(" + JSON.stringify(dependencyPathname) + "));",
+							"jsh.shell.echo(String(Packages.cachetest.Second.value()));"
+						].join("\n"),
+						{ append: false }
+					);
+					var intention = test.shells.unbuilt().invoke({
+						script: scriptPathname,
+						environment: function(environment) {
+							return $api.Object.compose(
+								environment,
+								{ JSH_SHELL_CLASSES: shellClasses.pathname.toString() }
+							);
+						},
+						stdio: { output: "string" }
+					});
+					var result = $api.fp.world.Sensor.now({
+						sensor: jsh.shell.subprocess.question,
+						subject: intention
+					});
+					verify(result).status.is(0);
+					verify(result.stdio.output.replace(/\s+$/,"")).is("1\n2");
+
+					var caches = new Packages.java.io.File(shellClasses.pathname.java.adapt(), "modules").listFiles();
+					var cacheFor = function(name: string) {
+						return Array.prototype.slice.call(caches).filter(function(cache) {
+							var classFile: any = new Packages.java.io.File(cache, "classes/cachetest/" + name + ".class");
+							return classFile.isFile();
+						}).map(function(cache) {
+							return String(cache.getCanonicalPath());
+						});
+					}
+					var first = cacheFor("First");
+					var second = cacheFor("Second");
+					if (first.length != 1 || second.length != 1 || first[0] == second[0]) {
+						throw new Error("Expected separate cache keys before and after classpath mutation: First=" + first + ", Second=" + second);
+					}
 				} finally {
 					temporary.remove();
 				}
