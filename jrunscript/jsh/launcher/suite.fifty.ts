@@ -16,6 +16,7 @@ namespace slime.jsh.internal.launcher {
 
 	(
 		function(
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
@@ -50,7 +51,6 @@ namespace slime.jsh.internal.launcher {
 
 			fifty.tests.unbuilt.loaderCache = function() {
 				var cache = jsh.shell.jsh.src.getRelativePath("local/jsh/lib/loader").directory;
-				if (cache.pathname.java.adapt().exists()) cache.remove();
 
 				var script = fifty.jsh.file.relative("../test/jsh-data.jsh.js").pathname;
 
@@ -82,17 +82,151 @@ namespace slime.jsh.internal.launcher {
 				}).is(true);
 
 				var firstPathname = first.substring("file:".length).replace(/\/$/,"");
-				jsh.file.Pathname(firstPathname).directory.getRelativePath(".jsh-loader-cache.json").write(
-					"{",
-					{ append: false }
-				);
+				var manifest = jsh.file.Pathname(firstPathname).directory.getRelativePath(".jsh-loader-cache.json");
+				var original = manifest.file.read(String);
+				try {
+					manifest.write("{", { append: false });
 
-				var third = run();
-				verify(third).is.not(first);
-				verify(third.substring(0, expectedPrefix.length)).is(expectedPrefix);
-				verify(third.substring(expectedPrefix.length)).evaluate(function(path) {
-					return /^[0-9a-f]{64}\.\d+\/$/.test(path);
-				}).is(true);
+					var third = run();
+					verify(third).is.not(first);
+					verify(third.substring(0, expectedPrefix.length)).is(expectedPrefix);
+					verify(third.substring(expectedPrefix.length)).evaluate(function(path) {
+						return /^[0-9a-f]{64}\.\d+\/$/.test(path);
+					}).is(true);
+				} finally {
+					manifest.write(original, { append: false });
+				}
+			}
+
+			fifty.tests.unbuilt.moduleClassCache = function() {
+				var temporary = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				try {
+					var shellClasses = temporary.getRelativePath("shell-classes").createDirectory();
+					var cache = shellClasses.getRelativePath("modules");
+					var source = temporary.getRelativePath("source").createDirectory();
+					var sourcePathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "source").getCanonicalPath());
+					var dependencySource = temporary.getRelativePath("dependency/cachetest/Dependency.java");
+					var dependencyClasses = temporary.getRelativePath("dependency-classes").createDirectory();
+					var dependencyClassesPathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "dependency-classes").getCanonicalPath());
+					var script = temporary.getRelativePath("load.jsh.js");
+					var scriptPathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "load.jsh.js").getCanonicalPath());
+
+					var writeJava = function(value: number) {
+						source.getRelativePath("java/cachetest/Value.java").write(
+							[
+								"package cachetest;",
+								"public class Value {",
+								"  public static int value() { return " + value + "; }",
+								"}"
+							].join("\n"),
+							{ append: false, recursive: true }
+						);
+					}
+
+					var writeDependency = function(value: number) {
+						dependencySource.write(
+							[
+								"package cachetest;",
+								"public class Dependency {",
+								"  public static final int VALUE = " + value + ";",
+								"}"
+							].join("\n"),
+							{ append: false, recursive: true }
+						);
+						jsh.java.tools.javac({
+							destination: dependencyClasses.pathname,
+							arguments: [dependencySource]
+						});
+					}
+
+					script.write(
+						[
+						"var source = new Packages.java.io.File(" + JSON.stringify(sourcePathname) + ");",
+						"var loader = { source: Packages.inonit.script.engine.Code.Loader.create(source) };",
+							"jsh.loader.java.add({ src: { loader: loader } });",
+							"jsh.loader.java.add(jsh.file.Pathname(" + JSON.stringify(dependencyClassesPathname) + "));",
+							"jsh.shell.echo(String(Packages.cachetest.Value.value()));"
+						].join("\n"),
+						{ append: false }
+					);
+
+					var run = function() {
+						var intention = test.shells.unbuilt().invoke({
+							script: scriptPathname,
+							environment: function(environment) {
+								return $api.Object.compose(
+									environment,
+									{ JSH_SHELL_CLASSES: shellClasses.pathname.toString() }
+								);
+							},
+							stdio: {
+								output: "string"
+							}
+						});
+						var result = $api.fp.world.Sensor.now({
+							sensor: jsh.shell.subprocess.question,
+							subject: intention
+						});
+						verify(result).status.is(0);
+						return result.stdio.output.replace(/\s+$/,"");
+					}
+
+					var valueClassCaches = function() {
+						var root = cache.java.adapt();
+						if (!root.exists()) return [];
+						var files = root.listFiles();
+						return Array.prototype.slice.call(files).filter(function(file) {
+							var classFile: any = new Packages.java.io.File(file, "classes/cachetest/Value.class");
+							return classFile.isFile();
+						}).map(function(file) {
+							return String(file.getCanonicalPath());
+						}).sort();
+					}
+
+					writeDependency(1);
+					writeJava(1);
+					verify(run()).is("1");
+					var first = valueClassCaches();
+					if (first.length != 1) throw new Error("Expected one cache for Value.class, found " + first.length + ": " + first.join(","));
+
+					verify(run()).is("1");
+					var again = valueClassCaches();
+					if (again.join("\n") != first.join("\n")) throw new Error("Expected second run to reuse " + first.join(",") + ", found " + again.join(","));
+
+					var classes = new Packages.java.io.File(first[0], "classes");
+					var valueClass = new Packages.java.io.File(classes, "cachetest/Value.class");
+					var corrupt = new Packages.java.io.FileOutputStream(valueClass);
+					try {
+						corrupt.write(0);
+					} finally {
+						corrupt.close();
+					}
+					var journal = new Packages.java.io.FileOutputStream(new Packages.java.io.File(first[0], ".classes.publish"));
+					try {
+						var journalPath = "cachetest/Value.class";
+						[0, 0, 0, 1, 0, journalPath.length].forEach(function(byte) {
+							journal.write(byte);
+						});
+						for (var i=0; i<journalPath.length; i++) journal.write(journalPath.charCodeAt(i));
+					} finally {
+						journal.close();
+					}
+					verify(run()).is("1");
+					var recovered = valueClassCaches();
+					if (recovered.join("\n") != first.join("\n")) throw new Error("Expected interrupted publication recovery to reuse " + first.join(",") + ", found " + recovered.join(","));
+
+					writeDependency(2);
+					verify(run()).is("1");
+					var second = valueClassCaches();
+					if (second.length != 2) throw new Error("Expected dependency edit to create second cache, found " + second.length + ": " + second.join(","));
+
+					writeJava(2);
+					verify(run()).is("2");
+					var third = valueClassCaches();
+					if (third.length != 3) throw new Error("Expected source edit to create third cache, found " + third.length + ": " + third.join(","));
+				} finally {
+					temporary.remove();
+				}
 			}
 
 			fifty.tests.manual = function() {
@@ -102,5 +236,5 @@ namespace slime.jsh.internal.launcher {
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 }

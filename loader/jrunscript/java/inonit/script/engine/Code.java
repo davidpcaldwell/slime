@@ -935,9 +935,11 @@ public class Code {
 				java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(stream);
 				java.util.zip.ZipEntry entry;
 				final HashMap<String,Loader.Resource> files = new HashMap<String,Loader.Resource>();
+				final HashMap<String,HashSet<String>> directories = new HashMap<String,HashSet<String>>();
 				while( (entry = in.getNextEntry()) != null) {
 					final byte[] bytes = new inonit.script.runtime.io.Streams().readBytes(in, false);
 					final String entryName = entry.getName();
+					maintainDirectories(directories, entryName);
 					Loader.Resource f = new Loader.Resource() {
 						public String toString() {
 							return getClass().getName() + " length=" + bytes.length;
@@ -973,22 +975,7 @@ public class Code {
 				final Enumerator enumerator = new Enumerator() {
 					@Override public String[] list(String prefix) {
 						String start = toPrefix(prefix);
-						ArrayList<String> rv = new ArrayList<String>();
-						for (String key : files.keySet()) {
-							if (key.startsWith(start)) {
-								if (key.endsWith("/")) {
-									//	ignore
-								} else {
-									String suffix = key.substring(start.length());
-									if (suffix.indexOf("/") != -1) {
-										//	subdirectory, ignore
-									} else {
-										rv.add(suffix);
-									}
-								}
-							}
-						}
-						return rv.toArray(new String[0]);
+						return (directories.get(start) != null) ? directories.get(start).toArray(new String[0]) : new String[0];
 					}
 				};
 				return enumerator;
@@ -1003,6 +990,10 @@ public class Code {
 		public abstract Resource getFile(String path) throws IOException;
 		public abstract Enumerator getEnumerator();
 		public abstract Locator getLocator();
+
+		public String getCacheIdentity() {
+			return null;
+		}
 
 		private String getChildPrefix(String prefix) {
 			if (prefix == null || prefix.length() == 0) return "";

@@ -8,7 +8,10 @@ package inonit.script.engine;
 
 import java.io.*;
 import java.net.*;
+import java.nio.channels.*;
+import java.security.*;
 import java.util.*;
+import java.util.concurrent.locks.*;
 import java.util.logging.Level;
 
 import javax.lang.model.element.*;
@@ -123,16 +126,22 @@ public class Java {
 		}
 
 		private boolean compile(JavaFileObject jfo) {
-			javax.tools.JavaCompiler.CompilationTask task = compiler().getTask(
-				null,
-				jfm,
-				null,
-				Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }),
-				null,
-				Arrays.asList(new JavaFileObject[] { jfo })
-			);
-			boolean success = task.call();
-			return success;
+			this.jfm.store().beginCompile();
+			boolean success = false;
+			try {
+				javax.tools.JavaCompiler.CompilationTask task = compiler().getTask(
+					null,
+					jfm,
+					null,
+					Arrays.asList(new String[] { "-Xlint:unchecked"/*, "-verbose" */ }),
+					null,
+					Arrays.asList(new JavaFileObject[] { jfo })
+				);
+				success = task.call();
+				return success;
+			} finally {
+				this.jfm.store().finishCompile(success);
+			}
 		}
 
 		private boolean compile(Code.Loader.Resource javaSource) {
@@ -582,7 +591,7 @@ public class Java {
 			}
 		}
 
-		@Override public Code.Loader.Resource getFile(String path) throws IOException {
+		@Override public synchronized Code.Loader.Resource getFile(String path) throws IOException {
 			if (path.startsWith("org/apache/")) return null;
 			if (path.startsWith("javax/")) return null;
 			if (cache.get(path) == null) {
@@ -626,6 +635,11 @@ public class Java {
 		@Override public Code.Locator getLocator() {
 			return null;
 		}
+
+		@Override public String getCacheIdentity() {
+			String identity = classes.store().getCacheIdentity();
+			return (identity != null) ? identity : Store.sourceDigest(delegate, "memory", true);
+		}
 	}
 
 	static Code.Loader compiling(final Code.Loader base, final Store store, final ClassLoader dependencies) {
@@ -633,6 +647,342 @@ public class Java {
 	}
 
 	static abstract class Store {
+		private static final Map<String,ReentrantLock> FILE_LOCKS = new HashMap<String,ReentrantLock>();
+
+		private static synchronized ReentrantLock getFileLock(File file) throws IOException {
+			String path = file.getCanonicalPath();
+			ReentrantLock lock = FILE_LOCKS.get(path);
+			if (lock == null) {
+				lock = new ReentrantLock();
+				FILE_LOCKS.put(path, lock);
+			}
+			return lock;
+		}
+
+		private static class CacheLock {
+			private final File cache;
+			private final ReentrantLock jvm;
+			private final RandomAccessFile file;
+			private final java.nio.channels.FileLock operatingSystem;
+
+			CacheLock(File cache, ReentrantLock jvm, RandomAccessFile file, java.nio.channels.FileLock operatingSystem) {
+				this.cache = cache;
+				this.jvm = jvm;
+				this.file = file;
+				this.operatingSystem = operatingSystem;
+			}
+
+			void close() {
+				Throwable failure = null;
+				try {
+					if (operatingSystem != null) operatingSystem.release();
+				} catch (Throwable e) {
+					failure = e;
+				}
+				try {
+					if (file != null) file.close();
+				} catch (Throwable e) {
+					if (failure == null) {
+						failure = e;
+					} else {
+						failure.addSuppressed(e);
+					}
+				} finally {
+					jvm.unlock();
+				}
+				if (failure instanceof Error) throw (Error) failure;
+				if (failure instanceof RuntimeException) throw (RuntimeException) failure;
+				if (failure != null) throw new RuntimeException("Could not unlock module class cache: " + cache, failure);
+			}
+		}
+
+		private static CacheLock lock(File cache, File lockPath) {
+			File parent = lockPath.getParentFile();
+			if (!parent.exists() && !parent.mkdirs() && !parent.isDirectory()) throw new RuntimeException("Could not create cache lock parent directory: " + parent);
+			RandomAccessFile opened = null;
+			ReentrantLock acquired = null;
+			try {
+				acquired = getFileLock(lockPath);
+				acquired.lock();
+				if (acquired.getHoldCount() > 1) return new CacheLock(cache, acquired, null, null);
+				opened = new RandomAccessFile(lockPath, "rw");
+				java.nio.channels.FileLock fileLock = opened.getChannel().lock();
+				return new CacheLock(cache, acquired, opened, fileLock);
+			} catch (IOException e) {
+				if (opened != null) {
+					try {
+						opened.close();
+					} catch (IOException close) {
+						e.addSuppressed(close);
+					}
+				}
+				if (acquired != null && acquired.isHeldByCurrentThread()) acquired.unlock();
+				throw new RuntimeException("Could not lock module class cache: " + cache, e);
+			} catch (RuntimeException e) {
+				if (opened != null) {
+					try {
+						opened.close();
+					} catch (IOException close) {
+						e.addSuppressed(close);
+					}
+				}
+				if (acquired != null && acquired.isHeldByCurrentThread()) acquired.unlock();
+				throw e;
+			} catch (Error e) {
+				if (opened != null) {
+					try {
+						opened.close();
+					} catch (IOException close) {
+						e.addSuppressed(close);
+					}
+				}
+				if (acquired != null && acquired.isHeldByCurrentThread()) acquired.unlock();
+				throw e;
+			}
+		}
+
+		private static boolean causedByIOException(RuntimeException e) {
+			Throwable cause = e;
+			while (cause != null) {
+				if (cause instanceof IOException) return true;
+				cause = cause.getCause();
+			}
+			return false;
+		}
+
+		private static void update(MessageDigest digest, String string) {
+			try {
+				byte[] bytes = string.getBytes("UTF-8");
+				digest.update(bytes);
+				digest.update((byte)0);
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		private static String hex(byte[] bytes) {
+			StringBuilder rv = new StringBuilder();
+			for (int i=0; i<bytes.length; i++) {
+				String s = Integer.toHexString(bytes[i] & 0xff);
+				if (s.length() == 1) rv.append("0");
+				rv.append(s);
+			}
+			return rv.toString();
+		}
+
+		private static void update(MessageDigest digest, InputStream in) throws IOException {
+			try {
+				byte[] buffer = new byte[8192];
+				int read;
+				while( (read = in.read(buffer)) != -1 ) {
+					digest.update(buffer, 0, read);
+				}
+			} finally {
+				in.close();
+			}
+		}
+
+		private static boolean updateFile(MessageDigest digest, File file, String path, Set<String> directories) throws IOException {
+			if (!file.exists()) return false;
+			if (file.isDirectory()) {
+				String canonical = file.getCanonicalPath();
+				if (!directories.add(canonical)) return true;
+				File[] children = file.listFiles();
+				if (children == null) return false;
+				Arrays.sort(children, new Comparator<File>() {
+					@Override public int compare(File a, File b) {
+						return a.getName().compareTo(b.getName());
+					}
+				});
+				for (int i=0; i<children.length; i++) {
+					String childPath = (path.length() == 0) ? children[i].getName() : path + "/" + children[i].getName();
+					if (!updateFile(digest, children[i], childPath, directories)) return false;
+				}
+			} else if (file.isFile()) {
+				update(digest, path);
+				update(digest, new FileInputStream(file));
+			} else {
+				return false;
+			}
+			return true;
+		}
+
+		private static String classPathIdentity;
+
+		private static synchronized String getClassPathIdentity() throws IOException, NoSuchAlgorithmException {
+			if (classPathIdentity != null) return classPathIdentity;
+			String classPath = System.getProperty("java.class.path");
+			if (classPath == null) return null;
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			update(digest, "slime-jsh-module-java-classpath-v1");
+			String[] entries = classPath.split(java.util.regex.Pattern.quote(File.pathSeparator));
+			for (int i=0; i<entries.length; i++) {
+				File entry = new File(entries[i]).getCanonicalFile();
+				update(digest, "classpath[" + i + "]=" + entry);
+				if (!updateFile(digest, entry, "", new HashSet<String>())) return null;
+			}
+			classPathIdentity = hex(digest.digest());
+			return classPathIdentity;
+		}
+
+		private static boolean addResources(Code.Loader source, String prefix, List<String> names) {
+			Code.Loader.Enumerator enumerator;
+			try {
+				enumerator = source.getEnumerator();
+				if (enumerator == null) return false;
+				String[] entries;
+				try {
+					entries = enumerator.list(prefix);
+				} catch (RuntimeException e) {
+					LOG.log(Store.class, Level.FINE, "Could not enumerate Java source cache inputs for " + source, e);
+					return false;
+				}
+				if (entries == null) return false;
+				for (int i=0; i<entries.length; i++) {
+					String entry = entries[i];
+					String path = (prefix.length() == 0) ? entry : prefix + "/" + entry;
+					if (entry.endsWith("/")) {
+						if (!addResources(source, path.substring(0, path.length()-1), names)) return false;
+					} else {
+						names.add(path);
+					}
+				}
+				return true;
+			} catch (RuntimeException e) {
+				LOG.log(Store.class, Level.FINE, "Could not enumerate Java dependency cache inputs for " + source, e);
+				return false;
+			}
+		}
+
+		private static boolean updateDependencies(MessageDigest digest, Code.Loader[] dependencies) throws IOException, NoSuchAlgorithmException {
+			String classPathIdentity = getClassPathIdentity();
+			if (classPathIdentity == null) return false;
+			update(digest, "classpath=" + classPathIdentity);
+			for (int i=0; i<dependencies.length; i++) {
+				Code.Loader dependency = dependencies[i];
+				String cacheIdentity = dependency.getCacheIdentity();
+				if (cacheIdentity != null) {
+					update(digest, "dependency[" + i + "]=" + cacheIdentity);
+					continue;
+				}
+				ArrayList<String> names = new ArrayList<String>();
+				if (!addResources(dependency, "", names)) return false;
+				Collections.sort(names);
+				update(digest, "dependency[" + i + "]");
+				for (int j=0; j<names.size(); j++) {
+					String name = names.get(j);
+					Code.Loader.Resource resource = dependency.getFile(name);
+					if (resource == null) return false;
+					update(digest, name);
+					update(digest, resource.getInputStream());
+				}
+			}
+			return true;
+		}
+
+		static String dependenciesDigest(Code.Loader[] dependencies) {
+			try {
+				MessageDigest digest = MessageDigest.getInstance("SHA-256");
+				update(digest, "slime-jsh-module-java-dependencies-v1");
+				if (!updateDependencies(digest, dependencies)) return null;
+				return hex(digest.digest());
+			} catch (NoSuchAlgorithmException e) {
+				throw new RuntimeException(e);
+			} catch (IOException e) {
+				LOG.log(Store.class, Level.FINE, "Could not read Java dependency cache inputs", e);
+				return null;
+			} catch (RuntimeException e) {
+				if (!causedByIOException(e)) throw e;
+				LOG.log(Store.class, Level.FINE, "Could not read Java dependency cache inputs", e);
+				return null;
+			}
+		}
+
+		private static boolean addJavaSources(Code.Loader source, String prefix, List<String> names) {
+			Code.Loader.Enumerator enumerator;
+			try {
+				enumerator = source.getEnumerator();
+			} catch (RuntimeException e) {
+				LOG.log(Store.class, Level.FINE, "Could not enumerate Java source cache inputs for " + source, e);
+				return false;
+			}
+			if (enumerator == null) return false;
+			String[] entries;
+			try {
+				entries = enumerator.list(prefix);
+			} catch (RuntimeException e) {
+				LOG.log(Store.class, Level.FINE, "Could not enumerate Java source cache inputs for " + source, e);
+				return false;
+			}
+			if (entries == null) return true;
+			for (int i=0; i<entries.length; i++) {
+				String entry = entries[i];
+				if (entry.endsWith("/")) {
+					if (!addJavaSources(source, prefix + "/" + entry.substring(0, entry.length()-1), names)) return false;
+				} else if (entry.endsWith(".java")) {
+					names.add(prefix + "/" + entry);
+				}
+			}
+			return true;
+		}
+
+		static String sourceDigest(Code.Loader source, String dependenciesDigest, boolean allowEmpty) {
+			try {
+				ArrayList<String> names = new ArrayList<String>();
+				if (!addJavaSources(source, "java", names)) return null;
+				if (!addJavaSources(source, "rhino/java", names)) return null;
+				if (!allowEmpty && names.size() == 0) return null;
+				Collections.sort(names);
+
+				MessageDigest digest = MessageDigest.getInstance("SHA-256");
+				update(digest, "slime-jsh-module-java-cache-v1");
+				update(digest, "compiler-options:-Xlint:unchecked");
+				update(digest, "java.specification.version=" + System.getProperty("java.specification.version"));
+				update(digest, "java.class.version=" + System.getProperty("java.class.version"));
+				ProtectionDomain protectionDomain = Java.class.getProtectionDomain();
+				if (protectionDomain != null && protectionDomain.getCodeSource() != null && protectionDomain.getCodeSource().getLocation() != null) {
+					update(digest, "engine=" + protectionDomain.getCodeSource().getLocation().toExternalForm());
+				}
+				update(digest, "dependencies=" + dependenciesDigest);
+
+				for (int i=0; i<names.size(); i++) {
+					String name = names.get(i);
+					Code.Loader.Resource resource = source.getFile(name);
+					if (resource == null) return null;
+					update(digest, name);
+					update(digest, resource.getInputStream());
+				}
+
+				return hex(digest.digest());
+			} catch (NoSuchAlgorithmException e) {
+				throw new RuntimeException(e);
+			} catch (IOException e) {
+				LOG.log(Store.class, Level.FINE, "Could not read Java source cache inputs for " + source, e);
+				return null;
+			} catch (RuntimeException e) {
+				if (!causedByIOException(e)) throw e;
+				LOG.log(Store.class, Level.FINE, "Could not read Java source cache inputs for " + source, e);
+				return null;
+			}
+		}
+
+		static String sourceCacheDigest(String sourceDigest, String dependenciesDigest) {
+			if (sourceDigest == null || dependenciesDigest == null) return null;
+			try {
+				MessageDigest digest = MessageDigest.getInstance("SHA-256");
+				update(digest, "slime-jsh-module-java-cache-inputs-v1");
+				update(digest, sourceDigest);
+				update(digest, dependenciesDigest);
+				return hex(digest.digest());
+			} catch (NoSuchAlgorithmException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		static Store sourceReactive(File root, String digest) {
+			return (digest == null) ? null : file(new File(new File(root, digest), "classes"), digest);
+		}
+
 		private static class InMemoryWritableFile extends Code.Loader.Resource {
 			private MyOutputStream out;
 			private Date modified;
@@ -702,6 +1052,12 @@ public class Java {
 
 		abstract OutputStream createOutputStreamAt(String name);
 
+		void beginCompile() {
+		}
+
+		void finishCompile(boolean success) {
+		}
+
 		final OutputStream createOutputStream(String className) {
 			return createOutputStreamAt(getClassLocationString(className));
 		}
@@ -718,9 +1074,76 @@ public class Java {
 			removeAt(getClassLocationString(name));
 		}
 
+		String getCacheIdentity() {
+			return null;
+		}
+
+		private static class AtomicFileOutputStream extends OutputStream {
+			private final File destination;
+			private final File temporary;
+			private final FileOutputStream delegate;
+			private boolean closed;
+
+			AtomicFileOutputStream(File destination) throws IOException {
+				this.destination = destination;
+				this.temporary = File.createTempFile("." + destination.getName() + ".", ".tmp", destination.getParentFile());
+				this.delegate = new FileOutputStream(temporary);
+			}
+
+			@Override public void write(int b) throws IOException {
+				delegate.write(b);
+			}
+
+			@Override public void write(byte[] b) throws IOException {
+				delegate.write(b);
+			}
+
+			@Override public void write(byte[] b, int off, int len) throws IOException {
+				delegate.write(b, off, len);
+			}
+
+			@Override public void flush() throws IOException {
+				delegate.flush();
+			}
+
+			@Override public void close() throws IOException {
+				if (closed) return;
+				closed = true;
+				delegate.close();
+				if (destination.exists()) {
+					if (!temporary.delete() && temporary.exists()) throw new IOException("Could not remove temporary class file: " + temporary);
+				} else if (!temporary.renameTo(destination)) {
+					if (!destination.exists()) throw new IOException("Could not finalize class file: " + destination);
+					if (!temporary.delete() && temporary.exists()) throw new IOException("Could not remove temporary class file: " + temporary);
+				}
+			}
+		}
+
 		static Store memory() {
 			return new Store() {
 				private HashMap<String,InMemoryWritableFile> map = new HashMap<String,InMemoryWritableFile>();
+
+				@Override synchronized String getCacheIdentity() {
+					if (map.size() == 0) return null;
+					try {
+						MessageDigest digest = MessageDigest.getInstance("SHA-256");
+						update(digest, "slime-jsh-module-java-memory-store-v2");
+						ArrayList<String> names = new ArrayList<String>(map.keySet());
+						Collections.sort(names);
+						for (int i=0; i<names.size(); i++) {
+							String name = names.get(i);
+							update(digest, name);
+							update(digest, map.get(name).getInputStream());
+						}
+						return hex(digest.digest());
+					} catch (NoSuchAlgorithmException e) {
+						throw new RuntimeException(e);
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					} catch (IllegalStateException e) {
+						return null;
+					}
+				}
 
 				private InMemoryWritableFile create(String name) {
 					if (map.get(name) == null) {
@@ -744,52 +1167,235 @@ public class Java {
 		}
 
 		static Store file(final File file) {
+			return file(file, null);
+		}
+
+		private static Store file(final File file, final String cacheIdentity) {
 			return new Store() {
+				private File transaction;
+				private Thread transactionThread;
+				private CacheLock transactionLock;
+
+				@Override String getCacheIdentity() {
+					return cacheIdentity;
+				}
+
+				private File getLockFile() {
+					return new File(file.getParentFile(), "." + file.getName() + ".lock");
+				}
+
+				private File getPublishJournal() {
+					return new File(file.getParentFile(), "." + file.getName() + ".publish");
+				}
+
+				private File outputRoot() {
+					return (transaction == null) ? file : transaction;
+				}
+
+				private void remove(File target) {
+					if (target.isDirectory()) {
+						File[] children = target.listFiles();
+						if (children != null) {
+							for (int i=0; i<children.length; i++) {
+								remove(children[i]);
+							}
+						}
+					}
+					if (target.exists() && !target.delete()) throw new RuntimeException("Could not remove " + target);
+				}
+
+				private void addNewFiles(File from, File to, String relative, List<String> paths) {
+					if (from.isDirectory()) {
+						File[] children = from.listFiles();
+						if (children != null) {
+							for (int i=0; i<children.length; i++) {
+								String child = (relative.length() == 0) ? children[i].getName() : relative + "/" + children[i].getName();
+								addNewFiles(children[i], new File(to, children[i].getName()), child, paths);
+							}
+						}
+					} else if (!to.exists()) {
+						paths.add(relative);
+					}
+				}
+
+				private void writePublishJournal(List<String> paths) {
+					File journal = getPublishJournal();
+					File temporary = null;
+					try {
+						temporary = File.createTempFile("." + journal.getName() + ".", ".tmp", journal.getParentFile());
+						DataOutputStream output = new DataOutputStream(new FileOutputStream(temporary));
+						try {
+							output.writeInt(paths.size());
+							for (int i=0; i<paths.size(); i++) output.writeUTF(paths.get(i));
+						} finally {
+							output.close();
+						}
+						if (!temporary.renameTo(journal)) throw new IOException("Could not finalize publish journal: " + journal);
+						temporary = null;
+					} catch (IOException e) {
+						throw new RuntimeException("Could not write publish journal: " + journal, e);
+					} finally {
+						if (temporary != null && temporary.exists() && !temporary.delete()) {
+							throw new RuntimeException("Could not remove temporary publish journal: " + temporary);
+						}
+					}
+				}
+
+				private void recoverPublication() {
+					File journal = getPublishJournal();
+					if (!journal.exists()) return;
+					try {
+						String root = file.getCanonicalPath() + File.separator;
+						DataInputStream input = new DataInputStream(new FileInputStream(journal));
+						try {
+							int count = input.readInt();
+							if (count < 0) throw new IOException("Invalid publish journal entry count: " + count);
+							for (int i=0; i<count; i++) {
+								File target = new File(file, input.readUTF());
+								if (!target.getCanonicalPath().startsWith(root)) throw new IOException("Invalid publish journal path: " + target);
+								if (target.exists() && !target.delete()) throw new IOException("Could not recover partially published class: " + target);
+							}
+						} finally {
+							input.close();
+						}
+						if (!journal.delete() && journal.exists()) throw new IOException("Could not remove publish journal: " + journal);
+					} catch (IOException e) {
+						LOG.log(Java.class, Level.FINE, "Discarding module class cache after invalid publish journal: " + journal, e);
+						if (file.exists()) remove(file);
+						if (!journal.delete() && journal.exists()) throw new RuntimeException("Could not remove invalid publish journal: " + journal, e);
+					}
+				}
+
+				private void publish(File from, File to) {
+					if (from.isDirectory()) {
+						if (!to.exists() && !to.mkdirs() && !to.isDirectory()) throw new RuntimeException("Could not create " + to);
+						File[] children = from.listFiles();
+						if (children != null) {
+							for (int i=0; i<children.length; i++) {
+								publish(children[i], new File(to, children[i].getName()));
+							}
+						}
+					} else {
+						to.getParentFile().mkdirs();
+						if (to.exists()) return;
+						if (!from.renameTo(to) && !to.exists()) throw new RuntimeException("Could not publish " + from + " to " + to);
+					}
+				}
+
 				@Override public String toString() {
 					return "Java.Store: directory = " + file;
 				}
 
+				@Override void beginCompile() {
+					if (transaction != null) throw new IllegalStateException("Compile transaction is already active.");
+					transactionLock = Store.lock(file, getLockFile());
+					File parent = file.getParentFile();
+					try {
+						recoverPublication();
+						transaction = java.nio.file.Files.createTempDirectory(parent.toPath(), "." + file.getName() + ".").toFile();
+						transactionThread = Thread.currentThread();
+					} catch (IOException e) {
+						try {
+							transactionLock.close();
+						} catch (RuntimeException unlock) {
+							e.addSuppressed(unlock);
+						} finally {
+							transactionLock = null;
+						}
+						throw new RuntimeException("Could not create compile transaction directory in " + parent, e);
+					} catch (RuntimeException e) {
+						try {
+							transactionLock.close();
+						} catch (RuntimeException unlock) {
+							e.addSuppressed(unlock);
+						} finally {
+							transactionLock = null;
+						}
+						throw e;
+					} catch (Error e) {
+						try {
+							transactionLock.close();
+						} catch (RuntimeException unlock) {
+							e.addSuppressed(unlock);
+						} finally {
+							transactionLock = null;
+						}
+						throw e;
+					}
+				}
+
+				@Override void finishCompile(boolean success) {
+					if (transaction == null) return;
+					try {
+						if (success) {
+							ArrayList<String> paths = new ArrayList<String>();
+							addNewFiles(transaction, file, "", paths);
+							writePublishJournal(paths);
+							publish(transaction, file);
+							File journal = getPublishJournal();
+							if (!journal.delete() && journal.exists()) throw new RuntimeException("Could not remove publish journal: " + journal);
+						}
+					} finally {
+						File was = transaction;
+						transaction = null;
+						transactionThread = null;
+						try {
+							if (was.exists()) remove(was);
+						} finally {
+							CacheLock wasLock = transactionLock;
+							transactionLock = null;
+							wasLock.close();
+						}
+					}
+				}
+
 				@Override OutputStream createOutputStreamAt(String location) {
-					File destination = new File(file, location);
+					File destination = new File(outputRoot(), location);
 					destination.getParentFile().mkdirs();
 					try {
 						LOG.log(Java.class, Level.FINE, "Writing class to " + destination, null);
-						return new FileOutputStream(destination);
-					} catch (FileNotFoundException e) {
+						return new AtomicFileOutputStream(destination);
+					} catch (IOException e) {
 						throw new RuntimeException(e);
 					}
 				}
 
 				@Override Code.Loader.Resource readAt(String location) {
-					final File source = new File(file, location);
-					LOG.log(Java.class, Level.FINE, "Attempting to read class from " + source, null);
-					if (!source.exists()) return null;
-					if (!source.exists()) return null;
-					return new Code.Loader.Resource() {
-						@Override public Code.Loader.URI getURI() {
-							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-						}
-
-						@Override public String getSourceName() {
-							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-						}
-
-						@Override public InputStream getInputStream() {
-							try {
-								return new FileInputStream(source);
-							} catch (FileNotFoundException e) {
-								throw new RuntimeException(e);
+					boolean ownTransaction = transaction != null && transactionThread == Thread.currentThread();
+					CacheLock readLock = (ownTransaction) ? null : Store.lock(file, getLockFile());
+					try {
+						if (!ownTransaction) recoverPublication();
+						final File source = new File((ownTransaction) ? transaction : file, location);
+						LOG.log(Java.class, Level.FINE, "Attempting to read class from " + source, null);
+						if (!source.exists()) return null;
+						return new Code.Loader.Resource() {
+							@Override public Code.Loader.URI getURI() {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 							}
-						}
 
-						@Override public Long getLength() {
-							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-						}
+							@Override public String getSourceName() {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
 
-						@Override public Date getLastModified() {
-							throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-						}
-					};
+							@Override public InputStream getInputStream() {
+								try {
+									return new FileInputStream(source);
+								} catch (FileNotFoundException e) {
+									throw new RuntimeException(e);
+								}
+							}
+
+							@Override public Long getLength() {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+
+							@Override public Date getLastModified() {
+								throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+							}
+						};
+					} finally {
+						if (readLock != null) readLock.close();
+					}
 				}
 
 				@Override void removeAt(String location) {
