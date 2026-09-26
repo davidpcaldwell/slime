@@ -14,20 +14,19 @@ into several shorter jobs that run concurrently.
 ## How it works
 
 `contributor/jrunscript.fifty.ts` reads the `SLIME_TEST_JRUNSCRIPT_SHARD` environment variable. If unset, the entire
-suite runs (this is the default, used for local development via `wf test.jrunscript` and for `test-macos`). If set to
+suite runs (this is the default, used for local development via `wf test.jrunscript`). If set to
 a number 1-3, only the `fifty.load(...)` calls assigned to that shard run.
 
-Each `test-jdk*.yaml` workflow (except `test-macos`, which is out of scope for now) runs a 3-way matrix over
+Each `test-jdk*.yaml` workflow (including `test-jdk-macos.yaml`) runs a 3-way matrix over
 `SLIME_TEST_JRUNSCRIPT_SHARD`, so what was one ~50-minute job becomes three roughly 10-17 minute jobs that run in
-parallel. Each shard pays its own fixed overhead (Docker build, JDK/Rhino/TypeScript install -- roughly 3 minutes
-total), so the total wall-clock savings are smaller than 3x, but still substantial.
+parallel. Each shard pays its own fixed overhead (Docker build on Linux, JDK/Rhino/TypeScript install -- roughly 1-3
+minutes), so the total wall-clock savings are smaller than 3x, but still substantial.
 
 The shard count is deliberately 3, not 4: this repository's account is limited to 20 concurrently-running Actions
-jobs. With 5 JDK workflows, a 4-shard matrix alone would occupy 20 concurrent jobs, leaving no room for the other
-concurrent workflows (`test-node`, `test-browsers`, `test-jrunscript-engines-jdk25`, `check-jdk25`, `test-macos`,
-etc.) that run on the same PR/push, forcing them to queue behind the jrunscript shards and eroding the wall-clock
-benefit of sharding. A 3-shard matrix uses 15 concurrent jobs for jrunscript testing, leaving headroom under the
-20-job cap for the rest of the workflows to run without queuing.
+jobs. With 5 Linux JDK workflows plus macOS, a 4-shard matrix would occupy 24 concurrent jobs on its own, forcing the
+other workflows that run on the same PR/push (`test-node`, `test-browsers`, `test-jrunscript-engines-jdk25`,
+`check-jdk25`) to queue behind the jrunscript shards. A 3-shard matrix uses 18 jobs, so the full set of 22 jobs
+queues only 2 of them, and only until the short (~5-minute) jobs finish.
 
 ## How the shard assignment was derived
 

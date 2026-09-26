@@ -18,6 +18,10 @@ concurrency:
 jobs:
   test:
     runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     # https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
     steps:
       - name: Check out repository code
@@ -31,5 +35,6 @@ jobs:
           SLIME_TEST_NO_GIT: 1
           SLIME_TEST_NO_TOMCAT_INSTALL_TO_JSH: 1
           SLIME_TEST_NO_BROWSER: 1
+          SLIME_TEST_JRUNSCRIPT_SHARD: ${{ matrix.shard }}
         run: contributor/suite-macos
         shell: bash
