@@ -18,9 +18,9 @@ suite runs (this is the default, used for local development via `wf test.jrunscr
 a number 1-3, only the `fifty.load(...)` calls assigned to that shard run.
 
 Each `test-jdk*.yaml` workflow (except `test-macos`, which is out of scope for now) runs a 3-way matrix over
-`SLIME_TEST_JRUNSCRIPT_SHARD`, so what was one ~50-minute job becomes three roughly ~15-minute jobs that run in
-parallel. Each shard pays its own fixed overhead (Docker build, JDK/Rhino/TypeScript install, disk cleanup -- roughly
-6 minutes total), so the total wall-clock savings are smaller than 3x, but still substantial.
+`SLIME_TEST_JRUNSCRIPT_SHARD`, so what was one ~50-minute job becomes three roughly 10-17 minute jobs that run in
+parallel. Each shard pays its own fixed overhead (Docker build, JDK/Rhino/TypeScript install -- roughly 3 minutes
+total), so the total wall-clock savings are smaller than 3x, but still substantial.
 
 The shard count is deliberately 3, not 4: this repository's account is limited to 20 concurrently-running Actions
 jobs. With 5 JDK workflows, a 4-shard matrix alone would occupy 20 concurrent jobs, leaving no room for the other
@@ -56,3 +56,10 @@ As the suite's contents and timing profile change over time, shard assignment ma
 
 This process does not need to be automated; it is expected to be run manually, infrequently (e.g., if a shard becomes
 persistently much slower or faster than the others).
+
+## Disk space
+
+The sharded `test-jdk*` workflows do not run the `jlumbroso/free-disk-space` step used by other workflows. It was
+added when the whole suite ran in a single job; with the suite sharded, each job does much less work, and the step
+itself cost 2-11 minutes per job (it was the dominant source of variance between shards). If a sharded job starts
+failing with out-of-disk errors, restore that step to the affected workflow.
