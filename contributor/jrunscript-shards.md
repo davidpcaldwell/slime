@@ -30,11 +30,14 @@ setup is short, so both jobs should finish around the same time as the slowest L
 ## Staying within the concurrent job limit
 
 This repository's account is limited to 20 concurrently-running Actions jobs; jobs beyond that queue until a slot frees
-up. A PR or push to `main` currently runs exactly 20 jobs:
+up. A pull request currently runs exactly 20 jobs:
 
 * 15 Linux JDK shard jobs (5 JDKs x 3 shards)
 * 2 macOS jobs (which also run `wf check`)
 * `test-node`, `test-browsers`, and `test-jrunscript-engines-jdk25`
+
+Pushes to `main` also run the 4 `metrics.yaml` jobs (24 total), so a few jobs may briefly queue. This is acceptable because
+`main` runs are not latency-critical the way PR runs are.
 
 Before `wf check` was moved into a macOS job and macOS was reduced to two jobs, runs used 22 jobs; the two that queued
 waited about 6 minutes for a slot, adding roughly 4 minutes to total CI time. When adding a job or workflow, consider
