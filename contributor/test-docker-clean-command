@@ -33,9 +33,31 @@ set -x
 
 # TODO Can we simply check in wf initialize to see whether a `.git` directory exists, and obviate the need for SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT?
 
-docker compose -f docker-compose.yaml -f docker-compose.test.yaml \
+COMPOSE=(docker compose -f docker-compose.yaml -f docker-compose.test.yaml)
+BUILD_ATTEMPTS=5
+BUILD_LOG=$(mktemp)
+trap 'rm -f "$BUILD_LOG"' EXIT
+
+for ((attempt = 1; attempt <= BUILD_ATTEMPTS; attempt++)); do
+	: > "$BUILD_LOG"
+	"${COMPOSE[@]}" build local 2>&1 | tee "$BUILD_LOG"
+	status=${PIPESTATUS[0]}
+
+	if [ "$status" -eq 0 ]; then
+		break
+	fi
+
+	if ! grep -Eq '429 Too Many Requests|toomanyrequests' "$BUILD_LOG" || [ "$attempt" -eq "$BUILD_ATTEMPTS" ]; then
+		exit "$status"
+	fi
+
+	delay=$((attempt * 15 + RANDOM % 16))
+	>&2 echo "Container registry rate limit encountered; retrying image build in ${delay} seconds (attempt $((attempt + 1))/${BUILD_ATTEMPTS})."
+	sleep "$delay"
+done
+
+"${COMPOSE[@]}" \
 	run \
-	--build \
 	-e DOCKER_HOST_UNAME=$(uname) \
 	-e SLIME_TEST_REQUIRE_DISPLAY \
 	-e S6_KEEP_ENV=1 \
