@@ -38,9 +38,17 @@
 			})();
 
 			return {
-				checkpoint: function(phase) {
+				enabled: enabled,
+				checkpoint: function(phase, fields) {
 					if (!enabled) return;
 					var line = "[jsh.profile] phase=" + phase + " t=" + Packages.java.lang.System.currentTimeMillis();
+					if (fields) {
+						for (var name in fields) {
+							var value = String(fields[name]);
+							value = value.replace(/[\s=]/g, "_");
+							line += " " + name + "=" + value;
+						}
+					}
 					if (destination) {
 						destination.println(line);
 					} else {
@@ -211,6 +219,7 @@
 						{
 							$slime: $slime,
 							jsh: jsh,
+							profile: profile,
 							$export: function(v) {
 								exported = v;
 							}
@@ -551,8 +560,11 @@
 			(function loadPlugins() {
 				profile.checkpoint("jsh.js.loadPlugins.start");
 				var _sources = $slime.getInterface().getPluginSources();
+				profile.checkpoint("jsh.js.loadPlugins.sources", { count: _sources.length });
 				for (var i=0; i<_sources.length; i++) {
+					profile.checkpoint("jsh.js.loadPlugins.source.start", { index: i, total: _sources.length });
 					plugins.load({ loader: new $slime.Loader({ _source: _sources[i] }) });
+					profile.checkpoint("jsh.js.loadPlugins.source.end", { index: i, total: _sources.length });
 				}
 				profile.checkpoint("jsh.js.loadPlugins.end");
 			})();

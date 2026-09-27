@@ -11,8 +11,34 @@
 	 * @param { slime.jsh.plugin.$slime } $slime
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.loader.Export<slime.jsh.internal.loader.plugins.Export> } $export
+	 * @param { { enabled: boolean, checkpoint: (phase: string, fields?: { [name: string]: any }) => void } } profile
 	 */
-	function(Packages,$slime,jsh,$export) {
+	function(Packages,$slime,jsh,$export,profile) {
+		var checkpoint = function(phase, fields) {
+			if (!profile || !profile.enabled) return;
+			profile.checkpoint(phase, fields);
+		};
+
+		var sourceFields = function(source) {
+			if (!profile || !profile.enabled) return {};
+			return { source: source() };
+		};
+
+		var sourceType = function(item) {
+			if (isLoaderSource(item)) return "loader";
+			if (isSlimeSource(item)) return "slime";
+			if (isJarSource(item)) return "jar";
+			return "unknown";
+		};
+
+		var pluginsType = function(p) {
+			if (isJavaFilePlugins(p)) return "file";
+			if (isSynchronousLoaderPlugins(p)) return "synchronous";
+			if (isOldLoaderPlugins(p)) return "loader";
+			if (isZipFilePlugins(p)) return "zip";
+			return "unknown";
+		};
+
 		//	Bootstrap some Java logging; we end up loading a plugin that does more of this in the standard jsh implementation but
 		//	it is obviously not available here, so we use this API within this file
 		/**
@@ -108,7 +134,9 @@
 			//			put it but the simplest change to make.
 			if (p.$loader["plugin"] && p.$loader["plugin"].mock) scope.$loader.plugin["mock"] = p.$loader["plugin"].mock;
 
+			checkpoint("jsh.plugins.register.start", sourceFields(p.source));
 			scope.$loader.run("plugin.jsh.js", scope);
+			checkpoint("jsh.plugins.register.end", Object.assign(sourceFields(p.source), { count: rv.length }));
 
 			return rv;
 		};
@@ -125,11 +153,16 @@
 				var ranSomething = false;
 				var i = 0;
 				while(i < plugins.length) {
+					checkpoint("jsh.plugins.ready.start", sourceFields(plugins[i].source));
 					if (plugins[i].implementation.isReady()) {
+						checkpoint("jsh.plugins.ready.end", Object.assign(sourceFields(plugins[i].source), { ready: true }));
+						checkpoint("jsh.plugins.load.start", sourceFields(plugins[i].source));
 						plugins[i].implementation.load();
+						checkpoint("jsh.plugins.load.end", sourceFields(plugins[i].source));
 						plugins.splice(i,1);
 						ranSomething = true;
 					} else {
+						checkpoint("jsh.plugins.ready.end", Object.assign(sourceFields(plugins[i].source), { ready: false }));
 						i++;
 					}
 				}
@@ -271,10 +304,13 @@
 				plugins: [],
 				classpath: []
 			};
+			checkpoint("jsh.plugins.scan.start", { loader: loader.toString() });
 			var sources = scan(loader);
+			checkpoint("jsh.plugins.scan.end", { loader: loader.toString(), count: sources.length });
 
 			//	TODO	should this share with jsh loader?
 			sources.forEach(function(item) {
+				checkpoint("jsh.plugins.content.source.start", { type: sourceType(item) });
 				var content = getContent(item);
 				if (content.source) {
 					var array = register({
@@ -287,6 +323,7 @@
 				if (content.classes) {
 					rv.classpath.push(content.classes);
 				}
+				checkpoint("jsh.plugins.content.source.end", { type: sourceType(item), plugins: rv.plugins.length, classpath: rv.classpath.length });
 			});
 
 			return rv;
@@ -304,14 +341,19 @@
 		 * @param { slime.jsh.internal.loader.plugins.PluginsContent } content
 		 */
 		var update = function(content) {
+			checkpoint("jsh.plugins.update.start", { plugins: content.plugins.length, classpath: content.classpath.length });
 			content.classpath.forEach(function(entry) {
+				checkpoint("jsh.plugins.classpath.add.start");
 				$slime.classpath.add(entry);
+				checkpoint("jsh.plugins.classpath.add.end");
 			});
 			run(content.plugins);
+			checkpoint("jsh.plugins.update.end", { plugins: content.plugins.length, classpath: content.classpath.length });
 		}
 
 		/** @type { slime.jsh.internal.loader.plugins.Export["load"] } */
 		var load = function(p) {
+			checkpoint("jsh.plugins.loadSource.start", { type: pluginsType(p) });
 			/** @type { slime.jsh.internal.loader.plugins.PluginsContent } */
 			var content;
 
@@ -358,6 +400,7 @@
 				//	TODO	this is some kind of error condition; probably should throw TypeError
 			}
 			update(content);
+			checkpoint("jsh.plugins.loadSource.end", { type: pluginsType(p) });
 		};
 
 		/** @type { slime.jsh.plugin.$slime["plugins"]["mock"] } */
@@ -396,4 +439,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,$slime,jsh,$export)
+)(Packages,$slime,jsh,$export,profile)
