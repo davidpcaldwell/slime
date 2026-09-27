@@ -221,6 +221,10 @@ namespace slime.jsh.wf {
 
 		subprojects: {
 			initialize: {
+				/**
+				 * Initializes the configured `wf.path` and submodules containing a `wf` file.
+				 * Submodules without `wf` are skipped; the configured `wf.path` remains required.
+				 */
 				process: slime.$api.fp.impure.Process
 			}
 		}

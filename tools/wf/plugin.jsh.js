@@ -285,10 +285,14 @@
 						wfpath: wfpath,
 						submodules: submodules
 					}),
-					function(inputs) {
-						var rv = [ inputs.wfpath ];
-						inputs.submodules.forEach(function(submodule) {
-							if (submodule != inputs.wfpath) {
+					function(selection) {
+						var rv = [ selection.wfpath ];
+						var directory = inputs.base();
+						selection.submodules.forEach(function(submodule) {
+							if (
+								submodule != selection.wfpath
+								&& directory.getRelativePath(submodule + "/wf").file
+							) {
 								rv.push(submodule);
 							}
 						});
