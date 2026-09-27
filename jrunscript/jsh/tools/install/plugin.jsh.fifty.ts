@@ -71,8 +71,9 @@ namespace slime.jsh.shell.tools {
 			/**
 			 * A named version of Rhino to download and install; ignored if `local` is specified. Available versions include:
 			 *
-			 * * mozilla/1.8.0 (the default)
-			 * * mozilla/1.7.15 (the default for JDK 8)
+			 * * mozilla/1.9.1 (the default for Java 11 and later)
+			 * * mozilla/1.8.0 (available)
+			 * * mozilla/1.7.15 (the default for Java 8)
 			 * * mozilla/1.7.14 (unsupported)
 			 * * mozilla/1.7.13 (unsupported)
 			 */
@@ -89,7 +90,9 @@ namespace slime.jsh.shell.tools {
 			/**
 			 * A named version of Rhino to download and install if an acceptable version is not present.
 			 *
-			 * * mozilla/1.7.15 (the default, and only tested/supported version)
+			 * * mozilla/1.9.1 (the default for Java 11 and later)
+			 * * mozilla/1.8.0 (available)
+			 * * mozilla/1.7.15 (the default for Java 8)
 			 * * mozilla/1.7.14
 			 * * mozilla/1.7.13
 			 */
