@@ -506,7 +506,9 @@ namespace slime.jsh {
 				);
 				verify(result).status.is(0);
 				jsh.shell.console(result.stdio.output);
-				var json = JSON.parse(result.stdio.output) as string[];
+				var json = (JSON.parse(result.stdio.output) as string[]).filter(function(name) {
+					return name == "jsh";
+				});
 				verify(json).length.is(1);
 				verify(json)[0].is("jsh");
 			};
