@@ -288,6 +288,9 @@
 					function(selection) {
 						var rv = [ selection.wfpath ];
 						var directory = inputs.base();
+						if (!directory.getRelativePath(selection.wfpath + "/wf").file) {
+							throw new Error("Configured wf.path has no wf script: " + selection.wfpath);
+						}
 						selection.submodules.forEach(function(submodule) {
 							if (
 								submodule != selection.wfpath
