@@ -848,7 +848,23 @@
 					};
 
 					this.getEnumerator = function() {
-						throw new Error("Unimplemented: getEnumerator");
+						if (!self.list) return null;
+						return new JavaAdapter(
+							//@ts-ignore Code.Loader.Enumerator is not represented in the generated native type.
+							Packages.inonit.script.engine.Code.Loader.Enumerator,
+							{
+								list: function(prefix) {
+									var path = (prefix == null) ? "" : String(prefix);
+									if (path.length && path.charAt(path.length-1) != "/") path += "/";
+									var loader = (path.length) ? self.Child(path) : self;
+									var entries = loader.list();
+									if (!entries) return null;
+									return entries.map(function(entry) {
+										return entry.path + (("loader" in entry) ? "/" : "");
+									});
+								}
+							}
+						);
 					}
 				}
 			)
@@ -929,7 +945,14 @@
 							//	Currently can be used to add .jar directly to classpath through jsh.loader.java.add
 							//	TODO	determine whether this should be switched to jar._file; used by servlet plugin to put Tomcat classes
 							//			in classpath
-							_classpath.add(Packages.inonit.script.engine.Code.Loader.create(p._file));
+							//	Must use addJar() (not Code.Loader.create()) so that the loader's Enumerator can list the jar's
+							//	contents; Code.Loader.create()'s Enumerator only works for directories, and returns null for files,
+							//	which would otherwise cause dependency-digest computation (used for the source-reactive Java module
+							//	class cache) to fail and silently fall back to a non-persistent, in-memory cache. addJar() uses
+							//	Code.Loader.jar(), which provides fingerprinting via its Enumerator while still loading resources
+							//	lazily through a URL-based loader (unlike Code.Loader.zip(), which eagerly decompresses and retains
+							//	every entry's bytes in memory for the classpath loader's lifetime).
+							_classpath.addJar(p._file);
 						} else if (isJavaFileClasspathEntry(p) && !p._file.exists()) {
 							//	do nothing
 						} else if (isSlimeClasspathEntry(p)) {

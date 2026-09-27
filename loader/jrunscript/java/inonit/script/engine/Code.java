@@ -361,7 +361,8 @@ public class Code {
 		//	TODO
 		static Loader jar(final File jar) throws IOException {
 			try {
-				return create(jar.toURI().toURL(), Enumerator.zip(jar.getAbsolutePath(), new FileInputStream(jar)));
+				//	Resource lookups for cache fingerprints must not resolve a same-named entry from the parent class loader.
+				return new UrlBased(jar.toURI().toURL(), Enumerator.zip(jar.getAbsolutePath(), new FileInputStream(jar)), true);
 			} catch (MalformedURLException e) {
 				throw new RuntimeException(e);
 			}
@@ -434,6 +435,7 @@ public class Code {
 		}
 
 		private static void maintainDirectories(HashMap<String,HashSet<String>> directories, String entryName) {
+			if (entryName.length() == 0) return;
 			if (entryName.lastIndexOf("/") != -1) {
 				String directory;
 				String basename;
@@ -457,6 +459,13 @@ public class Code {
 				}
 				listing.add(basename);
 				maintainDirectories(directories, directory);
+			} else {
+				HashSet<String> listing = directories.get("");
+				if (listing == null) {
+					listing = new HashSet<String>();
+					directories.put("", listing);
+				}
+				listing.add(entryName);
 			}
 		}
 
@@ -935,9 +944,11 @@ public class Code {
 				java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(stream);
 				java.util.zip.ZipEntry entry;
 				final HashMap<String,Loader.Resource> files = new HashMap<String,Loader.Resource>();
+				final HashMap<String,HashSet<String>> directories = new HashMap<String,HashSet<String>>();
 				while( (entry = in.getNextEntry()) != null) {
 					final byte[] bytes = new inonit.script.runtime.io.Streams().readBytes(in, false);
 					final String entryName = entry.getName();
+					maintainDirectories(directories, entryName);
 					Loader.Resource f = new Loader.Resource() {
 						public String toString() {
 							return getClass().getName() + " length=" + bytes.length;
@@ -973,22 +984,7 @@ public class Code {
 				final Enumerator enumerator = new Enumerator() {
 					@Override public String[] list(String prefix) {
 						String start = toPrefix(prefix);
-						ArrayList<String> rv = new ArrayList<String>();
-						for (String key : files.keySet()) {
-							if (key.startsWith(start)) {
-								if (key.endsWith("/")) {
-									//	ignore
-								} else {
-									String suffix = key.substring(start.length());
-									if (suffix.indexOf("/") != -1) {
-										//	subdirectory, ignore
-									} else {
-										rv.add(suffix);
-									}
-								}
-							}
-						}
-						return rv.toArray(new String[0]);
+						return (directories.get(start) != null) ? directories.get(start).toArray(new String[0]) : new String[0];
 					}
 				};
 				return enumerator;
@@ -1003,6 +999,10 @@ public class Code {
 		public abstract Resource getFile(String path) throws IOException;
 		public abstract Enumerator getEnumerator();
 		public abstract Locator getLocator();
+
+		public String getCacheIdentity() {
+			return null;
+		}
 
 		private String getChildPrefix(String prefix) {
 			if (prefix == null || prefix.length() == 0) return "";
@@ -1091,12 +1091,19 @@ public class Code {
 			private java.net.URL url;
 			private Enumerator enumerator;
 			private Locator classes;
+			private final MyUrlClassLoader delegate;
+			private boolean exactJarResources;
 
 			UrlBased(final java.net.URL url, Enumerator enumerator) {
+				this(url, enumerator, false);
+			}
+
+			UrlBased(final java.net.URL url, Enumerator enumerator, boolean exactJarResources) {
 				//	TODO	could this.url be replaced by calls to the created classes object?
 				this.url = url;
 				this.enumerator = enumerator;
-				final URLClassLoader delegate = new MyUrlClassLoader(url);
+				this.exactJarResources = exactJarResources;
+				this.delegate = new MyUrlClassLoader(url);
 				this.classes = new Locator() {
 					@Override public URL getResource(String path) {
 						return delegate.getResource(path);
@@ -1120,6 +1127,10 @@ public class Code {
 				//	side command, at rhino/tools/github/test/manual/jsh.jsh.js
 				if (System.getenv("JSH_OPTIMIZE_REMOTE_SHELL") != null && url.toString().equals("http://raw.githubusercontent.com/davidpcaldwell/slime/master/")) {
 					new FileRequest("getFile(" + path + ")").printStackTrace();
+				}
+				if (exactJarResources) {
+					URL resource = delegate.findResource(path);
+					return (resource == null) ? null : Resource.create(resource);
 				}
 				URL url = classes.getResource(path);
 				if (url == null) return null;
