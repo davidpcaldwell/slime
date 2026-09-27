@@ -115,8 +115,9 @@ If you need unique naming for non-devcontainer Compose usage, set `COMPOSE_PROJE
 
 ## Continuous integration testing
 
-When code is contributed via a PR, it must pass a series of checks on the server. These checks run by platform and are defined in
-the `.github/workflows` directory.
+When code is contributed via a PR, it must pass a series of checks on the server. The `test.yaml` workflow invokes the reusable
+platform workflows in the `.github/workflows` directory. Its `CI gate` job waits for every platform workflow and matrix shard, and
+is the single status check required by the `main` branch ruleset.
 
 * Java (25, 21, 17, 11, 8) - defined by `test-jdk[n].yaml`, where `n` is the major version number, which in turn runs
 `contributor/suite-docker-jrunscript [n]`, which in turn runs `./wf check` under Linux via Docker, which in turn:

@@ -1,0 +1,67 @@
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+name: test
+on:
+  pull_request:
+    branches:
+      - '**'
+  push:
+    branches:
+      - main
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  browsers:
+    uses: ./.github/workflows/test-browsers.yaml
+  node:
+    uses: ./.github/workflows/test-node.yaml
+  jrunscript-engines:
+    uses: ./.github/workflows/test-jrunscript-engines.yaml
+  jdk8:
+    uses: ./.github/workflows/test-jdk8.yaml
+  jdk11:
+    uses: ./.github/workflows/test-jdk11.yaml
+  jdk17:
+    uses: ./.github/workflows/test-jdk17.yaml
+  jdk21:
+    uses: ./.github/workflows/test-jdk21.yaml
+  jdk25:
+    uses: ./.github/workflows/test-jdk25.yaml
+  macos:
+    uses: ./.github/workflows/test-jdk-macos.yaml
+  gate:
+    name: CI gate
+    if: ${{ always() && !cancelled() }}
+    needs:
+      - browsers
+      - node
+      - jrunscript-engines
+      - jdk8
+      - jdk11
+      - jdk17
+      - jdk21
+      - jdk25
+      - macos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify all test workflows succeeded
+        if: >-
+          ${{
+            needs.browsers.result != 'success' ||
+            needs.node.result != 'success' ||
+            needs.jrunscript-engines.result != 'success' ||
+            needs.jdk8.result != 'success' ||
+            needs.jdk11.result != 'success' ||
+            needs.jdk17.result != 'success' ||
+            needs.jdk21.result != 'success' ||
+            needs.jdk25.result != 'success' ||
+            needs.macos.result != 'success'
+          }}
+        run: |
+          echo "One or more required test workflows did not succeed."
+          exit 1
