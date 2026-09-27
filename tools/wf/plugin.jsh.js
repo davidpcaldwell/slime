@@ -285,10 +285,17 @@
 						wfpath: wfpath,
 						submodules: submodules
 					}),
-					function(inputs) {
-						var rv = [ inputs.wfpath ];
-						inputs.submodules.forEach(function(submodule) {
-							if (submodule != inputs.wfpath) {
+					function(selection) {
+						var rv = [ selection.wfpath ];
+						var directory = inputs.base();
+						if (!directory.getRelativePath(selection.wfpath + "/wf").file) {
+							throw new Error("Configured wf.path has no wf script: " + selection.wfpath);
+						}
+						selection.submodules.forEach(function(submodule) {
+							if (
+								submodule != selection.wfpath
+								&& directory.getRelativePath(submodule + "/wf").file
+							) {
 								rv.push(submodule);
 							}
 						});

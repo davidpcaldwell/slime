@@ -95,6 +95,64 @@ namespace slime.jsh.wf {
 		) {
 			fifty.tests.exports = fifty.test.Parent();
 			fifty.tests.manual = {};
+
+			fifty.tests.exports.subprojects = function() {
+				var jsh = fifty.global.jsh;
+				var base = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
+				var repository = jsh.tools.git.oo.init({ pathname: base.pathname });
+				base.getRelativePath("wf.path").write("primary", { append: false });
+				base.getRelativePath("initialize.jsh.js").write(
+					"jsh.wf.project.subprojects.initialize.process();\n",
+					{ append: false }
+				);
+
+				["primary", "active", "plain"].forEach(function(name) {
+					var directory = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
+					var child = jsh.tools.git.oo.init({ pathname: directory.pathname });
+					child.config({ set: { name: "user.name", value: "WF test" } });
+					child.config({ set: { name: "user.email", value: "wf@example.com" } });
+					directory.getRelativePath("README").write(name, { append: false });
+					if (name != "plain") {
+						directory.getRelativePath("wf").write(
+							"#!/bin/bash\nprintf '%s\\n' '" + name + "' >> \"$WF_TEST_LOG\"\n",
+							{ append: false }
+						);
+					}
+					child.add({ path: "." });
+					child.commit({ all: true, message: "Initialize " + name });
+					repository.submodule.add({
+						repository: child,
+						path: name,
+						config: { "protocol.file.allow": "always" }
+					});
+				});
+
+				var output = base.getRelativePath("initialized.log");
+				var invoke = function() {
+					return jsh.shell.run({
+						command: jsh.shell.jsh.src.getFile("jsh.bash"),
+						arguments: [base.getFile("initialize.jsh.js")],
+						directory: base,
+						environment: Object.assign({}, jsh.shell.environment, {
+							PROJECT: base.toString(),
+							WF_TEST_LOG: output.toString()
+						}),
+						stdio: { output: String, error: String },
+						evaluate: function(result) { return result; }
+					});
+				};
+
+				var initialized = invoke();
+				if (initialized.status) jsh.shell.console(initialized.stdio.error);
+				fifty.verify(initialized).status.is(0);
+				fifty.verify(output.file.read(String)).is("primary\nactive\n");
+
+				base.getRelativePath("wf.path").write("plain", { append: false });
+				var missing = invoke();
+				fifty.verify(missing.status != 0).is(true);
+				fifty.verify(missing.stdio.error.indexOf("Configured wf.path has no wf script: plain") != -1).is(true);
+				fifty.verify(output.file.read(String)).is("primary\nactive\n");
+			};
 		}
 	//@ts-ignore
 	)(fifty);
@@ -221,6 +279,10 @@ namespace slime.jsh.wf {
 
 		subprojects: {
 			initialize: {
+				/**
+				 * Initializes the configured `wf.path` and submodules containing a `wf` file.
+				 * Submodules without `wf` are skipped; the configured `wf.path` remains required.
+				 */
 				process: slime.$api.fp.impure.Process
 			}
 		}
