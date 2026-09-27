@@ -288,15 +288,26 @@ namespace slime.jsh.internal.launcher {
 						}).sort();
 					}
 
+					//	Both persistent class caches are specified explicitly rather than inherited, so that the behavior under test
+					//	is determined by this test alone; otherwise a JSH_SHELL_MODULE_CLASS_CACHE or JSH_SHELL_CLASSES value in
+					//	the environment running the tests would silently change which cache the shell under test uses.
+					var environment = function(enabled: boolean) {
+						return function(inherited: slime.jrunscript.shell.run.Environment) {
+							var rv: { [name: string]: string } = {};
+							Object.keys(inherited).forEach(function(name) {
+								if (name == "JSH_SHELL_MODULE_CLASS_CACHE") return;
+								if (name == "JSH_SHELL_CLASSES") return;
+								rv[name] = inherited[name];
+							});
+							if (enabled) rv["JSH_SHELL_MODULE_CLASS_CACHE"] = "true";
+							return rv;
+						}
+					}
+
 					var run = function(enabled: boolean) {
 						var intention = test.shells.unbuilt().invoke({
 							script: scriptPathname,
-							environment: enabled ? function(environment) {
-								return $api.Object.compose(
-									environment,
-									{ JSH_SHELL_MODULE_CLASS_CACHE: "true" }
-								);
-							} : void(0),
+							environment: environment(enabled),
 							stdio: { output: "string" }
 						});
 						var result = $api.fp.world.Sensor.now({
