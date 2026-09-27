@@ -68,7 +68,8 @@ done in the CI environment, and runs a `jsh` script using the specified JDK (spe
 inside the container.
 * `test-docker-clean-command <jdk-version> <command> [arguments]`: Creates a Docker image with the SLIME source code baked in
 (and an empty `local/` directory), as is done in the CI environment, installs the specified JDK, and then executes the provided
-command (plus any additional arguments) inside the container.
+command (plus any additional arguments) inside the container. Image builds retry with bounded, jittered backoff when a container
+registry reports rate limiting.
 
 ### Browser tests
 
