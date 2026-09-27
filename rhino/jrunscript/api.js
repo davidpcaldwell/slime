@@ -2045,23 +2045,30 @@
 					}
 				};
 
-				var forJava = function(jdkVersion) {
-					if (jdkVersion < 11) {
-						return SingleJarDownload(
-							"1.7.15",
-							"https://github.com/mozilla/rhino/releases/download/Rhino1_7_15_Release/rhino-1.7.15.jar",
-							"js"
-						);
+				var versions = {
+					"1.7.13": "https://github.com/mozilla/rhino/releases/download/Rhino1_7_13_Release/rhino-1.7.13.jar",
+					"1.7.14": "https://github.com/mozilla/rhino/releases/download/Rhino1_7_14_Release/rhino-1.7.14.jar",
+					"1.7.15": "https://github.com/mozilla/rhino/releases/download/Rhino1_7_15_Release/rhino-1.7.15.jar",
+					"1.8.0": "https://repo1.maven.org/maven2/org/mozilla/rhino-all/1.8.0/rhino-all-1.8.0.jar",
+					"1.9.1": "https://repo1.maven.org/maven2/org/mozilla/rhino-all/1.9.1/rhino-all-1.9.1.jar"
+				};
+
+				var forVersion = function(version) {
+					var number = version.replace(/^mozilla\//, "");
+					if (!Object.prototype.hasOwnProperty.call(versions, number)) {
+						throw new Error("Unknown Rhino version: " + version);
 					}
-					return SingleJarDownload(
-						"1.9.1",
-						"https://repo1.maven.org/maven2/org/mozilla/rhino-all/1.9.1/rhino-all-1.9.1.jar",
-						"js"
-					);
+					var url = versions[number];
+					return SingleJarDownload(number, url, "js");
+				};
+
+				var forJava = function(jdkVersion) {
+					return forVersion((jdkVersion < 11) ? "1.7.15" : "1.9.1");
 				};
 
 				return {
 					forJava: forJava,
+					forVersion: forVersion,
 					compatible: function() {
 						return forJava($api.java.getMajorVersion());
 					}

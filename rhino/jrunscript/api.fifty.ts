@@ -553,6 +553,8 @@ namespace slime.internal.jrunscript.bootstrap {
 			compatible: () => Library
 
 			forJava: (jdkMajorVersion: number) => Library
+
+			forVersion: (version: string) => Library
 		}
 	}
 
@@ -656,6 +658,15 @@ namespace slime.internal.jrunscript.bootstrap {
 				verify(jsh.internal.bootstrap.rhino.forJava(11).version).is("1.9.1");
 				verify(jsh.internal.bootstrap.rhino.forJava(16).version).is("1.9.1");
 				verify(jsh.internal.bootstrap.rhino.forJava(17).version).is("1.9.1");
+				verify(jsh.internal.bootstrap.rhino.forVersion("mozilla/1.8.0").version).is("1.8.0");
+				verify(jsh.internal.bootstrap.rhino.forVersion("1.7.15").version).is("1.7.15");
+				var unknownVersionRejected = false;
+				try {
+					jsh.internal.bootstrap.rhino.forVersion("unknown");
+				} catch (e) {
+					unknownVersionRejected = true;
+				}
+				verify(unknownVersionRejected).is(true);
 				var library = jsh.internal.bootstrap.rhino.compatible();
 				var jar = new Packages.java.io.File(directory, "js.jar");
 

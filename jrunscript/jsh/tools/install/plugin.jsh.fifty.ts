@@ -60,32 +60,6 @@ namespace slime.jsh.shell.tools {
 			version: slime.$api.fp.impure.External<slime.$api.fp.Maybe<string>>
 		}
 
-		export interface OldInstallCommand {
-			mock?: { lib: slime.jrunscript.file.Directory, rhino: slime.jrunscript.file.File }
-
-			/**
-			 * A local copy of the Rhino JAR file to install.
-			 */
-			local?: slime.jrunscript.file.File
-
-			/**
-			 * A named version of Rhino to download and install; ignored if `local` is specified. Available versions include:
-			 *
-			 * * mozilla/1.9.1 (the default for Java 11 and later)
-			 * * mozilla/1.8.0 (available)
-			 * * mozilla/1.7.15 (the default for Java 8)
-			 * * mozilla/1.7.14 (unsupported)
-			 * * mozilla/1.7.13 (unsupported)
-			 */
-			version?: string
-
-			/**
-			 * Whether to replace the existing installation in the shell if one is found (`true`), or to leave it in place (`false`,
-			 * the default).
-			 */
-			replace?: boolean
-		}
-
 		export interface RequireCommand {
 			/**
 			 * A named version of Rhino to download and install if an acceptable version is not present.
@@ -108,14 +82,6 @@ namespace slime.jsh.shell.tools {
 			 * @returns `true` to replace the installation; `false` to leave it in place.
 			 */
 			replace?: (version: string) => boolean
-		}
-
-		export interface OldInstallEvents {
-			console: string
-
-			installed: {
-				to: slime.jrunscript.file.Pathname
-			}
 		}
 
 		export interface InstallEvents {
@@ -141,19 +107,6 @@ namespace slime.jsh.shell.tools {
 				simple: slime.$api.fp.impure.External<slime.$api.fp.Maybe<rhino.Installation>>
 			}
 
-			install: {
-				/**
-				 * @deprecated Use {@link Exports | rhino.require }.
-				 *
-				 * Installs Rhino as a JavaScript engine for the currently executing shell.
-				 */
-				old: (
-					argument?: slime.jsh.shell.tools.rhino.OldInstallCommand,
-					receiver?: slime.$api.event.Function.Receiver<slime.jsh.shell.tools.rhino.OldInstallEvents>
-				) => void
-			}
-
-			//	TODO #1621	No test coverage at all for rhino.require()
 			require: {
 				world: (lib?: string) => slime.$api.fp.world.Means<rhino.RequireCommand,rhino.RequireEvents>
 
@@ -175,95 +128,78 @@ namespace slime.jsh.shell.tools {
 
 				fifty.tests.rhino = fifty.test.Parent();
 
-				fifty.tests.rhino.old = function() {
-					const dependencies = (
-						function() {
-							const script: slime.project.dependencies.Script = fifty.$loader.script("../../../../contributor/dependencies/module.js");
-							return script({
-								java: {
-									version: String(Packages.java.lang.System.getProperty("java.version"))
+				fifty.tests.rhino.require = function() {
+					var lib = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					var target = lib.getRelativePath("js.jar");
+					target.write("original", { append: false });
+
+					var bootstrap = jsh.internal.bootstrap.rhino;
+					var originalForVersion = bootstrap.forVersion;
+					var originalAt = jsh.tools.install.rhino.at;
+					var originalJshRequire = jsh.shell.jsh.require;
+					var selectedVersion: string | null = null;
+					var inspectedPath: string | null = null;
+					var downloadedTo: string | null = null;
+					var events: { type: string, detail: string }[] = [];
+
+					try {
+						bootstrap.forVersion = function(version) {
+							selectedVersion = version;
+							return {
+								version: "1.8.0",
+								download: function(directory) {
+									downloadedTo = String(directory);
+									jsh.file.Pathname(downloadedTo).directory.getRelativePath("js.jar").write("replacement", { append: false });
+									return [];
 								},
-								library: {
-									file: jsh.file
+								local: function() { return []; }
+							};
+						};
+						jsh.shell.jsh.require = function(order) {
+							return function(receiver) {
+								if (!order.satisfied()) {
+									receiver.fire("installing");
+									order.install();
+									receiver.fire("installed");
+								} else {
+									receiver.fire("satisfied");
 								}
-							})
-						}
-					)();
-
-					var Captor = function() {
-						var events: slime.$api.Event<any>[] = [];
-
-						return {
-							console: function(e) {
-								events.push(e);
-							},
-							installed: function(e) {
-								events.push(e);
-							},
-							captured: Object.assign(
-								events,
-								{
-									type: function(type) {
-										return events.filter(function(e) { return e.type == type; });
+							};
+						};
+						jsh.tools.install.rhino.at = function(pathname) {
+							inspectedPath = pathname;
+							return {
+								present: true,
+								value: {
+									version: function() {
+										return { present: true, value: "1.7.15" };
 									}
 								}
-							)
-						}
+							};
+						};
+
+						jsh.shell.tools.rhino.require.world(lib.toString())({
+							version: "mozilla/1.8.0",
+							replace: function() { return true; }
+						})({
+							fire: function(type, detail) {
+								events.push({ type: type, detail: detail });
+							}
+						});
+
+						verify(selectedVersion).is("mozilla/1.8.0");
+						verify(inspectedPath).is(lib.getRelativePath("js.jar").toString());
+						verify(String(new Packages.java.io.File(downloadedTo).getCanonicalPath())).is(
+							String(new Packages.java.io.File(lib.toString()).getCanonicalPath())
+						);
+						verify(lib.getFile("js.jar").read(String)).is("replacement");
+						verify(events.filter(function(event) { return event.type == "installing"; })).length.is(1);
+					} finally {
+						bootstrap.forVersion = originalForVersion;
+						jsh.tools.install.rhino.at = originalAt;
+						jsh.shell.jsh.require = originalJshRequire;
+						lib.remove();
 					}
-
-					var lib = jsh.shell.TMPDIR.createTemporary({ directory: true });
-
-					var mock = {
-						lib: lib,
-						rhino: void(0)
-					};
-
-					var toConsoleEvent = function(e: slime.$api.Event<string>): slime.$api.Event<string> {
-						return e;
-					};
-
-					var readFile = function(p: slime.jrunscript.file.File) {
-						return p.read(String);
-					};
-
-					fifty.run(function alreadyInstalled() {
-						lib.getRelativePath("js.jar").write("already", { append: false });
-						var captor = Captor();
-						jsh.shell.tools.rhino.install.old({ mock: mock }, captor);
-						verify(captor).captured[0].type.is("console");
-						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("Rhino already installed at " + lib.getFile("js.jar"));
-						verify(lib).getFile("js.jar").evaluate(readFile).is("already");
-						verify(captor.captured.type("installed")).length.is(0);
-						lib.getFile("js.jar").remove();
-					});
-
-					fifty.run(function replace() {
-						lib.getRelativePath("js.jar").write("original", { append: false });
-						lib.getRelativePath("download").write("downloaded", { append: false });
-						mock.rhino = lib.getFile("download");
-						var captor = Captor();
-						verify(lib).getFile("js.jar").evaluate(readFile).is("original");
-						jsh.shell.tools.rhino.install.old({ mock: mock, replace: true }, captor);
-						verify(captor).captured[0].type.is("console");
-						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("Replacing Rhino at " + lib.getRelativePath("js.jar") + " ...");
-						verify(captor).captured[1].type.is("console");
-						verify(captor).captured[1].evaluate(toConsoleEvent).detail.is("Installing Rhino version " + dependencies.data.rhino.version().id + " to " + lib.getRelativePath("js.jar") + " ...");
-						//verify(lib).getFile("js.jar").evaluate(readFile).is.not("original");
-						verify(captor.captured.type("installed")).length.is(1);
-						lib.getFile("js.jar").remove();
-					});
-
-					fifty.run(function install() {
-						var captor = Captor();
-						jsh.shell.tools.rhino.install.old({ mock: mock }, captor);
-						verify(captor).captured[0].type.is("console");
-						verify(captor).captured[0].evaluate(toConsoleEvent).detail.is("No Rhino at " + lib.getRelativePath("js.jar") + "; installing ...");
-						verify(captor).captured[1].type.is("console");
-						verify(captor).captured[1].evaluate(toConsoleEvent).detail.is("Installing Rhino version " + dependencies.data.rhino.version().id + " to " + lib.getRelativePath("js.jar") + " ...");
-						verify(lib).getFile("js.jar").is.not(null);
-						verify(captor.captured.type("installed")).length.is(1);
-						lib.getFile("js.jar").remove();
-					});
 				};
 
 				fifty.tests.manual.rhino = {};
