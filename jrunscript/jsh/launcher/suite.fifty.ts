@@ -249,6 +249,97 @@ namespace slime.jsh.internal.launcher {
 				}
 			}
 
+			fifty.tests.unbuilt.automaticModuleClassCache = function() {
+				var temporary = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				var addedCaches: string[] = [];
+				try {
+					var source = temporary.getRelativePath("source").createDirectory();
+					var sourcePathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "source").getCanonicalPath());
+					var script = temporary.getRelativePath("load.jsh.js");
+					var scriptPathname = String(new Packages.java.io.File(temporary.pathname.java.adapt(), "load.jsh.js").getCanonicalPath());
+					var cache = new Packages.java.io.File(
+						jsh.shell.jsh.src.pathname.java.adapt(),
+						"local/jsh/lib/module-classes"
+					);
+					var value = new Date().getTime();
+
+					source.getRelativePath("java/cacheflag/Value.java").write(
+						"package cacheflag; public class Value { public static long value() { return " + value + "L; } }",
+						{ append: false, recursive: true }
+					);
+					script.write(
+						[
+							"var source = new Packages.java.io.File(" + JSON.stringify(sourcePathname) + ");",
+							"var loader = { source: Packages.inonit.script.engine.Code.Loader.create(source) };",
+							"jsh.loader.java.add({ src: { loader: loader } });",
+							"jsh.shell.echo(String(Packages.cacheflag.Value.value()));"
+						].join("\n"),
+						{ append: false }
+					);
+
+					var caches = function(): string[] {
+						var files = cache.listFiles();
+						if (files == null) return [];
+						return Array.prototype.slice.call(files).filter(function(file) {
+							var classFile: any = new Packages.java.io.File(file, "classes/cacheflag/Value.class");
+							return classFile.isFile();
+						}).map(function(file) {
+							return String(file.getCanonicalPath());
+						}).sort();
+					}
+
+					//	Both persistent class caches are specified explicitly rather than inherited, so that the behavior under test
+					//	is determined by this test alone; otherwise a JSH_SHELL_MODULE_CLASS_CACHE or JSH_SHELL_CLASSES value in
+					//	the environment running the tests would silently change which cache the shell under test uses.
+					var environment = function(enabled: boolean) {
+						return function(inherited: slime.jrunscript.shell.run.Environment) {
+							var rv: { [name: string]: string } = {};
+							Object.keys(inherited).forEach(function(name) {
+								if (name == "JSH_SHELL_MODULE_CLASS_CACHE") return;
+								if (name == "JSH_SHELL_CLASSES") return;
+								rv[name] = inherited[name];
+							});
+							if (enabled) rv["JSH_SHELL_MODULE_CLASS_CACHE"] = "true";
+							return rv;
+						}
+					}
+
+					var run = function(enabled: boolean) {
+						var intention = test.shells.unbuilt().invoke({
+							script: scriptPathname,
+							environment: environment(enabled),
+							stdio: { output: "string" }
+						});
+						var result = $api.fp.world.Sensor.now({
+							sensor: jsh.shell.subprocess.question,
+							subject: intention
+						});
+						verify(result).status.is(0);
+						verify(result.stdio.output.replace(/\s+$/,"")).is(String(value));
+					}
+
+					var before = caches();
+					run(false);
+					var afterDefault = caches();
+					addedCaches = afterDefault.filter(function(path) {
+						return before.indexOf(path) == -1;
+					});
+					verify(afterDefault.join("\n")).is(before.join("\n"));
+
+					run(true);
+					var after = caches();
+					addedCaches = after.filter(function(path) {
+						return before.indexOf(path) == -1;
+					});
+					verify(addedCaches.length).is(1);
+				} finally {
+					addedCaches.forEach(function(path) {
+						jsh.file.Pathname(path).directory.remove();
+					});
+					temporary.remove();
+				}
+			}
+
 			fifty.tests.unbuilt.moduleClassCacheTransaction = function() {
 				var temporary = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				try {

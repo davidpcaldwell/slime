@@ -514,6 +514,7 @@ public class Main {
 		}
 
 		File getDefaultSourceClassCache() {
+			if (!Boolean.parseBoolean(System.getProperty("jsh.shell.module.class.cache"))) return null;
 			File library = getLibraryDirectory();
 			return (library == null) ? null : new File(library, "module-classes");
 		}
