@@ -9,7 +9,7 @@
 	/**
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.tools.install.Context } $context
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.tools.install.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {
@@ -223,18 +223,19 @@
 										"Could not determine format of archive at: " + distribution.url
 										+ " (type: " + d.type + ")"
 									);
-									var pathname = $context.library.file.os.temporary.location();
+
+									var tmpfile = $context.library.file.os.temporary.location();
+
 									$api.fp.world.Action.now({
 										action: $context.library.file.Location.file.write.old(
-											pathname
+											tmpfile
 										).stream({
 											input: d.read()
 										})
 									});
-									debugger;
 
 									return {
-										file: $context.library.file.Pathname(pathname.pathname).file,
+										file: $context.library.file.Pathname(tmpfile.pathname).file,
 										type: d.type
 									};
 								}

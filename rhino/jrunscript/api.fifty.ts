@@ -58,7 +58,7 @@ namespace slime.jrunscript {
  *
  * However, so that code does not have to be developed twice - once for the bootstrap script and once for the SLIME Java runtime -
  * the bootstrap script can also be embedded in the SLIME Java runtime using the `embed.js` script, which packages the bootstrap
- * script as an ordinary {@link slime.loader.Script} that can be loaded by the SLIME Java runtime.
+ * script as an ordinary {@link slime.runtime.loader.Scoped} that can be loaded by the SLIME Java runtime.
  *
  * In the context of the `jsh` shell, which is invoked with the `jsh` query parameter, the bootstrap script builds the Java portions
  * of the `jsh` loader process and launches the `jsh` loader configured appropriately.
@@ -226,6 +226,15 @@ namespace slime.internal.jrunscript.bootstrap {
 	//@ts-ignore
 	)(fifty);
 
+	export namespace java {
+		export interface Install {
+			home: slime.jrunscript.native.java.io.File
+			launcher: slime.jrunscript.native.java.io.File
+			jrunscript: slime.jrunscript.native.java.io.File
+			toString: () => string
+		}
+	}
+
 	export interface PerEngine<T> {
 		rhino: T
 		nashorn: T
@@ -250,6 +259,32 @@ namespace slime.internal.jrunscript.bootstrap {
 			get: (name: string) => string
 			set: (name: string, value: string) => void
 			list: () => { name: string, value: string }[]
+		}
+	}
+
+	export interface Api<J> {
+		/**
+		 * Support for emitting startup checkpoint timing, controlled by the `jsh.launcher.profile` setting
+		 * (`JSH_LAUNCHER_PROFILE` environment variable). Intended to be cheap enough to leave enabled routinely to diagnose
+		 * startup performance.
+		 */
+		timing: {
+			/**
+			 * Whether checkpoint timing is enabled.
+			 */
+			enabled: boolean
+
+			/**
+			 * Records a startup checkpoint, if checkpoint timing is enabled; otherwise a no-op.
+			 *
+			 * @param phase A name identifying the checkpoint, conventionally `<file>.<event>`.
+			 */
+			checkpoint: (phase: string) => void
+
+			/**
+			 * @returns The current checkpoint clock value, in epoch milliseconds, comparable across processes.
+			 */
+			now: () => number
 		}
 	}
 
@@ -407,15 +442,25 @@ namespace slime.internal.jrunscript.bootstrap {
 
 	export interface Api<J> {
 		java: {
-			/**
-			 * @param home A directory containing a Java installation
-			 */
-			Install: (home: slime.jrunscript.native.java.io.File) => java.Install
+			version: {
+				property: {
+					major: (javaVersionProperty: string) => number
+				}
+			}
 
 			/**
 			 * The Java installation used to run this script.
 			 */
-			install: java.Install
+			install: java.Install & {
+				version: {
+					major: () => number
+				}
+			}
+
+			/**
+			 * @param home A directory containing a Java installation
+			 */
+			Install: (home: slime.jrunscript.native.java.io.File) => java.Install
 
 			getClass: (name: string) => slime.jrunscript.JavaClass
 			Array: <T extends slime.jrunscript.native.java.lang.Object,C>(p: { type: slime.jrunscript.JavaClass<T,C>, length: number })
@@ -491,7 +536,8 @@ namespace slime.internal.jrunscript.bootstrap {
 		version: string
 
 		/**
-		 * Downloads the library into the specified directory and returns the URLs of the JAR files that make up the library.
+		 * Downloads the library into the specified directory, creating it if necessary, and returns the URLs of the JAR files
+		 * that make up the library.
 		 */
 		download: (directory: slime.jrunscript.native.java.io.File) => slime.jrunscript.native.java.net.URL[]
 
@@ -603,6 +649,57 @@ namespace slime.internal.jrunscript.bootstrap {
 				verify(same, "files are the same").is(true);
 			}
 
+			fifty.tests.rhino = function() {
+				var parent = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				var directory = new Packages.java.io.File(parent.pathname.java.adapt(), "missing");
+				var library = jsh.internal.bootstrap.rhino.compatible();
+				var jar = new Packages.java.io.File(directory, "js.jar");
+
+				try {
+					verify(Boolean(directory.exists())).is(false);
+					var downloaded = library.download(directory);
+					verify(Boolean(directory.isDirectory())).is(true);
+					verify(Boolean(jar.isFile())).is(true);
+					verify(downloaded).length.is(1);
+					verify(String(downloaded[0])).is(String(jar.toURI().toURL()));
+				} finally {
+					parent.remove();
+				}
+			};
+
+			fifty.tests.Object = fifty.test.Parent();
+
+			fifty.tests.Object.assign = function() {
+				var original = Object.assign;
+				var apiPathname = fifty.jsh.file.object.getRelativePath("api.js");
+				var api = apiPathname.file.read(String);
+				var apiUrl = String(apiPathname.java.adapt().toURI().toURL());
+				try {
+					Object.assign = void(0);
+					var configuration: slime.internal.jrunscript.bootstrap.Environment = {
+						Packages: Packages,
+						load: function() {
+							throw new Error("Implement.");
+						}
+					};
+					//@ts-ignore
+					$rhino.script(apiUrl,api,configuration,null);
+
+					var primitiveTarget = Object.assign(1, { x: 1 });
+					verify(typeof(primitiveTarget)).is("object");
+					verify(primitiveTarget.valueOf()).is(1);
+					verify(primitiveTarget.x).is(1);
+
+					var source: { own: number } = Object.create({ inherited: 2 });
+					source.own = 1;
+					var objectTarget: { own: number, inherited?: number } = Object.assign({}, source);
+					verify(objectTarget.own).is(1);
+					verify(objectTarget).evaluate.property("inherited").is(void(0));
+				} finally {
+					Object.assign = original;
+				}
+			};
+
 			fifty.tests.zip = function() {
 				var web = jsh.unit.mock.Web();
 				web.add(jsh.unit.mock.web.Github({
@@ -686,6 +783,7 @@ namespace slime.internal.jrunscript.bootstrap {
 
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.exports);
+				fifty.run(fifty.tests.Object);
 
 				var configuration: slime.internal.jrunscript.bootstrap.Environment = {
 					Packages: Packages,
@@ -702,7 +800,7 @@ namespace slime.internal.jrunscript.bootstrap {
 				fifty.verify(global).$api.is.type("object");
 				fifty.verify(global).$api.script.is.type("object");
 
-				var subject = global.$api;
+				const subject = global.$api;
 
 				var interpret = function(string) {
 					return Object.assign(function(p): { url: string, file: string, zip: string } {

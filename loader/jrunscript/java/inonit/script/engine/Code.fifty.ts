@@ -12,7 +12,31 @@
 	) {
 		var jsh = fifty.global.jsh;
 
+		fifty.tests.zipRootEntries = function() {
+			var file = Packages.java.io.File.createTempFile("slime-code-loader-", ".zip");
+			try {
+				var zip = new Packages.java.util.zip.ZipOutputStream(new Packages.java.io.FileOutputStream(file));
+				try {
+					["module-info.class", "root.txt", "nested/child.txt"].forEach(function(name) {
+						zip.putNextEntry(new Packages.java.util.zip.ZipEntry(name));
+						zip.write(new Packages.java.lang.String(name).getBytes("UTF-8"));
+						zip.closeEntry();
+					});
+				} finally {
+					zip.close();
+				}
+				var loader = Packages.inonit.script.engine.Code.Loader.zip(file);
+				fifty.verify(String(Array.prototype.slice.call(loader.getEnumerator().list("")).sort().join(",")))
+					.is("module-info.class,nested/,root.txt");
+				fifty.verify(String(Array.prototype.slice.call(loader.getEnumerator().list("nested")).join(","))).is("child.txt");
+				fifty.verify(String(loader.getFile("root.txt").getSourceName()).indexOf("root.txt") != -1).is(true);
+			} finally {
+				file.delete();
+			}
+		}
+
 		fifty.tests.suite = function() {
+			fifty.run(fifty.tests.zipRootEntries);
 			var github = Packages.inonit.script.engine.Code.Loader.github(
 				new Packages.java.net.URL(
 					"https://github.com/davidpcaldwell/slime/archive/refs/heads/master.zip"

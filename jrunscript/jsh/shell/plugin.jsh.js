@@ -13,7 +13,7 @@
 	 * @param { slime.jsh.plugin.Scope["plugins"] } plugins
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.$slime } $slime
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
 	function(Packages,$api,plugins,jsh,$slime,$loader,plugin) {
@@ -103,7 +103,7 @@
 						compile: api.compile
 					});
 
-					$slime.compiler.update(
+					$slime.$api.scripts.compiler.update(
 						function(was) {
 							return $api.fp.switch([
 								subprocess,

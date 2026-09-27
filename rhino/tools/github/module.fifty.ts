@@ -97,6 +97,18 @@ namespace slime.jrunscript.tools.github {
 
 		export interface Paged<I,O> extends Operation<I,O[]> {
 		}
+
+		export type PagedResponseElement<P extends keyof slime.external.github.rest.Endpoints> =
+			slime.external.github.rest.Endpoints[P]["response"]["data"] extends readonly (infer T)[] ? T : never
+
+		export type PagedOperation<P extends keyof slime.external.github.rest.Endpoints> = Paged<
+			slime.external.github.rest.Endpoints[P]["parameters"],
+			PagedResponseElement<P>
+		>
+
+		export type PagedOperations = {
+			"GET /user/repos": PagedOperation<"GET /user/repos">
+		}
 	}
 
 	(
@@ -224,7 +236,7 @@ namespace slime.jrunscript.tools.github {
 		}
 	}
 
-	export type Script = slime.loader.Script<Context,Exports>;
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>;
 
 	(
 		function(
@@ -256,10 +268,7 @@ namespace slime.jrunscript.tools.github {
 			}
 
 			fifty.tests.world.ReposListForAuthenticatedUser = function() {
-				var listUserRepos: rest.Paged<
-					slime.external.github.rest.Endpoints["GET /user/repos"]["parameters"],
-					slime.external.github.rest.Endpoints["GET /user/repos"]["response"]
-				> = {
+				var listUserRepos: rest.PagedOperation<"GET /user/repos"> = {
 					request: subject.request.get("user/repos"),
 					response: subject.response.json.page
 				};

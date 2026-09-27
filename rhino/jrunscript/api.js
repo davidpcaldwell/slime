@@ -20,6 +20,35 @@
 	 * @this { slime.internal.jrunscript.bootstrap.Global<{}> }
 	 */
 	function() {
+		var ToObject = function(v) {
+			//	https://www.ecma-international.org/ecma-262/6.0/#sec-toobject
+			if (typeof(v) == "undefined" || v === null) throw new TypeError("ToObject() cannot be invoked with argument " + v);
+			return Object(v);
+		}
+
+		//	TODO	duplicated in loader/polyfill.js
+		if (!Object.assign) {
+			//	https://www.ecma-international.org/ecma-262/6.0/#sec-object.assign
+			//	TODO	currently the basics can be tested manually with loader/test/test262.jsh.js -file local/test262/test/built-ins/Object/assign/Target-Object.js
+			Object.defineProperty(Object, "assign", {
+				value: function assign(target,firstSource /* to set function .length properly*/) {
+					var rv = ToObject(target);
+					if (arguments.length == 1) return rv;
+					for (var i=1; i<arguments.length; i++) {
+						var source = (typeof(arguments[i]) == "undefined" || arguments[i] === null) ? {} : ToObject(arguments[i]);
+						for (var x in source) {
+							if (Object.prototype.hasOwnProperty.call(source,x)) {
+								rv[x] = source[x];
+							}
+						}
+					}
+					return rv;
+				},
+				writable: true,
+				configurable: true
+			});
+		}
+
 		var load = this.load;
 
 		//	TODO	seems to assume the presence of a global function called 'load' -- should handle this more like other global
@@ -102,6 +131,72 @@
 			}
 		})();
 
+		//	Startup checkpoint timing (jsh.launcher.profile / JSH_LAUNCHER_PROFILE). Implemented here, at the earliest point common
+		//	to both the bootstrap and any forked loader VM, so that checkpoints can be emitted before slime.js (and its
+		//	Setting/environment-variable mapping machinery) has loaded. Deliberately cheap: when disabled, checkpoint() is a no-op
+		//	other than the property/environment-variable lookups already required to decide that it is disabled.
+		var timing = (
+			function() {
+				//	jsh.launcher.profile is not yet registered as a Setting when this code runs (slime.js has not loaded), so we
+				//	replicate the explicit-value lookup (system property, then environment variable) that Setting/explicit() will
+				//	later perform for the same name, to avoid a behavioral difference between "early" and "late" checkpoints.
+				var explicit = function(name) {
+					var _property = Packages.java.lang.System.getProperty(name);
+					if (_property !== null) return String(_property);
+					var _env = Packages.java.lang.System.getenv(name.replace(/\./g, "_").toUpperCase());
+					if (_env !== null) return String(_env);
+					return null;
+				};
+
+				var enabled = Boolean(explicit("jsh.launcher.profile"));
+
+				//	Epoch milliseconds (rather than nanoseconds) are used here, and throughout the checkpoint machinery, because
+				//	JavaScript numbers are IEEE 754 doubles: epoch nanoseconds (~1.8e18) lose precision as a JS number (safe
+				//	integers only extend to ~9e15), which would corrupt the value when passed to a forked VM as a string and
+				//	reparsed. Millisecond resolution is more than adequate for diagnosing startup-phase costs, and this value can
+				//	be compared directly with the bash launcher's own wall-clock checkpoints.
+				var now = function() {
+					return Number(Packages.java.lang.System.currentTimeMillis());
+				};
+
+				var destination = (function() {
+					if (!enabled) return null;
+					var path = explicit("jsh.launcher.profile.log");
+					if (!path) return null;
+					return new Packages.java.io.PrintStream(
+						new Packages.java.io.FileOutputStream(path, true)
+					);
+				})();
+
+				var write = function(line) {
+					if (destination) {
+						destination.println(line);
+					} else {
+						Packages.java.lang.System.err.println(line);
+					}
+				};
+
+				return {
+					enabled: enabled,
+					/**
+					 * Records a startup checkpoint, if checkpoint timing (jsh.launcher.profile) is enabled; otherwise a no-op.
+					 *
+					 * @param { string } phase
+					 */
+					checkpoint: function(phase) {
+						if (!enabled) return;
+						write("[jsh.profile] phase=" + phase + " t=" + now());
+					},
+					/**
+					 * The current checkpoint clock value, in epoch milliseconds, comparable across processes. Used internally to
+					 * propagate a fork-decision timestamp to a forked loader VM via the internal jsh.launcher.profile.origin system
+					 * property (not itself a documented setting).
+					 */
+					now: now
+				};
+			}
+		)();
+
 		//	The below would initialize the logging configuration to be empty, rather than the JDK default. The only logging done is for
 		//	remote shells, which otherwise would produce an uncomfortably long silence before the program started running. So they are
 		//	instead a little bit chatty. A user could configure this by configuring Java logging. Alternatively, I suppose we could
@@ -155,7 +250,8 @@
 			jar: void(0),
 			rhino: void(0),
 			nashorn: void(0),
-			embed: void(0)
+			embed: void(0),
+			timing: void(0)
 		};
 
 		(
@@ -509,6 +605,9 @@
 		}
 
 		$api.properties = properties;
+
+		$api.timing = timing;
+		$api.timing.checkpoint("api.js.start");
 
 		$api.engine = (
 			function(global) {
@@ -1431,8 +1530,6 @@
 						rv.compile = compile;
 					}
 
-
-
 					return rv;
 				};
 
@@ -1642,15 +1739,39 @@
 					}
 				};
 
+				var myMajor = function(javaVersionProperty) {
+					var oneDotPattern = /^1\.(.*)\./;
+					var majorVersionPattern = /^(\d+)\./;
+					if (oneDotPattern.test(javaVersionProperty)) {
+						return Number(oneDotPattern.exec(javaVersionProperty)[1]);
+					} else if (majorVersionPattern.test(javaVersionProperty)) {
+						return Number(majorVersionPattern.exec(javaVersionProperty)[1])
+					}
+				};
+
 				return {
 					Install: Install,
-					install: install,
+					install: Object.assign(
+						install,
+						{
+							version: {
+								major: function() {
+									return myMajor(String(Packages.java.lang.System.getProperty("java.version")));
+								}
+							}
+						}
+					),
 					getClass: getClass,
 					Array: Array,
 					Command: Command,
 					versions: versions,
 					getMajorVersion: function() {
 						return getMajorVersion(String(Packages.java.lang.System.getProperty("java.version")));
+					},
+					version: {
+						property: {
+							major: myMajor
+						}
 					}
 				}
 			}
@@ -1902,6 +2023,9 @@
 							var location = JarLocation(_directory, jarname);
 							if (!location.exists()) {
 								if (download) {
+									if (!_directory.exists() && !_directory.mkdirs()) {
+										throw new Error("Could not create library directory " + _directory);
+									}
 									$api.io.download({
 										url: url,
 										to: location

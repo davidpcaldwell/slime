@@ -29,7 +29,6 @@
 				}
 
 				if (p.parent) return castToInternal(p.parent);
-				if (p.getParent) return castToInternal(p.getParent());
 			}
 
 			/**

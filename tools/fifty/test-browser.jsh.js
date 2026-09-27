@@ -127,12 +127,7 @@
 				});
 				tomcat.start();
 
-				var host = (function() {
-					if (p.options.browser == "dockercompose:selenium:chrome" || p.options.browser == "dockercompose:selenium:firefox") {
-						return jsh.shell.environment.HOSTNAME;
-					}
-					return "127.0.0.1";
-				})();
+				var host = "127.0.0.1";
 
 				try {
 					var browser = (function() {
@@ -164,25 +159,23 @@
 								throw new Error("Chrome not installed; cannot run Chrome browser tests.");
 							}
 						} else if (p.options.browser == "firefox") {
-							return jsh.unit.browser.local.Firefox({
-								//	TODO	push knowledge of these locations back into rhino/shell
-								program: "/Applications/Firefox.app/Contents/MacOS/firefox"
-								//	Linux: /usr/bin/firefox
-							});
+							var firefoxProgram = (function() {
+								var command = jsh.shell.PATH.getCommand("firefox") || jsh.shell.PATH.getCommand("firefox-esr");
+								if (command) return command.toString();
+								var linux = jsh.file.Pathname("/usr/bin/firefox").file;
+								if (linux) return linux.toString();
+								var macos = jsh.file.Pathname("/Applications/Firefox.app/Contents/MacOS/firefox").file;
+								if (macos) return macos.toString();
+							})();
+							if (firefoxProgram) {
+								return jsh.unit.browser.local.Firefox({
+									program: firefoxProgram
+								});
+							} else {
+								throw new Error("Firefox not installed; cannot run Firefox browser tests.");
+							}
 						} else if (p.options.browser == "safari") {
 							return jsh.unit.browser.local.Safari();
-						} else if (p.options.browser == "selenium:chrome") {
-							return jsh.unit.browser.selenium.Chrome()
-						} else if (p.options.browser == "dockercompose:selenium:chrome") {
-							return jsh.unit.browser.selenium.remote.Chrome({
-								host: "chrome",
-								port: 4444
-							})
-						} else if (p.options.browser == "dockercompose:selenium:firefox") {
-							return jsh.unit.browser.selenium.remote.Firefox({
-								host: "firefox",
-								port: 4444
-							})
 						} else {
 							throw new TypeError("Browser not found: " + p.options.browser);
 						}

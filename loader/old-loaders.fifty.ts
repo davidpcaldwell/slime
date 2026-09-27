@@ -5,154 +5,237 @@
 //	END LICENSE
 
 namespace slime {
-	export namespace old.loader {
-		/** @deprecated Can use slime.loader.Script directly. */
-		export type Script<C,E> = slime.loader.Script<C,E>
+	/**
+	 * An object capable of loading {@link slime.Resource}s from given paths.
+	 *
+	 * Note that two related APIs are defined:
+	 *
+	 * * {@link slime.runtime.loader.Synchronous}, which allows loading arbitrary types from paths (which can, in turn, be turned
+	 * into {@link slime.runtime.loader.Code}), and
+	 * * {@link slime.loader.old.Loader}, which is a subtype of `Loader` that contains additional APIs related to
+	 * _sources_ (implementations), enumerability, custom children, asynchrony, and other deprecated APIs.
+	 */
+	export interface Loader {
+		//	TODO	What about if $context is a number, string, or boolean?
+		script: <C,E>(path: string) => loader.Script<C,E>
 
-		(
-			function(
-				fifty: slime.fifty.test.Kit
-			) {
-				const { verify } = fifty;
+		/**
+		 * Executes code in a particular scope with a particular `this` value. The code will automatically contain the
+		 * {@link slime.$api.Global | `$api`} object described in
+		 * {@link slime | Using SLIME | APIs for all platforms}.
+		 *
+		 * @param path The path of the code to execute.
+		 * @param scope The scope in which to execute the code.
+		 * @param target The object to use as the `this` value when executing the code.
+		 */
+		run: (path: string, scope?: any, target?: any) => void
 
-				fifty.tests.script = fifty.test.Parent();
+		/**
+		 * Identical to `run`, except that the code to execute is supplied with a `$set` function in its scope that allows it to set
+		 * a value to be returned to the caller:
+		 *
+		 * @param path The path of the code to execute.
+		 * @param scope The scope in which to execute the code.
+		 * @param target The object to use as the `this` value when executing the code.
+		 * @returns The value the code to execute passed to `$set`, or `undefined` if `$set` was not invoked.
+		 */
+		value: (path: string, scope?: any, target?: any) => any
 
-				fifty.tests.script.context = function() {
-					function echo<T>(t: T): T {
-						var script: slime.old.loader.Script<T,{ provided: T }> = fifty.$loader.script("test/data/context.js");
-						return script(t).provided;
-					}
+		/**
+		 * Executes a script in a separate scope. The scope will contain the `$api` object described above. In
+		 * addition, the script will be provided with special objects named `$context` and `$exports`. The `$context` object
+		 * represents an application-specific context to provide to the script; the `$exports` object represents an object to which
+		 * the script can assign properties that will be visible outside the script.
+		 *
+		 * @param path The path of the code to execute.
+		 * @param $context A value to use as the `$context` object when executing the given code. If undefined or `null`, the
+		 * value provided is not specified.
+		 * @param target The object to use as the `this` value when executing the code.
+		 * @returns The value exported by this module.
+		 */
+		file: (path: string, $context?: any, target?: any) => any
 
-					//	TODO	should these two tests pass? They do under new loader
-					if (false) {
-						var ifUndefined = echo(void(0));
-						verify(ifUndefined).is.type("undefined");
-						var ifNull = echo(null);
-						verify(ifNull).is.type("null");
-					}
-					var ifString = echo("foo");
-					verify(ifString).is.type("string");
-					var ifNumber = echo(3);
-					verify(ifNumber).is.type("number");
-					var ifBoolean = echo(true);
-					verify(ifBoolean).is.type("boolean");
-					var ifObject = echo({ foo: "bar" });
-					verify(ifObject).is.type("object");
-					verify(ifObject).evaluate.property("foo").is("bar");
+		/**
+		 * Loads a module. The module's code is specified by the first argument, and the second argument specifies objects to be
+		 * supplied to the module when loading it.
+		 *
+		 * The module's main file will be executed with the following variables in scope:
+		 *
+		 * * the `$api` object specified above,
+		 * * the `$context` value specified by the second argument,
+		 * * an `$exports` object,
+		 * * a `$loader` object of type {@link Loader} allowing other source files and submodules to be loaded.
+		 *
+		 * @param path The path of the code to execute.
+		 * @param $context A value to use as the `$context` object when executing the given code. If undefined or `null`, the
+		 * value provided is not specified.
+		 * @param target The object to use as the `this` value when executing the code.
+		 * @returns The value exported by this module.
+		 */
+		module: (path: string, $context?: any, target?: any) => any
+
+		/**
+		 * Returns the resource associated with a given path, by invoking the `get` method of this loader's `source`.
+		 *
+		 * @param path A path.
+		 */
+		get: (path: string) => Resource
+	}
+}
+
+namespace slime.loader {
+	export interface Script<C,E> {
+		(c: C): E
+		thread: (c: C) => PromiseLike<E>
+	}
+
+	export type Export<T> = (value: T) => void
+}
+
+namespace slime.loader.old {
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			const { verify } = fifty;
+
+			fifty.tests.script = fifty.test.Parent();
+
+			fifty.tests.script.context = function() {
+				function echo<T>(t: T): T {
+					var script: slime.runtime.loader.Scoped<T,{ provided: T }> = fifty.$loader.script("test/data/context.js");
+					return script(t).provided;
 				}
 
-				fifty.tests.script.export = function() {
-					function echo<T>(t: T): T {
-						var script: slime.old.loader.Script<{ export: T },T> = fifty.$loader.script("test/data/export.js");
-						return script({ export: t });
-					}
-
+				//	TODO	should these two tests pass? They do under new loader
+				if (false) {
 					var ifUndefined = echo(void(0));
 					verify(ifUndefined).is.type("undefined");
 					var ifNull = echo(null);
 					verify(ifNull).is.type("null");
-					var ifString = echo("foo");
-					verify(ifString).is.type("string");
-					var ifNumber = echo(3);
-					verify(ifNumber).is.type("number");
-					var ifBoolean = echo(true);
-					verify(ifBoolean).is.type("boolean");
-					var ifObject = echo({ foo: "bar" });
-					verify(ifObject).is.type("object");
-					verify(ifObject).evaluate.property("foo").is("bar");
 				}
+				var ifString = echo("foo");
+				verify(ifString).is.type("string");
+				var ifNumber = echo(3);
+				verify(ifNumber).is.type("number");
+				var ifBoolean = echo(true);
+				verify(ifBoolean).is.type("boolean");
+				var ifObject = echo({ foo: "bar" });
+				verify(ifObject).is.type("object");
+				verify(ifObject).evaluate.property("foo").is("bar");
 			}
-		//@ts-ignore
-		)(fifty);
 
-		/** @deprecated Replaced by {@link Script}. */
-		export type Product<C,E> = Script<C,E>
+			fifty.tests.script.export = function() {
+				function echo<T>(t: T): T {
+					var script: slime.runtime.loader.Scoped<{ export: T },T> = fifty.$loader.script("test/data/export.js");
+					return script({ export: t });
+				}
 
-		/** @deprecated Can use slime.loader.Export directly. */
-		export type Export<T> = slime.loader.Export<T>
-
-		export namespace source {
-			//	TODO	this does not seem like a great design
-			/**
-			 * Either a resource or a child loader contained within a Loader.
-			 */
-			export interface Entry {
-				/**
-				 * The name of this entry. It does *not* have a trailing slash for loaders.
-				 */
-				path: string
-
-				/**
-				 * Whether this entry represents a child loader (for example, a directory or folder)
-				 */
-				loader: boolean
-
-				/**
-				 * Whether this entry represents a resource.
-				 */
-				resource: boolean
+				var ifUndefined = echo(void(0));
+				verify(ifUndefined).is.type("undefined");
+				var ifNull = echo(null);
+				verify(ifNull).is.type("null");
+				var ifString = echo("foo");
+				verify(ifString).is.type("string");
+				var ifNumber = echo(3);
+				verify(ifNumber).is.type("number");
+				var ifBoolean = echo(true);
+				verify(ifBoolean).is.type("boolean");
+				var ifObject = echo({ foo: "bar" });
+				verify(ifObject).is.type("object");
+				verify(ifObject).evaluate.property("foo").is("bar");
 			}
 		}
+	//@ts-ignore
+	)(fifty);
 
+	/** @deprecated Replaced by {@link Script}. */
+	export type Product<C,E> = Script<C,E>
+
+	/** @deprecated Can use slime.loader.Export directly. */
+	export type Export<T> = slime.loader.Export<T>
+
+	export namespace source {
+		//	TODO	this does not seem like a great design
 		/**
-		 * An object that provides the implementation for a {@link Loader}.
+		 * Either a resource or a child loader contained within a Loader.
 		 */
-		export interface Source<S = never> {
+		export interface Entry {
 			/**
-			 * Provides the `toString` for the created Loader by default.
+			 * The name of this entry. It does *not* have a trailing slash for loaders.
 			 */
-			toString?(): string
-
-			/**
-			 * Retrieves a resource.
-			 *
-			 * @param path The path from which to load a resource.
-			 * @returns The resource at the given path, or `null` if there is none.
-			 */
-			get?: (path: string) => resource.Descriptor
+			path: string
 
 			/**
-			 * Returns a list of the top-level entries at a particular location in this loader.
-			 *
-			 * @param path A path under this loader to list. Currently, this will either be the empty
-			 * string, in which case the top level should be listed, or it will be a path ending in `/`.
+			 * Whether this entry represents a child loader (for example, a directory or folder)
 			 */
-			list?: (path: string) => source.Entry[]
-
-			thread?: {
-				get: (path: string) => PromiseLike<resource.Descriptor>
-			}
+			loader: boolean
 
 			/**
-			 * Allows the loader to customize the way child sources are created when creating child loaders. If omitted, a child
-			 * that delegates requests back to the parent, prepended by the child's path, will be created.
-			 *
-			 * @param prefix The path representing this child underneath the parent. Currently, this path can be either the empty
-			 * string `""` or a string ending in `/`.
-			 *
-			 * @returns A source that represents a child of the parent source.
+			 * Whether this entry represents a resource.
 			 */
-			child?: (prefix: string) => Source | S
-
-			/**
-			 * Allows the loader to customize the way resource descriptors are turned into resources.
-			 */
-			Resource?: runtime.resource.Exports
-		}
-
-		export interface Scope {
-			$context: any
-			$loader?: slime.old.Loader
-			$exports: any
-			$export: ($exports: any) => void
+			resource: boolean
 		}
 	}
 
-	export namespace old.loader.test {
+	/**
+	 * An object that provides the implementation for a {@link Loader}.
+	 */
+	export interface Source<S = never> {
+		/**
+		 * Provides the `toString` for the created Loader by default.
+		 */
+		toString?(): string
+
+		/**
+		 * Retrieves a resource.
+		 *
+		 * @param path The path from which to load a resource.
+		 * @returns The resource at the given path, or `null` if there is none.
+		 */
+		get?: (path: string) => resource.Descriptor
+
+		/**
+		 * Returns a list of the top-level entries at a particular location in this loader.
+		 *
+		 * @param path A path under this loader to list. Currently, this will either be the empty
+		 * string, in which case the top level should be listed, or it will be a path ending in `/`.
+		 */
+		list?: (path: string) => source.Entry[]
+
+		thread?: {
+			get: (path: string) => PromiseLike<resource.Descriptor>
+		}
+
+		/**
+		 * Allows the loader to customize the way child sources are created when creating child loaders. If omitted, a child
+		 * that delegates requests back to the parent, prepended by the child's path, will be created.
+		 *
+		 * @param prefix The path representing this child underneath the parent. Currently, this path can be either the empty
+		 * string `""` or a string ending in `/`.
+		 *
+		 * @returns A source that represents a child of the parent source.
+		 */
+		child?: (prefix: string) => Source | S
+
+		/**
+		 * Allows the loader to customize the way resource descriptors are turned into resources.
+		 */
+		Resource?: slime.$api.loader.old.resource.Exports
+	}
+
+	export interface Scope {
+		$context: any
+		$loader?: slime.loader.old.Loader
+		$exports: any
+		$export: ($exports: any) => void
+	}
+
+	export namespace test {
 		/**
 		 * A script that exports a standard export structure to act as a test case for the loader API.
 		 */
-		export type Script = slime.old.loader.Script<{ scale: number }, { convert: (input: number) => number }>;
+		export type Script = slime.runtime.loader.Scoped<{ scale: number }, { convert: (input: number) => number }>;
 	}
 
 	(
@@ -170,7 +253,7 @@ namespace slime {
 				return { type: typeof value };
 			}
 
-			tests.types.Loader = function(it: slime.runtime.Exports["old"]["Loader"]) {
+			tests.types.Loader = function(it: slime.$api.loader.old.old.Exports["Loader"]) {
 				verify(getType(it)).type.is("function");
 				var tools: { [x: string]: any } = it["tools"];
 				verify(tools).is.type("object");
@@ -181,8 +264,8 @@ namespace slime {
 
 			tests.source.object = function() {
 				var api: slime.runtime.Exports = subject;
-				verify(api).evaluate(function(p) { return p.old.loader.source.object; }).is.type("function");
-				var source = api.old.loader.source.object({
+				verify(api).evaluate(function(p) { return p.loader.old.old.loader.source.object; }).is.type("function");
+				var source = api.loader.old.old.loader.source.object({
 					a: {
 						resource: {
 							read: {
@@ -206,14 +289,14 @@ namespace slime {
 					if (typeof(p.read) != "function") throw new Error("p.read is " + typeof(p.read));
 					return p.read(String);
 				};
-				var loader = new api.old.Loader(source);
+				var loader = new api.loader.old.old.Loader(source);
 				verify(loader).get("a").evaluate(readString).is("a");
 				verify(loader).get("b/c").evaluate(readString).is("c");
 				verify(loader).list().length.is(2);
 			}
 
 			tests.closure = function() {
-				var closure: slime.old.loader.test.Script = $loader.value("test/data/closure.js");
+				var closure: slime.loader.old.test.Script = $loader.value("test/data/closure.js");
 				var context = { scale: 2 };
 				var module = closure(context);
 				verify(module).convert(2).is(4);
@@ -221,20 +304,20 @@ namespace slime {
 
 			tests.$export = function() {
 				fifty.run(function module() {
-					var module: slime.old.loader.test.Script = $loader.script("test/data/module-export.js");
+					var module: slime.loader.old.test.Script = $loader.script("test/data/module-export.js");
 					var api = module({ scale: 2 });
 					verify(api).convert(3).is(6);
 				});
 
 				fifty.run(function file() {
-					var file: slime.old.loader.test.Script = $loader.script("test/data/file-export.js");
+					var file: slime.loader.old.test.Script = $loader.script("test/data/file-export.js");
 					var api = file({ scale: 2 });
 					verify(api).convert(3).is(6);
 				});
 			}
 
 			tests.thread = function() {
-				var source: slime.old.loader.Source = {
+				var source: slime.loader.old.Source = {
 					thread: {
 						get: function(path) {
 							if (path == "foo") {
@@ -254,7 +337,7 @@ namespace slime {
 					}
 				};
 
-				var loader = new subject.old.Loader(source);
+				var loader = new subject.loader.old.old.Loader(source);
 
 				var readString = function(p: Resource): string { return p.read(String); };
 
@@ -280,24 +363,10 @@ namespace slime {
 					})
 				});
 			}
-
-			tests.suite = function() {
-				//fifty.run(fifty.tests.script);
-
-				fifty.run(fifty.tests.source);
-				fifty.run(fifty.tests.closure);
-				fifty.run(fifty.tests.$export);
-				fifty.run(fifty.tests.script);
-				//	TODO	tests.thread, browser only?
-			};
-
-			fifty.test.platforms();
 		}
 	//@ts-ignore
 	)(fifty);
 
-}
-namespace slime.old {
 	export namespace loader {
 		/**
 		 * The scope provided to a script executed via the {@link Loader | Loader.value()} call.
@@ -314,7 +383,7 @@ namespace slime.old {
 		}
 
 		export interface LoaderEntry extends AnyEntry {
-			loader: slime.old.Loader
+			loader: slime.loader.old.Loader
 		}
 
 		export interface ResourceEntry extends AnyEntry {
@@ -325,7 +394,7 @@ namespace slime.old {
 	}
 
 	export interface Loader<S = never, R extends Resource = Resource> extends slime.Loader {
-		source: loader.Source<S>
+		source: old.Source<S>
 
 		/**
 		 * Returns the resource associated with a given path, by invoking the `get` method of this loader's `source`.
@@ -366,10 +435,15 @@ namespace slime.old {
 		/** @deprecated Replaced by `script`. */
 		factory: Loader<S,R>["script"]
 	}
+
+	/**
+	 * @param p The implementation of this `Loader`.
+	 */
+	export type Constructor = new <S>(p: slime.loader.old.Source | S) => slime.loader.old.Loader<S>
 }
 
-namespace slime.runtime.exports {
-	export interface Old {
+namespace slime.$api.loader.old.old {
+	export interface Exports {
 		loader: {
 			source: {
 				/**
@@ -377,7 +451,7 @@ namespace slime.runtime.exports {
 				 * @param o An object with named properties; each property either contains a loader object, in which case it
 				 * is a loader which provides its children, or a resource object, whose properties are {@link resource.Descriptor}s.
 				 */
-				object: (o: object) => slime.old.loader.Source
+				object: (o: object) => slime.loader.old.Source
 			}
 
 			/**
@@ -395,7 +469,7 @@ namespace slime.runtime.exports {
 			 *
 			 * @experimental
 			 */
-			series: <S,R extends Resource>(loaders: old.Loader<S,R>[]) => old.Loader
+			series: <S,R extends Resource>(loaders: slime.loader.old.Loader<S,R>[]) => slime.loader.old.Loader
 
 			tools: {
 				toExportScope: <S extends { [x: string]: any },T>(scope: S) => S & { $export: (t: T) => void, $exports: T }
@@ -410,30 +484,49 @@ namespace slime.runtime.exports {
 				 * @param o A synchronous loader
 				 * @returns An old loader that delegates to the synchronous loader.
 				 */
-				synchronous: (o: slime.runtime.loader.Synchronous<any>) => old.Loader
+				synchronous: (o: slime.runtime.loader.Synchronous<any>) => slime.loader.old.Loader
 			}
 		}
 	}
 }
 
 namespace slime.runtime.internal.old_loaders {
-	export interface Scope {
+	export interface Context {
 		$api: slime.$api.Global
-		toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
-		Resource: slime.runtime.resource.Exports
-		methods: slime.runtime.internal.scripts.GlobalExecutorMethods
-		createScriptScope: scripts.Exports["internal"]["createScriptScope"]
+		toExportScope: slime.$api.loader.old.old.Exports["loader"]["tools"]["toExportScope"]
+		methods: slime.runtime.internal.code.GlobalExecutorMethods
+		createScriptScope: code.Exports["internal"]["createScriptScope"]
 	}
 
 	export interface Exports {
-		api: slime.runtime.exports.Old["loader"]
+		api: slime.$api.loader.old.old.Exports["loader"]
 		Code: {
 			from: {
 				Resource: slime.$api.fp.Mapping<slime.Resource,slime.runtime.loader.Code>
 			}
 		}
-		constructor: runtime.loader.old.Constructor
+		constructor: slime.loader.old.Constructor
+		Resource: slime.$api.loader.old.resource.Exports
 	}
 
-	export type Script = slime.old.loader.Script<Scope,Exports>
+	(
+		function(
+			fifty: slime.fifty.test.Kit
+		) {
+			fifty.tests.suite = function() {
+				//fifty.run(fifty.tests.script);
+
+				fifty.run(fifty.tests.source);
+				fifty.run(fifty.tests.closure);
+				fifty.run(fifty.tests.$export);
+				fifty.run(fifty.tests.script);
+				//	TODO	tests.thread, browser only?
+			};
+
+			fifty.test.platforms();
+		}
+	//@ts-ignore
+	)(fifty);
+
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

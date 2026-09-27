@@ -700,7 +700,7 @@ namespace slime.jrunscript.tools.git {
 			shell: slime.jrunscript.shell.Exports
 			//	TODO	fix this
 			Error: slime.$api.old.Exports["Error"]
-			time: slime.time.Exports
+			time: slime.time.Interface
 			web: slime.web.Exports
 		}
 		environment: any
@@ -718,7 +718,10 @@ namespace slime.jrunscript.tools.git {
 		credentialHelper: CredentialHelpers
 		installation: slime.jrunscript.tools.git.Installation
 
-		//	Methods essentially copied from the default Installation
+		//	Methods essentially copied from the default Installation.
+		//	Supported for compatibility; for new workflow code, prefer
+		//	`program(...).command(...).argument(...).run()` with
+		//	`jsh.tools.git.commands.*`.
 		oo: {
 			daemon: slime.jrunscript.tools.git.Installation["daemon"]
 			Repository: slime.jrunscript.tools.git.Installation["Repository"]
@@ -771,5 +774,5 @@ namespace slime.jrunscript.tools.git {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

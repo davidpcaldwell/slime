@@ -437,5 +437,5 @@ namespace slime.jrunscript.tools.git.internal.commands {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,slime.jrunscript.tools.git.Commands>
+	export type Script = slime.runtime.loader.Scoped<Context,slime.jrunscript.tools.git.Commands>
 }

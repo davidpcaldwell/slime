@@ -8,7 +8,7 @@
 (
 	/**
 	 *
-	 * @param { slime.runtime.internal.mime.Context } $context
+	 * @param { slime.$api.loader.old.internal.mime.Context } $context
 	 * @param { slime.loader.Export<slime.$api.mime.Export> } $export
 	 */
 	function($context,$export) {

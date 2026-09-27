@@ -144,14 +144,14 @@
 			}
 		};
 
-		/** @type { (entry: slime.old.loader.Entry) => entry is slime.old.loader.ResourceEntry } */
+		/** @type { (entry: slime.loader.old.loader.Entry) => entry is slime.loader.old.loader.ResourceEntry } */
 		var isResourceEntry = function(entry) { return Boolean(entry["resource"]); };
-		/** @type { (entry: slime.old.loader.Entry) => entry is slime.old.loader.LoaderEntry } */
+		/** @type { (entry: slime.loader.old.loader.Entry) => entry is slime.loader.old.loader.LoaderEntry } */
 		var isLoaderEntry = function(entry) { return Boolean(entry["loader"]); };
 
 		/**
 		 *
-		 * @param { slime.old.Loader } loader
+		 * @param { slime.loader.old.Loader } loader
 		 * @returns { slime.jsh.internal.loader.plugins.Source[] }
 		 */
 		var scan = function(loader) {
@@ -262,7 +262,7 @@
 
 		/**
 		 * @param { Parameters<register>[0]["scope"] } scope
-		 * @param { slime.old.Loader } loader
+		 * @param { slime.loader.old.Loader } loader
 		 * @returns { slime.jsh.internal.loader.plugins.PluginsContent }
 		 */
 		var getPluginsContent = function getPluginsContent(scope,loader) {
@@ -329,10 +329,11 @@
 					new $slime.Loader({ _file: p._file })
 				);
 			} else if (isSynchronousLoaderPlugins(p)) {
-				$slime.old.loader.source.object
+				//	Copilot suggested removing next line as a no-op, which seems right, but what was it for?
+				//$slime.$api.loader.old.old.loader.source.object
 				content = getPluginsContent(
 					scope,
-					$slime.old.loader.from.synchronous(p.synchronous)
+					$slime.$api.loader.old.old.loader.from.synchronous(p.synchronous)
 				);
 			} else if (isOldLoaderPlugins(p)) {
 				content = getPluginsContent(

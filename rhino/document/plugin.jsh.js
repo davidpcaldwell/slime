@@ -7,10 +7,10 @@
 //@ts-check
 (
 	/**
-	 *
+	/**
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.Scope["$slime"] } $slime
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.jsh.plugin.Scope["plugin"] } plugin
 	 */
 	function(jsh,$slime,$loader,plugin) {

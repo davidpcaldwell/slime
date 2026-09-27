@@ -213,49 +213,15 @@
 		 * @returns { slime.runtime.browser.test.internal.suite.Browser }
 		 */
 		var toBrowser = function(argument) {
-			if (argument == "dockercompose:selenium:chrome") {
-				return jshUnitBrowserToBrowser(
-					"Remote (Selenium Chrome) - slime",
-					function(url) { return url.replace(/127\.0\.0\.1/g, jsh.shell.environment.HOSTNAME) },
-					jsh.unit.browser.selenium.remote.Chrome({
-						host: "chrome",
-						port: 4444
-					})
-				);
-			}
-			if (argument == "dockercompose:selenium:firefox") {
-				return jshUnitBrowserToBrowser(
-					"Remote (Selenium Firefox) - slime",
-					function(url) { return url.replace(/127\.0\.0\.1/g, jsh.shell.environment.HOSTNAME) },
-					jsh.unit.browser.selenium.remote.Firefox({
-						host: "firefox",
-						port: 4444
-					})
-				);
-			}
-			if (argument == "docker:selenium:chrome") {
-				return jshUnitBrowserToBrowser(
-					"Remote (Selenium Chrome) - local",
-					function(url) { return url.replace(/127\.0\.0\.1/g, "host.docker.internal") },
-					jsh.unit.browser.selenium.remote.Chrome({
-						host: "localhost",
-						port: 4444
-					})
-				)
-			}
-			if (argument == "selenium:chrome") {
-				return jshUnitBrowserToBrowser(
-					"Chrome (Selenium)",
-					$api.fp.identity,
-					jsh.unit.browser.selenium.Chrome()
-				);
-			}
 			if (argument == "chrome") {
 				var port = (function() {
 					if (parameters.options["chrome:debug:port"]) return parameters.options["chrome:debug:port"];
 					if (parameters.options["chrome:debug:vscode"]) return 9222;
 				})();
 				var instance = (parameters.options["chrome:instance"]) || jsh.shell.TMPDIR.createTemporary({ directory: true }).pathname;
+				if (!jsh.shell.browser.installed.chrome) {
+					throw new Error("Chrome not installed; cannot run Chrome browser tests.");
+				}
 				return jshUnitBrowserToBrowser(
 					"Chrome",
 					$api.fp.identity,
@@ -268,13 +234,22 @@
 				)
 			}
 			if (argument == "firefox") {
+				var firefoxProgram = (function() {
+					var command = jsh.shell.PATH.getCommand("firefox") || jsh.shell.PATH.getCommand("firefox-esr");
+					if (command) return command.toString();
+					var linux = jsh.file.Pathname("/usr/bin/firefox").file;
+					if (linux) return linux.toString();
+					var macos = jsh.file.Pathname("/Applications/Firefox.app/Contents/MacOS/firefox").file;
+					if (macos) return macos.toString();
+				})();
+				if (!firefoxProgram) {
+					throw new Error("Firefox not installed; cannot run Firefox browser tests.");
+				}
 				return jshUnitBrowserToBrowser(
 					"Firefox",
 					$api.fp.identity,
 					jsh.unit.browser.local.Firefox({
-						//	TODO	push knowledge of these locations back into rhino/shell
-						program: "/Applications/Firefox.app/Contents/MacOS/firefox"
-						//	Linux: /usr/bin/firefox
+						program: firefoxProgram
 					})
 				)
 			}
@@ -286,6 +261,7 @@
 					return rv;
 				}
 			}
+			throw new TypeError("Browser not found: " + argument);
 		};
 
 		var browser = toBrowser(parameters.options.browser);

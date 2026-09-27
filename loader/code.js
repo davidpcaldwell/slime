@@ -8,84 +8,12 @@
 (
 	/**
 	 *
-	 * @param { slime.runtime.Scope["Packages"] } Packages
-	 * @param { slime.runtime.internal.scripts.Scope["$engine"] } $engine
-	 * @param { slime.runtime.internal.scripts.Scope["fp"] } fp
-	 * @param { slime.loader.Export<slime.runtime.internal.scripts.Exports> } $export
+	 * @param { slime.runtime.internal.code.Scope } $context
+	 * @param { slime.loader.Export<slime.runtime.internal.code.Exports> } $export
 	 */
-	function(Packages,$engine,fp,$export) {
-		/** @type { slime.runtime.Platform } */
-		var $platform = (
-			/**
-			 *
-			 * @param { slime.runtime.Engine } $engine
-			 */
-			function($engine) {
-				/** @type { slime.runtime.Platform } */
-				var $exports = {};
-
-				var global = (function() { return this; })();
-				if (global && global.XML && global.XMLList) {
-					$exports.e4x = {};
-					$exports.e4x.XML = global.XML;
-					$exports.e4x.XMLList = global.XMLList;
-				}
-
-				(
-					/**
-					 * @this { slime.runtime.Platform }
-					 */
-					function() {
-						var getJavaClass = function(name) {
-							try {
-								if (typeof(Packages) == "undefined") return null;
-								var rv = Packages[name];
-								if (typeof(rv) == "function") {
-									//	In the Firefox Java plugin, JavaPackage objects have typeof() == "function". They also have the
-									//	following format for their String values
-									try {
-										var prefix = "[Java Package";
-										if (String(rv).substring(0, prefix.length) == prefix) {
-											return null;
-										}
-									} catch (e) {
-										//	The string value of Packages.java.lang.Object and Packages.java.lang.Number throws a string (the
-										//	below) if you attempt to evaluate it.
-										if (e == "java.lang.NullPointerException") {
-											return rv;
-										}
-									}
-									return rv;
-								}
-								return null;
-							} catch (e) {
-								return null;
-							}
-						}
-
-						if (getJavaClass("java.lang.Object")) {
-							this.java = new function() {
-								this.getClass = function(name) {
-									return getJavaClass(name);
-								}
-							};
-						}
-					}
-				).call($exports);
-
-				try {
-					if (typeof($engine) != "undefined") {
-						if ($engine.MetaObject) {
-							$exports.MetaObject = $engine.MetaObject;
-						}
-					}
-				} catch (e) {
-					//	MetaObject will not be defined
-				}
-
-				return $exports;
-			}
-		)($engine);
+	function($context,$export) {
+		var fp = $context.fp;
+		var $engine = $context.$engine;
 
 		/**
 		 * @type { slime.$api.Global["scripts"]["Compiler"]["from"]["simple"] }
@@ -147,7 +75,7 @@
 					var compiler = JavascriptCompiler;
 
 					return {
-						/** @type { slime.runtime.Exports["compiler"]["update"] } */
+						/** @type { slime.$api.Scripts["compiler"]["update"] } */
 						update: function(transform) {
 							compiler = transform(compiler);
 						},
@@ -166,7 +94,7 @@
 		)();
 
 		/**
-		 * @type { slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"] }
+		 * @type { slime.$api.loader.old.Exports["old"]["loader"]["tools"]["toExportScope"] }
 		 */
 		var toExportScope = function(scope) {
 			var rv = Object.assign(scope, { $exports: void(0), $export: void(0) });
@@ -193,7 +121,7 @@
 		 * @template { { [x: string]: any; } } C
 		 * @template { any } T
 		 * @param { C } $context
-		 * @returns { slime.runtime.internal.scripts.ScriptScope<C,T> }
+		 * @returns { slime.runtime.internal.code.ScriptScope<C,T> }
 		 */
 		var createScriptScope = function($context) {
 			/** @type { slime.js.Cast<C> } */
@@ -206,12 +134,12 @@
 
 		/**
 		 * @template { any } R
-		 * @param { slime.runtime.internal.scripts.executor.Configuration<R> } p
-		 * @returns { slime.runtime.loader.Executor<R> }
+		 * @param { slime.runtime.internal.code.executor.Configuration<R> } p
+		 * @returns { slime.runtime.internal.code.Executor<R> }
 		 */
 		var Executor = function(p) {
 			/**
-			 * @type { slime.runtime.loader.Executor<R>}
+			 * @type { slime.runtime.internal.code.Executor<R>}
 			 */
 			function run(code,scope) {
 				// if (!code || typeof(code) != "object") {
@@ -259,7 +187,7 @@
 
 		/**
 		 * @template { any } R
-		 * @param { slime.runtime.loader.Executor<R> } executor
+		 * @param { slime.runtime.internal.code.Executor<R> } executor
 		 */
 		var OldMethods = function(executor) {
 			function file(code,$context) {
@@ -295,7 +223,6 @@
 					}
 				}
 			},
-			platform: $platform,
 			internal: {
 				old: {
 					toExportScope: toExportScope,
@@ -307,7 +234,7 @@
 						compiler: Code.global.compile,
 						unsupported: function(code) { return "Code " + code.name + " cannot be converted to JavaScript; type = " + code.type() },
 						scope: {
-							$platform: $platform,
+							$platform: $api.platform,
 							$api: $api
 						}
 					});
@@ -325,4 +252,4 @@
 		});
 	}
 //@ts-ignore
-)(Packages,$engine,fp,$export);
+)($context,$export);

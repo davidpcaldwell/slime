@@ -17,6 +17,61 @@ import inonit.script.engine.*;
 public class Main {
 	private static final Logger LOG = Logger.getLogger(Main.class.getName());
 
+	//	Emits startup checkpoint timing (see jsh.launcher.profile / JSH_LAUNCHER_PROFILE), if enabled, to correlate the forked
+	//	loader VM's own bootstrap cost with the launcher-side checkpoints emitted in main.js and the jsh bash script. Kept
+	//	deliberately minimal (no dependency on the shell/plugin infrastructure) so it can run as early as possible, before any of
+	//	the rest of the loader has initialized.
+	private static final class Profile {
+		private static boolean isEnabled() {
+			String value = explicit("jsh.launcher.profile");
+			//	An empty (but present) value is treated as disabled, matching the bash gate's `[ -n ... ]` and the JavaScript
+			//	helpers' Boolean(value), so the master switch behaves consistently across all startup phases.
+			return value != null && value.length() > 0;
+		}
+
+		private static String explicit(String name) {
+			String property = System.getProperty(name);
+			if (property != null) return property;
+			String env = System.getenv(name.replace(".", "_").toUpperCase());
+			if (env != null) return env;
+			return null;
+		}
+
+		private static PrintStream destination() {
+			String path = explicit("jsh.launcher.profile.log");
+			if (path == null || path.length() == 0) return System.err;
+			try {
+				return new PrintStream(new FileOutputStream(path, true));
+			} catch (FileNotFoundException e) {
+				return System.err;
+			}
+		}
+
+		static void checkpoint(String phase) {
+			if (!isEnabled()) return;
+			destination().println("[jsh.profile] phase=" + phase + " t=" + System.currentTimeMillis());
+		}
+
+		//	Reports elapsed time since the launcher (main.js) decided to fork this VM, isolating pure process-spawn + JVM
+		//	bootstrap cost for the forked loader VM. jsh.launcher.profile.origin is an internal-only property (epoch
+		//	milliseconds) set by main.js; it is not a documented setting.
+		static void checkpointSinceFork(String phase) {
+			if (!isEnabled()) return;
+			String origin = System.getProperty("jsh.launcher.profile.origin");
+			if (origin == null) {
+				checkpoint(phase);
+				return;
+			}
+			try {
+				long originMillis = Long.parseLong(origin);
+				long nowMillis = System.currentTimeMillis();
+				destination().println("[jsh.profile] phase=" + phase + " t=" + nowMillis + " delta_since_fork_ms=" + (nowMillis - originMillis));
+			} catch (NumberFormatException e) {
+				checkpoint(phase);
+			}
+		}
+	}
+
 	//	TODO	refactor into locateCodeSource() method
 	private static abstract class Location {
 		//	TODO	duplicated in rhino/http/client
@@ -102,7 +157,7 @@ public class Main {
 			}
 		}
 
-		final Shell.Environment environment() {
+		final Shell.Environment environment(Shell.Installation installation) {
 			return Shell.Environment.create(
 				OperatingSystem.Environment.SYSTEM,
 				System.getProperties(),
@@ -116,7 +171,8 @@ public class Main {
 					//	device and bytes will never need to be immediately available
 					new PrintStream(new Logging.OutputStream(System.err, "stderr"))
 				),
-				Shell.Environment.Exit.VM
+				Shell.Environment.Exit.VM,
+				installation.getSourceClassCache()
 			);
 		}
 
@@ -124,7 +180,8 @@ public class Main {
 
 		final Shell.Configuration configuration(String[] arguments) throws Shell.Invocation.CheckedException {
 			LOG.log(Level.INFO, "Creating shell: arguments = %s", Arrays.asList(arguments));
-			return Shell.Configuration.create(installation(this), this.environment(), this.invocation(arguments));
+			Shell.Installation installation = installation(this);
+			return Shell.Configuration.create(installation, this.environment(installation), this.invocation(arguments));
 		}
 	}
 
@@ -262,6 +319,9 @@ public class Main {
 		}
 
 		abstract Code.Loader getPlugins();
+		File getDefaultSourceClassCache() {
+			return null;
+		}
 
 		final Shell.Installation installation() throws IOException {
 			//	TODO	previously user plugins directory was not searched for libraries. Is this right?
@@ -292,6 +352,10 @@ public class Main {
 
 				@Override public Shell.Packaged getPackaged() {
 					return null;
+				}
+
+				@Override public File getSourceClassCache() {
+					return Unpackaged.this.getDefaultSourceClassCache();
 				}
 			};
 		}
@@ -449,6 +513,11 @@ public class Main {
 			}
 		}
 
+		File getDefaultSourceClassCache() {
+			File library = getLibraryDirectory();
+			return (library == null) ? null : new File(library, "module-classes");
+		}
+
 		Code.Loader getPlugins() {
 			return this.src.child("local/jsh/plugins");
 		}
@@ -531,6 +600,7 @@ public class Main {
 	}
 
 	public static void cli(Shell.Engine engine, String[] args) throws Shell.Invocation.CheckedException {
+		Profile.checkpointSinceFork("java.main.start");
 		if (!inonit.system.Logging.get().isSpecified()) {
 			inonit.system.Logging.get().initialize(new java.util.Properties());
 		}

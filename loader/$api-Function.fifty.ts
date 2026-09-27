@@ -176,6 +176,7 @@ namespace slime.$api.fp {
 	export interface Exports {
 		Thunk: {
 			memoize: <T>(f: Thunk<T>) => Thunk<T>
+			force: <T>(f: Thunk<T>) => T
 			map: Thunk_map
 			value: Thunk_value
 			now: Thunk_now
@@ -198,6 +199,17 @@ namespace slime.$api.fp {
 
 				verify(one).invocations.length.is(1);
 				verify(memoized).invocations.length.is(2);
+			}
+
+			fifty.tests.exports.Thunk.force = function() {
+				const one = fifty.spy.create($api.fp.Thunk.value(1));
+
+				var x = $api.fp.Thunk.force(one.function);
+				var y = $api.fp.Thunk.force(one.function);
+
+				verify(x).is(1);
+				verify(y).is(1);
+				verify(one).invocations.length.is(2);
 			}
 
 			fifty.tests.exports.Thunk.now = function() {
@@ -407,8 +419,6 @@ namespace slime.$api.fp {
 
 				verify(halve(2)).is(1);
 			}
-
-			fifty.tests.wip = fifty.tests.exports.flatten;
 		}
 	//@ts-ignore
 	)(fifty);
@@ -791,6 +801,18 @@ namespace slime.$api.fp {
 			 */
 			property: slime.$api.fp.object.property.Exports
 
+			/**
+			 * Creates a function that takes an argument and will map objects to new objects with the same properties as the
+			 * original, along with the properties of the argument (the properties of the argument take precedence). Note that this
+			 * differs from the behavior of the similar Object.assign, which updates the original object with the new properties.
+			 *
+			 * @param p An object whose properties should be added to the objects passed to the returned function
+			 *
+			 * @returns A function that takes an object and returns a new object with the properties of that object, along with
+			 * the properties of `p` (which will overwrite the properties of the argument if there are any conflicts).
+			 */
+			with: <P extends object, T extends object>(p: P) => (t: T) => Omit<T, keyof P> & P
+
 			/** @deprecated This can be replaced by the stock ECMAScript `Object.entries`. */
 			entries: ObjectConstructor["entries"]
 			/** @deprecated This can be replaced by the stock ECMAScript `Object.fromEntries`. */
@@ -803,6 +825,29 @@ namespace slime.$api.fp {
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
+
+			fifty.tests.Object.with = function() {
+				var p: { a: number, b: string } = { a: 1, b: "2" } as const;
+				var t: { a: number, c: boolean } = { a: 2, c: true } as const;
+
+				var combined = fifty.global.$api.fp.Object.with(p)(t) as typeof p & typeof t;
+				verify(combined).a.is(1);
+				verify(combined).b.is("2");
+				verify(combined).c.is(true);
+				verify(combined).evaluate(function(c) { return c === p; }).is(false);
+				verify(combined).evaluate(function(c) { return c === t; }).is(false);
+
+				var combined2 = fifty.global.$api.fp.Object.with(t)(p) as typeof p & typeof t;
+				verify(combined2).a.is(2);
+				verify(combined2).b.is("2");
+				verify(combined2).c.is(true);
+				verify(combined2).evaluate(function(c) { return c === p; }).is(false);
+				verify(combined2).evaluate(function(c) { return c === t; }).is(false);
+
+				//	Note that Object.assign updates the *original* object, not returning a whole new one.
+				var assigned = Object.assign(t, p);
+				verify(assigned).evaluate(function(a) { return a === t; }).is(true);
+			}
 
 			fifty.tests.Object.fromEntries = function() {
 				var array = [ ["a", 2], ["b", 3] ];
@@ -822,6 +867,10 @@ namespace slime.$api.fp {
 	export type Nothing = Readonly<{ present: false }>
 	export type Some<T> = Readonly<{ present: true, value: T }>
 	export type Maybe<T> = Some<T> | Nothing
+
+	export type Success<T> = Readonly<{ ok: true, value: T }>
+	export type Failure<E> = Readonly<{ ok: false, error: E }>
+	export type Result<E,T> = Success<T> | Failure<E>
 
 	export interface Exports {
 		Maybe: {
@@ -853,6 +902,17 @@ namespace slime.$api.fp {
 				): (a: A) => Maybe<C>
 			}
 		}
+
+		Result: {
+			from: {
+				success: <T>(t: T) => Success<T>
+				failure: <E>(e: E) => Failure<E>
+			}
+
+			map: <E,T,R>(f: (t: T) => R) => (r: Result<E,T>) => Result<E,R>
+			flatMap: <E,T,E2,R>(f: (t: T) => Result<E2,R>) => (r: Result<E,T>) => Result<E|E2,R>
+			mapError: <E,E2,T>(f: (e: E) => E2) => (r: Result<E,T>) => Result<E2,T>
+		}
 	}
 
 	(
@@ -882,6 +942,44 @@ namespace slime.$api.fp {
 				if (quarter4.present) verify(quarter4).value.is(1);
 				verify(quarterEvenly(2)).present.is(false);
 				verify(quarterEvenly(1)).present.is(false);
+			}
+
+			fifty.tests.exports.Result = fifty.test.Parent();
+
+			fifty.tests.exports.Result.map = function() {
+				var doubled = $api.fp.now(
+					$api.fp.Result.from.success(2),
+					$api.fp.Result.map(function(n: number) { return n*2; })
+				);
+				verify(doubled).evaluate.property("ok").is(true);
+				if (doubled.ok) verify(doubled).value.is(4);
+
+				var failed = $api.fp.now(
+					$api.fp.Result.from.failure("boom"),
+					$api.fp.Result.map(function(n: number) { return n*2; })
+				);
+				verify(failed).evaluate.property("ok").is(false);
+				if ("error" in failed) verify(failed.error).is("boom");
+			}
+
+			fifty.tests.exports.Result.flatMap = function() {
+				var half = function(n: number): Result<string,number> {
+					if (n%2 == 0) return $api.fp.Result.from.success(n/2);
+					return $api.fp.Result.from.failure("odd");
+				}
+
+				var quarter = $api.fp.pipe(
+					half,
+					$api.fp.Result.flatMap(half)
+				);
+
+				var fromFour = quarter(4);
+				verify(fromFour).evaluate.property("ok").is(true);
+				if (fromFour.ok) verify(fromFour).value.is(1);
+
+				var fromTwo = quarter(2);
+				verify(fromTwo).evaluate.property("ok").is(false);
+				if ("error" in fromTwo) verify(fromTwo.error).is("odd");
 			}
 		}
 	//@ts-ignore
@@ -1484,6 +1582,8 @@ namespace slime.$api.fp {
 			prettify: (p: {
 				space: Parameters<slime.external.lib.es5.JSON["stringify"]>[2]
 			}) => (json: string) => string
+
+			parse: <T>(f: (data: slime.$api.fp.Data) => T) => (json: string) => T
 		}
 	}
 
@@ -1563,12 +1663,86 @@ namespace slime.$api.fp {
 	//@ts-ignore
 	)(fifty);
 
+	type BuildStep = (x: unknown) => unknown
+
+	type BuildStepChain<Input, Steps extends readonly BuildStep[]> = (
+		Steps extends readonly [infer S, ...infer Rest]
+			? S extends (x: Input) => infer Next
+				? Rest extends readonly BuildStep[]
+					? [S, ...BuildStepChain<Next, Rest>]
+					: never
+				: never
+			: []
+	)
+
+	type BuildResult<Input, Steps extends readonly BuildStep[]> = (
+		Steps extends readonly [infer S, ...infer Rest]
+			? S extends (x: Input) => infer Next
+				? Rest extends readonly BuildStep[]
+					? BuildResult<Next, Rest>
+					: never
+				: never
+			: Input
+	)
+
+	type NowFunctionFirstDeprecated = {
+		/**
+		 * @deprecated Use {@link Exports.build | `$api.fp.build`} when the first argument to `now` is a function value.
+		 */
+		<
+			F extends slime.external.lib.es5.TypescriptFunction,
+			S1Out
+		>(
+			f: F,
+			s1: (f: F) => S1Out
+		): S1Out
+
+		/**
+		 * @deprecated Use {@link Exports.build | `$api.fp.build`} when the first argument to `now` is a function value.
+		 */
+		<
+			F extends slime.external.lib.es5.TypescriptFunction,
+			S1Out,
+			S1 extends (f: F) => S1Out,
+			SRest extends readonly BuildStep[]
+		>(
+			f: F,
+			s1: S1,
+			...rest: BuildStepChain<S1Out, SRest>
+		): BuildResult<S1Out, SRest>
+	}
+
 	export interface Exports {
 		/**
-		 * Returns the result of invoking a function on an argument. `now(p, f)` is syntactic sugar for `f(p)`, and
-		 * `now(p, f, g) is syntactic sugar for `g(f(p))`.
+		 * Returns the result of transforming a function value through one or more combinators.
+		 * `build(f, g)` is syntactic sugar for `g(f)`, and `build(f, g, h)` is syntactic sugar for `h(g(f))`.
 		 */
-		now: Now_map & {
+		build: {
+			<
+				F extends slime.external.lib.es5.TypescriptFunction,
+				S1Out
+			>(
+				f: F,
+				s1: (f: F) => S1Out
+			): S1Out
+
+			<
+				F extends slime.external.lib.es5.TypescriptFunction,
+				S1Out,
+				S1 extends (f: F) => S1Out,
+				SRest extends readonly BuildStep[]
+			>(
+				f: F,
+				s1: S1,
+				...rest: BuildStepChain<S1Out, SRest>
+			): BuildResult<S1Out, SRest>
+		}
+
+		/**
+		 * Returns the result of invoking a function on an argument. `now(p, f)` is syntactic sugar for `f(p)`, and
+		 * `now(p, f, g)` is syntactic sugar for `g(f(p))`.
+		 */
+		now: NowFunctionFirstDeprecated & Now_map & {
 			/**
 			 * @deprecated Replaced by {@link Exports.now}.
 			 */
@@ -1587,6 +1761,35 @@ namespace slime.$api.fp {
 		) {
 			const { verify } = fifty;
 			const { $api } = fifty.global;
+
+			fifty.tests.exports.build = function() {
+				var buildUntyped = $api.fp.build as any;
+
+				var times2 = function(n: number): number {
+					return n * 2;
+				};
+
+				var logging = function(f: (n: number) => number) {
+					return function(p: number): number {
+						return f(p);
+					};
+				};
+
+				var loggedTimes2 = $api.fp.build(times2, logging);
+				verify(loggedTimes2(3)).is(6);
+
+				verify(times2).evaluate(function(f) {
+					return buildUntyped(f);
+				}).threw.type(TypeError);
+
+				verify(3).evaluate(function(n) {
+					return buildUntyped(n, logging);
+				}).threw.type(TypeError);
+
+				verify(times2).evaluate(function(f) {
+					return buildUntyped(f, 42);
+				}).threw.type(TypeError);
+			};
 
 			fifty.tests.exports.now = function() {
 				var f = function(i: number): string {
@@ -1971,6 +2174,7 @@ namespace slime.$api.fp {
 				fifty.load("$api-fp-Mapping.fifty.ts");
 				fifty.load("$api-fp-stream.fifty.ts");
 				fifty.load("$api-fp-impure.fifty.ts");
+				fifty.load("$api-fp-wo.fifty.ts");
 			}
 		}
 	//@ts-ignore
@@ -1992,5 +2196,5 @@ namespace slime.$api.fp.internal {
 
 	export type Exports = Omit<slime.$api.fp.Exports,"methods">
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

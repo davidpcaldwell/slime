@@ -27,7 +27,7 @@ namespace slime.fifty.test.internal.browser.script {
 	export interface Exports {
 	}
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }
 
 (
@@ -65,37 +65,6 @@ namespace slime.fifty.test.internal.browser.script {
 
 		fifty.tests.manual.firefox = function() {
 			run("firefox");
-		}
-
-		fifty.tests.manual.selenium = {};
-
-		fifty.tests.manual.selenium.chrome = function() {
-			run("selenium:chrome");
-		}
-
-		fifty.tests.manual.docker = {
-			compose: {
-				selenium: {
-					chrome: function() {
-						jsh.shell.console("Installing Selenium ...");
-						jsh.shell.jsh({
-							shell: jsh.shell.jsh.src,
-							script: jsh.shell.jsh.src.getFile("jsh/tools/install/selenium.jsh.js")
-						});
-						jsh.shell.console("Installed Selenium.");
-						run("dockercompose:selenium:chrome");
-					},
-					firefox: function() {
-						jsh.shell.console("Installing Selenium ...");
-						jsh.shell.jsh({
-							shell: jsh.shell.jsh.src,
-							script: jsh.shell.jsh.src.getFile("jsh/tools/install/selenium.jsh.js")
-						});
-						jsh.shell.console("Installed Selenium.");
-						run("dockercompose:selenium:firefox");
-					}
-				}
-			}
 		}
 	}
 //@ts-ignore

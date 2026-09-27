@@ -22,13 +22,13 @@ public class Rhino extends Servlet.ScriptContainer {
 		};
 	}
 
-	private Servlet servlet;
+	private ServletCore servlet;
 	private Engine engine;
 
 	Rhino() {
 	}
 
-	void initialize(Servlet servlet) {
+	void initialize(ServletCore servlet) {
 		Debugger debugger = null;
 		if (System.getenv("SLIME_SCRIPT_DEBUGGER") != null && System.getenv("SLIME_SCRIPT_DEBUGGER").equals("rhino")) {
 			Debugger.RhinoDebugger.Configuration configuration = new Debugger.RhinoDebugger.Configuration() {
@@ -94,7 +94,7 @@ public class Rhino extends Servlet.ScriptContainer {
 	public static class Host extends Servlet.HostObject {
 		private Engine engine;
 
-		Host(Servlet servlet, Engine engine) {
+		Host(ServletCore servlet, Engine engine) {
 			super(servlet);
 			this.engine = engine;
 		}

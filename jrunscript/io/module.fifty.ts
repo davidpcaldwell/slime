@@ -6,7 +6,7 @@
 
 namespace slime.jrunscript.io {
 	export interface Context {
-		$slime: Pick<slime.jrunscript.runtime.Exports,"Resource"|"jrunscript"|"Loader"|"old">
+		$slime: Pick<slime.jrunscript.runtime.Exports,"Resource"|"jrunscript"|"Loader"|"$api">
 		api: {
 			/**
 			 * The `jrunscript/host` module.
@@ -123,7 +123,7 @@ namespace slime.jrunscript.io {
 		Streams: slime.jrunscript.runtime.io.Exports["Streams"]
 		Buffer: slime.jrunscript.runtime.io.Exports["Buffer"]
 		Loader: slime.jrunscript.runtime.Exports["Loader"]
-		old: slime.jrunscript.runtime.Exports["old"]
+		old: slime.$api.loader.old.Exports["old"]
 		java: {
 			//	JSAPI documentation said this was deprecated, but replaced by what? Calls to `Streams`?
 			/**
@@ -163,5 +163,5 @@ namespace slime.jrunscript.io {
 	 * callers, and adds miscellaneous capabilities (relating to MIME types, the ZIP compression format, and grid-based environments
 	 * like Excel).
 	 */
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

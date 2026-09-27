@@ -167,11 +167,16 @@ namespace slime.jrunscript.runtime.io {
 	 * A stream from which bytes may be read.
 	 */
 	export interface InputStream {
-		//	TODO	rename to read, we have overloaded content to represent a tree
-
 		read: {
 			string: {
-				simple: (charset: Charset) => string
+				/**
+				 * Reads the entire content of this stream as a single string.
+				 *
+				 * @param charset A charset to use to decode bytes as characters; if omitted, the platform default `Charset` will be
+				 * used.
+				 * @returns A string.
+				 */
+				simple: (charset?: Charset) => string
 			}
 
 			ArrayBuffer: {
@@ -182,6 +187,8 @@ namespace slime.jrunscript.runtime.io {
 
 	(
 		function(
+			//	TODO	should Packages be available through the Fifty (`fifty.jsh`) object?
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
@@ -190,11 +197,25 @@ namespace slime.jrunscript.runtime.io {
 
 			fifty.tests.exports.InputStream.object = fifty.test.Parent();
 
-			fifty.tests.exports.InputStream.object.content = fifty.test.Parent();
+			fifty.tests.exports.InputStream.object.read = fifty.test.Parent();
 
-			fifty.tests.exports.InputStream.object.content.ArrayBuffer = fifty.test.Parent();
+			fifty.tests.exports.InputStream.object.read.string = fifty.test.Parent();
 
-			fifty.tests.exports.InputStream.object.content.ArrayBuffer.simple = function() {
+			fifty.tests.exports.InputStream.object.read.string.simple = function() {
+				var buffer = new Packages.java.io.ByteArrayOutputStream();
+				var out = new Packages.java.io.OutputStreamWriter(buffer);
+				out.write("hello");
+				out.close();
+				var input = test.subject.InputStream.java(
+					test.javaInputStreamOf( Array.prototype.slice.call(buffer.toByteArray()) )
+				);
+				var string = input.read.string.simple();
+				verify(string).is("hello");
+			}
+
+			fifty.tests.exports.InputStream.object.read.ArrayBuffer = fifty.test.Parent();
+
+			fifty.tests.exports.InputStream.object.read.ArrayBuffer.simple = function() {
 				var len = 19;
 				var array = [];
 				for (var i=0; i<len; i++) {
@@ -223,7 +244,7 @@ namespace slime.jrunscript.runtime.io {
 			}
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 
 	export interface PipeEvents {
 		readProgress: number
@@ -446,12 +467,12 @@ namespace slime.jrunscript.runtime.io {
 
 	(
 		function(
-			$platform: slime.runtime.Platform,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
+			const { $api } = fifty.global;
 
-			if ($platform.e4x) {
+			if ($api.platform.e4x) {
 				fifty.tests.E4X = function() {
 					var buffer = new test.subject.Buffer();
 					buffer.writeBinary().character().write("<a><b/></a>");
@@ -462,7 +483,7 @@ namespace slime.jrunscript.runtime.io {
 			}
 		}
 	//@ts-ignore
-	)($platform,fifty);
+	)(fifty);
 
 	export interface Exports {
 		Writer: {
@@ -726,7 +747,7 @@ namespace slime.jrunscript.runtime.io {
 						newline: "\n"
 					}),
 					$api.fp.property("all"),
-					$api.fp.world.Means.effect({
+					$api.fp.world.Means.effector({
 						progress: function(e) {
 							all = e.detail;
 						}
@@ -748,7 +769,7 @@ namespace slime.jrunscript.runtime.io {
 							newline: "\n"
 						}),
 						$api.fp.property("lines"),
-						$api.fp.world.Means.effect({
+						$api.fp.world.Means.effector({
 							progress: function(e) {
 								all += e.detail;
 							},
@@ -787,7 +808,7 @@ namespace slime.jrunscript.runtime.io {
 							newline: "\n"
 						}),
 						$api.fp.property("lines"),
-						$api.fp.world.Means.effect({
+						$api.fp.world.Means.effector({
 							progress: function(e) {
 								all += e.detail;
 							},

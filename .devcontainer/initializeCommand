@@ -5,7 +5,56 @@
 #
 #	END LICENSE
 
-HERE=$(readlink -f $(dirname $0))
-#	macOS-only
-osascript -e "tell application \"Terminal\" to do script \"${HERE}/find-desktop-novnc-port && exit\""
-#	TODO: gnome-terminal, konsole, xterm?
+set -euo pipefail
+
+HERE="$(cd "$(dirname "$0")" && pwd -P)"
+
+# Generate a deterministic Compose project name per workspace path.
+# Write to repository root .env so compose variable resolution picks it up
+# when using docker-compose.yaml from the project root.
+PROJECT_ROOT="$(cd "${HERE}/.." && pwd -P)"
+if command -v sha1sum >/dev/null 2>&1; then
+	PROJECT_HASH="$(printf '%s' "${PROJECT_ROOT}" | sha1sum | cut -c1-10)"
+elif command -v shasum >/dev/null 2>&1; then
+	PROJECT_HASH="$(printf '%s' "${PROJECT_ROOT}" | shasum -a 1 | cut -c1-10)"
+else
+	echo "initializeCommand requires sha1sum or shasum to derive COMPOSE_PROJECT_NAME." >&2
+	exit 1
+fi
+COMPOSE_PROJECT_NAME="slime-${PROJECT_HASH}"
+
+DEFAULT_AGENT_INSTRUCTIONS_HOST_PATH="${HOME}/.slime/contributor/agents"
+LOCAL_AGENT_INSTRUCTIONS_HOST_PATH="${PROJECT_ROOT}/local/agents"
+if [ -n "${SLIME_AGENT_INSTRUCTIONS_HOST_PATH:-}" ]; then
+	AGENT_INSTRUCTIONS_HOST_PATH="${SLIME_AGENT_INSTRUCTIONS_HOST_PATH}"
+elif [ -e "${LOCAL_AGENT_INSTRUCTIONS_HOST_PATH}" ]; then
+	AGENT_INSTRUCTIONS_HOST_PATH="${LOCAL_AGENT_INSTRUCTIONS_HOST_PATH}"
+else
+	AGENT_INSTRUCTIONS_HOST_PATH="${DEFAULT_AGENT_INSTRUCTIONS_HOST_PATH}"
+fi
+if [ -e "${AGENT_INSTRUCTIONS_HOST_PATH}" ] && [ ! -d "${AGENT_INSTRUCTIONS_HOST_PATH}" ]; then
+	echo "Agent instructions path exists but is not a directory: ${AGENT_INSTRUCTIONS_HOST_PATH}" >&2
+	exit 1
+fi
+mkdir -p "${AGENT_INSTRUCTIONS_HOST_PATH}"
+
+{
+	printf 'COMPOSE_PROJECT_NAME=%s\n' "${COMPOSE_PROJECT_NAME}"
+	# Lets a devcontainer distinguish itself from other SLIME devcontainers in the VS Code window title.
+	# Single-quoted so Compose's .env parser treats the path literally, without $ interpolation or # truncation.
+	printf "SLIME_HOST_PATH='%s'\n" "$(printf '%s' "${PROJECT_ROOT}" | sed "s/'/'\\\\''/g")"
+	# Mounts personal agent instructions into the container as ~/.agents.
+	printf "SLIME_AGENT_INSTRUCTIONS_HOST_PATH='%s'\n" "$(printf '%s' "${AGENT_INSTRUCTIONS_HOST_PATH}" | sed "s/'/'\\\\''/g")"
+} > "${PROJECT_ROOT}/.env"
+rm -f "${HERE}/.env"
+
+# VS Code server updates stage into <commit>_<suffix> temporary directories.
+# If dotfiles remain, devcontainer's internal "mv * && rmdir" can fail because
+# '*' does not include dotfiles. Remove stale temp dirs before startup.
+VSCODE_BIN_DIR="${HERE}/../local/docker/home/.vscode-server/bin"
+if [ -d "${VSCODE_BIN_DIR}" ]; then
+	find "${VSCODE_BIN_DIR}" -mindepth 1 -maxdepth 1 -type d -name '*_*' -exec rm -rf {} +
+fi
+
+# Webtop URL opening is handled by devcontainer port forwarding.
+exit 0

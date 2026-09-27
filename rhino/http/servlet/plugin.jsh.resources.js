@@ -264,7 +264,7 @@
 			};
 
 			/**
-			 * @type { new (p?: { prefix?: string & slime.old.loader.Source<{ prefix: string }> }) => slime.old.Loader<any, slime.Resource> & { resource: any } }
+			 * @type { new (p?: { prefix?: string & slime.loader.old.Source<{ prefix: string }> }) => slime.loader.old.Loader<any, slime.Resource> & { resource: any } }
 			 */
 			var Loader = function(p) {
 				if (!p) p = {};

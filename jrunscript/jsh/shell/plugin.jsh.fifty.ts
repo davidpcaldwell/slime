@@ -21,6 +21,18 @@ namespace slime.jsh.shell {
 		) {
 			const { verify } = fifty;
 			const { $api, jsh } = fifty.global;
+			const normalizeStderr = function(stderr: string): string {
+				return stderr
+					.split("\n")
+					.filter(function(line) {
+						if (!line) return false;
+						if (line == "Warning: Nashorn engine is planned to be removed from a future JDK release") return false;
+						if (line == "Warning: jrunscript is deprecated and will be removed in a future release.") return false;
+						if (line.indexOf("WARNING: Use of the three-letter time zone ID ") == 0) return false;
+						return true;
+					})
+					.join("\n");
+			};
 
 			fifty.tests.stdio = fifty.test.Parent();
 
@@ -58,7 +70,6 @@ namespace slime.jsh.shell {
 					};
 
 					fifty.tests.stdio.jsapi._3 = function() {
-						var NASHORN_DEPRECATION_WARNING = "Warning: Nashorn engine is planned to be removed from a future JDK release";
 						var one: { output: string, error: string } = jsh.shell.jsh({
 							shell: $jsapi.environment.jsh.built.home,
 							script: $jsapi.environment.jsh.src.getFile("rhino/shell/test/stdio.1.jsh.js"),
@@ -69,9 +80,7 @@ namespace slime.jsh.shell {
 							evaluate: function(result) {
 								return {
 									output: result.stdio.output,
-									error: result.stdio.error.split("\n").filter(function(line) {
-										return line != NASHORN_DEPRECATION_WARNING;
-									}).join("\n")
+									error: normalizeStderr(result.stdio.error)
 								}
 							}
 						});
@@ -131,7 +140,7 @@ namespace slime.jsh.shell {
 				);
 				verify(result).status.is(0);
 				verify(result).stdio.output.evaluate(JSON.parse).evaluate(function(json): boolean { return json.stderr.close; }).is(false);
-				verify(result).stdio.error.is(["Hello, World!", "Hello, again!"].join("\n") + "\n");
+				verify(normalizeStderr(result.stdio.error)).is(["Hello, World!", "Hello, again!"].join("\n"));
 			}
 
 			fifty.tests.suite = function() {

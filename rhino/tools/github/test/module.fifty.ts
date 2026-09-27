@@ -75,5 +75,5 @@ namespace slime.jrunscript.tools.github.mock.project {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.synchronous.Script<Context,slime.jsh.test.remote.Exports>
+	export type Script = slime.runtime.loader.synchronous.Script<Context,slime.jsh.test.remote.Exports>
 }

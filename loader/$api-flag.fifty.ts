@@ -32,29 +32,12 @@ namespace slime.$api {
 		warning: (o: any) => void
 	}
 
-	export interface Global {
-		/**
-		 * Allows the runtime deprecation of particular API constructs.
-		 */
-		deprecate: Flagger
-
-		/**
-		 * Allows the runtime marking of particular API constructs as experimental.
-		 */
-		experimental: Flagger
-
-		flag: {
-			once: (warning: Flagger["warning"]) => Flagger["warning"]
-		}
-	}
-
 	(
 		function(
 			fifty: slime.fifty.test.Kit
 		) {
 			const { verify } = fifty;
 			const api = fifty.global.$api;
-			const { $platform } = fifty.global;
 
 			fifty.tests.jsapi = fifty.test.Parent();
 

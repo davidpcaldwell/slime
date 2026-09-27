@@ -443,23 +443,27 @@
 			return rv;
 		}
 
-		var Invocation_from_intention = function(parent) {
-			/**
-			 *
-			 * @param { slime.jrunscript.shell.run.intention.Input } p
-			 * @return { slime.jrunscript.runtime.io.InputStream }
-			 */
-			var toInputStream = function(p) {
-				if (typeof(p) == "string") {
-					var buffer = new $context.library.io.Buffer();
-					buffer.writeText().write(p);
-					buffer.close();
-					return buffer.readBinary();
-				} else {
-					return p;
-				}
-			};
+		/**
+		 *
+		 * @param { slime.jrunscript.shell.run.intention.Input } p
+		 * @return { slime.jrunscript.runtime.io.InputStream }
+		 */
+		var toInputStream = (
+			function($context) {
+				return function(p) {
+					if (typeof(p) == "string") {
+						var buffer = new $context.library.io.Buffer();
+						buffer.writeText().write(p);
+						buffer.close();
+						return buffer.readBinary();
+					} else {
+						return p;
+					}
+				};
+			}
+		)({ library: { io: $context.library.io }});
 
+		var Invocation_from_intention = function(parent) {
 			return function(plan) {
 				var environment = plan.environment || $api.fp.identity;
 				return {
@@ -579,6 +583,7 @@
 			},
 			mock: mockRun,
 			internal: {
+				toInputStream: toInputStream,
 				buildStdio: buildStdio,
 				mock: {
 					tell: mockTell

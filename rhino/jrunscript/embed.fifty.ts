@@ -10,7 +10,7 @@
  */
 namespace slime.jrunscript.bootstrap {
 	/**
-	 * A SLIME {@link slime.loader.Script} context used when embedding the bootstrap API.
+	 * A SLIME {@link slime.runtime.loader.Scoped} context used when embedding the bootstrap API.
 	 */
 	export interface Context {
 		debug: boolean
@@ -41,5 +41,5 @@ namespace slime.jrunscript.bootstrap {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.runtime.loader.Module<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

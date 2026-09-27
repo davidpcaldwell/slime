@@ -10,7 +10,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.$slime } $slime
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.jsh.plugin.plugin } plugin
 	 */
 	function($api,jsh,$slime,$loader,plugin) {
@@ -21,7 +21,7 @@
 			load: function() {
 				var typescript = {
 					compile: function(code) {
-						var maybe = $slime.compiler.compile({
+						var maybe = $slime.$api.scripts.compiler.compile({
 							name: "<jsh.typescript code>",
 							type: function() {
 								return {
@@ -102,7 +102,7 @@
 					/** @type { slime.servlet.Handler } */
 					var resultsHandler = (function createResultHandler() {
 						if (!resultPath) return $api.fp.Partial.from.loose(function(request) { return void(0); })
-						/** @type { slime.loader.Script<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
+						/** @type { slime.runtime.loader.Scoped<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
 						var resultServletFactory = $loader.script("handler-results.js");
 
 						var resultServletFile = resultServletFactory({
@@ -304,7 +304,7 @@
 										(
 											(resultsPath)
 												? (function createResultHandler() {
-													/** @type { slime.loader.Script<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
+													/** @type { slime.runtime.loader.Scoped<slime.runtime.browser.test.results.Context,slime.runtime.browser.test.results.Factory> } */
 													var resultServletFactory = $loader.script("handler-results.js");
 
 													var resultServletFile = resultServletFactory({

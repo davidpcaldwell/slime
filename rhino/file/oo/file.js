@@ -248,16 +248,14 @@
 					if (!getParent().directory) {
 						getParent().createDirectory(mode);
 					}
-					$context.library.Location.directory.require(location).simple({
+					$context.library.Location.directory.require({
 						recursive: true
-					});
+					}).simple(location);
 				} else {
 					if (!getParent().directory) {
 						throw new Error("Could not create: " + toString() + "; parent directory does not exist.");
 					}
-					$context.library.Location.directory.require(location).simple({
-						recursive: false
-					});
+					$context.library.Location.directory.require({ recursive: false }).simple(location);
 				}
 
 				return getDirectory();
@@ -335,7 +333,7 @@
 				var setLastModified = function(date) {
 					var set = $api.fp.now(
 						parameters.filesystem.attributes.times.modified.set({ pathname: location.pathname }),
-						$api.fp.world.Means.effect()
+						$api.fp.world.Means.effector()
 					)
 					set(date.getTime());
 				}

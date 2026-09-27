@@ -1,0 +1,52 @@
+#	LICENSE
+#	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not
+#	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+#	END LICENSE
+
+name: test-macos
+on:
+  pull_request:
+    branches:
+      - '**'
+  push:
+    branches:
+      - main
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  test:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: "1,3"
+            check: false
+          - shard: "2"
+            check: true
+    # https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Run the tests
+        env:
+          SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
+          SLIME_TEST_NO_MKCERT: 1
+          SLIME_TEST_NO_JAVA_THREADS: 1
+          SLIME_TEST_NO_DOCKER: 1
+          SLIME_TEST_NO_GIT: 1
+          SLIME_TEST_NO_TOMCAT_INSTALL_TO_JSH: 1
+          SLIME_TEST_NO_BROWSER: 1
+          SLIME_TEST_JRUNSCRIPT_SHARD: ${{ matrix.shard }}
+        run: contributor/suite-macos
+        shell: bash
+      #	Runs ESLint and TypeScript checks (formerly the separate check-jdk25 workflow) on the lighter macOS shard, keeping the
+      #	total number of jobs per CI run within the account's 20-concurrent-job limit.
+      - name: Run the linting and type checking
+        if: ${{ !cancelled() && matrix.check }}
+        env:
+          SLIME_WF_SKIP_GIT_IDENTITY_REQUIREMENT: 1
+        run: ./wf check
+        shell: bash

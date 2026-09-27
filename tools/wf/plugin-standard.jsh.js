@@ -19,6 +19,19 @@
 
 		/**
 		 *
+		 * @param { any } commands
+		 * @param { string } path
+		 * @param { slime.jsh.script.cli.CommandMetadata } metadata
+		 */
+		function document(commands,path,metadata) {
+			var target = path.split(".").reduce(function(o,name) {
+				return (o) ? o[name] : void(0);
+			}, commands);
+			if (typeof(target) == "function") jsh.script.cli.defineCommand(target, metadata);
+		}
+
+		/**
+		 *
 		 * @param { slime.jrunscript.tools.git.repository.Local } repository
 		 * @param { string } path
 		 */
@@ -57,18 +70,10 @@
 		$export(
 			function($context,project,$exports) {
 				if (arguments.length == 2) {
-					//	old signature
-					$api.deprecate(function(invocation) {
-						$context = invocation[0];
-						$exports = invocation[1];
-						project = {};
-					})(arguments);
+					throw new TypeError("Old signature of standard plugin export function used. Please update to the new signature, which takes three arguments: context, project, and exports.");
 				}
 
-				//	TODO	the below credentialHelper code also appears to be in tools/wf/plugin.jsh.js
-
 				//	TODO	is this stuff documented anywhere?
-				var credentialHelper = jsh.shell.jsh.src.getFile("rhino/tools/git/git-credential-tokens-directory.bash").toString();
 
 				/** @type { slime.jrunscript.tools.git.Command<void,{ current: boolean, name: string }[]> } */
 				var getBranches = {
@@ -108,7 +113,7 @@
 				}
 
 				if ( (project.lint || project.test) && !project.precommit ) {
-					project.precommit = api.checks().precommit({
+					project.precommit = api.checks.precommit({
 						lint: (project.lint) ? project.lint.check : void(0),
 						test: project.test
 					})
@@ -139,10 +144,7 @@
 					//	master
 					repository.push({
 						repository: "origin",
-						refspec: status.branch,
-						config: {
-							"credential.helper": credentialHelper
-						}
+						refspec: status.branch
 					});
 				}
 
@@ -206,7 +208,7 @@
 						}
 						var formatter = (p.options.vscode) ? formatForVscode : $api.fp.identity;
 						var result = $api.fp.world.now.question(
-							api.checks().tsc,
+							api.checks.tsc,
 							void(0),
 							{
 								console: function(e) {
@@ -227,7 +229,7 @@
 				);
 
 				$exports.typedoc = function() {
-					api.typescript().typedoc.now();
+					api.typescript.typedoc.now();
 				}
 
 				var displayBranchName = function(name) {
@@ -290,7 +292,7 @@
 					};
 
 					//	TODO	add option for offline
-					var oRepository = api.git().fetch();
+					var oRepository = api.git.fetch();
 					var fRepository = library.git.program({ command: "git" }).repository(oRepository.directory.toString());
 					var remote = "origin";
 					var status = fRepository.command(library.git.commands.status).argument().run();
@@ -301,7 +303,7 @@
 						var trunk = origin.head;
 						base = "origin/" + trunk;
 					}
-					var vsRemote = (branch) ? api.git().compareTo(base)(oRepository) : null;
+					var vsRemote = (branch) ? api.git.compareTo(base)(oRepository) : null;
 					jsh.shell.console("Current branch: " + displayBranchName(status.branch));
 					if (vsRemote && vsRemote.ahead.length) jsh.shell.console("ahead of " + base + ": " + vsRemote.ahead.length);
 					if (vsRemote && vsRemote.behind.length) jsh.shell.console("behind " + base + ": " + vsRemote.behind.length);
@@ -346,7 +348,7 @@
 						if (branch.name === null) {
 							return;
 						} else {
-							var compared = api.git().compareTo(branch.name)(oRepository);
+							var compared = api.git.compareTo(branch.name)(oRepository);
 							if (compared.behind.length) {
 								if (first) {
 									jsh.shell.console("");
@@ -521,9 +523,12 @@
 				if (project.precommit) {
 					$exports.precommit = function() {
 						var repository = library.git.program({ command: "git" }).repository($context.base.pathname.toString());
-						var success = project.precommit({
-							console: function(e) {
-								jsh.shell.console(e.detail);
+						var success = $api.fp.world.Question.now({
+							question: project.precommit,
+							handlers: {
+								console: function(e) {
+									jsh.shell.console(e.detail);
+								}
 							}
 						});
 						jsh.shell.console("Checks: " + ( (success) ? "passed." : "FAILED!") );
@@ -591,10 +596,7 @@
 					//	master
 					repository.push({
 						repository: "origin",
-						refspec: "HEAD",
-						config: {
-							"credential.helper": credentialHelper
-						}
+						refspec: "HEAD"
 					});
 				}
 
@@ -620,9 +622,12 @@
 						},
 						function(p) {
 							api.project().updateSubmodule({ path: p.options.path });
-							var result = project.precommit({
-								console: function(e) {
-									jsh.shell.console(e.detail);
+							var result = $api.fp.world.Question.now({
+								question: project.precommit,
+								handlers: {
+									console: function(e) {
+										jsh.shell.console(e.detail);
+									}
 								}
 							});
 							if (result) {
@@ -722,9 +727,12 @@
 						if (!p.options.message) throw new Error("No default commit message, and no message given.");
 
 						//	TODO	removed a notest option that could be used here
-						var check = project.precommit({
-							console: function(e) {
-								jsh.shell.console(e.detail);
+						var check = $api.fp.world.Question.now({
+							question: project.precommit,
+							handlers: {
+								console: function(e) {
+									jsh.shell.console(e.detail);
+								}
 							}
 						});
 						if (check) {
@@ -772,6 +780,105 @@
 				$exports.documentation = serveDocumentation({ watch: false });
 
 				$exports.document = serveDocumentation({ watch: true });
+
+				document($exports, "eslint", {
+					category: "Checks",
+					summary: "Runs ESLint on the project."
+				});
+				document($exports, "lint", {
+					category: "Checks",
+					summary: "Runs the configured lint check."
+				});
+				document($exports, "lint.fix", {
+					category: "Checks",
+					summary: "Runs the configured lint fixer."
+				});
+				document($exports, "tsc", {
+					category: "Checks",
+					summary: "Runs the TypeScript compiler.",
+					options: ["--vscode    Reformat TypeScript output for VSCode terminal links."]
+				});
+				document($exports, "typedoc", {
+					category: "Documentation",
+					summary: "Generates TypeDoc documentation."
+				});
+				document($exports, "status", {
+					category: "Project",
+					summary: "Shows repository and project status."
+				});
+				document($exports, "prune", {
+					category: "Git",
+					summary: "Deletes merged local and remote branches."
+				});
+				document($exports, "git.hooks.post-checkout", {
+					category: "Git hooks",
+					summary: "Updates the checkout after git checkout."
+				});
+				document($exports, "git.hooks.pre-commit", {
+					category: "Git hooks",
+					summary: "Runs pre-commit checks."
+				});
+				document($exports, "git.hooks.prepare-commit-msg", {
+					category: "Git hooks",
+					summary: "Prepares a default commit message when available."
+				});
+				document($exports, "git.hooks.post-merge", {
+					category: "Git hooks",
+					summary: "Updates submodules after a merge."
+				});
+				document($exports, "git.hooks.post-commit", {
+					category: "Git hooks",
+					summary: "Pushes the current HEAD after a commit."
+				});
+				document($exports, "test", {
+					category: "Checks",
+					summary: "Runs the configured project test."
+				});
+				document($exports, "precommit", {
+					category: "Checks",
+					summary: "Runs configured pre-commit checks."
+				});
+				document($exports, "submodule.update", {
+					category: "Submodules",
+					summary: "Updates a submodule and commits it after checks pass.",
+					options: ["--path <path>    Submodule path."]
+				});
+				document($exports, "submodule.remove", {
+					category: "Submodules",
+					summary: "Removes a top-level submodule.",
+					options: ["--path <path>    Submodule path."]
+				});
+				document($exports, "submodule.attach", {
+					category: "Submodules",
+					summary: "Checks out a submodule tracking branch.",
+					options: [
+						"--path <path>    Submodule path.",
+						"--recursive      Attach nested submodules."
+					]
+				});
+				document($exports, "submodule.reset", {
+					category: "Submodules",
+					summary: "Resets a submodule to the revision recorded by the parent project.",
+					options: ["--path <path>    Submodule path."]
+				});
+				document($exports, "commit", {
+					category: "Git",
+					summary: "Commits and pushes current project changes after checks pass.",
+					options: [
+						"--message <message>    Commit message.",
+						"--notest               Accepted for compatibility."
+					]
+				});
+				document($exports, "documentation", {
+					category: "Documentation",
+					summary: "Serves generated project documentation.",
+					options: ["--host <host>    Host name for documentation URLs."]
+				});
+				document($exports, "document", {
+					category: "Documentation",
+					summary: "Serves generated project documentation in watch mode.",
+					options: ["--host <host>    Host name for documentation URLs."]
+				});
 			}
 		)
 	}

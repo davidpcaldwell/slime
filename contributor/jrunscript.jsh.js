@@ -7,167 +7,64 @@
 //@ts-check
 (
 	/**
-	 *
+	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 */
-	function(jsh) {
-		var parameters = jsh.script.getopts({
-			options: {
-				//	undocumented; used by suite.jsh.js
-				"shell:built": jsh.file.Pathname,
-
-				//	TODO	currently ignored, was used to configure rhino/ip jsapi tests in the past. Should use new Fifty
-				//			mechanism for configuring tests, whatever that is (system properties?)
-				noselfping: false,
-				issue138: false,
-
-				executable: false,
-
-				part: String,
-				view: "console",
-
-				// TODO: does this work? Is it necessary?
-				"chrome:profile": jsh.file.Pathname
+	function($api,jsh) {
+		var plugin = (
+			function() {
+				jsh.loader.plugins(jsh.script.file.parent);
+				return jsh.project.suite;
 			}
+		)();
+
+		plugin.initialize({
+			selenium: false
 		});
 
-		/** @type { slime.project.internal.jrunscript_environment.Exports } */
-		var Environment = jsh.script.loader.module("jrunscript-environment.js");
+		jsh.script.cli.main(
+			$api.fp.pipe(
+				function(p) {
+					var jrunscript = $api.fp.now(
+						jsh.shell.java.Jdk.from.javaHome,
+						$api.fp.build(
+							jsh.shell.java.Jdk.jrunscript,
+							$api.fp.Partial.impure.exception(function(/** @type { slime.jrunscript.shell.java.Jdk } */jdk) {
+								return new Error("Could not resolve jrunscript for JDK home: " + jdk.base);
+							})
+						)
+					);
 
-		var environment = new Environment({
-			src: jsh.script.file.parent.parent,
-			home: parameters.options["shell:built"],
-			noselfping: parameters.options.noselfping,
-			executable: parameters.options.executable
-		});
+					//	TODO	code smell, this value should be directly accessible
+					var engine = jsh.internal.bootstrap.engine.resolve({
+						rhino: "rhino",
+						nashorn: "nashorn",
+						graal: "graal"
+					});
 
-		var suite = new jsh.unit.html.Suite();
+					var HERE = $api.fp.now(jsh.script.world.file, jsh.file.Location.parent());
+					var SLIME = $api.fp.now(HERE, jsh.file.Location.parent());
 
-		var SRC = jsh.script.file.parent.parent;
+					jsh.shell.console("Running " + SLIME.pathname + " with jrunscript " + jrunscript + " and engine " + engine + " ...");
 
-		/**
-		 *
-		 * @param { { file: slime.jrunscript.file.File }} p
-		 */
-		var FiftyPart = function(p) {
-			return jsh.unit.fifty.Part({
-				shell: environment.jsh.unbuilt.src,
-				script: SRC.getFile("tools/fifty/test.jsh.js"),
-				file: p.file
-			});
-		}
+					var run = $api.fp.now(
+						jsh.shell.subprocess.question,
+						$api.fp.world.Sensor.mapping()
+					);
 
-		suite.add("fifty", FiftyPart({
-			file: jsh.script.file.parent.getFile("jrunscript.fifty.ts")
-		}));
+					var result = run({
+						command: "bash",
+						arguments: [
+							$api.fp.now(SLIME, jsh.file.Location.directory.relativePath("fifty"), $api.fp.property("pathname")),
+							"test.jsh",
+							$api.fp.now(HERE, jsh.file.Location.directory.relativePath("jrunscript.fifty.ts"), $api.fp.property("pathname"))
+						]
+					});
 
-		// TODO: does this require hg be installed?
-		if (jsh.tools.hg.init) suite.add("jrunscript/tools/hg", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/tools/hg/api.html")
-		}));
-
-		if (!parameters.options.issue138 && jsh.shell.PATH.getCommand("git")) {
-			suite.add(
-				"jrunscript/tools/git",
-				new jsh.unit.html.Part({
-					pathname: SRC.getRelativePath("rhino/tools/git/api.html")
-				})
-			);
-		}
-
-		suite.add("servlet/resources", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.resources.api.html")
-		}));
-
-		var withShell = function(p) {
-			// TODO: moved this from integration tests and reproduced current test without much thought; could be that we should not be
-			// using the built shell, or should be using more shells
-			Object.defineProperty(p, "shell", {
-				get: function() {
-					return (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src;
+					return result.status;
 				}
-			});
-			return p;
-		};
-
-		suite.add("jsh/jsh.shell/jsh", new jsh.unit.Suite.Fork(withShell({
-			run: jsh.shell.jsh,
-			script: SRC.getFile("jrunscript/jsh/shell/test/jsh.shell.jsh.suite.jsh.js"),
-			arguments: ["-view","stdio"]
-		})));
-
-		suite.add("jsapi/other", new jsh.unit.html.Part({
-			//	Test cases involving the HTML test runner itself
-			pathname: SRC.getRelativePath("loader/api/old/test/data/1/api.html")
-		}));
-
-		suite.add("jsapi/html", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("loader/api/old/api.html")
-		}));
-
-		suite.add("jsapi/jsh.unit/definition", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("loader/api/old/jsh/plugin.jsh.api.html")
-		}));
-
-		suite.add("jsapi/fifty", new jsh.unit.html.Part({
-			pathname: SRC.getRelativePath("loader/api/old/fifty/api.html")
-		}));
-
-		//	TODO	disabling Bitbucket testing to try to get tests to pass after migration to GitHub. Examine to see whether there is
-		//			something still needed, something analogous still needed, or whether this can be discarded
-		if (false) suite.add("testing/jsh.unit/bitbucket", new jsh.unit.Suite.Fork({
-			run: jsh.shell.jsh,
-			shell: (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src,
-			script: SRC.getFile("loader/api/old/jsh/test/bitbucket.jsh.js"),
-			arguments: ["-view", "stdio"]
-		}));
-
-		suite.add("jsapi/integration", new function() {
-			var src = SRC;
-			this.parts = {
-				htmlReload: {
-					execute: function(scope,verify) {
-						var result = jsh.shell.jsh({
-							shell: src,
-							script: src.getFile("loader/api/old/jsh/test/fail.jsh.js"),
-							evaluate: function(result) {
-								return result;
-							}
-						});
-						verify(result).status.is(1);
-					}
-				},
-				// htmlReload: new ScriptPart({
-				// 	shell: src,
-				// 	script: src.getFile("loader/api/old/jsh/test/fail.jsh.js"),
-				// 	check: function(verify) {
-				// 		verify(this).status.is(1);
-				// 	}
-				// }),
-				suiteWithScenario: new jsh.unit.Suite.Fork({
-					run: jsh.shell.jsh,
-					shell: src,
-					script: src.getFile("loader/api/old/jsh/test/suite.jsh.js"),
-					arguments: [
-						"-view", "stdio"
-					]
-				}),
-				nakedScenario: new jsh.unit.Suite.Fork({
-					run: jsh.shell.jsh,
-					shell: src,
-					script: src.getFile("loader/api/old/jsh/test/scenario.jsh.js"),
-					arguments: [
-						"-view", "stdio"
-					]
-				}),
-			}
-		});
-
-		jsh.unit.html.cli({
-			suite: suite,
-			view: parameters.options.view,
-			part: parameters.options.part
-		});
+			)
+		)
 	}
 //@ts-ignore
-)(jsh);
+)($api,jsh);

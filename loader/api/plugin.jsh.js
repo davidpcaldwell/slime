@@ -34,33 +34,50 @@
 				jsh.unit = $loader.module("old/unit.js", {
 					verify: code.verify()
 				});
-				jsh.unit.html = $loader.module("old/api.html.js", new function() {
-					this.api = new function() {
-						// TODO: Should be able to switch to Object.assign
-						this.assign = jsh.js.Object.set;
+				jsh.unit.html = (
+					function() {
+						/** @type { slime.definition.api_html.Script } */
+						var script = $loader.script("old/api.html.js");
+						return script(
+							(
+								function() {
+									var api = new function() {
+										// TODO: Should be able to switch to Object.assign
+										this.assign = jsh.js.Object.set;
+									}
+
+									var seq = 0;
+
+									var Verify = jsh.unit.Verify;
+									var Suite = jsh.unit.Suite;
+
+									var run = function(code,scope) {
+										var source = code;
+										if (typeof(source) == "string") {
+											//	TODO	move this processing inside the jsh loader (or rhino loader?) so that it can be invoked with name/string
+											//			properties. This code, after being moved to jsh loader, can then invoke rhino loader with name/_in
+											//			created below then we would invoke jsh loader here with code = { name: ..., string: code }
+											//	TODO	it seems likely a more useful name could be used here, perhaps using name of file plus jsapi:id path
+											source = {
+												name: "eval://" + String(++seq),
+												type: "application/javascript",
+												string: code
+											}
+										}
+										jsh.loader.run(source,scope);
+									};
+
+									return {
+										api: api,
+										Verify: Verify,
+										Suite: Suite,
+										run: run
+									};
+								}
+							)()
+						);
 					}
-
-					var seq = 0;
-
-					this.Verify = jsh.unit.Verify;
-					this.Suite = jsh.unit.Suite;
-
-					this.run = function(code,scope) {
-						var source = code;
-						if (typeof(source) == "string") {
-							//	TODO	move this processing inside the jsh loader (or rhino loader?) so that it can be invoked with name/string
-							//			properties. This code, after being moved to jsh loader, can then invoke rhino loader with name/_in
-							//			created below then we would invoke jsh loader here with code = { name: ..., string: code }
-							//	TODO	it seems likely a more useful name could be used here, perhaps using name of file plus jsapi:id path
-							source = {
-								name: "eval://" + String(++seq),
-								type: "application/javascript",
-								string: code
-							}
-						}
-						jsh.loader.run(source,scope);
-					}
-				});
+				)();
 			}
 		});
 

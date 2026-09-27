@@ -23,8 +23,13 @@
 			}
 		});
 
+		var operation = jsh.script.arguments[0];
+		if (operation != "get" && operation != "store" && operation != "erase") {
+			throw new TypeError("Unsupported git credential operation: " + operation);
+		}
+
 		api.helper({
-			operation: jsh.script.arguments[0],
+			operation: operation,
 			project: {
 				base: jsh.shell.PWD.pathname.os.adapt()
 			},

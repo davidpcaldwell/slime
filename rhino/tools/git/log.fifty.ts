@@ -38,7 +38,7 @@ namespace slime.jrunscript.tools.git {
 namespace slime.jrunscript.tools.git.internal.log {
 	export interface Context {
 		library: {
-			time: slime.time.Exports
+			time: slime.time.Interface
 		}
 	}
 
@@ -57,5 +57,5 @@ namespace slime.jrunscript.tools.git.internal.log {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

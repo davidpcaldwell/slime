@@ -18,8 +18,6 @@ namespace slime.runtime.loader {
 	 * JavaScript.
 	 */
 	export type Compiler<T> = slime.$api.fp.Partial<T,Script>;
-
-	export type Executor<R> = (this: { [name: string]: any }, code: R, scope: { [name: string]: any }) => void
 }
 
 namespace slime.runtime {
@@ -33,21 +31,6 @@ namespace slime.runtime {
 			name: string
 			type: () => slime.mime.Type
 			read: () => string
-		}
-	}
-
-	export interface Exports {
-		/**
-		 * A global script compiler provided by the overall SLIME runtime, which operates on {@link slime.runtime.loader.Code}
-		 * instances and can be updated with additional transpilers that also operate on those instances.
-		 */
-		compiler: {
-			update: (transform: slime.$api.fp.Transform<slime.runtime.loader.Compiler<slime.runtime.loader.Code>>) => void
-
-			/**
-			 * A `Compiler` which uses the currently configured settings.
-			 */
-			compile: slime.runtime.loader.Compiler<slime.runtime.loader.Code>
 		}
 	}
 }
@@ -84,27 +67,32 @@ namespace slime.$api {
 			}
 		}
 	}
-
-	export interface Global {
-		scripts: Scripts
-	}
 }
 
-namespace slime.runtime.internal.scripts {
+namespace slime.runtime.internal.code {
 	export interface Scope {
-		Packages: slime.runtime.Scope["Packages"]
-		$engine: slime.runtime.Engine
+		$engine: Engine
 		fp: slime.$api.fp.Exports
 	}
+
+	/**
+	 * A function which executes code by compiling it using a supplied compiler and ensuring sensible defaults are supplied for the
+	 * execution scope. The `this` target is taken directly from the caller and is not modified by the executor.
+	 */
+	export type Executor<R> = (this: { [name: string]: any }, code: R, scope: { [name: string]: any }) => void
 
 	export namespace executor {
 		export type Configuration<R> = {
 			compiler: slime.runtime.loader.Compiler<R>
 			unsupported: (r: R) => string
+
+			/**
+			 * Scope variables that should be provided to all code executed by the created `Executor`.
+			 */
 			scope: { [x: string]: any }
 		}
 
-		export type Constructor = <R>(p: Configuration<R>) => slime.runtime.loader.Executor<R>
+		export type Constructor = <R>(p: Configuration<R>) => Executor<R>
 	}
 
 
@@ -128,7 +116,7 @@ namespace slime.runtime.internal.scripts {
 	}
 
 	export interface Runtime {
-		compiler: slime.runtime.Exports["compiler"]
+		compiler: slime.$api.Scripts["compiler"]
 
 		internal: {
 			methods: GlobalExecutorMethods
@@ -138,17 +126,18 @@ namespace slime.runtime.internal.scripts {
 	export interface Exports {
 		api: Omit<slime.$api.Global["scripts"],"compiler">
 
-		platform: slime.runtime.Platform
-
 		internal: {
+			/**
+			 * Provides access to the `Executor` constructor for other, older APIs related to code execution.
+			 */
 			Executor: executor.Constructor
 
 			createScriptScope: <C extends { [x: string]: any },T>($context: C) => ScriptScope<C,T>
 
-			runtime: ($api: slime.$api.internal.Exports["exports"]) => Runtime
+			runtime: ($api: slime.$api.Global) => Runtime
 
 			old: {
-				toExportScope: slime.runtime.Exports["old"]["loader"]["tools"]["toExportScope"]
+				toExportScope: slime.$api.loader.old.Exports["old"]["loader"]["tools"]["toExportScope"]
 			}
 		}
 	}
@@ -168,5 +157,5 @@ namespace slime.runtime.internal.scripts {
 	 * Code which deals with transpiler configuration, creation of scopes for scripts, and running scripts within specified scopes
 	 * (providing `$platform` and `$api`).
 	 */
-	export type Script = slime.loader.Script<Scope,Exports>
+	export type Script = slime.runtime.loader.Scoped<Scope,Exports>
 }

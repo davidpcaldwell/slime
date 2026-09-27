@@ -222,6 +222,7 @@ namespace slime.jsh.java.tools {
 				var mockjsh: Global = jsh.js.Object.set({}, jsh);
 				mockjsh.tools = jsh.js.Object.set({}, mockjsh.tools);
 
+				//	TODO	this is all a little brittle as we refactor; are there better choices?
 				var MockFilePlugin = function(o?) {
 					if (!o) o = {};
 					if (!o.initial) o.initial = {};
@@ -284,10 +285,10 @@ namespace slime.jsh.java.tools {
 						},
 						parent: function() { return void(0); },
 						directory: {
-							require: {
-								old: function(p) {
-
-								}
+							require: function(p) {
+								return {
+									wo: void(0)
+								};
 							}
 						}
 					}

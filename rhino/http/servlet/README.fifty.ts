@@ -22,7 +22,7 @@
  * SLIME servlets may be built into ordinary Java web applications, via either the `jsh.httpd.tools` API or via the
  * `rhino/http/servlet/tools/webapp.jsh.js` script.
  *
- * See the documentation for {@link slime.jsh.httpd.Exports | Export["tools"], which can be accessed as `jsh.httpd.tools` }, for how
+ * See the documentation for {@link slime.jsh.httpd.Exports | Exports["tools"], which can be accessed as `jsh.httpd.tools` }, for how
  * to use the API to build a standard Java webapp.
  *
  * The `webapp.jsh.js` script is a `jsh` script, and takes the following command-line arguments:
@@ -37,6 +37,11 @@
  * * **`-servlet <path>`** The path to the SLIME servlet in the context of this web application: in other words, the relative path to the SLIME servlet in the resulting web application directory, based on the mapping specified by the `-resources` argument(s).
  * * **`-parameter <name>=<value>`** Specifies a servlet parameter to use in `web.xml`.
  * * **`-java:version <version>`** (optional) Specifies a target Java version to use when compiling the web application.
+ *
+ * ## Embedding with `jsh`
+ *
+ * SLIME servlets can also be embedded within a `jsh` script. In that case, they use the APIs defined in
+ * {@link slime.jsh.httpd.Exports | `jsh.httpd`} to configure the server.
  */
 
 //

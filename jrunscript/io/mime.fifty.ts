@@ -9,7 +9,13 @@ namespace slime.jrunscript.io.mime {
 		/** @deprecated */
 		gae?: boolean
 		nojavamail: boolean
-		$slime: Pick<slime.jsh.plugin.$slime,"Resource">
+		$slime: {
+			$api: {
+				jrunscript: {
+					loader: slime.$api.jrunscript.Global["jrunscript"]["loader"]
+				}
+			}
+		}
 		api: {
 			java: slime.jrunscript.java.Exports
 			io: {
@@ -50,5 +56,5 @@ namespace slime.jrunscript.io.mime {
 		Type: slime.$api.mime.Export["Type"] & { guess: (p: { name: string }) => slime.mime.Object }
 	}
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }

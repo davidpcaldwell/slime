@@ -14,6 +14,44 @@
 	 * @param { slime.jrunscript.native.inonit.script.jsh.Shell } $jsh
 	 */
 	function(global,Packages,JavaAdapter,$jsh) {
+		//	Startup checkpoint timing (jsh.launcher.profile / JSH_LAUNCHER_PROFILE). Self-contained (does not depend on $api,
+		//	which is not available in this script) so it works identically whether this script is running in the same JVM as
+		//	the launcher (Rhino, classloader launch) or in a forked loader VM (Nashorn/Graal).
+		var profile = (function() {
+			var explicit = function(name) {
+				var _property = Packages.java.lang.System.getProperty(name);
+				if (_property !== null) return String(_property);
+				var _env = Packages.java.lang.System.getenv(name.replace(/\./g, "_").toUpperCase());
+				if (_env !== null) return String(_env);
+				return null;
+			};
+
+			var enabled = Boolean(explicit("jsh.launcher.profile"));
+
+			var destination = (function() {
+				if (!enabled) return null;
+				var path = explicit("jsh.launcher.profile.log");
+				if (!path) return null;
+				return new Packages.java.io.PrintStream(
+					new Packages.java.io.FileOutputStream(path, true)
+				);
+			})();
+
+			return {
+				checkpoint: function(phase) {
+					if (!enabled) return;
+					var line = "[jsh.profile] phase=" + phase + " t=" + Packages.java.lang.System.currentTimeMillis();
+					if (destination) {
+						destination.println(line);
+					} else {
+						Packages.java.lang.System.err.println(line);
+					}
+				}
+			};
+		})();
+
+		profile.checkpoint("jsh.js.start");
+
 		var internal = {
 			/** @type { (status: number) => never } */
 			exit: void(0),
@@ -97,8 +135,8 @@
 
 								return Object.assign(
 									{},
-									runtime.old.loader,
-									runtime.loader,
+									runtime.$api.loader.old.old.loader,
+									runtime.$api.loader,
 									{
 										getLoaderScript: function(/** @type { string }*/path) {
 											return new $slime.Resource({
@@ -168,7 +206,7 @@
 				function(jsh) {
 					/** @type { slime.jsh.internal.loader.plugins.Export } */
 					var exported;
-					$slime.run(
+					$slime.$api.loader.old.run(
 						$slime.loader.getLoaderScript("plugins.js"),
 						{
 							$slime: $slime,
@@ -202,7 +240,7 @@
 					var isFile = function(from) { return Boolean(from && from.pathname && from.pathname.file); };
 					/** @type { (from: any) => from is slime.runtime.loader.Synchronous } */
 					var isSynchronousLoader = function(from) { return Boolean(from.get) && Boolean(from.code); };
-					/** @type { (from: any) => from is slime.old.Loader } */
+					/** @type { (from: any) => from is slime.loader.old.Loader } */
 					var isOldLoader = function(from) { return Boolean(from.get) && !Boolean(from.code); };
 
 					/**
@@ -304,18 +342,18 @@
 						run: function(code,scope,target) {
 							//	TODO	untested
 							if (isNode(code)) code = code.pathname;
-							return $slime.run(getCode(code),scope,target);
+							return $slime.$api.loader.old.run(getCode(code),scope,target);
 						},
 						//	TODO	seems to be undocumented in type system, may be unused
 						value: function(code,scope,target) {
 							//	TODO	untested
 							if (isNode(code)) code = code.pathname;
-							return $slime.value(getCode(code),scope,target);
+							return $slime.$api.loader.old.value(getCode(code),scope,target);
 						},
 						file: function(code,$context) {
 							//	TODO	untested
 							if (isNode(code)) code = code.pathname;
-							return $slime.file(getCode(code),$context);
+							return $slime.$api.loader.old.file(getCode(code),$context);
 						},
 						module: function(pathname) {
 							var format = {};
@@ -511,17 +549,19 @@
 			)();
 
 			(function loadPlugins() {
+				profile.checkpoint("jsh.js.loadPlugins.start");
 				var _sources = $slime.getInterface().getPluginSources();
 				for (var i=0; i<_sources.length; i++) {
 					plugins.load({ loader: new $slime.Loader({ _source: _sources[i] }) });
 				}
+				profile.checkpoint("jsh.js.loadPlugins.end");
 			})();
 
 			//	TODO	below could be turned into jsh plugin loaded at runtime by jsapi; would need to make getLibrary accessible through
 			//			$slime
 
 			if ($slime.getSystemProperties().get("inonit.tools.Profiler.args")) {
-				$slime.run($slime.loader.getLoaderScript("profiler.js"), {
+				$slime.$api.loader.old.run($slime.loader.getLoaderScript("profiler.js"), {
 					jsh: this,
 					_properties: $slime.getSystemProperties()
 				});
@@ -538,6 +578,8 @@
 				main = defined;
 			}
 		);
+
+		profile.checkpoint("jsh.js.script.start");
 
 		global.jsh.loader.run(
 			{
@@ -571,6 +613,8 @@
 				internal.exit(status);
 			}
 		}
+
+		profile.checkpoint("jsh.js.script.end");
 
 		$jsh.events();
 	}

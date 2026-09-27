@@ -13,6 +13,13 @@
 			}
 			var CATALINA_HOME = (function() {
 				if (jsh.shell.environment.CATALINA_HOME) return jsh.file.Pathname(jsh.shell.environment.CATALINA_HOME).directory;
+				if (jsh.shell.tools && jsh.shell.tools.tomcat) {
+					var installation = jsh.shell.tools.tomcat.Installation.from.jsh();
+					if (installation) {
+						var directory = jsh.file.Pathname(installation.base).directory;
+						if (directory) return directory;
+					}
+				}
 				if (jsh.shell.jsh.lib.getSubdirectory("tomcat")) return jsh.shell.jsh.lib.getSubdirectory("tomcat");
 			})();
 			if (!CATALINA_HOME) {
@@ -61,21 +68,27 @@
 
 				var build = function(servlets) {
 					jsh.shell.echo("Building webapps ...");
+					var servletApi = (function() {
+						var javaxApi = CATALINA_HOME.getRelativePath("lib/servlet-api.jar");
+						if (javaxApi.file) return javaxApi;
+						var jakartaApi = CATALINA_HOME.getRelativePath("lib/jakarta.servlet-api.jar");
+						if (jakartaApi.file) return jakartaApi;
+						throw new Error("Could not find Servlet API jar in " + CATALINA_HOME);
+					})();
 
 					var buildWebapp = function(urlpath,servletpath) {
 						//	TODO	may want to move this to httpd.tomcat.js, although it would need to somehow be aware of location of
 						//			webapp.jsh.js
-						var rhinoArguments = (typeof(Packages.org.mozilla.javascript.Context) == "function") ? [] : ["-norhino"];
 						var coffeeScriptArguments = ($context.coffeescript) ? ["-library", "coffee-script.js=" + $context.coffeescript] : [];
 						jsh.shell.jsh({
 							fork: true,
 							script: jsh.script.file.getRelativePath("../../../../rhino/http/servlet/tools/webapp.jsh.js").file,
 							arguments: [
 								"-to", environment.CATALINA_BASE.getSubdirectory("webapps").getRelativePath(urlpath),
-								"-servletapi", CATALINA_HOME.getRelativePath("lib/servlet-api.jar"),
+								"-servletapi", servletApi,
 								"-resources", jsh.script.file.getRelativePath("httpd.resources.js"),
 								"-servlet", servletpath
-							].concat(rhinoArguments).concat(coffeeScriptArguments),
+							].concat(coffeeScriptArguments),
 							evaluate: function(result) {
 								jsh.shell.echo("Command: " + [result.command].concat(result.arguments).join(" "));
 								jsh.shell.echo("Status: " + result.status);

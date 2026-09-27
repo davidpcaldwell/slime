@@ -8,7 +8,7 @@
 //			because it shows how to add JNI to the "capabilities" of the JVM on OS X, in case native code makes its way into the
 //			shell
 (
-	function() {
+	function(parameters) {
 		var osx = new function() {
 			var jdk = jsh.shell.java.home.parent;
 			var parse = function() {
@@ -160,4 +160,4 @@
 			jsh.shell.exit(0);
 		}
 	}
-)();
+)(parameters);

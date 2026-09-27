@@ -29,6 +29,7 @@ namespace slime.jrunscript {
 					equals(other: any): boolean
 					toCharArray(): any
 					getBytes(): any
+					getBytes(encoding: string): any
 					endsWith(suffix: java.lang.String): boolean
 					substring(start: number, end?: number): java.lang.String
 				}

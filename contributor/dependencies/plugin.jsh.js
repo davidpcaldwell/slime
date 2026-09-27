@@ -10,7 +10,7 @@
 	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.jsh.plugin.Scope["plugin"] } plugin
 	 */
 	function(Packages,$api,jsh,$loader,plugin) {
@@ -21,7 +21,8 @@
 					jsh.project = {
 						code: void(0),
 						openapi: void(0),
-						dependencies: void(0)
+						dependencies: void(0),
+						suite: void(0)
 					};
 				}
 				/** @type { slime.project.dependencies.Script } */

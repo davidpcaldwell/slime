@@ -4,15 +4,25 @@
 //
 //	END LICENSE
 
-jsh.shell.console("src = " + jsh.shell.jsh.src);
+//@ts-check
+(
+	/**
+	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
+	 */
+	function($api,jsh) {
+		jsh.shell.console("src = " + jsh.shell.jsh.src);
 
-var suite = new jsh.unit.Suite({ name: "fail" });
+		var suite = new jsh.unit.Suite({ name: "fail" });
 
-suite.part("fail", new jsh.unit.html.Part({
-	pathname: jsh.script.file.parent.getRelativePath("fail.api.html"),
-	reload: true
-}));
+		suite.part("fail", new jsh.unit.html.Part({
+			pathname: jsh.script.file.parent.getRelativePath("fail.api.html"),
+			reload: true
+		}));
 
-jsh.unit.interface.create(suite, {
-	view: "console"
-});
+		jsh.unit.interface.create(suite, {
+			view: "console"
+		});
+	}
+//@ts-ignore
+)($api,jsh);

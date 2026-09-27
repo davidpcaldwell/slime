@@ -29,7 +29,7 @@ namespace slime.servlet {
 		 * resources) from the servlet resource loader. Note that unlike Java servlet resource loaders, SLIME loaders do not use a
 		 * leading slash as part of the resource path.
 		 */
-		loader?: slime.old.Loader
+		loader?: slime.loader.old.Loader
 
 		/**
 		 * @deprecated
@@ -105,7 +105,7 @@ namespace slime.servlet {
 		 * * `httpd.loader.file("WEB-INF/myapp/code.js")`, or
 		 * * `$loader.file("code.js")`.
 		 */
-		$loader: slime.old.Loader
+		$loader: slime.loader.old.Loader
 
 		/**
 		 * The `$parameters` object contains the set of servlet initialization parameters available to the servlet. These are set
@@ -119,17 +119,23 @@ namespace slime.servlet {
 	}
 
 	export namespace internal {
+		export interface ByEnvironment<T> {
+			rhino?: (p: slime.jrunscript.native.inonit.script.servlet.Rhino.Host) => T
+			servlet: (p: slime.jrunscript.native.inonit.script.servlet.Servlet.HostObject) => T
+			script: (p: slime.servlet.internal.$host.jsh) => T
+		}
+
 		export interface Loaders {
 			api: slime.Loader
 
 			//	TODO absent for now in jsh-level servlets, but see comment in api.js about $loader
-			script?: slime.old.Loader
+			script?: slime.loader.old.Loader
 
 			/**
 			 * The global servlet resource loader; the loader that becomes `httpd.loader`. If not present, `httpd.loader`
 			 * will not be present.
 			 */
-			container?: slime.old.Loader
+			container?: slime.loader.old.Loader
 		}
 
 		export namespace $host {

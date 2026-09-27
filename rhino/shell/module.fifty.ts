@@ -656,6 +656,9 @@ namespace slime.jrunscript.shell {
 		 * An object representing the current operating system.
 		 */
 		os: {
+			/**
+			 * The Java view of the operating system name; corresponds to the Java system property `os.name`.
+			 */
 			name: string
 			arch: string
 			version: string
@@ -1035,7 +1038,7 @@ namespace slime.jrunscript.shell {
 	//@ts-ignore
 	)(fifty);
 
-	export type Script = slime.loader.Script<Context,Exports>;
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>;
 
 	export interface Exports {
 		/** @deprecated */

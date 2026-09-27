@@ -10,7 +10,7 @@
 	 *
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jrunscript.file.internal.wo.Context } $context
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.jrunscript.file.internal.wo.Exports> } $export
 	 */
 	function($api,$context,$loader,$export) {
@@ -276,12 +276,6 @@
 			}
 		});
 
-		/** @type { slime.jrunscript.file.location.file.Exports["remove"]["wo"] } */
-		var Location_file_remove = remove.file;
-
-		/** @type { slime.jrunscript.file.location.directory.Exports["remove"]["wo"] } */
-		var Location_directory_remove = remove.directory;
-
 		/** @type { slime.jrunscript.file.location.Exports["remove"] } */
 		var Location_remove = function(settings) {
 			var remover = remove.location(settings);
@@ -305,7 +299,10 @@
 					Location_file_read_string: Location_file_read.string,
 					Store: $context.library.loader.Store,
 					Location_directory_exists: Location_directory_exists,
-					remove: Location_directory_remove,
+					remove: {
+						directory: remove.directory,
+						location: remove.location
+					},
 					list_world: list_world,
 					list_stream: list_stream
 				});
@@ -323,9 +320,10 @@
 
 		/** @type { (location: slime.jrunscript.file.Location) => ReturnType<slime.jrunscript.file.location.file.Exports["write"]["open"]>["wo"] } */
 		var Location_write_open_wo = function(location) {
+			if (location == null) throw new TypeError("Required: location to open for writing.");
 			return function(settings) {
 				return function(events) {
-					var recurse = (settings && settings.recursive) ? $api.fp.now(parts.directoryensureParent, $api.fp.world.Means.effect({
+					var recurse = (settings && settings.recursive) ? $api.fp.now(parts.directory.ensureParent, $api.fp.world.Means.effector({
 						created: function(e) {
 							events.fire("createdFolder", e.detail);
 						}
@@ -603,7 +601,7 @@
 							}
 						},
 						/** @type { slime.jrunscript.file.location.Exports["file"]["remove"] } */
-						remove: $api.fp.world.Sensor.api.maybe(Location_file_remove),
+						remove: $api.fp.world.Sensor.api.maybe(remove.file),
 					}
 				})(),
 				directory: parts.directory,

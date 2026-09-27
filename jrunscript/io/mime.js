@@ -125,7 +125,7 @@
 				writer.close();
 				var stream = buffer.readBinary();
 				return Object.assign(
-					new $context.$slime.Resource({
+					new $context.$slime.$api.jrunscript.loader.old.Resource({
 						stream: {
 							binary: stream
 						},

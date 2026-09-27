@@ -35,19 +35,19 @@ namespace slime.jsh.wf.internal.module {
 		}
 	}
 
-	export namespace exports {
-		export interface project {
+	export namespace project {
+		export interface Exports {
 		}
 	}
 
-	export namespace exports {
-		export interface project {
-			typescript: exports.project.Typescript
+	export namespace project {
+		export interface Exports {
+			typescript: typescript.project.Exports
 		}
 	}
 
-	export namespace exports {
-		export interface project {
+	export namespace project {
+		export interface Exports {
 			git: {
 				installSlimeCredentialHelper: {
 					wo: slime.$api.fp.world.Means<Project,{
@@ -62,15 +62,15 @@ namespace slime.jsh.wf.internal.module {
 	}
 
 	export interface Exports {
-		typescript: exports.Typescript
+		typescript: typescript.Exports
 
 		/**
 		 * Functions that operate on `wf` {@link slime.jsh.wf.Project | Project}s.
 		 */
-		project: exports.project
+		project: project.Exports
 	}
 
-	export type Script = slime.loader.Script<Context,Exports>
+	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 
 	(
 		function(

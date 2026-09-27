@@ -433,8 +433,8 @@
 				 */
 				Authorization: function(p) {
 					return "Basic " + String(
-						Packages.javax.xml.bind.DatatypeConverter.printBase64Binary(
-							new Packages.java.lang.String(p.user + ":" + p.password).getBytes()
+						Packages.java.util.Base64.getEncoder().encodeToString(
+							new Packages.java.lang.String(p.user + ":" + p.password).getBytes("UTF-8")
 						)
 					);
 				}

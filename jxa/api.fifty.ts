@@ -61,9 +61,9 @@ namespace slime.jxa {
 			arguments: string[]
 
 			/**
-			 * A Loader that loads resources relative to the script's location.
+			 * A code loader that loads resources relative to the script's location.
 			 */
-			loader: slime.Loader
+			loader: slime.runtime.loader.Store
 		}
 	}
 }

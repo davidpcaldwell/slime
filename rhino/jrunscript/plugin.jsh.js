@@ -11,7 +11,7 @@
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.jsh.plugin.Scope["plugins"] } plugins
-	 * @param { slime.Loader } $loader
+	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.jsh.plugin.Scope["plugin"] } plugin
 	 */
 	function($api,jsh,plugins,$loader,plugin) {

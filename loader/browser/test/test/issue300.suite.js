@@ -5,7 +5,7 @@
 //	END LICENSE
 
 (
-	function() {
+	function(parameters) {
 		var failure = false;
 		if (parameters.form) {
 			for (var i=0; i<parameters.form.controls.length; i++) {
@@ -20,4 +20,4 @@
 			}
 		});
 	}
-)();
+)(parameters);

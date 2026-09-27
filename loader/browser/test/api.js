@@ -34,7 +34,9 @@
 
 			this.apiHtmlScript = (function() {
 				if ($context.api && $context.api.apiHtmlScript) return $context.api.apiHtmlScript;
-				return getLoader().file("api/old/api.html.js");
+				/** @type { slime.definition.api_html.Script } */
+				var script = getLoader().script("api/old/api.html.js");
+				return script();
 			})();
 		};
 
@@ -278,7 +280,7 @@
 						var verify = slime.file("loader/api/verify.js")
 						console.log("verify", verify);
 
-						/** @type { slime.fifty.test.internal.test.Exports } */
+						/** @type { slime.fifty.internal.test.Exports } */
 						var run = slime.module("tools/fifty/test.js", {
 							library: {
 								Verify: verify
@@ -306,9 +308,11 @@
 						debugger;
 
 						run.run({
-							loader: (path.folder) ? delegate.Child(path.folder) : delegate,
-							scopes: {},
-							path: path.file,
+							file: {
+								loader: (path.folder) ? delegate.Child(path.folder) : delegate,
+								path: path.file
+							},
+							environment: {},
 							console: {
 								start: function() {},
 								end: function() {},

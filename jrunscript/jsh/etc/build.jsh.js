@@ -78,7 +78,7 @@
 					jsh.internal.api.Library
 				);
 				return jsh.file.Searchpath(
-					rhino.download(jsh.shell.jsh.lib.pathname.os.adapt()).map(toPathname)
+					rhino.download(rhino.directory(jsh.shell.jsh.lib.pathname.os.adapt())).map(toPathname)
 				)
 			};
 
@@ -88,7 +88,7 @@
 				}
 			} else if (jsh.script.file) {
 				if (typeof(rv.rhino) == "undefined") {
-					if (new Packages.javax.script.ScriptEngineManager().getEngineByName("nashorn")) {
+					if (jsh.internal.bootstrap.engine.nashorn.running()) {
 						if (parameters.options.rhino) {
 							rv.rhino = downloadRhino(parameters.options.rhino);
 						} else {
@@ -252,7 +252,10 @@
 				//	for now we will use the Rhino corresponding to the executing version of Java
 				build.rhino = $api.fp.Thunk.now(
 					jsh.internal.api.rhino.compatible,
-					function(library) { return library.download(destination.shell.getRelativePath("lib").os.adapt() ); },
+					function(library) {
+						var lib = destination.shell.getRelativePath("lib").os.adapt();
+						return library.download(library.directory(lib));
+					},
 					$api.fp.Array.map( toPathname ),
 					jsh.file.Searchpath
 				);
@@ -267,8 +270,12 @@
 			console("Copying Rhino libraries ...");
 			//	TODO	this isn't probably compatible with the direction we are going for libraries, but is likely to work at
 			//			present, but the -rhino option is going away anyway
+			var library = jsh.internal.api.rhino.compatible();
+			var directory = destination.shell
+				.getRelativePath("lib/rhino/" + library.version)
+				.createDirectory({ recursive: true });
 			build.rhino.pathnames.forEach( function(pathname,index,array) {
-				pathname.file.copy(destination.shell.getSubdirectory("lib").getRelativePath(pathname.basename));
+				pathname.file.copy(directory.getRelativePath(pathname.basename));
 			});
 		} else {
 			console("Rhino libraries not present; building for Nashorn only.");

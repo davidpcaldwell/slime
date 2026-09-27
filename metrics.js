@@ -9,6 +9,7 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
+	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.loader.Export<slime.tools.code.Settings> } $export
 	 */
 	function($api,jsh,$export) {
@@ -23,10 +24,10 @@
 			},
 			isSource: function(file) {
 				//	TODO	SLIME-specfic use of jsh.project.code
-				return $api.fp.Maybe.from.some(jsh.project.code.files.isText({
+				return jsh.project.code.files.isText({
 					path: void(0),
 					file: file
-				}));
+				});
 			}
 		};
 

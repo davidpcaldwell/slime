@@ -130,7 +130,7 @@
 			var moveTypedocIntoPlace = function(from) {
 				var effect = $api.fp.now(
 					$context.library.file.Filesystem.move,
-					$api.fp.world.Means.effect()
+					$api.fp.world.Means.effector()
 				);
 				effect({
 					filesystem: $context.library.file.world.filesystems.os,

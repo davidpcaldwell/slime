@@ -17,7 +17,7 @@ namespace slime.time {
 		export namespace test {
 			export const { subject, old, load } = (function(fifty: slime.fifty.test.Kit) {
 				var script: Script = fifty.$loader.script("module.js");
-				var jcontext: slime.loader.Script<void,Context> = fifty.$loader.script("context.java.js");
+				var jcontext: slime.runtime.loader.Scoped<void,Context> = fifty.$loader.script("context.java.js");
 				return {
 					subject: (fifty.global.jsh) ? script(jcontext()) : script(),
 					old: script({
@@ -111,16 +111,15 @@ namespace slime.time {
 		}
 	}
 
-	export namespace exports {
-		export interface Days {
+	export namespace day {
+		export interface Exports {
 			/**
 			 * @param year Year
 			 * @param month Month (1 = January)
 			 * @param day Day of Month
 			 */
-			 new (year: number, month: number, day: number): old.Day
-			 new (p: Days): old.Day
-			 new (p: any): old.Day
+			new (year: number, month: number, day: number): old.Day
+			new (p: slime.time.Date): old.Day
 
 			 subtract: Function
 
@@ -367,12 +366,12 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export interface Exports {
+	export interface Interface {
 		/** @deprecated */
-		Day: exports.Days
+		Day: day.Exports
 	}
 
-	export interface Exports {
+	export interface Interface {
 		/** @deprecated */
 		Year: {
 			/** @deprecated */
@@ -407,8 +406,8 @@ namespace slime.time {
 		}
 	}
 
-	export namespace exports {
-		export interface Time {
+	export namespace time {
+		export interface Exports {
 			/** @deprecated */
 			new (): old.Time
 			/** @deprecated */
@@ -445,14 +444,14 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export interface Exports {
+	export interface Interface {
 		/** @deprecated */
-		Time: exports.Time
+		Time: time.Exports
 	}
 
-	export namespace exports {
+	export namespace when {
 		/** @deprecated */
-		export interface When {
+		export interface Exports {
 			/** @deprecated */
 			new (p: { date: slime.external.lib.es5.Date }): old.When
 			/** @deprecated */
@@ -491,12 +490,12 @@ namespace slime.time {
 		)(fifty);
 	}
 
-	export interface Exports {
+	export interface Interface {
 		/** @deprecated */
-		When: exports.When
+		When: when.Exports
 	}
 
-	export interface Exports {
+	export interface Interface {
 		/** @deprecated */
 		install: Function
 	}
@@ -516,7 +515,7 @@ namespace slime.time {
 
 				fifty.run(function harvested() {
 					var global = (function() { return this; })();
-					var subject: slime.time.Exports = (global.jsh) ? $loader.module("module.js", $loader.file("context.java.js")) : $loader.module("module.js");
+					var subject: slime.time.Interface = (global.jsh) ? $loader.module("module.js", $loader.file("context.java.js")) : $loader.module("module.js");
 					//var subject: slime.time.Exports = $loader.module("module.js");
 
 					var when = new subject.When({ unix: 1599143670821 });

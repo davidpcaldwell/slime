@@ -119,7 +119,7 @@
 						set: function(v) {
 							if (!v) throw new Error("!v!");
 							if (!v.read()) throw new Error("!v.read()!");
-							var it = $context.library.file.Location.directory.require.old()(location);
+							var it = $context.library.file.Location.directory.require().wo(location);
 							$api.fp.world.Action.now({
 								action: it
 							});

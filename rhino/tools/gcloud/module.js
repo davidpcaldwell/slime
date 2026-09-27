@@ -13,6 +13,42 @@
 	 * @param { slime.loader.Export<slime.jrunscript.tools.gcloud.Exports> } $export
 	 */
 	function($api,$context,$export) {
+		var hasOwnProperty = function(object,name) {
+			return Object.prototype.hasOwnProperty.call(object, name);
+		};
+
+		var getMacOsCloudSdkPython = function() {
+			var systemPython = $context.library.file.Location.from.os("/usr/bin/python3");
+			if ($context.library.file.Location.file.exists.simple(systemPython)) return "/usr/bin/python3";
+			return "python3";
+		};
+
+		/**
+		 * Selects a stable default interpreter for gcloud when caller does not
+		 * explicitly provide CLOUDSDK_PYTHON.
+		 *
+		 * @param { slime.jrunscript.shell.run.Environment } inherited
+		 */
+		var getDefaultCloudSdkPython = function(inherited) {
+			var source = inherited || $context.library.shell.environment;
+			if (source && hasOwnProperty(source, "CLOUDSDK_PYTHON")) return source.CLOUDSDK_PYTHON;
+			if ($context.library.shell.os.name == "Mac OS X") return getMacOsCloudSdkPython();
+			return "python3";
+		};
+
+		/**
+		 * Adds CLOUDSDK_PYTHON to the subprocess environment while preserving
+		 * existing variables.
+		 *
+		 * @param { slime.jrunscript.shell.run.Environment } inherited
+		 */
+		var withCloudSdkPython = function(inherited) {
+			var base = inherited || $context.library.shell.environment || {};
+			return $api.Object.compose(base, {
+				CLOUDSDK_PYTHON: getDefaultCloudSdkPython(inherited)
+			});
+		};
+
 		/**
 		 * @param { string } executable
 		 * @returns { slime.jrunscript.tools.gcloud.cli.Configuration } }
@@ -30,7 +66,7 @@
 								rv.push.apply(rv, invocation.arguments);
 							}),
 							environment: function(inherited) {
-								return inherited;
+								return withCloudSdkPython(inherited);
 							},
 							stdio: {
 								output: "string",
@@ -132,12 +168,14 @@
 		/**
 		 *
 		 * @param { string } executable
+		 * @param { string } python
 		 * @param { string } config
 		 * @param { string } account
 		 * @param { string } project
 		 * @returns
 		 */
-		var executeCommand = function(executable,config,account,project) {
+		var executeCommand = function(executable,python,config,account,project) {
+			var creation = "config=" + config + " " + new Error().stack;
 			/** @type { slime.jrunscript.tools.gcloud.cli.OldExecutor } */
 			var rv = function(command) {
 				if (!command) throw new TypeError("Required: arguments[0] (command)");
@@ -149,6 +187,13 @@
 								function(events) {
 									var result;
 									var invocation = command.invocation(argument);
+
+									var environment = $api.Object.compose(
+										$context.library.shell.environment,
+										(python) ? { CLOUDSDK_PYTHON: python } : {},
+										(config) ? { CLOUDSDK_CONFIG: config } : {}
+									);
+
 									$api.fp.world.now.action(
 										$context.library.shell.world.action,
 										$context.library.shell.Invocation.from.argument({
@@ -161,7 +206,7 @@
 												rv.push(invocation.command);
 												rv.push.apply(rv, invocation.arguments);
 											}),
-											environment: (config) ? $api.Object.compose($context.library.shell.environment, { CLOUDSDK_CONFIG: config }) : void(0),
+											environment: environment,
 											stdio: {
 												output: "string",
 												error: "line"
@@ -172,9 +217,16 @@
 												events.fire("console", e.detail.line);
 											},
 											exit: function(e) {
-												if (e.detail.status != 0) throw new Error("Exit status: " + e.detail.status);
-												var json = JSON.parse(e.detail.stdio.output);
-												result = toResult(json);
+												if (e.detail.status != 0) throw new Error(
+													"Exit status: " + e.detail.status + " stdout: " + e.detail.stdio.output
+													+ "\nCreation:\n" + creation
+												);
+												if (command.result) {
+													var json = JSON.parse(e.detail.stdio.output);
+													result = toResult(json);
+												} else {
+													result = void(0);
+												}
 											}
 										}
 									);
@@ -198,7 +250,7 @@
 
 		/** @type { { [os: string]: { [arch: string ]: string }} } */
 		var INSTALLER = {
-			"Mac OS X": macOsInstallers("437.0.1")
+			"Mac OS X": macOsInstallers("540.0.0")
 		};
 
 		$export({
@@ -217,26 +269,26 @@
 										return {
 											project: function(project) {
 												return {
-													command: executeCommand(executable,config,account,project)
+													command: executeCommand(executable,void(0),config,account,project)
 												}
 											},
-											command: executeCommand(executable,config,account,void(0))
+											command: executeCommand(executable,void(0),config,account,void(0))
 										}
 									},
-									command: executeCommand(executable,config,void(0),void(0))
+									command: executeCommand(executable,void(0),config,void(0),void(0))
 								}
 							},
 							account: function(account) {
 								return {
 									project: function(project) {
 										return {
-											command: executeCommand(executable,void(0),account,project)
+											command: executeCommand(executable,void(0),void(0),account,project)
 										}
 									},
-									command: executeCommand(executable,void(0),account,void(0))
+									command: executeCommand(executable,void(0),void(0),account,void(0))
 								}
 							},
-							command: executeCommand(executable,void(0),void(0),void(0))
+							command: executeCommand(executable,void(0),void(0),void(0),void(0))
 						}
 					},
 					configuration: function configuration(installation) {
