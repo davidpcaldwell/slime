@@ -53,8 +53,11 @@
 					function() {
 						var PATHNAME = jsh.shell.jsh.lib.getRelativePath("js.jar");
 
-						var installation = function() {
-							return jsh.tools.install.rhino.at(PATHNAME.toString());
+						var installation = function(lib) {
+							var pathname = (lib)
+								? jsh.file.Pathname(lib).directory.getRelativePath("js.jar").toString()
+								: PATHNAME.toString();
+							return jsh.tools.install.rhino.at(pathname);
 						};
 
 						/**
@@ -66,7 +69,7 @@
 								return function(events) {
 									if (!p) p = {};
 									var ooLib = jsh.file.Pathname(lib).directory;
-									var now = installation();
+									var now = installation(lib);
 									var replace = false;
 									if (now.present && p.replace) {
 										var installedVersion = now.value.version();
@@ -80,9 +83,13 @@
 									} else {
 										events.fire("console", "No Rhino at " + ooLib.getRelativePath("js.jar") + "; installing ...");
 									}
-									var library = jsh.internal.bootstrap.rhino.compatible();
+									var library = (p.version)
+										? jsh.internal.bootstrap.rhino.forVersion(p.version)
+										: jsh.internal.bootstrap.rhino.compatible();
 									var version = library.version;
 									events.fire("console", "Installing Rhino version " + version + " to " + ooLib.getRelativePath("js.jar") + " ...");
+									var existing = ooLib.getFile("js.jar");
+									if (replace && existing) existing.remove();
 									library.download(jsh.file.Location.java.File.simple(ooLib.pathname.os.adapt()));
 									events.fire("installed", ooLib.getRelativePath("js.jar").toString() );
 									events.fire("console", "Installed Rhino version " + version + " to " + ooLib.getRelativePath("js.jar"));
@@ -100,7 +107,7 @@
 								var replace = (p && p.replace)
 									? (
 										function() {
-											var now = installation();
+											var now = installation(lib);
 											if (now.present) {
 												var version = now.value.version();
 												return p.replace( (version.present) ? version.value : void(0) );
@@ -116,7 +123,7 @@
 									$api.fp.world.Means.now({
 										means: jsh.shell.jsh.require,
 										order: {
-											satisfied: function() { return $api.fp.now(at, jsh.file.Location.file.exists.simple); },
+											satisfied: function() { return !replace && $api.fp.now(at, jsh.file.Location.file.exists.simple); },
 											install: function() {
 												var argument = {
 													version: version,

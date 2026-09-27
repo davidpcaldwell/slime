@@ -107,7 +107,6 @@ namespace slime.jsh.shell.tools {
 				simple: slime.$api.fp.impure.External<slime.$api.fp.Maybe<rhino.Installation>>
 			}
 
-			//	TODO #1621	No test coverage at all for rhino.require()
 			require: {
 				world: (lib?: string) => slime.$api.fp.world.Means<rhino.RequireCommand,rhino.RequireEvents>
 
@@ -128,6 +127,80 @@ namespace slime.jsh.shell.tools {
 				const { jsh } = fifty.global;
 
 				fifty.tests.rhino = fifty.test.Parent();
+
+				fifty.tests.rhino.require = function() {
+					var lib = jsh.shell.TMPDIR.createTemporary({ directory: true });
+					var target = lib.getRelativePath("js.jar");
+					target.write("original", { append: false });
+
+					var bootstrap = jsh.internal.bootstrap.rhino;
+					var originalForVersion = bootstrap.forVersion;
+					var originalAt = jsh.tools.install.rhino.at;
+					var originalJshRequire = jsh.shell.jsh.require;
+					var selectedVersion: string | null = null;
+					var inspectedPath: string | null = null;
+					var downloadedTo: string | null = null;
+					var events: { type: string, detail: string }[] = [];
+
+					try {
+						bootstrap.forVersion = function(version) {
+							selectedVersion = version;
+							return {
+								version: "1.8.0",
+								download: function(directory) {
+									downloadedTo = String(directory);
+									jsh.file.Pathname(downloadedTo).directory.getRelativePath("js.jar").write("replacement", { append: false });
+									return [];
+								},
+								local: function() { return []; }
+							};
+						};
+						jsh.shell.jsh.require = function(order) {
+							return function(receiver) {
+								if (!order.satisfied()) {
+									receiver.fire("installing");
+									order.install();
+									receiver.fire("installed");
+								} else {
+									receiver.fire("satisfied");
+								}
+							};
+						};
+						jsh.tools.install.rhino.at = function(pathname) {
+							inspectedPath = pathname;
+							return {
+								present: true,
+								value: {
+									version: function() {
+										return { present: true, value: "1.7.15" };
+									}
+								}
+							};
+						};
+
+						jsh.shell.tools.rhino.require.world(lib.toString())({
+							version: "mozilla/1.8.0",
+							replace: function() { return true; }
+						})({
+							fire: function(type, detail) {
+								events.push({ type: type, detail: detail });
+							}
+						});
+
+						verify(selectedVersion).is("mozilla/1.8.0");
+						verify(inspectedPath).is(lib.getRelativePath("js.jar").toString());
+						verify(String(new Packages.java.io.File(downloadedTo).getCanonicalPath())).is(
+							String(new Packages.java.io.File(lib.toString()).getCanonicalPath())
+						);
+						verify(lib.getFile("js.jar").read(String)).is("replacement");
+						verify(events.filter(function(event) { return event.type == "installing"; })).length.is(1);
+					} finally {
+						bootstrap.forVersion = originalForVersion;
+						jsh.tools.install.rhino.at = originalAt;
+						jsh.shell.jsh.require = originalJshRequire;
+						lib.remove();
+					}
+				};
 
 				fifty.tests.manual.rhino = {};
 
