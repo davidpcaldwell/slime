@@ -430,6 +430,10 @@
 				//	Used by launcher to compile the shell and by loader to load the classes
 				Setting("jsh.shell.classes", BOTH);
 
+				//	Enables the experimental source-reactive Java module class cache for unbuilt shells. Disabled by default while
+				//	its dependency fingerprinting overhead is being optimized.
+				Setting("jsh.shell.module.class.cache", LOADER);
+
 				//	Used to configure launcher in subshells, it appears, to that it does not have to recompile classes?
 				//	If that's right, both launcher and loader need it
 				//	TODO	figure this out
