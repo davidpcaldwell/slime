@@ -652,6 +652,10 @@ namespace slime.internal.jrunscript.bootstrap {
 			fifty.tests.rhino = function() {
 				var parent = jsh.shell.TMPDIR.createTemporary({ directory: true });
 				var directory = new Packages.java.io.File(parent.pathname.java.adapt(), "missing");
+				verify(jsh.internal.bootstrap.rhino.forJava(8).version).is("1.7.15");
+				verify(jsh.internal.bootstrap.rhino.forJava(11).version).is("1.9.1");
+				verify(jsh.internal.bootstrap.rhino.forJava(16).version).is("1.9.1");
+				verify(jsh.internal.bootstrap.rhino.forJava(17).version).is("1.9.1");
 				var library = jsh.internal.bootstrap.rhino.compatible();
 				var jar = new Packages.java.io.File(directory, "js.jar");
 

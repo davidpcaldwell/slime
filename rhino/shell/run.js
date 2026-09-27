@@ -248,17 +248,16 @@
 					}
 				});
 
-				var listener = new function() {
-					this.status = void(0);
+				var status = void(0);
+				var listener = {
+					finished: function(_status) {
+						status = _status;
+					},
 
-					this.finished = function(status) {
-						this.status = status;
-					};
-
-					this.interrupted = function(_exception) {
+					interrupted: function(_exception) {
 						//	who knows what we should do here. Kill the process?
 						throw new Error("Unhandled Java thread interruption.");
-					};
+					}
 				};
 
 				//Packages.java.lang.System.err.println("Waiting for subprocess: " + _subprocess);
@@ -268,7 +267,7 @@
 				));
 
 				events.fire("exit", {
-					status: listener.status,
+					status: status,
 					stdio: stdio.close()
 				});
 			}

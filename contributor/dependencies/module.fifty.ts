@@ -80,7 +80,17 @@ namespace slime.project.dependencies {
 			});
 
 			fifty.tests.suite = function() {
-
+				const verify = fifty.verify;
+				const forJava = function(version: string) {
+					return code({
+						java: { version: version },
+						library: { file: fifty.global.jsh.file }
+					}).data.rhino.version();
+				};
+				verify(forJava("1.8.0_412").number).is("1.7.15");
+				["11.0", "16.0", "17.0.1"].forEach(function(version) {
+					verify(forJava(version).number).is("1.9.1");
+				});
 			}
 
 			fifty.tests.manual = function() {
