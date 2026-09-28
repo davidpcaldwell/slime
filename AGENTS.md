@@ -120,6 +120,13 @@ For profiling `wf` commands, use the canonical workflow documented in
 `tools/wf.jsh.js` (not the top-level `wf` Bash wrapper) via
 `jrunscript/jsh/tools/profile.jsh.js`, and write artifacts under `local/profiler/`.
 
+### `wf` initialization cache
+
+The workflow dispatcher writes `local/wf/initialized` after successful
+initialization and reuses that stamp for subsequent commands. Run `wf initialize`
+explicitly after changing dependencies or other setup inputs to refresh the
+project state. Help invocations never initialize the project.
+
 #### Troubleshooting: `./wf documentation` in devcontainers
 
 If serving documentation fails because Chrome reports that the profile is already in use, clear stale Chrome Singleton lock files

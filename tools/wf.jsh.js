@@ -59,6 +59,16 @@
 			jsh.shell.exit(1);
 		}
 
+		var initializationMarker = jsh.wf.project.base().getRelativePath("local/wf/initialized");
+
+		function isInitialized() {
+			return initializationMarker.file;
+		}
+
+		function markInitialized() {
+			initializationMarker.write("initialized\n", { append: false, recursive: true });
+		}
+
 		/** @type { slime.jsh.script.cli.Descriptor<T> } */
 		var descriptor = {
 			options: $api.fp.cast.unsafe,
@@ -66,11 +76,12 @@
 				base: jsh.wf.project.base()
 			}),
 			before: function(call) {
-				if (shouldInitialize(call.path) && project.initialize) {
+				if (shouldInitialize(call.path) && project.initialize && !isInitialized()) {
 					project.initialize({
 						options: toT({}),
 						arguments: []
 					});
+					markInitialized();
 				}
 			}
 		}

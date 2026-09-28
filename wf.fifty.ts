@@ -151,7 +151,7 @@ namespace slime.project.wf {
 						"(",
 						"function(jsh,$context,$exports) {",
 						"  $exports.initialize = function() {",
-						"    $context.base.getRelativePath('initialized').write('initialized', { append: false });",
+						"    $context.base.getRelativePath('initialized').write('initialized\\n', { append: true });",
 						"  };",
 						"  $exports.status = jsh.script.cli.defineCommand(function() {}, {",
 						"    category: 'Project',",
@@ -188,6 +188,9 @@ namespace slime.project.wf {
 					var fixtureCommand = fixtureWf(["status"]);
 					fifty.verify(fixtureCommand).status.is(0);
 					fifty.verify(project.getFile("initialized")).is.type("object");
+					var fixtureCommandAgain = fixtureWf(["status"]);
+					fifty.verify(fixtureCommandAgain).status.is(0);
+					fifty.verify(project.getFile("initialized").read(String)).is("initialized\n");
 				});
 			}
 
