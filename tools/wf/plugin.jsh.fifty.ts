@@ -78,7 +78,8 @@ namespace slime.jsh.wf {
 
 		export interface Interface extends slime.jsh.script.cli.Commands {
 			/**
-			 * A special {@link Command} that is run each time any (other) `Command` is run.
+			 * A special {@link Command} used to initialize the project before its first command. Successful initialization is
+			 * cached in `local/wf/initialized`; running `wf initialize` explicitly refreshes that state.
 			 */
 			 initialize?: slime.jsh.script.cli.Command
 		}

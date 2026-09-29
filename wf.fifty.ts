@@ -150,13 +150,17 @@ namespace slime.project.wf {
 						"//@ts-check",
 						"(",
 						"function(jsh,$context,$exports) {",
-						"  $exports.initialize = function() {",
+						"  $exports.initialize = function(p) {",
 						"    $context.base.getRelativePath('initialized').write('initialized\\n', { append: true });",
+						"    if (p.arguments[0] == '--fail') return 1;",
 						"  };",
 						"  $exports.status = jsh.script.cli.defineCommand(function() {}, {",
 						"    category: 'Project',",
 						"    summary: 'Shows fixture status.'",
 						"  });",
+						"  $exports.git = { hooks: { 'pre-commit': function() {",
+						"    $context.base.getRelativePath('hooked').write('hooked', { append: false });",
+						"  } } };",
 						"}",
 						")(jsh,$context,$exports);"
 					].join("\n"), { append: false });
@@ -185,15 +189,29 @@ namespace slime.project.wf {
 					fifty.verify(fixtureNoCommand).status.is(1);
 					fifty.verify(project.getFile("initialized")).is.type("null");
 
-					var fixtureInitialize = fixtureWf(["initialize"]);
-					fifty.verify(fixtureInitialize).status.is(0);
-					fifty.verify(project.getFile("initialized")).is.type("object");
 					var fixtureCommand = fixtureWf(["status"]);
 					fifty.verify(fixtureCommand).status.is(0);
+					fifty.verify(project.getRelativePath("local/wf/initialized").file).is.type("object");
 					fifty.verify(project.getFile("initialized").read(String)).is("initialized\n");
 					var fixtureCommandAgain = fixtureWf(["status"]);
 					fifty.verify(fixtureCommandAgain).status.is(0);
 					fifty.verify(project.getFile("initialized").read(String)).is("initialized\n");
+					var fixtureInitialize = fixtureWf(["initialize"]);
+					fifty.verify(fixtureInitialize).status.is(0);
+					fifty.verify(project.getFile("initialized").read(String)).is("initialized\ninitialized\n");
+					var fixtureInitializeFailure = fixtureWf(["initialize", "--fail"]);
+					fifty.verify(fixtureInitializeFailure).status.is(1);
+					fifty.verify(project.getRelativePath("local/wf/initialized").file).is.type("null");
+					var fixtureAfterFailedInitialize = fixtureWf(["status"]);
+					fifty.verify(fixtureAfterFailedInitialize).status.is(0);
+					fifty.verify(project.getRelativePath("local/wf/initialized").file).is.type("object");
+					project.getRelativePath("local/wf/initialized").file.remove();
+					var fixtureHook = fixtureWf(["git.hooks.pre-commit"]);
+					fifty.verify(fixtureHook).status.is(0);
+					fifty.verify(project.getFile("hooked")).is.type("object");
+					var fixtureHookAgain = fixtureWf(["git.hooks.pre-commit"]);
+					fifty.verify(fixtureHookAgain).status.is(0);
+					fifty.verify(project.getFile("initialized").read(String)).is("initialized\ninitialized\ninitialized\ninitialized\ninitialized\n");
 				});
 			}
 
