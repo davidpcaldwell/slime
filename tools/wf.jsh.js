@@ -59,6 +59,26 @@
 			jsh.shell.exit(1);
 		}
 
+		var initializationMarker = jsh.wf.project.base().getRelativePath("local/wf/initialized");
+
+		function isInitialized() {
+			return initializationMarker.file;
+		}
+
+		function markInitialized() {
+			initializationMarker.write("initialized\n", { append: false, recursive: true });
+		}
+
+		function ensureInitialized() {
+			if (project.initialize && !isInitialized()) {
+				project.initialize({
+					options: toT({}),
+					arguments: []
+				});
+				markInitialized();
+			}
+		}
+
 		/** @type { slime.jsh.script.cli.Descriptor<T> } */
 		var descriptor = {
 			options: $api.fp.cast.unsafe,
@@ -66,11 +86,20 @@
 				base: jsh.wf.project.base()
 			}),
 			before: function(call) {
-				if (shouldInitialize(call.path) && project.initialize) {
-					project.initialize({
-						options: toT({}),
-						arguments: []
-					});
+				if (call.path == "initialize") {
+					if (initializationMarker.file) {
+						initializationMarker.file.remove();
+					}
+					var initialize = call.command;
+					call.command = function(p) {
+						var result = initialize(p);
+						if (typeof(result) != "number" || result == 0) {
+							markInitialized();
+						}
+						return result;
+					};
+				} else if (shouldInitialize(call.path)) {
+					ensureInitialized();
 				}
 			}
 		}
@@ -122,11 +151,8 @@
 					//	TODO	this weird redeclaration should not be needed; type narrowing should apply to `command` here
 					var target = command;
 					return function() {
-						if (shouldInitialize(target.path) && project.initialize) {
-							project.initialize({
-								options: toT({}),
-								arguments: []
-							});
+						if (shouldInitialize(target.path)) {
+							ensureInitialized();
 						}
 						return target.command(target.invocation);
 					}
