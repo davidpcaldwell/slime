@@ -185,9 +185,12 @@ namespace slime.project.wf {
 					fifty.verify(fixtureNoCommand).status.is(1);
 					fifty.verify(project.getFile("initialized")).is.type("null");
 
+					var fixtureInitialize = fixtureWf(["initialize"]);
+					fifty.verify(fixtureInitialize).status.is(0);
+					fifty.verify(project.getFile("initialized")).is.type("object");
 					var fixtureCommand = fixtureWf(["status"]);
 					fifty.verify(fixtureCommand).status.is(0);
-					fifty.verify(project.getFile("initialized")).is.type("object");
+					fifty.verify(project.getFile("initialized").read(String)).is("initialized\n");
 					var fixtureCommandAgain = fixtureWf(["status"]);
 					fifty.verify(fixtureCommandAgain).status.is(0);
 					fifty.verify(project.getFile("initialized").read(String)).is("initialized\n");

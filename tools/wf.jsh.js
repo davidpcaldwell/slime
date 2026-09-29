@@ -76,7 +76,16 @@
 				base: jsh.wf.project.base()
 			}),
 			before: function(call) {
-				if (shouldInitialize(call.path) && project.initialize && !isInitialized()) {
+				if (call.path == "initialize") {
+					var initialize = call.command;
+					call.command = function(p) {
+						var result = initialize(p);
+						if (typeof(result) != "number" || result == 0) {
+							markInitialized();
+						}
+						return result;
+					};
+				} else if (shouldInitialize(call.path) && project.initialize && !isInitialized()) {
 					project.initialize({
 						options: toT({}),
 						arguments: []
