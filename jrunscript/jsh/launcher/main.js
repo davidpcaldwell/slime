@@ -309,7 +309,7 @@
 		}
 
 		//	Read arguments that begin with dash until we find an argument that does not; interpret these as VM switches
-		while($api.arguments.length > 0 && $api.arguments[0] && $api.arguments[0].substring(0,1) == "-") {
+		while($api.arguments.length > 0 && $api.arguments[0] && $api.arguments[0].substring(0,1) == "-" && $api.arguments[0] != "-e") {
 			command.vm($api.arguments.shift());
 		}
 

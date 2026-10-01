@@ -7,6 +7,7 @@
 package inonit.script.jsh;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.net.*;
 import java.util.*;
 import java.util.logging.*;
@@ -364,12 +365,23 @@ public class Main {
 			if (arguments.length == 0) {
 				throw new IllegalArgumentException("No arguments supplied; is this actually a packaged application? system properties = " + System.getProperties());
 			}
-			if (arguments.length == 0) {
-				throw new IllegalArgumentException("At least one argument, representing the script, is required.");
-			}
 			final List<String> args = new ArrayList<String>();
 			args.addAll(Arrays.asList(arguments));
 			final String scriptPath = args.remove(0);
+			if (scriptPath.equals("-e")) {
+				if (args.isEmpty()) throw new Shell.Invocation.CheckedException("-e requires a code argument");
+				final byte[] code = args.remove(0).getBytes(StandardCharsets.UTF_8);
+				return Shell.Invocation.create(
+					Shell.Script.create(new Code.Loader.Resource() {
+						@Override public Code.Loader.URI getURI() { return null; }
+						@Override public String getSourceName() { return "<jsh -e>"; }
+						@Override public InputStream getInputStream() { return new ByteArrayInputStream(code); }
+						@Override public Long getLength() { return Long.valueOf(code.length); }
+						@Override public java.util.Date getLastModified() { return null; }
+					}),
+					args.toArray(new String[0])
+				);
+			}
 			final String[] scriptArguments = args.toArray(new String[0]);
 			if (scriptPath.startsWith("http://") || scriptPath.startsWith("https://")) {
 				try {
