@@ -974,7 +974,7 @@
 			return filesystem;
 		}
 
-		//	World-oriented filesystem implementations. No world-oriented Cygwin implementation yet.
+		//	World-oriented filesystem implementations; Cygwin adapts its provider through this bridge.
 		var providers = {
 			os: new FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create())
 		};
@@ -985,6 +985,10 @@
 			providers: providers,
 			filesystems: {
 				os: os
+			},
+			internal: {
+				FilesystemProvider: FilesystemProvider,
+				toWorldFilesystem: toWorldFilesystem
 			},
 			test: {
 				FilesystemProvider: FilesystemProvider,

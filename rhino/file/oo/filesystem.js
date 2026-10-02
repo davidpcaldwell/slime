@@ -13,65 +13,59 @@
 	 */
 	function($context,$exports) {
 		/**
-		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } provider
-		 * @param { slime.jrunscript.file.internal.java.Exports["filesystems"]["os"] } filesystem
-		 * @param { string } path
-		 */
-		function newPathname(provider, filesystem, path) {
-			var _peer = provider.newPeer(path);
-			var rv = provider.peerToString(_peer);
-			return new $context.Pathname({ provider: provider, filesystem: filesystem, pathname: rv });
-		}
-
-		/**
 		 *
 		 * @param { slime.jrunscript.file.internal.java.Exports["filesystems"]["os"] } fs
-		 * @param { slime.jrunscript.file.internal.java.FilesystemProvider } provider
 		 * @param { { interpretNativePathname: any } } [o] Used only for Cygwin.
 		 */
-		var Filesystem = function(fs,provider,o) {
+		var Filesystem = function(fs,o) {
 			this.toString = function() {
-				return "Filesystem: fs=" + fs + " provider=" + provider;
+				return "Filesystem: fs=" + fs;
 			}
 
 			//	TODO	we add createEmpty below, but do not seem to define it. Is it defined elsewhere, maybe?
 			this.Searchpath = Object.assign(function(array) {
-				return new $context.Searchpath({ provider: provider, filesystem: fs, array: array });
+				return new $context.Searchpath({ filesystem: fs, array: array });
 			}, { parse: void(0), createEmpty: void(0) });
 			this.Searchpath.prototype = $context.Searchpath.prototype;
 			this.Searchpath.parse = function(string) {
 				if (!string) {
 					throw new Error("No string to parse in Searchpath.parse");
 				}
-				var elements = string.split(provider.separators.searchpath);
+				var elements = string.split(fs.separator.searchpath);
 				var array = elements.map(function(element) {
-					return newPathname(provider, fs, element);
+					return newPathname(fs, element);
 				});
-				return new $context.Searchpath({ provider: provider, filesystem: fs, array: array });
+				return new $context.Searchpath({ filesystem: fs, array: array });
 			}
 
 			/** @type { slime.jrunscript.file.internal.filesystem.Filesystem["Pathname"] } */
 			this.Pathname = function(string) {
-				return newPathname(provider, fs, string);
+				return newPathname(fs, string);
 			}
 
 			this.$unit = new function() {
 				//	Used by unit tests for getopts as well as unit tests for this module
 				this.getSearchpathSeparator = function() {
-					return provider.separators.searchpath;
+					return fs.separator.searchpath;
 				}
 				this.getPathnameSeparator = function() {
-					return provider.separators.pathname;
+					return fs.separator.pathname;
 				}
 				this.temporary = function(parent,parameters) {
-					var peer = provider.temporary(parent,parameters);
-					var pathname = new $context.Pathname({ provider: provider, filesystem: fs, pathname: String(peer.getScriptPath()) });
+					if (!parameters) parameters = {};
+					var parentPath = (parent && parent.getScriptPath) ? String(parent.getScriptPath()) : (parent && parent.pathname ? parent.pathname.toString() : parent);
+					var pathname = newPathname(fs, $context.api.fp.world.now.ask(fs.temporary({
+						parent: parentPath,
+						prefix: parameters.prefix,
+						suffix: parameters.suffix,
+						directory: Boolean(parameters.directory)
+					})));
 					if (pathname.directory) return pathname.directory;
 					if (pathname.file) return pathname.file;
 					throw new Error();
 				}
 				this.Pathname = function(peer) {
-					return new $context.Pathname({ provider: provider, filesystem: fs, pathname: String(peer.getScriptPath()) });
+					return newPathname(fs, String(peer.getScriptPath()));
 				}
 			}
 
@@ -79,14 +73,13 @@
 
 			this.java = {
 				adapt: function(_file) {
-					var peer = provider.java.adapt(_file);
-					return new $context.Pathname({ provider: provider, filesystem: fs, pathname: String(peer.getScriptPath()) });
+					return newPathname(fs, fs.java.codec.File.decode(_file).pathname);
 				}
 			};
 
 			this.$jsh = new function() {
 				//	Currently used by jsh.script.getopts for Pathname
-				this.PATHNAME_SEPARATOR = provider.separators.pathname;
+				this.PATHNAME_SEPARATOR = fs.separator.pathname;
 
 				//	Interprets an OS Pathname in this filesystem. Used, at least, for calculation of jsh.shell.PATH
 				//	TODO	could/should this be replaced with something that uses a java.io.File?
@@ -104,6 +97,16 @@
 			this.isAbsolutePath = function(path) {
 				return fs.os.isAbsolutePath(path);
 			}
+		}
+
+		/**
+		 * @param { slime.jrunscript.file.internal.java.Exports["filesystems"]["os"] } fs
+		 * @param { string } path
+		 */
+		function newPathname(fs, path) {
+			var canonicalized = $context.api.fp.world.now.ask(fs.canonicalize({ pathname: path }));
+			if (!canonicalized.present) throw new Error("Could not canonicalize: " + path);
+			return new $context.Pathname({ filesystem: fs, pathname: canonicalized.value });
 		}
 
 		$exports.Filesystem = Filesystem;

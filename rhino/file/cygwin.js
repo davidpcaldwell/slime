@@ -12,8 +12,9 @@
 		} else {
 			_cygwinProvider = Packages.inonit.script.runtime.io.cygwin.CygwinFilesystem.create($context.cygwin.root,$context.cygwin.paths)
 		}
-		var cygwinProvider = new $context.java.FilesystemProvider(_cygwinProvider);
-		$exports.filesystem = new $context.Filesystem(cygwinProvider, {
+		var cygwinProvider = new $context.java.internal.FilesystemProvider(_cygwinProvider);
+		var cygwinFilesystem = $context.java.internal.toWorldFilesystem(cygwinProvider);
+		$exports.filesystem = new $context.Filesystem(cygwinFilesystem, {
 			interpretNativePathname: function(pathname) {
 				return this.toUnix(pathname);
 			}
@@ -21,10 +22,13 @@
 
 		$exports.filesystem.toUnix = function(item) {
 			if (isPathname(item)) {
-				return new $context.Pathname({ filesystem: cygwinProvider, peer: _cygwinProvider.getNode( item.java.adapt() ) });
+				return new $context.Pathname({
+					filesystem: cygwinFilesystem,
+					pathname: cygwinFilesystem.java.codec.File.decode(item.java.adapt()).pathname
+				});
 			}
 			if (item instanceof $context.Searchpath) {
-				return new $context.Searchpath({ filesystem: cygwinProvider, array: item.pathnames });
+				return new $context.Searchpath({ filesystem: cygwinFilesystem, array: item.pathnames });
 			}
 			return item;
 		}
@@ -37,13 +41,16 @@
 				if (item.file == null && this.Pathname( item.toString() + ".exe" ).file != null ) {
 					item = this.Pathname( item.toString() + ".exe" );
 				}
-				return $context.java.FilesystemProvider.os.importPathname( item );
+				return new $context.Pathname({
+					filesystem: $context.java.filesystems.os,
+					pathname: $context.java.filesystems.os.java.codec.File.decode(item.java.adapt()).pathname
+				});
 			}
 			//	Searchpath currently sets the constructor property to this module-level function; would this make this instanceof
 			//	work?
 			if (item instanceof $context.Searchpath) {
 				//	TODO	convert underlying pathnames
-				return new $context.Searchpath({ filesystem: $context.java.FilesystemProvider.os, array: item.pathnames });
+				return new $context.Searchpath({ filesystem: $context.java.filesystems.os, array: item.pathnames });
 			}
 			return item;
 		}

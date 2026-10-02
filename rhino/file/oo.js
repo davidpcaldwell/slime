@@ -44,6 +44,7 @@
 				});
 
 				var os = code.filesystem({
+					api: $api,
 					Pathname: file.Pathname,
 					Searchpath: file.Searchpath
 				});
@@ -52,7 +53,7 @@
 				 * @type { slime.jrunscript.file.Exports["filesystems"] }
 				 */
 				var filesystems = {
-					os: new os.Filesystem($context.library.world.filesystems.os, $context.library.world.providers.os),
+					os: new os.Filesystem($context.library.world.filesystems.os),
 					cygwin: ($context.cygwin) ? $loader.file("cygwin.js", {
 						cygwin: $context.cygwin,
 						Filesystem: os.Filesystem,

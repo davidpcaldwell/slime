@@ -6,14 +6,14 @@
 
 namespace slime.jrunscript.file.internal.filesystem {
 	export interface Context {
+		api: slime.$api.Global
 		Searchpath: slime.jrunscript.file.internal.file.Exports["Searchpath"]
 		Pathname: slime.jrunscript.file.internal.file.Exports["Pathname"]
 	}
 
 	export interface Exports {
 		Filesystem: new (
-			filesystem: slime.jrunscript.file.world.Filesystem,
-			provider: slime.jrunscript.file.internal.java.FilesystemProvider
+			filesystem: slime.jrunscript.file.internal.java.Exports["filesystems"]["os"]
 		) => OsFilesystem
 	}
 
@@ -97,6 +97,13 @@ namespace slime.jrunscript.file.internal.filesystem {
 
 				fifty.run(function fstest() {
 					fifty.tests.filesystem(filesystem);
+				});
+
+				fifty.run(function temporary() {
+					var parent = filesystem.Pathname(jsh.shell.TMPDIR.toString()).directory;
+					var temporary = parent.createTemporary({ directory: true });
+					verify(temporary).is.type("object");
+					verify(temporary.pathname.directory).is.not(null);
 				});
 
 				//	TODO	probably should move to filesystem.fifty.ts, and then UNIX can be removed from this file it appears
