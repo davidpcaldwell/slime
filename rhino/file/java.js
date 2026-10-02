@@ -735,9 +735,9 @@
 						var peer = java.newPeer(p.pathname);
 						try {
 							//	TODO	all quite dubious, why would this work like this? Think it through.
-							var hostCanonicalPath = String(peer.getHostFile().getAbsolutePath());
-							if (hostCanonicalPath == "/") return $api.fp.Maybe.from.some("");
-							return $api.fp.Maybe.from.some(hostCanonicalPath);
+							var providerPath = java.peerToString(peer);
+							if (providerPath == "/") return $api.fp.Maybe.from.some("");
+							return $api.fp.Maybe.from.some(providerPath);
 						} catch (e) {
 							return $api.fp.Maybe.from.nothing();
 						}
