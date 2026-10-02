@@ -115,6 +115,12 @@ END LICENSE
 				<pre class="example"><code>./jsh -Dfoo=bar jrunscript/jsh/test/jsh-data.jsh.js</code></pre>
 			</div>
 			<div>
+				To execute inline JavaScript as a top-level shell script, use <code>-e</code> followed by a single source string.
+				Arguments after the source string become <code>jsh.script.arguments</code>; expressions are not printed automatically.
+				VM arguments may precede <code>-e</code>. Errors identify the source as <code>&lt;jsh -e&gt;</code>.
+				<pre class="example"><code>./jsh -e 'jsh.shell.echo(jsh.script.arguments[0])' hello</code></pre>
+			</div>
+			<div>
 				<h2>How <code>jsh</code> selects a JDK</h2>
 				The <code>jsh</code> script locates a suitable Java installation with which to run the shell using the following
 				algorithm:

@@ -1073,7 +1073,7 @@
 					//			to add them and fork a VM; launcher could *unset* them, perhaps. Need to think through and develop test case
 					if ($$api.jsh.shell.packaged) return;
 					var rv = [];
-					while($$api.arguments.length && $$api.arguments[0].substring(0,1) == "-") {
+					while($$api.arguments.length && $$api.arguments[0].substring(0,1) == "-" && $$api.arguments[0] != "-e") {
 						command.vm($$api.arguments.shift());
 					}
 					return rv;
