@@ -70,12 +70,17 @@ namespace slime.jsh.internal.launcher {
 
 				var environment = run(["-e", "jsh.shell.echo(JSON.stringify({ args: jsh.script.arguments, property: String(Packages.java.lang.System.getProperty('inline.test')), api: typeof $api, loader: typeof jsh.loader }))", "-flag", "two words", ""], { "inline.test": "present" });
 				verify(environment).status.is(0);
-				verify(JSON.parse(environment.stdio.output)).args.evaluate(function(value: string[]) {
+				var environmentOutput: { args: string[]; property: string; api: string; loader: string } = JSON.parse(environment.stdio.output);
+				verify(environmentOutput).args.evaluate(function(value: string[]) {
 					return JSON.stringify(value) == JSON.stringify(["-flag", "two words", ""]);
 				}).is(true);
-				verify(JSON.parse(environment.stdio.output)).property.is("present");
-				verify(JSON.parse(environment.stdio.output)).api.is("object");
-				verify(JSON.parse(environment.stdio.output)).loader.is("object");
+				verify(environmentOutput).property.is("present");
+				verify(environmentOutput).api.is("object");
+				verify(environmentOutput).loader.is("object");
+
+				var unicode = run(["-e", "jsh.shell.echo('café')"]);
+				verify(unicode).status.is(0);
+				verify(unicode).stdio.output.is("café\n");
 
 				var expression = run(["-e", "42"]);
 				verify(expression).status.is(0);
@@ -97,7 +102,8 @@ namespace slime.jsh.internal.launcher {
 
 				var file = run(["jrunscript/jsh/test/jsh-data.jsh.js"]);
 				verify(file).status.is(0);
-				verify(JSON.parse(file.stdio.output)).shellClasspath.evaluate(function(value: string) { return Boolean(value); }).is(true);
+				var fileOutput: { shellClasspath: string } = JSON.parse(file.stdio.output);
+				verify(fileOutput).shellClasspath.evaluate(function(value: string) { return Boolean(value); }).is(true);
 			};
 
 			fifty.tests.builtInline = function() {

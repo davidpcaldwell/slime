@@ -7,7 +7,7 @@
 package inonit.script.jsh;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.net.*;
 import java.util.*;
 import java.util.logging.*;
@@ -370,7 +370,7 @@ public class Main {
 			final String scriptPath = args.remove(0);
 			if (scriptPath.equals("-e")) {
 				if (args.isEmpty()) throw new Shell.Invocation.CheckedException("-e requires a code argument");
-				final byte[] code = args.remove(0).getBytes(StandardCharsets.UTF_8);
+				final byte[] code = args.remove(0).getBytes(Charset.defaultCharset());
 				return Shell.Invocation.create(
 					Shell.Script.create(new Code.Loader.Resource() {
 						@Override public Code.Loader.URI getURI() { return null; }
