@@ -41,6 +41,7 @@ namespace slime.jsh.internal.launcher {
 				verify(data).shellClasspath.is(classpathUri);
 
 				fifty.run(fifty.tests.unbuilt);
+				fifty.run(fifty.tests.builtInline);
 
 				fifty.load("launcher.fifty.ts");
 
@@ -48,6 +49,76 @@ namespace slime.jsh.internal.launcher {
 			}
 
 			fifty.tests.unbuilt = fifty.test.Parent();
+
+			fifty.tests.unbuilt.inline = function() {
+				var run = function(args: string[], properties?: { [name: string]: string }) {
+					return $api.fp.world.Sensor.now({
+						sensor: jsh.shell.subprocess.question,
+						subject: jsh.shell.jsh.Intention.toShellIntention({
+							shell: test.shells.unbuilt(),
+							script: args[0],
+							arguments: args.slice(1),
+							properties: properties,
+							stdio: { output: "string", error: "string" }
+						})
+					});
+				};
+
+				var hello = run(["-e", "jsh.shell.echo('hi')"]);
+				verify(hello).status.is(0);
+				verify(hello).stdio.output.is("hi\n");
+
+				var environment = run(["-e", "jsh.shell.echo(JSON.stringify({ args: jsh.script.arguments, property: String(Packages.java.lang.System.getProperty('inline.test')), api: typeof $api, loader: typeof jsh.loader }))", "-flag", "two words", ""], { "inline.test": "present" });
+				verify(environment).status.is(0);
+				var environmentOutput: { args: string[]; property: string; api: string; loader: string } = JSON.parse(environment.stdio.output);
+				verify(environmentOutput).args.evaluate(function(value: string[]) {
+					return JSON.stringify(value) == JSON.stringify(["-flag", "two words", ""]);
+				}).is(true);
+				verify(environmentOutput).property.is("present");
+				verify(environmentOutput).api.is("object");
+				verify(environmentOutput).loader.is("object");
+
+				var unicode = run(["-e", "jsh.shell.echo('café')"]);
+				verify(unicode).status.is(0);
+				verify(unicode).stdio.output.is("café\n");
+
+				var expression = run(["-e", "42"]);
+				verify(expression).status.is(0);
+				verify(expression).stdio.output.is("");
+
+				verify(run(["-e", "jsh.shell.exit(7)"])).status.is(7);
+
+				var syntax = run(["-e", "function ("]);
+				verify(syntax).status.evaluate(function(status: number) { return status != 0; }).is(true);
+				verify(syntax).stdio.error.evaluate(function(error: string) { return error.indexOf("<jsh -e>") != -1; }).is(true);
+
+				var runtime = run(["-e", "throw new Error('inline failure')"]);
+				verify(runtime).status.evaluate(function(status: number) { return status != 0; }).is(true);
+				verify(runtime).stdio.error.evaluate(function(error: string) { return error.indexOf("<jsh -e>") != -1; }).is(true);
+
+				var missing = run(["-e"]);
+				verify(missing).status.evaluate(function(status: number) { return status != 0; }).is(true);
+				verify(missing).stdio.error.evaluate(function(error: string) { return error.indexOf("code argument") != -1; }).is(true);
+
+				var file = run(["jrunscript/jsh/test/jsh-data.jsh.js"]);
+				verify(file).status.is(0);
+				var fileOutput: { shellClasspath: string } = JSON.parse(file.stdio.output);
+				verify(fileOutput).shellClasspath.evaluate(function(value: string) { return Boolean(value); }).is(true);
+			};
+
+			fifty.tests.builtInline = function() {
+				var result = $api.fp.world.Sensor.now({
+					sensor: jsh.shell.subprocess.question,
+					subject: jsh.shell.jsh.Intention.toShellIntention({
+						shell: test.shells.built(false),
+						script: "-e",
+						arguments: ["jsh.shell.echo(jsh.script.arguments.join('|'))", "one", "two words"],
+						stdio: { output: "string", error: "string" }
+					})
+				});
+				verify(result).status.is(0);
+				verify(result).stdio.output.is("one|two words\n");
+			};
 
 			fifty.tests.unbuilt.loaderCache = function() {
 				var cache = jsh.shell.jsh.src.getRelativePath("local/jsh/lib/loader").directory;
