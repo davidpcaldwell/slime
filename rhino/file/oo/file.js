@@ -51,6 +51,18 @@
 		}
 
 		/**
+		 * @template E,T
+		 * @param { slime.$api.fp.world.Question<E,slime.$api.fp.Maybe<T>> } sensor
+		 * @param { string } message
+		 * @returns { T }
+		 */
+		var ask = function(sensor, message) {
+			var result = $api.fp.world.now.ask(sensor);
+			if (!result.present) throw new Error(message);
+			return result.value;
+		}
+
+		/**
 		 * @constructor
 		 * @param { ConstructorParameters<slime.jrunscript.file.internal.file.Exports["Pathname"]>[0] } parameters
 		 */
@@ -71,7 +83,7 @@
 			})();
 
 			function Internal(pathname) {
-				return new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: pathname });
+				return new Pathname({ filesystem: parameters.filesystem, pathname: pathname });
 			}
 
 			var filesystem = parameters.filesystem;
@@ -117,8 +129,6 @@
 				}
 			);
 
-			var _peer = parameters.provider.newPeer(parameters.pathname);
-
 			/** @type { slime.jrunscript.file.File } */
 			this.file = void(0);
 			var getFile = function() {
@@ -126,7 +136,7 @@
 					throw new TypeError("No arguments expected to Pathname.getFile");
 				}
 				if (!$context.library.Location.file.exists.simple(location)) return null;
-				return new File(this, _peer);
+				return new File(this);
 			}
 			Object.defineProperty(
 				this,
@@ -142,10 +152,10 @@
 			/** @type { () => slime.jrunscript.file.Directory } */
 			var getDirectory = function() {
 				if (!$context.library.Location.directory.exists.simple(location)) return null;
-				//	TODO	the below appears to be a no-op, equivalent to new Directory(this, _peer), but tests fail without it;
+				//	TODO	the below appears to be a no-op, equivalent to new Directory(this), but tests fail without it;
 				//			need to investigate
-				var pathname = new Pathname({ provider: parameters.provider, filesystem: parameters.filesystem, pathname: parameters.pathname });
-				return /** @type { slime.jrunscript.file.Directory } */(new Directory(pathname, _peer));
+				var pathname = new Pathname({ filesystem: parameters.filesystem, pathname: parameters.pathname });
+				return /** @type { slime.jrunscript.file.Directory } */(new Directory(pathname));
 			}
 			Object.defineProperty(
 				this,
@@ -268,35 +278,18 @@
 				}
 			}
 
-			this.java = new function () {
-				//	Undocumented; used only by mapPathname, which is used only by Searchpath, all of which are dubious
-				this.getPeer = function () {
-					return _peer;
-				}
-
-				this.adapt = function () {
-					return _peer.getHostFile();
-				}
-
-				if (_peer.invalidate) {
-					this.invalidate = function () {
-						_peer.invalidate();
-					}
+			this.java = {
+				adapt: function() {
+					return parameters.filesystem.java.codec.File.encode({ pathname: toString() });
 				}
 			}
-
-			var __peer = _peer;
 
 			/**
 			 *
 			 * @param { Pathname } pathname
 			 * @param { string } relativePathPrefix
-			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } _peer
 			 */
-			var Node = function Node(pathname, relativePathPrefix, _peer) {
-				if (!_peer) {
-					_peer = __peer;
-				}
+			var Node = function Node(pathname, relativePathPrefix) {
 				this.toString = function () {
 					return pathname.toString();
 				}
@@ -397,11 +390,10 @@
 							toPathname.parent.createDirectory({ recursive: true });
 						}
 					}
-					//	Seems Cygwin-ish but usage unknown
-					if (toPathname.java["invalidate"]) {
-						toPathname.java["invalidate"]();
-					}
-					parameters.provider.move(_peer, toPathname.java.getPeer());
+					$api.fp.world.now.action(parameters.filesystem.move, {
+						from: pathname.toString(),
+						to: toPathname.toString()
+					});
 					if (toPathname.file) {
 						return toPathname.file;
 					} else if (toPathname.directory) {
@@ -537,10 +529,9 @@
 			/**
 			 *
 			 * @param { Pathname } pathname
-			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
 			 */
-			var Link = function (pathname, peer) {
-				Node.call(this, pathname, parameters.provider.separators.pathname + ".." + parameters.provider.separators.pathname, peer);
+			var Link = function (pathname) {
+				Node.call(this, pathname, parameters.filesystem.separator.pathname + ".." + parameters.filesystem.separator.pathname);
 
 				this.directory = null;
 			}
@@ -548,10 +539,9 @@
 			/**
 			 *
 			 * @param { Pathname } pathname
-			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } _peer
 			 */
-			var File = function File(pathname, _peer) {
-				Node.call(this, pathname, parameters.provider.separators.pathname + ".." + parameters.provider.separators.pathname);
+			var File = function File(pathname) {
+				Node.call(this, pathname, parameters.filesystem.separator.pathname + ".." + parameters.filesystem.separator.pathname);
 
 				this.directory = false;
 
@@ -559,17 +549,26 @@
 					name: pathname.toString(),
 					read: {
 						binary: function () {
-							return parameters.provider.read.binary(_peer);
+							return ask(
+								parameters.filesystem.openInputStream({ pathname: pathname.toString() }),
+								"Could not read: " + pathname
+							);
 						},
 						text: function () {
-							return parameters.provider.read.character(_peer);
+							return ask(
+								parameters.filesystem.openInputStream({ pathname: pathname.toString() }),
+								"Could not read: " + pathname
+							).character();
 						}
 					}
 				};
 
 				Object.defineProperty(rdata, "length", {
 					get: function () {
-						var length = pathname.java.adapt().length();
+						var length = ask(
+							parameters.filesystem.fileSize({ pathname: pathname.toString() }),
+							"Could not determine length: " + pathname
+						);
 						if (typeof (length) == "object") {
 							//	Nashorn treats it as object
 							length = Number(String(length));
@@ -596,9 +595,8 @@
 			/**
 			 *
 			 * @param { Pathname } pathname
-			 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node } peer
 			 */
-			var Directory = function (pathname, peer) {
+			var Directory = function (pathname) {
 				this.getRelativePath = void (0);
 				this.toString = void (0);
 
@@ -608,7 +606,7 @@
 				this.move = void(0);
 				this.copy = void(0);
 				this.modified = void(0);
-				Node.call(this, pathname, parameters.provider.separators.pathname + "." + parameters.provider.separators.pathname);
+				Node.call(this, pathname, parameters.filesystem.separator.pathname + "." + parameters.filesystem.separator.pathname);
 
 				this.toString = (function (was) {
 					return function () {
@@ -703,33 +701,16 @@
 							return toReturn(rv);
 						}).call(this);
 					} else {
-						/**
-						 *
-						 * @param { slime.jrunscript.native.inonit.script.runtime.io.Filesystem.Node[] } peers
-						 * @returns { slime.jrunscript.file.Node[] }
-						 */
-						var createNodesFromPeers = function (peers) {
-							//	This function is written with this kind of for loop to allow accessing a Java array directly
-							//	It also uses an optimization, using the peer's directory property if it has one, which a peer would not be
-							//	required to have
-							/** @type { slime.jrunscript.file.Node[] } */
-							var rv = [];
-							for (var i = 0; i < peers.length; i++) {
-								var pathname = Internal(String(peers[i].getScriptPath()));
-								if (pathname.directory) {
-									rv.push(pathname.directory);
-								} else if (pathname.file) {
-									rv.push(pathname.file);
-								} else {
-									//	broken softlink, apparently
-									//@ts-ignore
-									rv.push(new Link(pathname, peers[i]));
-								}
-							}
-							return rv;
-						}
-						var peers = parameters.provider.list(peer);
-						rv = createNodesFromPeers(peers);
+						var names = ask(
+							parameters.filesystem.listDirectory({ pathname: self.pathname.toString() }),
+							"Could not list directory: " + self.pathname
+						);
+						rv = names.map(function(name) {
+							var pathname = self.getRelativePath(name);
+							if (pathname.directory) return pathname.directory;
+							if (pathname.file) return pathname.file;
+							return new Link(pathname);
+						});
 						rv = rv.filter(filter);
 						return toReturn(rv);
 					}
@@ -745,16 +726,20 @@
 					RESOURCE: $exports_list.RESOURCE
 				});
 
-				if (parameters.provider.temporary) {
-					this.createTemporary = function(p) {
-						var _peer = parameters.provider.temporary(peer, p);
-						var pathname = Internal(String(_peer.getScriptPath()));
-						if (pathname.directory) return pathname.directory;
-						if (pathname.file) return pathname.file;
-						throw new Error();
-					}
-					$api.experimental(this, "createTemporary");
+				this.createTemporary = function(p) {
+					if (!p) p = {};
+					var path = $api.fp.world.now.ask(parameters.filesystem.temporary({
+						parent: pathname.toString(),
+						prefix: p.prefix,
+						suffix: p.suffix,
+						directory: Boolean(p.directory)
+					}));
+					var temporary = Internal(path);
+					if (temporary.directory) return temporary.directory;
+					if (temporary.file) return temporary.file;
+					throw new Error();
 				}
+				$api.experimental(this, "createTemporary");
 			}
 			//	Directory.prototype = new Node(this,"");
 		}
@@ -773,9 +758,6 @@
 				throw new TypeError("Illegal argument to new Searchpath(): " + parameters);
 			}
 
-			if (!parameters.provider) {
-				throw new TypeError("Required: provider property to Searchpath constructor.");
-			}
 			var array = parameters.array.slice(0);
 
 			this.append = function (pathname) {
@@ -813,19 +795,14 @@
 			}
 
 			this.toString = function () {
-				var provider = parameters.provider;
+				if (!array.length) return "";
 				return getPathnames().map(function (pathname) {
-					if (!provider.java) {
-						debugger;
-					}
-					var peer = provider.java.adapt(pathname.java.adapt());
-					var mapped = new Pathname({ provider: provider, filesystem: parameters.filesystem, pathname: String(peer.getScriptPath()) });
-					return mapped.toString();
-				}).join(provider.separators.searchpath);
+					return parameters.filesystem.java.codec.File.decode(pathname.java.adapt()).pathname;
+				}).join(parameters.filesystem.separator.searchpath);
 			}
 		}
 		Searchpath.createEmpty = function () {
-			return new Searchpath({ provider: void(0), filesystem: void(0), array: [] });
+			return new Searchpath({ filesystem: void(0), array: [] });
 		}
 		Searchpath.prototype = $context.prototypes.Searchpath;
 

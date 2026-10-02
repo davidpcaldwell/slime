@@ -735,9 +735,9 @@
 						var peer = java.newPeer(p.pathname);
 						try {
 							//	TODO	all quite dubious, why would this work like this? Think it through.
-							var hostCanonicalPath = String(peer.getHostFile().getAbsolutePath());
-							if (hostCanonicalPath == "/") return $api.fp.Maybe.from.some("");
-							return $api.fp.Maybe.from.some(hostCanonicalPath);
+							var providerPath = java.peerToString(peer);
+							if (providerPath == "/") return $api.fp.Maybe.from.some("");
+							return $api.fp.Maybe.from.some(providerPath);
 						} catch (e) {
 							return $api.fp.Maybe.from.nothing();
 						}
@@ -821,7 +821,7 @@
 
 						/** @type { (j: slime.jrunscript.native.java.nio.file.attribute.FileTime) => number } */
 						var fromFileTime = function(value) {
-							return value.toMillis();
+							return Number(value.toMillis());
 						};
 
 						/** @type { (value: number) => slime.jrunscript.native.java.nio.file.attribute.FileTime } */
@@ -974,7 +974,7 @@
 			return filesystem;
 		}
 
-		//	World-oriented filesystem implementations. No world-oriented Cygwin implementation yet.
+		//	World-oriented filesystem implementations; Cygwin adapts its provider through this bridge.
 		var providers = {
 			os: new FilesystemProvider(Packages.inonit.script.runtime.io.Filesystem.create())
 		};
@@ -985,6 +985,10 @@
 			providers: providers,
 			filesystems: {
 				os: os
+			},
+			internal: {
+				FilesystemProvider: FilesystemProvider,
+				toWorldFilesystem: toWorldFilesystem
 			},
 			test: {
 				FilesystemProvider: FilesystemProvider,

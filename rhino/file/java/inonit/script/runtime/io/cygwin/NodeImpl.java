@@ -189,6 +189,18 @@ class NodeImpl extends Filesystem.Node {
 		return softlink.booleanValue();
 	}
 
+	@Override
+	public boolean isSymlink() throws IOException {
+		try {
+			return isSoftlink();
+		} catch (CygwinFilesystem.CygpathException e) {
+			throw new IOException(e);
+		} catch (Command.Result.Failure e) {
+			process(e.getResult());
+			throw new IOException(e);
+		}
+	}
+
 	private void process(Command.Result result) throws IOException {
 		if (!result.isSuccess()) {
 			if (result.getLaunchException() != null) {
@@ -200,22 +212,19 @@ class NodeImpl extends Filesystem.Node {
 	}
 
 	public boolean delete(DeleteEvents events) throws IOException {
-		//	TODO	probably none of this works
-		if (Integer.parseInt("1") == 1) throw new RuntimeException();
-		if (!exists()) {
-			throw new IOException("Does not exist: " + this);
-		} else {
-			uncache();
-			try {
-				process(parent.delete(this));
-			} catch (CygwinFilesystem.CygpathException e) {
-				throw new IOException(e);
-			} catch (Command.Result.Failure e) {
-				process(e.getResult());
-				return false;
+		try {
+			if (!exists() && !isSoftlink()) {
+				throw new IOException("Does not exist: " + this);
 			}
-			return true;
+			uncache();
+			process(parent.delete(this));
+		} catch (CygwinFilesystem.CygpathException e) {
+			throw new IOException(e);
+		} catch (Command.Result.Failure e) {
+			process(e.getResult());
+			return false;
 		}
+		return true;
 	}
 
 	public void move(Filesystem.Node to) throws IOException {
@@ -279,8 +288,4 @@ class NodeImpl extends Filesystem.Node {
 		uncache();
 	}
 
-	@Override
-	public boolean isSymlink() throws IOException {
-		throw new UnsupportedOperationException("Unimplemented method 'isSymlink'");
-	}
 }

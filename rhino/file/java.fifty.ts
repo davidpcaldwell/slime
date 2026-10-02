@@ -113,10 +113,14 @@ namespace slime.jrunscript.file.internal.java {
 	}
 
 	export interface Exports {
-		//	TODO	this provider object is still used internally by oo/filesystem.js, but it seems like refactoring to remove this
-		//			export would be a goal
+		//	TODO	new OO APIs should use the world filesystem; providers remain exposed for legacy integrations such as Cygwin
 		providers: {
 			os: slime.jrunscript.file.internal.java.FilesystemProvider
+		}
+
+		internal: {
+			FilesystemProvider: new (_peer: slime.jrunscript.native.inonit.script.runtime.io.Filesystem) => FilesystemProvider
+			toWorldFilesystem: (provider: slime.jrunscript.file.internal.java.FilesystemProvider) => slime.jrunscript.file.internal.java.Exports["filesystems"]["os"]
 		}
 
 		filesystems: {
