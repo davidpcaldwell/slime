@@ -270,9 +270,10 @@ namespace slime.jrunscript.file.internal.oo {
 				var file = directory.getFile("file");
 
 				file.modified = jsh.time.When.codec.Date.encode(MODIFIED_TIME);
-				var isNearestSecond = file.modified.getTime() == Math.floor(MODIFIED_TIME.unix / 1000) * 1000;
-				var isMillisecond = file.modified.getTime() == MODIFIED_TIME.unix;
-				verify(isNearestSecond || isMillisecond, "sNearestSecond || isMillisecond").is(true);
+				var actual = file.modified.getTime();
+				var isNearestSecond = actual == Math.floor(MODIFIED_TIME.unix / 1000) * 1000;
+				var isMillisecond = actual == MODIFIED_TIME.unix;
+				verify(isNearestSecond || isMillisecond, "modified timestamp " + actual + " matches " + MODIFIED_TIME.unix).is(true);
 			}
 
 			fifty.tests.filetime.testbed = function() {

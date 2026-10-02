@@ -821,7 +821,7 @@
 
 						/** @type { (j: slime.jrunscript.native.java.nio.file.attribute.FileTime) => number } */
 						var fromFileTime = function(value) {
-							return value.toMillis();
+							return Number(value.toMillis());
 						};
 
 						/** @type { (value: number) => slime.jrunscript.native.java.nio.file.attribute.FileTime } */
