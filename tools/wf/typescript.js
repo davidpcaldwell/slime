@@ -278,6 +278,7 @@
 				}
 
 				return {
+					versionForTypescript: typedocVersionForTypescript,
 					invocation: invocation
 				}
 			}

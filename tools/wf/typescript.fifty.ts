@@ -59,6 +59,12 @@ namespace slime.jsh.wf.internal.module {
 	export namespace typescript {
 		export interface Exports {
 			typedoc: {
+				/**
+				 * Selects a compatible TypeDoc version for a supported TypeScript version.
+				 * Throws an error when no compatible version is specified.
+				 */
+				versionForTypescript: (version: string) => string
+
 				invocation: slime.$api.fp.world.Sensor<
 					typedoc.Invocation,
 					{
@@ -188,6 +194,16 @@ namespace slime.jsh.wf.internal.module {
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.Project);
+				fifty.run(fifty.tests.typedocVersion);
+			};
+
+			fifty.tests.typedocVersion = function() {
+				const { verify } = fifty;
+				const select = test.subject.typescript.typedoc.versionForTypescript;
+				verify(select("6.0.3")).is("0.28.20");
+				verify(select("5.9.2")).is("0.28.20");
+				verify(select("4.8.4")).is("0.23.19");
+				verify("7.0.0").evaluate(select).threw.type(Error);
 			};
 		}
 	//@ts-ignore
