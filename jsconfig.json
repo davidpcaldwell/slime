@@ -19,6 +19,12 @@
 		"typedoc-definitions.ts"
 	],
 	"compilerOptions": {
+		// Preserve the legacy scripts' existing TypeScript 5 check semantics.
+		"target": "ES5",
+		"strict": false,
+		"alwaysStrict": false,
+		"moduleDetection": "legacy",
+		"ignoreDeprecations": "6.0",
 		"lib": [
 			"ES5",
 			"DOM",
