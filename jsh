@@ -290,7 +290,7 @@ install_nashorn() {
 	IFS=" "
 	set -- ${JSH_BOOTSTRAP_NASHORN_LIBRARIES_ARTIFACTS}
 
-	#	Derived from https://repo1.maven.org/maven2/org/openjdk/nashorn/nashorn-core/15.6/nashorn-core-15.6.pom
+	#	Derived from https://repo1.maven.org/maven2/org/openjdk/nashorn/nashorn-core/15.7/nashorn-core-15.7.pom
 	for name in "$@"; do
 		install_maven_dependency \
 			${JSH_BOOTSTRAP_NASHORN_LIBRARIES_GROUP} \
@@ -300,7 +300,7 @@ install_nashorn() {
 	done
 	IFS="${WAS_IFS}"
 
-	NASHORN_VERSION=15.6
+	NASHORN_VERSION=15.7
 	install_maven_dependency org.openjdk.nashorn nashorn-core ${NASHORN_VERSION} ${JSH_SHELL_LIB}/nashorn.jar
 }
 
