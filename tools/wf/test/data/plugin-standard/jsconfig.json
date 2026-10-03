@@ -10,6 +10,11 @@
 		"slime/typedoc-definitions.ts"
 	],
 	"compilerOptions": {
+		"target": "ES5",
+		"strict": false,
+		"alwaysStrict": false,
+		"moduleDetection": "legacy",
+		"ignoreDeprecations": "6.0",
 		"lib": [
 			"ES5",
 			"DOM",

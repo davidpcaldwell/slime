@@ -5,6 +5,7 @@
 //	END LICENSE
 
 {
+	"extends": "./jsconfig.json",
 	"exclude": [
 		"local",
 		"bin",
