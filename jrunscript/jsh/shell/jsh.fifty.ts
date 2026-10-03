@@ -1002,6 +1002,29 @@ namespace slime.jsh.shell {
 				});
 			};
 
+			fifty.tests.exports.jsh.fork.relaunched = function() {
+				const result = jsh.shell.jsh({
+					script: fifty.jsh.file.object.getRelativePath("test/relaunch-fork.jsh.js").file,
+					fork: true,
+					stdio: { output: "string" },
+					evaluate: function(result) { return result; }
+				});
+				verify(result).status.is(0);
+				const data: {
+					parent: slime.jsh.internal.launcher.invocation.Output
+					child: slime.jsh.internal.launcher.invocation.Output
+				} = JSON.parse(result.stdio.output);
+				verify(data.parent).main.is(jsh.internal.bootstrap.jsh.invocation.fromSystemProperties().main);
+				verify(data.child).main.is(data.parent.main);
+				verify(data.child).jrunscript.is(data.parent.jrunscript);
+				verify(data.child).classpath.evaluate(function(entries) {
+					return JSON.stringify(entries) == JSON.stringify(data.parent.classpath);
+				}).is(true);
+				Object.keys(data.parent.properties).forEach(function(name) {
+					verify(data.child).properties[name].is(data.parent.properties[name]);
+				});
+			};
+
 			fifty.tests.exports.jsh.fork.alternate = function() {
 				withProperty("jsh.launcher.invocation.main", "/not-the-selected-shell.js", function() {
 					withProperty(property, "must-not-be-inherited", function() {

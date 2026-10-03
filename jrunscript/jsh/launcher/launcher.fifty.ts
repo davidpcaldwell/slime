@@ -58,7 +58,7 @@ namespace slime.jsh.internal.launcher {
 			jrunscript: string
 			/** The script-engine classpath, split using the platform separator, with relative entries resolved against the launching working directory. */
 			classpath: string[]
-			/** Java system properties passed to the script engine. */
+			/** Java system properties passed before the script-engine entry point; script arguments are excluded. */
 			properties: { [name: string]: string }
 			/** The script-engine entry point used to launch the shell. */
 			main: string
@@ -141,6 +141,18 @@ namespace slime.jsh.internal.launcher {
 					const output = parse("java.scripting/com.sun.tools.script.shell.Main -Dnashorn.args=--no-deprecation-warning ./rhino/jrunscript/api.js jsh jrunscript/jsh/test/jsh-data.jsh.js");
 					check(output, [], {"nashorn.args": "--no-deprecation-warning"});
 					jsh.shell.console(JSON.stringify(output.properties));
+				};
+
+				fifty.tests.invocation.propertyEntryPoint = function() {
+					const value = "./rhino/jrunscript/api.js";
+					const output = parse("com.sun.tools.script.shell.Main -Dentry.point=" + value);
+					verify(output).main.is(void(0));
+					verify(output).properties.evaluate(equalsObject({ "entry.point": value })).is(true);
+					check(parse("com.sun.tools.script.shell.Main -Dentry.point=" + value + " " + value + " jsh test.jsh.js"), [], { "entry.point": value });
+				};
+
+				fifty.tests.invocation.scriptArguments = function() {
+					check(parse("com.sun.tools.script.shell.Main -Dlauncher=present ./rhino/jrunscript/api.js jsh test.jsh.js -Dscript=argument -classpath ignored.jar /other/rhino/jrunscript/api.js -Djsh.launcher.invocation.main=/other/rhino/jrunscript/api.js"), [], { launcher: "present" });
 				};
 
 				const runClasspathInvocationTest = function() {

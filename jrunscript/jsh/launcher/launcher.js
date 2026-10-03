@@ -218,14 +218,10 @@
 				};
 
 				for (var i = 0; i < tokens.length; i++) {
-					if (isMain(tokens[i])) {
-						rv.main = toAbsolute(tokens[i]);
-					}
 					if (isJavaProperty(tokens[i])) {
 						var nv = parseJavaProperty(tokens[i]);
 						rv.properties[nv.name] = nv.value;
-					}
-					if (tokens[i] == "-classpath") {
+					} else if (tokens[i] == "-classpath") {
 						//	TODO	none of this will work, really, if there are spaces in the classpath. Is there a more robust
 						//			way?
 						var classpath = tokens[++i];
@@ -244,6 +240,9 @@
 
 							return String(_result);
 						});
+					} else if (isMain(tokens[i])) {
+						rv.main = toAbsolute(tokens[i]);
+						break;
 					}
 				}
 
