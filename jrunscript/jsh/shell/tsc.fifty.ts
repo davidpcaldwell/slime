@@ -16,6 +16,10 @@ namespace slime.jsh.shell.internal.tsc {
 	}
 
 	export interface Exports {
+		/**
+		 * Compiles TypeScript to ES5, non-strict JavaScript for the supported shell engines.
+		 * Type-only module exports are removed so the result can be evaluated as a SLIME script.
+		 */
 		compile: (code: string) => string
 	}
 
@@ -24,7 +28,17 @@ namespace slime.jsh.shell.internal.tsc {
 			fifty: slime.fifty.test.Kit
 		) {
 			fifty.tests.suite = function() {
-
+				const { jsh } = fifty.global;
+				const script: Script = fifty.$loader.script("tsc.js");
+				const subject = script({
+					node: jsh.shell.jsh.lib.getRelativePath("node").toString(),
+					tsc: jsh.shell.jsh.lib.getRelativePath("node/bin/tsc").toString(),
+					library: { file: jsh.file, shell: jsh.shell }
+				});
+				const compiled = subject.compile("export interface Value { value: number }; const value: number = 1;");
+				fifty.verify(compiled.indexOf("var value = 1;") >= 0).is(true);
+				fifty.verify(compiled.indexOf('"use strict"') < 0).is(true);
+				fifty.verify(/^export \{\};/m.test(compiled)).is(false);
 			}
 		}
 	//@ts-ignore

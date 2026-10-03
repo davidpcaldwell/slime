@@ -555,6 +555,13 @@ namespace slime.jrunscript.runtime {
 
 			const module = test.subject;
 
+			fifty.tests.exports.typescript = function() {
+				const value = { property: 1 };
+				Object.freeze(value);
+				value.property = 2;
+				verify(value).property.is(1);
+			};
+
 			fifty.tests.jsapi.Loader = fifty.test.Parent();
 
 			fifty.tests.jsapi.Loader._1 = function() {

@@ -773,7 +773,7 @@ namespace slime.jrunscript.runtime.io {
 							progress: function(e) {
 								all += e.detail;
 							},
-							line: function(e) {
+							line: function(e: slime.$api.Event<string>) {
 								lines.push(e.detail);
 							},
 							done: function() {

@@ -13,6 +13,16 @@
 	 * @param { slime.loader.Export<slime.jsh.shell.internal.tsc.Exports> } $export
 	 */
 	function($api,$context,$export) {
+		var manifest = $api.fp.world.now.question(
+			$context.library.file.Location.file.read.string.world(),
+			$context.library.file.Location.from.os($context.node + "/lib/node_modules/typescript/package.json")
+		);
+		if (!manifest.present) throw new Error("TypeScript package.json not found.");
+		/** @type { { version: string } } */
+		var metadata = JSON.parse(manifest.value);
+		if (!/^[0-9]+\./.test(metadata.version)) throw new Error("Invalid TypeScript version: " + metadata.version);
+		var majorVersion = Number(metadata.version.split(".")[0]);
+
 		var compile = function(code) {
 			var tmp = $api.fp.world.now.question(
 				$context.library.file.Location.from.temporary($context.library.file.world.filesystems.os),
@@ -40,7 +50,14 @@
 					command: $context.tsc,
 					arguments: $api.Array.build(function(rv) {
 						rv.push("--outDir", tmp.pathname);
+						rv.push("--target", "ES5");
+						rv.push("--strict", "false");
+						rv.push("--alwaysStrict", "false");
 						rv.push("--module", "ES6");
+						if (majorVersion >= 6) {
+							rv.push("--moduleDetection", "legacy");
+							rv.push("--ignoreDeprecations", "6.0");
+						}
 						rv.push(ts.pathname);
 					}),
 					directory: tmp.pathname,

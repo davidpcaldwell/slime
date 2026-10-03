@@ -98,10 +98,10 @@
 				}
 			},
 			typescript: {
-				version: "5.9.2"
+				version: "6.0.3"
 			},
 			typedoc: {
-				version: "0.28.4"
+				version: "0.28.20"
 			}
 		};
 

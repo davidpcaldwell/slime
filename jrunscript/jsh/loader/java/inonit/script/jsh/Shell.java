@@ -143,6 +143,15 @@ public class Shell {
 		public Loader.Typescript getTypescript() throws IOException {
 			Code.Loader.Resource tsc = configuration.getInstallation().getLibraries().getFile("node/" + TSC_PATH);
 			if (tsc != null) {
+				Code.Loader.Resource manifest = configuration.getInstallation().getLibraries().getFile(
+					"node/lib/node_modules/typescript/package.json"
+				);
+				if (manifest == null) throw new IOException("TypeScript package.json not found.");
+				java.util.regex.Matcher version = java.util.regex.Pattern.compile(
+					"\"version\"\\s*:\\s*\"([0-9]+)\\."
+				).matcher(streams.readString(manifest.getReader()));
+				if (!version.find()) throw new IOException("TypeScript version not found in package.json.");
+				final int typescriptMajorVersion = Integer.parseInt(version.group(1));
 				return new Loader.Typescript() {
 					@Override public String compile(String code) throws IOException {
 						try {
@@ -194,13 +203,23 @@ public class Shell {
 
 									@Override public String[] getArguments() {
 										try {
-											return new String[] {
+											ArrayList<String> arguments = new ArrayList<String>(Arrays.asList(
 												"--outDir", tmp.getCanonicalPath(),
-												//	--module ES6 basically leaves the code alone if it exports type definitions,
-												//	which is the one kind of export we want to use right now
-												"--module", "ES6",
-												ts.getCanonicalPath()
-											};
+												//	TypeScript scripts must remain ES5 and non-strict for the supported engines.
+												"--target", "ES5",
+												"--strict", "false",
+												"--alwaysStrict", "false",
+												//	Type-only exports are removed after compilation below.
+												"--module", "ES6"
+											));
+											if (typescriptMajorVersion >= 6) {
+												arguments.addAll(Arrays.asList(
+													"--moduleDetection", "legacy",
+													"--ignoreDeprecations", "6.0"
+												));
+											}
+											arguments.add(ts.getCanonicalPath());
+											return arguments.toArray(new String[arguments.size()]);
 										} catch (IOException e) {
 											throw new RuntimeException(e);
 										}
