@@ -375,8 +375,32 @@
 				return jargs;
 			}
 
-			var bootstrapShellInvocationArguments = (
-				$context.api.bootstrap.nashorn.getDeprecationArguments($context.api.bootstrap.java.getMajorVersion())
+			var deprecationArguments = $context.api.bootstrap.nashorn.getDeprecationArguments($context.api.bootstrap.java.getMajorVersion());
+
+			/**
+			 * Reuses the launcher's captured jrunscript invocation for current-shell forks (#2159).
+			 * @param { slime.jsh.internal.launcher.invocation.Output } output
+			 * @returns { string[] }
+			 */
+			var fromCapturedInvocation = function(output) {
+				/** @type { string[] } */
+				var rv = [];
+				for (var name in output.properties) {
+					rv.push("-D" + name + "=" + output.properties[name]);
+				}
+				if (output.classpath.length) {
+					rv.push("-classpath", output.classpath.join(String(Packages.java.io.File.pathSeparator)));
+				}
+				rv.push(output.main, "jsh");
+				return rv;
+			};
+
+			var bootstrapShellInvocationArguments = (function() {
+				if (!p.shell) {
+					var capturedInvocation = $context.api.bootstrap.jsh.invocation.fromSystemProperties();
+					if (capturedInvocation.main) return fromCapturedInvocation(capturedInvocation);
+				}
+				return deprecationArguments
 					.concat(
 						(function(shell) {
 							/** @param { slime.jrunscript.file.Directory } src */
@@ -453,8 +477,8 @@
 							//	TODO	would unbuilt remote shells have a src property, and would it work?
 							throw new Error("Currently running jsh shell lacks home, src, and url properties; bug.");
 						})(p.shell)
-					)
-			);
+					);
+			})();
 
 			var isRemoteShell = bootstrapShellInvocationArguments[0] == "-e";
 
@@ -689,7 +713,9 @@
 						$api.Object.compose(
 							jrunscriptForkConfiguration,
 							{
-								jrunscript: module.properties.file("jsh.launcher.invocation.jrunscript")
+								jrunscript: module.properties.get("jsh.launcher.invocation.jrunscript")
+									? module.properties.file("jsh.launcher.invocation.jrunscript")
+									: void(0)
 							}
 						)
 					);

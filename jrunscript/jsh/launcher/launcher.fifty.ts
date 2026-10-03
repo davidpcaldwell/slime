@@ -54,9 +54,13 @@ namespace slime.jsh.internal.launcher {
 		}
 
 		export interface Output {
+			/** The `jrunscript` executable used to launch this shell. */
 			jrunscript: string
+			/** The script-engine classpath, split using the platform separator, with relative entries resolved against the launching working directory. */
 			classpath: string[]
+			/** Java system properties passed before the script-engine entry point; script arguments are excluded. */
 			properties: { [name: string]: string }
+			/** The script-engine entry point used to launch the shell. */
 			main: string
 		}
 
@@ -139,10 +143,33 @@ namespace slime.jsh.internal.launcher {
 					jsh.shell.console(JSON.stringify(output.properties));
 				};
 
+				fifty.tests.invocation.propertyEntryPoint = function() {
+					const value = "./rhino/jrunscript/api.js";
+					const output = parse("com.sun.tools.script.shell.Main -Dentry.point=" + value);
+					verify(output).main.is(void(0));
+					verify(output).properties.evaluate(equalsObject({ "entry.point": value })).is(true);
+					check(parse("com.sun.tools.script.shell.Main -Dentry.point=" + value + " " + value + " jsh test.jsh.js"), [], { "entry.point": value });
+				};
+
+				fifty.tests.invocation.scriptArguments = function() {
+					check(parse("com.sun.tools.script.shell.Main -Dlauncher=present ./rhino/jrunscript/api.js jsh test.jsh.js -Dscript=argument -classpath ignored.jar /other/rhino/jrunscript/api.js -Djsh.launcher.invocation.main=/other/rhino/jrunscript/api.js"), [], { launcher: "present" });
+				};
+
 				const runClasspathInvocationTest = function() {
-					const output = parse("java.scripting/com.sun.tools.script.shell.Main -classpath ./local/jsh/lib/asm.jar:./local/jsh/lib/asm-commons.jar:./local/jsh/lib/asm-tree.jar:./local/jsh/lib/asm-util.jar:./local/jsh/lib/nashorn.jar ./rhino/jrunscript/api.js jsh jrunscript/jsh/test/jsh-data.jsh.js");
+					const entries = ["local/jsh/lib/asm.jar","local/jsh/lib/asm-commons.jar","local/jsh/lib/asm-tree.jar","local/jsh/lib/asm-util.jar","local/jsh/lib/nashorn.jar"];
+					const classpath = entries.map(function(entry) { return "./" + entry; }).join(jsh.shell.properties.get("path.separator"));
+					const output = parse("java.scripting/com.sun.tools.script.shell.Main -classpath " + classpath + " ./rhino/jrunscript/api.js jsh jrunscript/jsh/test/jsh-data.jsh.js");
 					const relative = jsh.file.Location.directory.base( fifty.jsh.file.relative("../../..") );
-					check(output, ["local/jsh/lib/asm.jar","local/jsh/lib/asm-commons.jar","local/jsh/lib/asm-tree.jar","local/jsh/lib/asm-util.jar","local/jsh/lib/nashorn.jar"].map(relative).map($api.fp.property("pathname")), {});
+					check(output, entries.map(relative).map($api.fp.property("pathname")), {});
+				};
+
+				fifty.tests.invocation.classpath = function() {
+					const split = jsh.internal.bootstrap.jsh.test.splitClasspath;
+					verify(split("C:\\a.jar;D:\\b.jar", ";")).evaluate(equalsArray(["C:\\a.jar", "D:\\b.jar"])).is(true);
+					verify(split("/a.jar:/b.jar", ":")).evaluate(equalsArray(["/a.jar", "/b.jar"])).is(true);
+					if (jsh.shell.properties.get("path.separator") == ";") {
+						check(parse("com.sun.tools.script.shell.Main -classpath C:\\a.jar;D:\\b.jar ./rhino/jrunscript/api.js jsh jrunscript/jsh/test/jsh-data.jsh.js"), ["C:\\a.jar", "D:\\b.jar"], {});
+					}
 				};
 
 				fifty.tests.invocation.jdk17 = function() {
@@ -208,11 +235,13 @@ namespace slime.jsh.internal.launcher {
 
 		invocation: {
 			toProperties: () => { [name: string]: string }
+			/** Returns the executable, classpath, Java properties, and entry point captured when this shell started. */
 			fromSystemProperties: () => invocation.Output
 		}
 
 		test: {
 			invocation: slime.$api.fp.Mapping<invocation.Input,invocation.Output>
+			splitClasspath: (classpath: string, separator: string) => string[]
 		}
 	}
 

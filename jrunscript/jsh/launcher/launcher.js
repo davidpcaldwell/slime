@@ -156,6 +156,11 @@
 				}
 			};
 
+			/** @type { (classpath: string, separator: string) => string[] } */
+			var splitClasspath = function(classpath, separator) {
+				return classpath.split(separator);
+			};
+
 			/** @type { slime.$api.fp.Mapping<slime.jsh.internal.launcher.invocation.Input, slime.jsh.internal.launcher.invocation.Output> } */
 			var invocation = function(input) {
 				var tokens = input.command.split(/\s+/);
@@ -213,19 +218,14 @@
 				};
 
 				for (var i = 0; i < tokens.length; i++) {
-					if (isMain(tokens[i])) {
-						rv.main = toAbsolute(tokens[i]);
-					}
 					if (isJavaProperty(tokens[i])) {
 						var nv = parseJavaProperty(tokens[i]);
 						rv.properties[nv.name] = nv.value;
-					}
-					if (tokens[i] == "-classpath") {
+					} else if (tokens[i] == "-classpath") {
 						//	TODO	none of this will work, really, if there are spaces in the classpath. Is there a more robust
 						//			way?
 						var classpath = tokens[++i];
-						//	TODO	what is appropriate platform value for this separator?
-						var items = classpath.split(":");
+						var items = splitClasspath(classpath, String(Packages.java.io.File.pathSeparator));
 
 						rv.classpath = items.map(function(item) {
 							var _context = Packages.java.nio.file.Paths.get(
@@ -240,6 +240,9 @@
 
 							return String(_result);
 						});
+					} else if (isMain(tokens[i])) {
+						rv.main = toAbsolute(tokens[i]);
+						break;
 					}
 				}
 
@@ -375,7 +378,8 @@
 					}
 				)(),
 				test: {
-					invocation: invocation
+					invocation: invocation,
+					splitClasspath: splitClasspath
 				}
 			};
 
