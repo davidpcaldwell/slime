@@ -54,9 +54,13 @@ namespace slime.jsh.internal.launcher {
 		}
 
 		export interface Output {
+			/** The `jrunscript` executable used to launch this shell. */
 			jrunscript: string
+			/** The script-engine classpath, with relative entries resolved against the launching working directory. */
 			classpath: string[]
+			/** Java system properties passed to the script engine. */
 			properties: { [name: string]: string }
+			/** The script-engine entry point used to launch the shell. */
 			main: string
 		}
 
@@ -208,6 +212,7 @@ namespace slime.jsh.internal.launcher {
 
 		invocation: {
 			toProperties: () => { [name: string]: string }
+			/** Returns the executable, classpath, Java properties, and entry point captured when this shell started. */
 			fromSystemProperties: () => invocation.Output
 		}
 

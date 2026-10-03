@@ -12,7 +12,7 @@
 	 */
 	function($api,jsh) {
 		var invocation = jsh.internal.bootstrap.jsh.invocation.fromSystemProperties();
-		jsh.shell.console(JSON.stringify(invocation,void(0),4));
+		jsh.shell.echo(JSON.stringify(invocation,void(0),4));
 	}
 //@ts-ignore
 )($api,jsh);

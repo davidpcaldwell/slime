@@ -26,7 +26,7 @@ namespace slime.jsh.shell {
 				io: slime.jrunscript.io.Exports
 				file: slime.jrunscript.file.Exports
 				script: slime.jsh.script.Exports
-				bootstrap: slime.internal.jrunscript.bootstrap.Api<{}>
+				bootstrap: slime.jsh.internal.launcher.Global["$api"]
 			}
 
 			PATH: slime.jrunscript.file.Searchpath
@@ -790,8 +790,13 @@ namespace slime.jsh.shell {
 		export interface ForkInvocation<R = ForkResult> extends Invocation<R> {
 			/**
 			 * A directory representing the location of a built shell, or a directory representing the location of an unbuilt shell.
+			 * If omitted, a fork reuses the current shell's captured `jrunscript` executable, classpath, main entry point, and
+			 * Java system properties. This is the supported subshell mechanism, including standalone Nashorn on newer JDKs.
+			 * If invocation metadata is unavailable, the current installation's layout is used instead.
+			 * An explicitly selected shell continues to use that installation's layout.
 			 */
 			shell?: slime.jrunscript.file.Directory
+			/** Forces a separate process; without `shell`, relaunches the current shell as documented above. */
 			fork?: true
 			vmarguments?: any
 
@@ -914,9 +919,132 @@ namespace slime.jsh.shell {
 				if (jsh.httpd.Tomcat) verify(remote).evaluate.property("jsh.shell.jsh.url").evaluate(getString).is("http://raw.githubusercontent.com/davidpcaldwell/slime/local/");
 				if (jsh.httpd.Tomcat) verify(remote).evaluate.property("jsh.shell.jsh.url").evaluate.property("path").is("/davidpcaldwell/slime/local/");
 			};
+
+			fifty.tests.exports.jsh.fork = fifty.test.Parent();
+
+			fifty.tests.exports.jsh.fork.captured = function() {
+				const current = jsh.internal.bootstrap.jsh.invocation.fromSystemProperties();
+				if (!current.main) {
+					jsh.shell.console("Skipping captured-invocation fork test: launcher metadata is unavailable.");
+					return;
+				}
+
+				const forked = jsh.shell.jsh({
+					script: fifty.jsh.file.object.getRelativePath("../launcher/test/manual/invocation.jsh.js").file,
+					fork: true,
+					stdio: { output: "string" },
+					evaluate: function(result) { return result; }
+				});
+				verify(forked).status.is(0);
+				const child: slime.jsh.internal.launcher.invocation.Output = JSON.parse(forked.stdio.output);
+				verify(child).jrunscript.is(current.jrunscript);
+				verify(child).main.is(current.main);
+				verify(child).classpath.length.is(current.classpath.length);
+				current.classpath.forEach(function(entry, index) {
+					verify(child).classpath[index].is(entry);
+				});
+				Object.keys(current.properties).forEach(function(name) {
+					verify(child).properties[name].is(current.properties[name]);
+				});
+				verify(forked).command.evaluate(String).is(current.jrunscript);
+				verify(forked).arguments.evaluate(function(args) { return args.indexOf(current.main); }).is.not(-1);
+				const classpathIndex = forked.arguments.indexOf("-classpath");
+				if (current.classpath.length) {
+					verify(classpathIndex).is.not(-1);
+					verify(forked).arguments[classpathIndex + 1].is(jsh.file.Searchpath(
+						current.classpath.map(function(entry) { return jsh.file.Pathname(entry); })
+					).toString());
+				} else {
+					verify(classpathIndex).is(-1);
+				}
+			};
 		}
 	//@ts-ignore
 	)(fifty);
+
+	(
+		function(Packages: slime.jrunscript.Packages, fifty: slime.fifty.test.Kit) {
+			const { verify } = fifty;
+			const { jsh } = fifty.global;
+			const property = "jsh.launcher.invocation.properties.slime2159.test";
+
+			const withProperty = function(name: string, value: string, run: () => void) {
+				const previous = jsh.shell.properties.get(name);
+				const clear = function() {
+					jsh.java.invoke({
+						method: {
+							class: Packages.java.lang.System,
+							name: "clearProperty",
+							parameterTypes: [Packages.java.lang.String]
+						},
+						arguments: [new Packages.java.lang.String(name)]
+					});
+				};
+				try {
+					if (value === null) {
+						clear();
+					} else {
+						Packages.java.lang.System.setProperty(name, value);
+					}
+					run();
+				} finally {
+					if (previous === null) {
+						clear();
+					} else {
+						Packages.java.lang.System.setProperty(name, previous);
+					}
+				}
+			};
+
+			fifty.tests.exports.jsh.fork.properties = function() {
+				withProperty(property, "inherited=2159", function() {
+					fifty.run(fifty.tests.exports.jsh.fork.captured);
+				});
+			};
+
+			fifty.tests.exports.jsh.fork.alternate = function() {
+				withProperty("jsh.launcher.invocation.main", "/not-the-selected-shell.js", function() {
+					withProperty(property, "must-not-be-inherited", function() {
+						const shell = jsh.file.Pathname(test.shells.built(false).home).directory;
+						const forked = jsh.shell.jsh({
+							shell: shell,
+							script: fifty.jsh.file.object.getRelativePath("../launcher/test/manual/invocation.jsh.js").file,
+							stdio: { output: "string" },
+							evaluate: function(result) { return result; }
+						});
+						verify(forked).status.is(0);
+						verify(forked).arguments.evaluate(function(args) {
+							return args.indexOf(shell.getFile("jsh.js").pathname.toString());
+						}).is.not(-1);
+						verify(forked).arguments.evaluate(function(args) {
+							return args.indexOf("/not-the-selected-shell.js");
+						}).is(-1);
+						const child: slime.jsh.internal.launcher.invocation.Output = JSON.parse(forked.stdio.output);
+						verify(child).properties.evaluate(function(properties) { return properties["slime2159.test"]; }).is(void(0));
+					});
+				});
+			};
+
+			fifty.tests.exports.jsh.fork.fallback = function() {
+				withProperty("jsh.launcher.invocation.main", null, function() {
+					withProperty("jsh.launcher.invocation.jrunscript", null, function() {
+						withProperty(property, "must-not-be-inherited", function() {
+							const forked = jsh.shell.jsh({
+								script: fifty.jsh.file.object.getRelativePath("../launcher/test/manual/invocation.jsh.js").file,
+								fork: true,
+								stdio: { output: "string" },
+								evaluate: function(result) { return result; }
+							});
+							verify(forked).status.is(0);
+							const child: slime.jsh.internal.launcher.invocation.Output = JSON.parse(forked.stdio.output);
+							verify(child).properties.evaluate(function(properties) { return properties["slime2159.test"]; }).is(void(0));
+						});
+					});
+				});
+			};
+		}
+	//@ts-ignore
+	)(Packages, fifty);
 
 	export interface JshShellJsh {
 		lib?: slime.jrunscript.file.Directory
