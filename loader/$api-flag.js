@@ -18,7 +18,11 @@
 					/** @type { slime.$api.Flagger["warning"] } */
 					var warning = function(o) {
 						if (reason.warning) {
-							reason.warning(o);
+							try {
+								reason.warning(o);
+							} catch (e) {
+								// Ignore callback failures so deprecation warnings never throw.
+							}
 						}
 					};
 
