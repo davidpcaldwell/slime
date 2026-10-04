@@ -1321,6 +1321,7 @@ namespace slime.jsh.script {
 				fifty.verify(result).status.is(1);
 				fifty.verify(result).stdio.error.evaluate(function(output: string) {
 					return output.indexOf("Command not found: missing") != -1
+						&& output.indexOf("Expected a command as the first argument: missing") != -1
 						&& output.indexOf("Available commands:") != -1
 					;
 				}).is(true);
