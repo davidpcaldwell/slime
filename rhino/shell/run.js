@@ -219,21 +219,25 @@
 			};
 
 			return function(events) {
-				var stdio = buildStdio(p.stdio)(events);
+				var stdio = buildStdio({
+					input: p.input,
+					output: p.output.stdout,
+					error: p.output.stderr
+				})(events);
 
 				//	TODO	could throw exception on launch; should deal with it
 
 				//	TODO	currently we can start firing stdio events before we fire the start event, given how this
 				//			implementation works. That's probably not ideal, a more rigorous event sequence would be better.
 				var _context = createJavaCommandContext({
-					directory: (p.directory) ? $context.library.file.Pathname(p.directory).directory : void(0),
-					environment: p.environment,
+					directory: (p.context.directory) ? $context.library.file.Pathname(p.context.directory).directory : void(0),
+					environment: p.context.environment,
 					stdio: stdio
 				});
 
 				var _configuration = createJavaCommandConfiguration({
-					command: p.command,
-					arguments: p.arguments
+					command: p.process.command,
+					arguments: p.process.arguments
 				});
 
 				var _subprocess = Packages.inonit.system.OperatingSystem.get().start(
@@ -383,25 +387,10 @@
 			)
 		};
 
-		/**
-		 *
-		 * @param { slime.jrunscript.shell.run.minus2.Invocation } old
-		 * @returns { slime.jrunscript.shell.run.minus1.Invocation }
-		 */
-		var toMinus1 = function(old) {
-			return {
-				command: old.configuration.command,
-				arguments: old.configuration.arguments,
-				environment: old.context.environment,
-				directory: old.context.directory,
-				stdio: old.context.stdio
-			}
-		};
-
 		/** @type { slime.jrunscript.shell.internal.run.Exports["old"]["run"] } */
 		function oldRun(context, configuration, module, events, p, invocation, isLineListener) {
 			var rv;
-			var action = world(toMinus1({ context: context, configuration: configuration }));
+			var action = world(toInvocation({ context: context, configuration: configuration }));
 			$api.fp.world.Action.now({
 				action: action,
 				handlers: {
@@ -466,16 +455,41 @@
 			return function(plan) {
 				var environment = plan.environment || $api.fp.identity;
 				return {
-					command: plan.command,
-					arguments: plan.arguments || [],
-					environment: environment(parent.environment),
-					directory: plan.directory || parent.directory,
-					stdio: {
-						//	TODO	maybe should supply empty InputStream right here
-						input: (plan.stdio && plan.stdio.input) ? toInputStream(plan.stdio.input) : null,
-						output: (plan.stdio && plan.stdio.output) ? plan.stdio.output : parent.stdio.output,
-						error: (plan.stdio && plan.stdio.error) ? plan.stdio.error : parent.stdio.error
+					context: {
+						environment: environment(parent.environment),
+						directory: plan.directory || parent.directory
+					},
+					process: {
+						command: plan.command,
+						arguments: plan.arguments || []
+					},
+					input: (plan.stdio && plan.stdio.input) ? toInputStream(plan.stdio.input) : null,
+					output: {
+						stdout: (plan.stdio && plan.stdio.output) ? plan.stdio.output : parent.stdio.output,
+						stderr: (plan.stdio && plan.stdio.error) ? plan.stdio.error : parent.stdio.error
 					}
+				}
+			}
+		};
+
+		/**
+		 * @param { slime.jrunscript.shell.run.minus2.Invocation } old
+		 * @returns { slime.jrunscript.shell.run.Invocation }
+		 */
+		var toInvocation = function(old) {
+			return {
+				context: {
+					environment: old.context.environment,
+					directory: old.context.directory
+				},
+				process: {
+					command: old.configuration.command,
+					arguments: old.configuration.arguments
+				},
+				input: old.context.stdio.input,
+				output: {
+					stdout: old.context.stdio.output,
+					stderr: old.context.stdio.error
 				}
 			}
 		};
@@ -544,7 +558,7 @@
 				)()
 			},
 			action: function(old) {
-				return world(toMinus1(old));
+				return world(toInvocation(old));
 			},
 			question: function(invocation) {
 				return function(events) {
@@ -552,7 +566,7 @@
 					var rv;
 					$api.fp.impure.now.process(
 						$api.fp.world.process(
-							world(toMinus1(invocation)),
+							world(toInvocation(invocation)),
 							{
 								start: function(e) {
 									events.fire("start", e.detail);
@@ -575,7 +589,7 @@
 			run: function(invocation) {
 				return function(handler) {
 					$api.fp.world.now.tell(
-						world(toMinus1(invocation)),
+						world(toInvocation(invocation)),
 						handler
 					);
 				}

@@ -42,15 +42,21 @@ namespace slime.jrunscript.shell.test {
 					return function(events) {
 						var killed = false;
 
+						var stdio = {
+							input: p.input,
+							output: p.output.stdout,
+							error: p.output.stderr
+						};
+
 						var result = delegate({
 							context: {
-								directory: p.directory,
-								environment: p.environment,
-								stdio: p.stdio
+								directory: p.context.directory,
+								environment: p.context.environment,
+								stdio: stdio
 							},
 							configuration: {
-								command: p.command,
-								arguments: p.arguments
+								command: p.process.command,
+								arguments: p.process.arguments
 							}
 						});
 						return {
@@ -59,8 +65,6 @@ namespace slime.jrunscript.shell.test {
 								killed = true;
 							},
 							run: function() {
-								var stdio = p.stdio;
-
 								//	TODO	should emit at least one empty line for each if line buffering
 								//	TODO	the below appears as though it would skip blank lines; should use isLineWithProperty and then
 								//			fix that method

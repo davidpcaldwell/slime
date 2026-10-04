@@ -60,36 +60,7 @@ namespace slime.jrunscript.shell.subprocess {
 		stderr: slime.jrunscript.runtime.io.InputStream
 	}
 
-	export interface Invocation {
-		context: {
-			environment: Environment
-			directory: string
-		}
-
-		process: {
-			command: string
-			arguments: string[]
-		}
-
-		input: slime.jrunscript.runtime.io.InputStream
-
-		output: <O,E>(p: {
-			events: (
-				p: {
-					stdout: slime.jrunscript.runtime.io.InputStream
-					stderr: slime.jrunscript.runtime.io.InputStream
-				}
-			) => {
-				stdout: slime.$api.event.Producer<O>
-				stderr: slime.$api.event.Producer<E>
-			}
-
-			handlers: {
-				stdout: slime.$api.event.Handlers<O>
-				stderr: slime.$api.event.Handlers<E>
-			}
-		}) => void
-	}
+	export type Invocation = slime.jrunscript.shell.run.Invocation
 
 	export interface MeansEvents {
 		start: {
@@ -102,10 +73,11 @@ namespace slime.jrunscript.shell.subprocess {
 			status: number
 		}
 	}
+
 }
 
 namespace slime.jrunscript.shell.context.subprocess {
-	export type World = slime.$api.fp.world.Means<slime.jrunscript.shell.run.minus1.Invocation, slime.jrunscript.shell.run.TellEvents>
+	export type World = slime.$api.fp.world.Means<slime.jrunscript.shell.run.Invocation, slime.jrunscript.shell.run.TellEvents>
 }
 
 namespace slime.jrunscript.shell.internal.run {
@@ -150,7 +122,7 @@ namespace slime.jrunscript.shell.internal.run {
 		test: {
 			Invocation: {
 				from: {
-					intention: (parent: shell.run.internal.Parent) => (plan: shell.run.Intention) => shell.run.minus1.Invocation
+					intention: (parent: shell.run.internal.Parent) => (plan: shell.run.Intention) => shell.run.Invocation
 				}
 			}
 
@@ -209,6 +181,29 @@ namespace slime.jrunscript.shell.run {
 	}
 
 	/**
+	 * A complete subprocess invocation. The executable and its argument vector are passed separately; no command-line parsing
+	 * or implicit shell is involved. Standard output and standard error have independent destinations.
+	 */
+	export interface Invocation {
+		context: {
+			environment: Environment
+			directory: Intention["directory"]
+		}
+
+		process: {
+			command: string
+			arguments: string[]
+		}
+
+		input: slime.jrunscript.runtime.io.InputStream | null
+
+		output: {
+			stdout: OutputCapture
+			stderr: OutputCapture
+		}
+	}
+
+	/**
 	 * A specification for a potential subprocess.
 	 */
 	export interface Intention {
@@ -224,6 +219,7 @@ namespace slime.jrunscript.shell.run {
 	}
 
 	export namespace minus1 {
+		/** @deprecated Use {@link Invocation}. */
 		export interface Invocation {
 			environment: Environment
 			directory: Intention["directory"]
@@ -396,6 +392,46 @@ namespace slime.jrunscript.shell.internal.run {
 					verify(listing).evaluate(function(array) { return array.indexOf("foobar.fifty.ts") != -1; }).is(false);
 				}
 			)
+
+			fifty.tests.invocation = function() {
+				const parent = test.subject.test.Parent.from.process();
+				const fromIntention = test.subject.test.Invocation.from.intention(parent);
+				const environment = Object.assign({}, parent.environment, {
+					SLIME_INVOCATION_TEST: "preserved"
+				});
+				const invocation = fromIntention({
+					command: "an executable",
+					arguments: ["one argument", "another argument"],
+					environment: function() {
+						return environment;
+					},
+					directory: "/invocation-directory",
+					stdio: {
+						input: "stdin data",
+						output: "string",
+						error: parent.stdio.error
+					}
+				});
+				verify(invocation.process.command).is("an executable");
+				verify(invocation.process.arguments.length).is(2);
+				verify(invocation.process.arguments[0]).is("one argument");
+				verify(invocation.process.arguments[1]).is("another argument");
+				verify(invocation.context.environment.SLIME_INVOCATION_TEST).is("preserved");
+				verify(invocation.context.directory).is("/invocation-directory");
+				verify(invocation.input.read.string.simple()).is("stdin data");
+				verify(invocation.output.stdout === "string").is(true);
+				verify(invocation.output.stderr === parent.stdio.error).is(true);
+
+				const defaults = fromIntention({
+					command: "default executable"
+				});
+				verify(defaults.process.arguments.length).is(0);
+				verify(defaults.context.environment).is(parent.environment);
+				verify(defaults.context.directory).is(parent.directory);
+				verify(defaults.input).is(null);
+				verify(defaults.output.stdout === parent.stdio.output).is(true);
+				verify(defaults.output.stderr === parent.stdio.error).is(true);
+			};
 		}
 	//@ts-ignore
 	)(fifty);
@@ -504,6 +540,7 @@ namespace slime.jrunscript.shell.internal.run {
 		) {
 			fifty.tests.suite = function() {
 				fifty.run(fifty.tests.question);
+				fifty.run(fifty.tests.invocation);
 				fifty.run(fifty.tests.run);
 			}
 		}
