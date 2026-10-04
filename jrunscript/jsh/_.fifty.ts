@@ -39,8 +39,10 @@
  *
  * ### Built shells
  *
- * A built shell can be created by executing the `jrunscript/jsh/etc/build.jsh.js` script. They create an installation with a main
- * script at `./jsh.bash` (whose source is at `jrunscript/jsh/launcher/jsh.bash`), which can be executed similarly to the unbuilt
+ * A built shell can be created from an unbuilt checkout by running
+ * `./jsh jrunscript/jsh/tools/shell.jsh.js build --destination <directory>`. The command creates the destination and any missing
+ * parent directories, then builds the shell using `jrunscript/jsh/etc/build.jsh.js`. It creates an installation with a main script
+ * at `./jsh.bash` (whose source is at `jrunscript/jsh/launcher/jsh.bash`), which can be executed similarly to the unbuilt
  * launcher, and also requires `bash`, and therefore macOS or Linux (or WSL2 on Windows). <!--- TODO talk about the native launcher.
  * --->
  *
