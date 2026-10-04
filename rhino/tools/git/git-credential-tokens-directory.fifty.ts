@@ -12,7 +12,7 @@
  * careful with your editor not to append a trailing newline.)
  *
  * The credential helper can be specified as `-c
- * credential.helper=[/path/to/slime]/rhino/tools/git/git-credential-tokens-directory.bash`.
+ * credential.helper=[/path/to/slime]/rhino/tools/git/git-credential-tokens-directory`.
  */
 namespace slime.jrunscript.tools.git.credentials {
 	export interface Context {
@@ -337,6 +337,35 @@ namespace slime.jrunscript.tools.git.credentials {
 					});
 
 					verify(output).is("");
+				});
+
+				fifty.run(function commandLineEntrypoints() {
+					var run = function(command: string) {
+						return jsh.shell.run({
+							command: command,
+							arguments: ["get"],
+							directory: jsh.file.Pathname(base.pathname.toString()).directory,
+							environment: Object.assign({}, jsh.shell.environment, {
+								PWD: base.pathname.toString()
+							}),
+							stdio: {
+								input: "host=example.com\nusername=foo\n\n",
+								output: String,
+								error: String
+							},
+							evaluate: function(result) { return result; }
+						});
+					};
+
+					var current = run(fifty.jsh.file.relative("git-credential-tokens-directory").pathname);
+					verify(current).status.is(0);
+					verify(current.stdio.output).is("host=example.com\nusername=foo\npassword=bar\n\n");
+					verify(current.stdio.error).evaluate(function(error) { return error.indexOf("deprecated") == -1; }).is(true);
+
+					var legacy = run(fifty.jsh.file.relative("git-credential-tokens-directory.bash").pathname);
+					verify(legacy).status.is(0);
+					verify(legacy.stdio.output).is(current.stdio.output);
+					verify(legacy.stdio.error).evaluate(function(error) { return error.indexOf("deprecated") != -1; }).is(true);
 				});
 			}
 		}

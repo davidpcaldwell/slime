@@ -68,7 +68,7 @@
 								helper: $api.fp.now(
 									shell.src,
 									$context.library.file.Location.from.os,
-									$context.library.file.Location.directory.relativePath("rhino/tools/git/git-credential-tokens-directory.bash"),
+									$context.library.file.Location.directory.relativePath("rhino/tools/git/git-credential-tokens-directory"),
 									$api.fp.property("pathname")
 								)
 							})
