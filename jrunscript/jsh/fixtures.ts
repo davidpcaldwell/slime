@@ -193,6 +193,7 @@ namespace slime.jsh.test {
 											directory: true
 										}
 									);
+									var destination = jsh.file.Location.directory.relativePath("nested/build")(TMPDIR);
 
 									var isUnbuilt = jsh.shell.jsh.Installation.is.unbuilt;
 
@@ -214,7 +215,7 @@ namespace slime.jsh.test {
 												script: getShellToolScript(jsh.file.Location.from.os(current.src)).pathname,
 												arguments: $api.Array.build(function(rv) {
 													rv.push("build");
-													rv.push("--destination", TMPDIR.pathname);
+													rv.push("--destination", destination.pathname);
 													if (rhinoInstalled) rv.push("--engine", "rhino");
 													if (executable) rv.push("--executable");
 												}),
@@ -237,7 +238,7 @@ namespace slime.jsh.test {
 											)
 										);
 
-										var canonical = String(jsh.file.Pathname(TMPDIR.pathname).java.adapt().getCanonicalPath());
+										var canonical = String(jsh.file.Pathname(destination.pathname).java.adapt().getCanonicalPath());
 										return {
 											home: canonical,
 											invoke: $api.fp.pipe(

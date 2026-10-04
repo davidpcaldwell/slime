@@ -212,6 +212,7 @@
 				this.installer = void(0);
 				//	TODO	what should happen if destination directory exists?
 				this.shell = jsh.file.Pathname(to).createDirectory({
+					recursive: true,
 					exists: function(dir) {
 						dir.remove();
 						return true;
