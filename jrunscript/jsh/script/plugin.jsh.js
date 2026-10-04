@@ -538,6 +538,7 @@
 						jsh.shell.exit(1);
 					} else if ($api.Error.old.isType(jsh.script.cli.error.TargetNotFound)(call)) {
 						jsh.shell.console("Command not found: " + call.command);
+						jsh.shell.console("Expected a command as the first argument: " + call.command);
 						jsh.shell.console("");
 						showCommands();
 						jsh.shell.exit(1);
