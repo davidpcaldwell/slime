@@ -396,34 +396,45 @@ namespace slime.jrunscript.shell.internal.run {
 			fifty.tests.invocation = function() {
 				const parent = test.subject.test.Parent.from.process();
 				const fromIntention = test.subject.test.Invocation.from.intention(parent);
-				const environment = Object.assign({}, parent.environment, {
-					SLIME_INVOCATION_TEST: "preserved"
+				const { jsh } = fifty.global;
+				const classes = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				jsh.java.tools.javac({
+					destination: classes.pathname,
+					arguments: [fifty.jsh.file.object.getRelativePath("test/java/inonit/jsh/test/Invocation.java")]
 				});
+				const java = jsh.file.Searchpath([
+					jsh.shell.java.home.getRelativePath("bin")
+				]).getCommand("java");
+				if (!java) throw new Error("Could not find the Java executable in the current JDK.");
+				const classpath = jsh.file.Searchpath([classes.pathname]).toString();
+				const command = java.pathname.toString();
+				const javaArguments = function(mode: string, ...arguments_: string[]) {
+					return ["-classpath", classpath, "inonit.jsh.test.Invocation", mode].concat(arguments_);
+				};
+				const base = {
+					command: command,
+					arguments: javaArguments("arguments", "two words", "$HOME; *")
+				};
 				const invocation = fromIntention({
-					command: "an executable",
-					arguments: ["one argument", "another argument"],
-					environment: function() {
-						return environment;
+					...base,
+					environment: function(environment) {
+						return Object.assign({}, environment, { SLIME_INVOCATION_TEST: "environment value" });
 					},
-					directory: "/invocation-directory",
+					directory: classes.pathname.toString(),
 					stdio: {
-						input: "stdin data",
 						output: "string",
-						error: parent.stdio.error
+						error: "string"
 					}
 				});
-				verify(invocation.process.command).is("an executable");
-				verify(invocation.process.arguments.length).is(2);
-				verify(invocation.process.arguments[0]).is("one argument");
-				verify(invocation.process.arguments[1]).is("another argument");
-				verify(invocation.context.environment.SLIME_INVOCATION_TEST).is("preserved");
-				verify(invocation.context.directory).is("/invocation-directory");
-				verify(invocation.input.read.string.simple()).is("stdin data");
+				verify(invocation.process.command).is(command);
+				verify(invocation.process.arguments.join("\u0000")).is(javaArguments("arguments", "two words", "$HOME; *").join("\u0000"));
+				verify(invocation.context.environment.SLIME_INVOCATION_TEST).is("environment value");
+				verify(invocation.context.directory).is(classes.pathname.toString());
 				verify(invocation.output.stdout === "string").is(true);
-				verify(invocation.output.stderr === parent.stdio.error).is(true);
+				verify(invocation.output.stderr === "string").is(true);
 
 				const defaults = fromIntention({
-					command: "default executable"
+					command: command
 				});
 				verify(defaults.process.arguments.length).is(0);
 				verify(defaults.context.environment).is(parent.environment);
@@ -431,6 +442,60 @@ namespace slime.jrunscript.shell.internal.run {
 				verify(defaults.input).is(null);
 				verify(defaults.output.stdout === parent.stdio.output).is(true);
 				verify(defaults.output.stderr === parent.stdio.error).is(true);
+
+				const question = function(plan: shell.run.Intention) {
+					return $api.fp.world.input(test.subject.exports.subprocess.question(plan))();
+				};
+				const argumentsExit = question({
+					...base,
+					stdio: {
+						output: "string",
+						error: "string"
+					}
+				});
+				verify(argumentsExit.status).is(0);
+				verify(argumentsExit.stdio.output).is("9:two words\n8:$HOME; *\n");
+
+				const workingDirectory = classes.pathname.java.adapt().getCanonicalPath();
+				const contextExit = question({
+					command: command,
+					arguments: javaArguments("context"),
+					directory: classes.pathname.toString(),
+					environment: function(environment) {
+						return Object.assign({}, environment, { SLIME_INVOCATION_TEST: "environment value" });
+					},
+					stdio: {
+						output: "string",
+						error: "string"
+					}
+				});
+				verify(contextExit.status).is(0);
+				verify(contextExit.stdio.output).is("environment value\n" + workingDirectory);
+
+				const streamsExit = question({
+					command: command,
+					arguments: javaArguments("streams"),
+					stdio: {
+						input: "stdin value",
+						output: "string",
+						error: "string"
+					}
+				});
+				verify(streamsExit.status).is(0);
+				verify(streamsExit.stdio.output).is("stdout:stdin value");
+				verify(streamsExit.stdio.error).is("stderr:stdin value");
+
+				const defaultExit = question({
+					command: command,
+					arguments: javaArguments("exit", "0")
+				});
+				verify(defaultExit.status).is(0);
+
+				const nonzeroExit = question({
+					command: command,
+					arguments: javaArguments("exit", "7")
+				});
+				verify(nonzeroExit.status).is(7);
 			};
 		}
 	//@ts-ignore
