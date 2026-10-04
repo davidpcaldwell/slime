@@ -12,7 +12,7 @@
  * careful with your editor not to append a trailing newline.)
  *
  * The credential helper can be specified as `-c
- * credential.helper=[/path/to/slime]/rhino/tools/git/git-credential-tokens-directory.bash`.
+ * credential.helper=[/path/to/slime]/rhino/tools/git/git-credential-tokens-directory`.
  */
 namespace slime.jrunscript.tools.git.credentials {
 	export interface Context {
@@ -337,6 +337,30 @@ namespace slime.jrunscript.tools.git.credentials {
 					});
 
 					verify(output).is("");
+				});
+
+				fifty.run(function commandLineEntrypoints() {
+					var run = function(command: string) {
+						return jsh.shell.run({
+							command: command,
+							arguments: ["store"],
+							stdio: {
+								output: String,
+								error: String
+							},
+							evaluate: function(result) { return result; }
+						});
+					};
+
+					var current = run(fifty.jsh.file.relative("git-credential-tokens-directory").pathname);
+					verify(current).status.is(0);
+					verify(current.stdio.output).is("");
+					verify(current.stdio.error).is("");
+
+					var legacy = run(fifty.jsh.file.relative("git-credential-tokens-directory.bash").pathname);
+					verify(legacy).status.is(0);
+					verify(legacy.stdio.output).is("");
+					verify(legacy.stdio.error).evaluate(function(error) { return error.indexOf("deprecated") != -1; }).is(true);
 				});
 			}
 		}
