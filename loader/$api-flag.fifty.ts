@@ -67,6 +67,35 @@ namespace slime.$api {
 				verify(warnings).is(2);
 			}
 
+			fifty.tests.jsapi.deprecate.warningThrow = function() {
+				var oldWarning = api.deprecate.warning;
+				try {
+					api.deprecate.warning = function() {
+						throw new Error("warning failed");
+					};
+
+					var f = function() {
+						return 42;
+					};
+					verify(api.deprecate(f)()).is(42);
+
+					var o = {
+						value: 7,
+						method: function() {
+							return 8;
+						}
+					};
+					api.deprecate(o, "method");
+					verify(o.method()).is(8);
+
+					var p = { value: 9 };
+					api.deprecate(p);
+					verify(p.value).is(9);
+				} finally {
+					api.deprecate.warning = oldWarning;
+				}
+			}
+
 			fifty.tests.jsapi.deprecate.object = function() {
 				var called = 0;
 				var warnings = [];
