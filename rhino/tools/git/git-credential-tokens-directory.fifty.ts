@@ -343,8 +343,13 @@ namespace slime.jrunscript.tools.git.credentials {
 					var run = function(command: string) {
 						return jsh.shell.run({
 							command: command,
-							arguments: ["store"],
+							arguments: ["get"],
+							directory: jsh.file.Pathname(base.pathname.toString()).directory,
+							environment: Object.assign({}, jsh.shell.environment, {
+								PWD: base.pathname.toString()
+							}),
 							stdio: {
+								input: "host=example.com\nusername=foo\n\n",
 								output: String,
 								error: String
 							},
@@ -354,12 +359,12 @@ namespace slime.jrunscript.tools.git.credentials {
 
 					var current = run(fifty.jsh.file.relative("git-credential-tokens-directory").pathname);
 					verify(current).status.is(0);
-					verify(current.stdio.output).is("");
-					verify(current.stdio.error).is("");
+					verify(current.stdio.output).is("host=example.com\nusername=foo\npassword=bar\n\n");
+					verify(current.stdio.error).evaluate(function(error) { return error.indexOf("deprecated") == -1; }).is(true);
 
 					var legacy = run(fifty.jsh.file.relative("git-credential-tokens-directory.bash").pathname);
 					verify(legacy).status.is(0);
-					verify(legacy.stdio.output).is("");
+					verify(legacy.stdio.output).is(current.stdio.output);
 					verify(legacy.stdio.error).evaluate(function(error) { return error.indexOf("deprecated") != -1; }).is(true);
 				});
 			}
