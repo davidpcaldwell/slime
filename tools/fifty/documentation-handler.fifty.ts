@@ -14,8 +14,8 @@ namespace slime.tools.documentation {
 	 * The application-level export of the documentation handler. Using a configuration, creates a function capable of creating a
 	 * servlet handler that can serve project TypeDoc documentation from standard SLIME TypeDoc URLs given the httpd API. It also
 	 * supports linking to the project code via the `src/` path (and these links support the `as=text` query parameter). Finally,
-	 * it supports the `local/doc/typedoc/update` endpoint for forcing a regeneration of the documentation, and regeneration for
-	 * every `.html` request when `configuration.watch` is `true`.
+	 * it supports the `local/doc/typedoc/update` endpoint for forcing a regeneration of the documentation. HTML requests always
+	 * serve the latest completed documentation, and filesystem changes trigger regeneration.
 	 */
 	export type Export = (configuration: Configuration) => (httpd: slime.servlet.httpd) => slime.servlet.Script
 

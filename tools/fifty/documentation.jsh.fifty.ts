@@ -14,8 +14,8 @@ namespace slime.fifty.view.cli {
 	 * * `--host <value>`: If specified, will be the hostname used when serving the documentation. Otherwise, will default to
 	 *   `document.<basename-of-project>` if `--watch` is enabled, and `documentation.<basename-of-project>` otherwise.
 	 * * `--index <path>`: The path of the file to use as the documentation's index page. Defaults to `README.html`.
-	 * * `--watch`: Whether to affirmatively watch for changes in the source code. **Currently, using `--watch` is very inefficient,
-	 *   and regenerates the documentation for every request for an HTML page.**
+	 * * `--watch`: Whether to watch for filesystem changes and regenerate documentation when project files change. HTML requests
+	 *   serve the latest completed documentation without triggering regeneration.
 	 */
 	export type Program = slime.jsh.script.cli.Program;
 }

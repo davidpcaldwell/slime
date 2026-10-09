@@ -46,6 +46,7 @@ namespace slime.fifty.view {
 
 			fifty.tests.suite = function() {
 				if (fifty.global.jsh) {
+					jsh.shell.tools.tomcat.jsh.require.simple();
 					var library = code({
 						library: {
 							file: jsh.file,
@@ -64,6 +65,29 @@ namespace slime.fifty.view {
 					var README = response.stream.character().asString();
 					var file = fifty.jsh.file.object.getRelativePath("../../README.html").file.read(String);
 					verify(file == README, "README.html served matches file").is(true);
+
+					var temporary = fifty.jsh.file.temporary.directory();
+					var documentationServer: slime.jsh.httpd.Tomcat | null = null;
+					try {
+						jsh.file.Pathname(temporary.pathname).directory.getRelativePath("local/doc/typedoc/README.html").write("latest completed docs", {
+							append: false,
+							recursive: true
+						});
+						documentationServer = library.server({
+							base: jsh.file.Pathname(temporary.pathname).directory,
+							watch: true
+						});
+						var documentation = $api.fp.world.now.question(
+							jsh.http.world.java.urlconnection,
+							jsh.http.Argument.from.request({
+								url: "http://127.0.0.1:" + documentationServer.port + "/local/doc/typedoc/README.html"
+							})
+						);
+						verify(documentation.stream.character().asString()).is("latest completed docs");
+					} finally {
+						if (documentationServer) documentationServer.stop();
+						jsh.file.Location.remove({ recursive: true }).simple(temporary);
+					}
 				}
 			}
 		}

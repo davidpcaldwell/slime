@@ -70,15 +70,13 @@
 
 				var updater = library.updater.Updater({
 					project: base.toString(),
+					watch: configuration.watch,
 					events: {
 						initialized: function(e) {
 							jsh.shell.console("Initialized: project=" + e.detail.project);
 						},
 						creating: function(e) {
 							jsh.shell.console("Creating documentation ...");
-						},
-						setInterval: function(e) {
-							jsh.shell.console("Set interval to " + e.detail + " milliseconds at " + new Date() + ".");
 						},
 						unchanged: function(e) {
 							jsh.shell.console(
@@ -169,11 +167,6 @@
 								var match = typedocPattern.exec(request.path);
 								if (match) {
 									var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
-									var output = src.getRelativePath("local/doc/typedoc");
-									if (!output.directory || configuration.watch) {
-										var response = synchronousUpdate(src);
-										if (response) return response;
-									}
 									jsh.shell.console("Serving: " + request.path);
 									return httpd.Handler.Loader({
 										loader: new jsh.file.Loader({ directory: src.getSubdirectory("local/doc/typedoc") }),
