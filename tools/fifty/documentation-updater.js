@@ -14,6 +14,51 @@
 	 * @param { slime.loader.Export<slime.tools.documentation.updater.Exports> } $export
 	 */
 	function(Packages,$api,$context,$export) {
+		var isExcluded = function(root, path) {
+			var relative = String(root.relativize(path));
+			var parts = relative.split(/[\\/]/);
+			for (var i = 0; i < parts.length; i++) {
+				if (parts[i] == "node_modules" || parts[i] == "package-lock.json") return true;
+				if (parts[i] == ".git") return true;
+				if (parts[i] == "local" && parts[i+1] == "bin") return true;
+				if (parts[i] == "local" && parts[i+1] == "chrome") return true;
+				if (parts[i] == "local" && parts[i+1] == "jsh") return true;
+				if (parts[i] == "local" && parts[i+1] == "doc") return true;
+			}
+			return false;
+		};
+
+		/** @type { slime.tools.documentation.updater.Exports["Projects"] } */
+		var Projects = function(settings) {
+			var root = Packages.java.nio.file.Paths.get(settings.project).toAbsolutePath().normalize();
+			var noFollow = Packages.java.nio.file.LinkOption.NOFOLLOW_LINKS;
+			var projects = [String(root)];
+
+			var visit = function(directory) {
+				var children = Packages.java.nio.file.Files.newDirectoryStream(directory);
+				try {
+					var iterator = children.iterator();
+					while (iterator.hasNext()) {
+						var child = iterator.next();
+						if (Packages.java.nio.file.Files.isDirectory(child, noFollow) && !isExcluded(root, child)) {
+							if (
+								Packages.java.nio.file.Files.isRegularFile(child.resolve("README.fifty.ts"), noFollow)
+								|| Packages.java.nio.file.Files.isRegularFile(child.resolve("typedoc.json"), noFollow)
+							) {
+								projects.push(String(child));
+							}
+							visit(child);
+						}
+					}
+				} finally {
+					children.close();
+				}
+			};
+
+			visit(root);
+			return projects;
+		};
+
 		/** @type { slime.tools.documentation.updater.Exports["test"]["Watcher"] } */
 		var Watcher = function(settings) {
 			var root = Packages.java.nio.file.Paths.get(settings.project).toAbsolutePath().normalize();
@@ -24,26 +69,12 @@
 			var noFollow = Packages.java.nio.file.LinkOption.NOFOLLOW_LINKS;
 			var stopped = false;
 
-			var excluded = function(path) {
-				var relative = String(root.relativize(path));
-				var parts = relative.split(/[\\/]/);
-				for (var i = 0; i < parts.length; i++) {
-					if (parts[i] == "node_modules" || parts[i] == "package-lock.json") return true;
-					if (parts[i] == ".git") return true;
-					if (parts[i] == "local" && parts[i+1] == "bin") return true;
-					if (parts[i] == "local" && parts[i+1] == "chrome") return true;
-					if (parts[i] == "local" && parts[i+1] == "jsh") return true;
-					if (parts[i] == "local" && parts[i+1] == "doc") return true;
-				}
-				return false;
-			};
-
 			var registerTree = function(directory) {
-				if (excluded(directory) || !Packages.java.nio.file.Files.isDirectory(directory, noFollow)) return;
+				if (isExcluded(root, directory) || !Packages.java.nio.file.Files.isDirectory(directory, noFollow)) return;
 				var name = String(directory);
-				if (registered[name] && registered[name].isValid()) return;
-
-				registered[name] = directory.register(service, kinds.ENTRY_CREATE, kinds.ENTRY_DELETE, kinds.ENTRY_MODIFY);
+				if (!registered[name] || !registered[name].isValid()) {
+					registered[name] = directory.register(service, kinds.ENTRY_CREATE, kinds.ENTRY_DELETE, kinds.ENTRY_MODIFY);
+				}
 
 				var children = Packages.java.nio.file.Files.newDirectoryStream(directory);
 				try {
@@ -54,6 +85,10 @@
 				} finally {
 					children.close();
 				}
+			};
+
+			var rescan = function() {
+				registerTree(root);
 			};
 
 			var unregisterTree = function(path) {
@@ -74,10 +109,10 @@
 					var kind = String(event.kind().name());
 					if (kind == "OVERFLOW") {
 						changed = true;
-						registerTree(root);
+						rescan();
 					} else if (kind == "ENTRY_CREATE" || kind == "ENTRY_MODIFY" || kind == "ENTRY_DELETE") {
 						var path = key.watchable().resolve(event.context()).normalize();
-						if (!excluded(path)) {
+						if (!isExcluded(root, path)) {
 							changed = true;
 							if (kind == "ENTRY_CREATE") registerTree(path);
 							if (kind == "ENTRY_DELETE") unregisterTree(path);
@@ -104,6 +139,7 @@
 						var changed = false;
 						try {
 							changed = process(service.take());
+							/** @type { slime.jrunscript.native.java.nio.file.WatchKey | null } */
 							var key;
 							while (!stopped && (key = service.poll(200, Packages.java.util.concurrent.TimeUnit.MILLISECONDS))) {
 								changed = process(key) || changed;
@@ -120,6 +156,11 @@
 						stopped = true;
 						service.close();
 					}
+				},
+				rescan: rescan,
+				isRegistered: function(path) {
+					var name = String(Packages.java.nio.file.Paths.get(path).toAbsolutePath().normalize());
+					return Boolean(registered[name] && registered[name].isValid());
 				}
 			};
 		};
@@ -437,6 +478,7 @@
 
 		$export({
 			Updater: Updater,
+			Projects: Projects,
 			test: {
 				Update: Update,
 				Watcher: Watcher

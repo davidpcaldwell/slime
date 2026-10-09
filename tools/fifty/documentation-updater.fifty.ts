@@ -66,6 +66,8 @@ namespace slime.tools.documentation.updater {
 			Watcher: (p: { project: string }) => {
 				run: (onChange: () => void) => void
 				stop: () => void
+				rescan: () => void
+				isRegistered: (path: string) => boolean
 			}
 		}
 	}
@@ -86,6 +88,11 @@ namespace slime.tools.documentation.updater {
 	}
 
 	export interface Exports {
+		/**
+		 * Lists the root project and nested directories with a TypeDoc configuration or Fifty entry point.
+		 */
+		Projects: (p: { project: string }) => string[]
+
 		/**
 		 * An object creating a stateful `Updater` that will update the TypeDoc for a given project. The given `Handlers` will be
 		 * attached to the running Updater, and will not be disconnected until the `Updater` is stopped via its `stop()` method.
@@ -184,6 +191,28 @@ namespace slime.tools.documentation.updater {
 					directory("local/chrome");
 					directory("local/jsh");
 					directory("node_modules/nested");
+					directory("contributor");
+					directory("node_modules/ignored-project");
+					directory("local/doc/typedoc/nested-project");
+					file("README.fifty.ts");
+					file("contributor/README.fifty.ts");
+					file("node_modules/ignored-project/README.fifty.ts");
+					file("local/doc/typedoc/nested-project/typedoc.json");
+
+					var projects = subject.Projects({ project: temporary.pathname.toString() });
+					verify(projects.length).is(2);
+					verify(projects[0]).is(String(root));
+					verify(projects[1]).is(String(root.resolve("contributor")));
+
+					var rescanWatcher = subject.test.Watcher({ project: temporary.pathname.toString() });
+					try {
+						directory("overflow/missed/deep");
+						rescanWatcher.rescan();
+						verify(rescanWatcher.isRegistered(String(root.resolve("overflow")))).is(true);
+						verify(rescanWatcher.isRegistered(String(root.resolve("overflow/missed/deep")))).is(true);
+					} finally {
+						rescanWatcher.stop();
+					}
 
 					watcher = subject.test.Watcher({ project: temporary.pathname.toString() });
 					var activeWatcher = watcher;

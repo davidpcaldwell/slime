@@ -159,7 +159,7 @@ namespace slime.jrunscript {
 
 					export interface WatchService extends slime.jrunscript.native.java.lang.Object {
 						take(): WatchKey
-						poll(timeout: number, unit: slime.jrunscript.native.java.util.concurrent.TimeUnit): WatchKey
+						poll(timeout: number, unit: slime.jrunscript.native.java.util.concurrent.TimeUnit): WatchKey | null
 						close(): void
 					}
 
@@ -686,6 +686,7 @@ namespace slime.jrunscript {
 				file: {
 					Files: {
 						isDirectory(path: slime.jrunscript.native.java.nio.file.Path, ...options: slime.jrunscript.native.java.nio.file.LinkOption[]): boolean
+						isRegularFile(path: slime.jrunscript.native.java.nio.file.Path, ...options: slime.jrunscript.native.java.nio.file.LinkOption[]): boolean
 						newDirectoryStream(path: slime.jrunscript.native.java.nio.file.Path): slime.jrunscript.native.java.nio.file.DirectoryStream
 						createDirectories(path: slime.jrunscript.native.java.nio.file.Path): slime.jrunscript.native.java.nio.file.Path
 						createFile(path: slime.jrunscript.native.java.nio.file.Path): slime.jrunscript.native.java.nio.file.Path
