@@ -8,11 +8,163 @@
 (
 	/**
 	 *
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.tools.documentation.updater.Context } $context
 	 * @param { slime.loader.Export<slime.tools.documentation.updater.Exports> } $export
 	 */
-	function($api,$context,$export) {
+	function(Packages,$api,$context,$export) {
+		var isExcluded = function(root, path) {
+			var relative = String(root.relativize(path));
+			var parts = relative.split(/[\\/]/);
+			for (var i = 0; i < parts.length; i++) {
+				if (parts[i] == "node_modules" || parts[i] == "package-lock.json") return true;
+				if (parts[i] == ".git") return true;
+				if (parts[i] == "local" && parts[i+1] == "bin") return true;
+				if (parts[i] == "local" && parts[i+1] == "chrome") return true;
+				if (parts[i] == "local" && parts[i+1] == "jsh") return true;
+				if (parts[i] == "local" && parts[i+1] == "doc") return true;
+			}
+			return false;
+		};
+
+		/** @type { slime.tools.documentation.updater.Exports["Projects"] } */
+		var Projects = function(settings) {
+			var root = Packages.java.nio.file.Paths.get(settings.project).toAbsolutePath().normalize();
+			var noFollow = Packages.java.nio.file.LinkOption.NOFOLLOW_LINKS;
+			var projects = [String(root)];
+
+			var visit = function(directory) {
+				var children = Packages.java.nio.file.Files.newDirectoryStream(directory);
+				try {
+					var iterator = children.iterator();
+					while (iterator.hasNext()) {
+						var child = iterator.next();
+						if (Packages.java.nio.file.Files.isDirectory(child, noFollow) && !isExcluded(root, child)) {
+							if (
+								Packages.java.nio.file.Files.isRegularFile(child.resolve("README.fifty.ts"), noFollow)
+								|| Packages.java.nio.file.Files.isRegularFile(child.resolve("typedoc.json"), noFollow)
+							) {
+								projects.push(String(child));
+							}
+							visit(child);
+						}
+					}
+				} finally {
+					children.close();
+				}
+			};
+
+			visit(root);
+			return projects;
+		};
+
+		/** @type { slime.tools.documentation.updater.Exports["test"]["Watcher"] } */
+		var Watcher = function(settings) {
+			var root = Packages.java.nio.file.Paths.get(settings.project).toAbsolutePath().normalize();
+			var service = root.getFileSystem().newWatchService();
+			/** @type { { [path: string]: slime.jrunscript.native.java.nio.file.WatchKey } } */
+			var registered = {};
+			var kinds = Packages.java.nio.file.StandardWatchEventKinds;
+			var noFollow = Packages.java.nio.file.LinkOption.NOFOLLOW_LINKS;
+			var stopped = false;
+
+			var registerTree = function(directory) {
+				if (isExcluded(root, directory) || !Packages.java.nio.file.Files.isDirectory(directory, noFollow)) return;
+				var name = String(directory);
+				if (!registered[name] || !registered[name].isValid()) {
+					registered[name] = directory.register(service, kinds.ENTRY_CREATE, kinds.ENTRY_DELETE, kinds.ENTRY_MODIFY);
+				}
+
+				var children = Packages.java.nio.file.Files.newDirectoryStream(directory);
+				try {
+					var iterator = children.iterator();
+					while (iterator.hasNext()) {
+						registerTree(iterator.next());
+					}
+				} finally {
+					children.close();
+				}
+			};
+
+			var rescan = function() {
+				registerTree(root);
+			};
+
+			var unregisterTree = function(path) {
+				var prefix = String(path) + String(Packages.java.io.File.separator);
+				Object.keys(registered).forEach(function(directory) {
+					if (directory == String(path) || directory.indexOf(prefix) == 0) {
+						registered[directory].cancel();
+						delete registered[directory];
+					}
+				});
+			};
+
+			var process = function(key) {
+				var changed = false;
+				var iterator = key.pollEvents().iterator();
+				while (iterator.hasNext()) {
+					var event = iterator.next();
+					var kind = String(event.kind().name());
+					if (kind == "OVERFLOW") {
+						changed = true;
+						rescan();
+					} else if (kind == "ENTRY_CREATE" || kind == "ENTRY_MODIFY" || kind == "ENTRY_DELETE") {
+						var path = key.watchable().resolve(event.context()).normalize();
+						if (!isExcluded(root, path)) {
+							changed = true;
+							if (kind == "ENTRY_CREATE") registerTree(path);
+							if (kind == "ENTRY_DELETE") unregisterTree(path);
+						}
+					}
+				}
+				if (!key.reset()) {
+					var name = String(key.watchable());
+					if (registered[name] && !registered[name].isValid()) delete registered[name];
+				}
+				return changed;
+			};
+
+			try {
+				registerTree(root);
+			} catch (e) {
+				service.close();
+				throw e;
+			}
+
+			return {
+				run: function(onChange) {
+					while (!stopped) {
+						var changed = false;
+						try {
+							changed = process(service.take());
+							/** @type { slime.jrunscript.native.java.nio.file.WatchKey | null } */
+							var key;
+							while (!stopped && (key = service.poll(200, Packages.java.util.concurrent.TimeUnit.MILLISECONDS))) {
+								changed = process(key) || changed;
+							}
+						} catch (e) {
+							var exception = e.javaException || e;
+							if (!stopped || !Packages.java.nio.file.ClosedWatchServiceException.class.isInstance(exception)) throw e;
+						}
+						if (changed && !stopped) onChange();
+					}
+				},
+				stop: function() {
+					if (!stopped) {
+						stopped = true;
+						service.close();
+					}
+				},
+				rescan: rescan,
+				isRegistered: function(path) {
+					var name = String(Packages.java.nio.file.Paths.get(path).toAbsolutePath().normalize());
+					return Boolean(registered[name] && registered[name].isValid());
+				}
+			};
+		};
+
 		/** @type { slime.tools.documentation.updater.internal.Update } */
 		var Update = function(p) {
 			return function(events) {
@@ -88,10 +240,6 @@
 			}
 		}
 
-		var existsDirectory = $api.fp.world.mapping(
-			$context.library.file.world.Location.directory.exists.wo
-		);
-
 		/** @type { slime.tools.documentation.updater.Exports["Updater"] } */
 		var Updater = function(settings) {
 			var events = $api.events.Handlers.attached(settings.events);
@@ -101,12 +249,11 @@
 				updates: {},
 				/** @type { number } */
 				typedocBasedOnSrcAt: void(0),
-				lastCodeUpdatedTimestamp: void(0),
-				codeCheckInterval: 10000,
 				stopped: false
 			}
 
 			var lock = $context.library.java.Thread.Lock();
+			var watcher = settings.watch ? Watcher({ project: settings.project }) : null;
 
 			var project = $context.library.file.world.Location.from.os(settings.project);
 
@@ -191,22 +338,8 @@
 				return new Date().getTime() - process.started();
 			}
 
-			var setInterval = function(interval) {
-				state.codeCheckInterval = interval;
-				events.fire("setInterval", state.codeCheckInterval);
-			}
-
 			var getTimestamps = function() {
 				var code = world.lastModified.code();
-				if (code.present) {
-					if (code.value == state.lastCodeUpdatedTimestamp) {
-						//	TODO	nice little false delta
-						setInterval(state.codeCheckInterval * 2);
-					} else {
-						setInterval(10000);
-						state.lastCodeUpdatedTimestamp = code.value;
-					}
-				}
 				return {
 					code: code,
 					documentation: (
@@ -279,70 +412,56 @@
 				}
 			};
 
-			var run = function() {
-				$context.library.java.Thread.start({
-					call: function() {
-						$api.fp.world.now.action(
-							Update,
-							{
-								project: project
-							},
-							listener
-						)
+			var runUpdate = function() {
+				lock.wait({
+					then: function() {
+						if (state.stopped) return;
+						$context.library.java.Thread.start({
+							call: function() {
+								$api.fp.world.now.action(
+									Update,
+									{
+										project: project
+									},
+									listener
+								)
+							}
+						});
 					}
-				});
+				})();
 			};
 
 			events.fire("initialized", { project: settings.project });
 
-			if (!existsDirectory(documentation)) {
-				events.fire("creating");
-				run();
-			}
-
 			return {
 				run: function() {
-					while(!state.stopped) {
-						lock.wait({
-							when: function() { return true; },
-							then: function() {
+					try {
+						if (!state.stopped) {
+							if (!directoryExists(documentation)) {
+								events.fire("creating");
+								runUpdate();
+							} else {
 								var timestamps = getTimestamps();
-
 								if (timestamps.code.present && timestamps.documentation.present) {
 									if (timestamps.code.value > timestamps.documentation.value) {
-										run();
+										runUpdate();
 									} else {
 										events.fire("unchanged", {
 											code: timestamps.code.value,
 											documentation: timestamps.documentation.value
 										});
 									}
-								} else if (timestamps.code.present && !timestamps.documentation.present) {
-									run();
 								}
 							}
-						})();
-
-						var start = new Date();
-						lock.wait({
-							when: function() {
-								return new Date().getTime() - start.getTime() >= state.codeCheckInterval;
-							},
-							timeout: function() {
-								var now = new Date();
-								var elapsed = now.getTime() - start.getTime();
-								return (state.codeCheckInterval > elapsed) ? state.codeCheckInterval - elapsed : 1;
-							}
-						})();
+							if (watcher) watcher.run(runUpdate);
+						}
+					} finally {
+						if (watcher) watcher.stop();
+						events.fire("destroyed");
 					}
-					events.fire("destroyed");
 				},
 				update: function() {
-					lock.wait({
-						then: function() {
-							setInterval(10000);
-						}
-					})();
+					runUpdate();
 				},
 				stop: function() {
 					events.fire("destroying");
@@ -350,6 +469,7 @@
 						then: function() {
 							$api.events.Handlers.detach(events);
 							state.stopped = true;
+							if (watcher) watcher.stop();
 						}
 					})();
 				}
@@ -358,10 +478,12 @@
 
 		$export({
 			Updater: Updater,
+			Projects: Projects,
 			test: {
-				Update: Update
+				Update: Update,
+				Watcher: Watcher
 			}
 		});
 	}
 //@ts-ignore
-)($api,$context,$export);
+)(Packages,$api,$context,$export);

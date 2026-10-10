@@ -134,13 +134,62 @@ namespace slime.jrunscript {
 				export namespace file {
 					export interface Path {
 						getFileSystem(): FileSystem
-						resolve: (other: Path) => Path
+						resolve: {
+							(other: Path): Path
+							(other: string): Path
+						}
 						normalize: () => Path
 						toAbsolutePath: () => Path
+						relativize(other: Path): Path
+						register(service: WatchService, ...events: WatchEvent.Kind[]): WatchKey
+						toString(): string
 					}
 
 					export interface FileSystem {
 						supportedFileAttributeViews(): slime.jrunscript.native.java.util.Set
+						getUserPrincipalLookupService(): {
+							lookupPrincipalByName(name: string): slime.jrunscript.native.java.security.Principal
+							lookupPrincipalByGroupName(name: string): slime.jrunscript.native.java.security.Principal
+						}
+						newWatchService(): WatchService
+					}
+
+					export interface LinkOption extends slime.jrunscript.native.java.lang.Object {
+					}
+
+					export interface WatchService extends slime.jrunscript.native.java.lang.Object {
+						take(): WatchKey
+						poll(timeout: number, unit: slime.jrunscript.native.java.util.concurrent.TimeUnit): WatchKey | null
+						close(): void
+					}
+
+					export interface ClosedWatchServiceException extends slime.jrunscript.native.java.lang.Object {
+					}
+
+					export interface WatchKey extends slime.jrunscript.native.java.lang.Object {
+						pollEvents(): {
+							iterator(): slime.jrunscript.native.java.util.Iterator<WatchEvent>
+						}
+						watchable(): Path
+						reset(): boolean
+						isValid(): boolean
+						cancel(): void
+					}
+
+					export interface WatchEvent extends slime.jrunscript.native.java.lang.Object {
+						kind(): WatchEvent.Kind
+						context(): Path
+					}
+
+					export namespace WatchEvent {
+						export interface Kind extends slime.jrunscript.native.java.lang.Object {
+							name(): string
+						}
+					}
+
+					export interface DirectoryStream extends slime.jrunscript.native.java.lang.Object {
+						iterator(): slime.jrunscript.native.java.util.Iterator<Path>
+						close(): void
 					}
 
 					export namespace attribute {
@@ -250,6 +299,11 @@ namespace slime.jrunscript {
 				export interface Iterator<T = any> {
 					hasNext(): boolean
 					next(): T
+				}
+
+				export namespace concurrent {
+					export interface TimeUnit extends slime.jrunscript.native.java.lang.Object {
+					}
 				}
 
 				export interface Set<T = slime.jrunscript.native.java.lang.Object> {
@@ -631,6 +685,11 @@ namespace slime.jrunscript {
 			nio: {
 				file: {
 					Files: {
+						isDirectory(path: slime.jrunscript.native.java.nio.file.Path, ...options: slime.jrunscript.native.java.nio.file.LinkOption[]): boolean
+						isRegularFile(path: slime.jrunscript.native.java.nio.file.Path, ...options: slime.jrunscript.native.java.nio.file.LinkOption[]): boolean
+						newDirectoryStream(path: slime.jrunscript.native.java.nio.file.Path): slime.jrunscript.native.java.nio.file.DirectoryStream
+						createDirectories(path: slime.jrunscript.native.java.nio.file.Path): slime.jrunscript.native.java.nio.file.Path
+						createFile(path: slime.jrunscript.native.java.nio.file.Path): slime.jrunscript.native.java.nio.file.Path
 						setAttribute(path: slime.jrunscript.native.java.nio.file.Path, attribute: string, value: slime.jrunscript.native.java.lang.Object)
 						getAttribute(path: slime.jrunscript.native.java.nio.file.Path, attribute: string): slime.jrunscript.native.java.lang.Object
 
@@ -647,6 +706,16 @@ namespace slime.jrunscript {
 						}
 					}
 					FileSystems: any
+					StandardWatchEventKinds: {
+						ENTRY_CREATE: slime.jrunscript.native.java.nio.file.WatchEvent.Kind
+						ENTRY_DELETE: slime.jrunscript.native.java.nio.file.WatchEvent.Kind
+						ENTRY_MODIFY: slime.jrunscript.native.java.nio.file.WatchEvent.Kind
+						OVERFLOW: slime.jrunscript.native.java.nio.file.WatchEvent.Kind
+					}
+					ClosedWatchServiceException: JavaClass<
+						slime.jrunscript.native.java.nio.file.ClosedWatchServiceException,
+						{ class: slime.jrunscript.native.java.lang.Class }
+					>
 					attribute: {
 						FileTime: any
 						PosixFilePermission: {
@@ -661,7 +730,9 @@ namespace slime.jrunscript {
 							OTHERS_EXECUTE: slime.jrunscript.native.java.nio.file.attribute.PosixFilePermission
 						}
 					}
-					LinkOption: any
+					LinkOption: {
+						NOFOLLOW_LINKS: slime.jrunscript.native.java.nio.file.LinkOption
+					}
 				}
 				charset: {
 					Charset: JavaClass<slime.jrunscript.native.java.nio.charset.Charset, {
@@ -672,6 +743,11 @@ namespace slime.jrunscript {
 				}
 			}
 			util: {
+				concurrent: {
+					TimeUnit: {
+						MILLISECONDS: slime.jrunscript.native.java.util.concurrent.TimeUnit
+					}
+				}
 				HashMap: any
 				HashSet: any
 				ArrayList: any

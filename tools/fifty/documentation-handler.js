@@ -10,12 +10,13 @@
 	 * Implementation of the Typedoc documentation server. Currently relies on the `jsh` and `httpd` APIs, but probably could
 	 * narrow dependencies on those.
 	 *
+	 * @param { slime.jrunscript.Packages } Packages
 	 * @param { slime.$api.Global } $api
 	 * @param { slime.jsh.Global } jsh
 	 * @param { slime.runtime.loader.Store } $loader
 	 * @param { slime.loader.Export<slime.tools.documentation.Export> } $export
 	 */
-	function($api,jsh,$loader,$export) {
+	function(Packages,$api,jsh,$loader,$export) {
 		$export(
 			function(configuration) {
 				var base = configuration.base;
@@ -68,57 +69,69 @@
 					}
 				}
 
-				var updater = library.updater.Updater({
-					project: base.toString(),
-					events: {
-						initialized: function(e) {
-							jsh.shell.console("Initialized: project=" + e.detail.project);
-						},
-						creating: function(e) {
-							jsh.shell.console("Creating documentation ...");
-						},
-						setInterval: function(e) {
-							jsh.shell.console("Set interval to " + e.detail + " milliseconds at " + new Date() + ".");
-						},
-						unchanged: function(e) {
-							jsh.shell.console(
-								"Checked; unchanged -"
-								+ " code = " + new Date(e.detail.code)
-								+ " documentation = " + new Date(e.detail.documentation)
-							);
-						},
-						updating: function(e) {
-							jsh.shell.console("Updating at " + new Date() + ": out=" + e.detail.out);
-						},
-						stdout: function(e) {
-							jsh.shell.console(e.detail.out + " STDOUT: " + e.detail.line);
-						},
-						stderr: function(e) {
-							jsh.shell.console(e.detail.out + " STDERR: " + e.detail.line);
-						},
-						stopping: function(e) {
-							jsh.shell.console("Stopping: " + e.detail.out + " ...");
-						},
-						finished: function(e) {
-							jsh.shell.console("Finished updating: was " + e.detail.out);
-						},
-						errored: function(e) {
-							jsh.shell.console("Errored; was to write to " + e.detail.out);
-						},
-						destroying: function(e) {
-							jsh.shell.console("Destroying handler ...");
-						},
-						destroyed: function(e) {
-							jsh.shell.console("Destroyed handler.");
-						}
-					}
-				});
+				var rootPath = String(Packages.java.nio.file.Paths.get(base.toString()).toAbsolutePath().normalize());
+				var updaters = {};
+				var stopped = false;
 
-				jsh.java.Thread.start({
-					call: function() {
-						updater.run();
-					}
-				});
+				var startDiscoveredUpdaters = function() {
+					if (stopped) return;
+					library.updater.Projects({ project: base.toString() }).forEach(function(project) {
+						var projectPath = String(Packages.java.nio.file.Paths.get(project).toAbsolutePath().normalize());
+						if (!updaters[projectPath]) {
+							var updater = library.updater.Updater({
+								project: projectPath,
+								watch: configuration.watch,
+								events: {
+									initialized: function(e) {
+										jsh.shell.console("Initialized: project=" + e.detail.project);
+									},
+									creating: function(e) {
+										jsh.shell.console("Creating documentation ...");
+									},
+									unchanged: function(e) {
+										jsh.shell.console(
+											"Checked; unchanged -"
+											+ " code = " + new Date(e.detail.code)
+											+ " documentation = " + new Date(e.detail.documentation)
+										);
+									},
+									updating: function(e) {
+										jsh.shell.console("Updating at " + new Date() + ": out=" + e.detail.out);
+									},
+									stdout: function(e) {
+										jsh.shell.console(e.detail.out + " STDOUT: " + e.detail.line);
+									},
+									stderr: function(e) {
+										jsh.shell.console(e.detail.out + " STDERR: " + e.detail.line);
+									},
+									stopping: function(e) {
+										jsh.shell.console("Stopping: " + e.detail.out + " ...");
+									},
+									finished: function(e) {
+										jsh.shell.console("Finished updating: was " + e.detail.out);
+									},
+									errored: function(e) {
+										jsh.shell.console("Errored; was to write to " + e.detail.out);
+									},
+									destroying: function(e) {
+										jsh.shell.console("Destroying handler ...");
+									},
+									destroyed: function(e) {
+										jsh.shell.console("Destroyed handler.");
+									}
+								}
+							});
+							updaters[projectPath] = updater;
+							jsh.java.Thread.start({
+								call: function() {
+									updater.run();
+								}
+							});
+						}
+					});
+				};
+
+				startDiscoveredUpdaters();
 
 				return function(httpd) {
 					var asTextHandler = code.asTextHandler({ httpd: httpd });
@@ -153,7 +166,7 @@
 											}
 										};
 									} else {
-										updater.update();
+										updaters[rootPath].update();
 										return {
 											status: { code: 200 },
 											body: {
@@ -169,11 +182,6 @@
 								var match = typedocPattern.exec(request.path);
 								if (match) {
 									var src = (match[1]) ? base.getSubdirectory(match[1]) : base;
-									var output = src.getRelativePath("local/doc/typedoc");
-									if (!output.directory || configuration.watch) {
-										var response = synchronousUpdate(src);
-										if (response) return response;
-									}
 									jsh.shell.console("Serving: " + request.path);
 									return httpd.Handler.Loader({
 										loader: new jsh.file.Loader({ directory: src.getSubdirectory("local/doc/typedoc") }),
@@ -198,7 +206,10 @@
 							}
 						),
 						destroy: function() {
-							updater.stop();
+							stopped = true;
+							Object.keys(updaters).forEach(function(project) {
+								updaters[project].stop();
+							});
 						}
 					}
 				}
@@ -206,4 +217,4 @@
 		)
 	}
 //@ts-ignore
-)($api,jsh,$loader,$export);
+)(Packages,$api,jsh,$loader,$export);

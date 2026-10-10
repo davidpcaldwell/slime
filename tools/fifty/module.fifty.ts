@@ -34,13 +34,14 @@
  * included in the TypeScript project) via the `fifty view` command.
  *
  * `fifty view` serves the documentation for a project, in a dedicated Chrome browser if Chrome is found. Typedoc documentation will
- * be generated if necessary and served for both the top-level repository and subrepositories at `local/doc/typedoc` (it will be
- * re-generated for each request if `--watch` is used).
+ * be generated if necessary and served for the top-level repository and nested TypeDoc projects (identified by `README.fifty.ts`
+ * or `typedoc.json`) at their respective `local/doc/typedoc` paths. With `--watch`, filesystem changes trigger regeneration;
+ * HTML requests serve the latest completed documentation.
  *
  * * `--base <directory>`: top-level directory of the project; defaults to the current working directory.
  * * `--host <hostname>`: hostname suffix to use in the browser's address bar when serving pages. If omitted, the script will provide a host name.
  * * `--index <path>`: relative path to the index page; defaults to `README.html`.
- * * `--watch`: if present, causes documentation to be re-generated for every HTML page requested; helpful when authoring docunmentation.
+ * * `--watch`: if present, watches for filesystem changes and regenerates documentation; HTML requests do not trigger regeneration.
  * * `--chrome:id <name>`: the private Chrome directory to use (under `local/chrome`); defaults to `documentation`, or `document` if `--watch` is set).
  *
  * ### Embedding `fifty view`

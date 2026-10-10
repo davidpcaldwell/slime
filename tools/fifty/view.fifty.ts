@@ -46,6 +46,7 @@ namespace slime.fifty.view {
 
 			fifty.tests.suite = function() {
 				if (fifty.global.jsh) {
+					jsh.shell.tools.tomcat.jsh.require.simple();
 					var library = code({
 						library: {
 							file: jsh.file,
@@ -53,17 +54,48 @@ namespace slime.fifty.view {
 						}
 					})
 
-					var base = fifty.jsh.file.object.getRelativePath("../..").directory;
-					var server = library.server({ base: base });
-					var response = $api.fp.world.now.question(
-						jsh.http.world.java.urlconnection,
-						jsh.http.Argument.from.request({
-							url: "http://127.0.0.1:" + server.port + "/README.html"
-						})
-					);
-					var README = response.stream.character().asString();
-					var file = fifty.jsh.file.object.getRelativePath("../../README.html").file.read(String);
-					verify(file == README, "README.html served matches file").is(true);
+					var temporary = fifty.jsh.file.temporary.directory();
+					var server: slime.jsh.httpd.Tomcat | null = null;
+					try {
+						var base = jsh.file.Pathname(temporary.pathname).directory;
+						base.getRelativePath("README.html").write("fixture README", {
+							append: false,
+							recursive: true
+						});
+						base.getRelativePath("local/doc/typedoc/README.html").write("latest completed root docs", {
+							append: false,
+							recursive: true
+						});
+						base.getRelativePath("contributor/README.fifty.ts").write("", {
+							append: false,
+							recursive: true
+						});
+						base.getRelativePath("contributor/local/doc/typedoc/README.html").write("latest completed subproject docs", {
+							append: false,
+							recursive: true
+						});
+
+						var activeServer = library.server({
+							base: base,
+							watch: true
+						});
+						server = activeServer;
+
+						var request = function(path: string) {
+							return $api.fp.world.now.question(
+								jsh.http.world.java.urlconnection,
+								jsh.http.Argument.from.request({
+									url: "http://127.0.0.1:" + activeServer.port + path
+								})
+							).stream.character().asString();
+						};
+						verify(request("/README.html")).is("fixture README");
+						verify(request("/local/doc/typedoc/README.html")).is("latest completed root docs");
+						verify(request("/contributor/local/doc/typedoc/README.html")).is("latest completed subproject docs");
+					} finally {
+						if (server) server.stop();
+						jsh.file.Location.remove({ recursive: true }).simple(temporary);
+					}
 				}
 			}
 		}

@@ -63,19 +63,24 @@ namespace slime.tools.documentation.updater {
 	export interface Exports {
 		test: {
 			Update: internal.Update
+			Watcher: (p: { project: string }) => {
+				run: (onChange: () => void) => void
+				stop: () => void
+				rescan: () => void
+				isRegistered: (path: string) => boolean
+			}
 		}
 	}
 
 	export interface Updater {
 		/**
-		 * Executes the `Updater` process until the `stop` method is called. Repeatedly checks the timestamps of the code and
-		 * documentation to decide whether to run TypeDoc.
+		 * Checks whether documentation needs to be generated. If watching is enabled, watches the project until `stop()` is called;
+		 * filesystem changes are coalesced and trigger a TypeDoc run. Otherwise, returns after the startup check.
 		 */
 		run: () => void
 
 		/**
-		 * Resets the interval for checking the code against the generated documentation to the minimum. Should be used by the
-		 * caller to hint that the code has changed.
+		 * Forces a TypeDoc run. Use this to trigger regeneration without waiting for a filesystem event.
 		 */
 		update: () => void
 
@@ -83,6 +88,11 @@ namespace slime.tools.documentation.updater {
 	}
 
 	export interface Exports {
+		/**
+		 * Lists the root project and nested directories with a TypeDoc configuration or Fifty entry point.
+		 */
+		Projects: (p: { project: string }) => string[]
+
 		/**
 		 * An object creating a stateful `Updater` that will update the TypeDoc for a given project. The given `Handlers` will be
 		 * attached to the running Updater, and will not be disconnected until the `Updater` is stopped via its `stop()` method.
@@ -92,6 +102,7 @@ namespace slime.tools.documentation.updater {
 		 */
 		Updater: (p: {
 			project: string
+			watch?: boolean
 			events: slime.$api.event.Handlers<{
 				initialized: {
 					project: string
@@ -101,7 +112,6 @@ namespace slime.tools.documentation.updater {
 					code: number
 					documentation: number
 				}
-				setInterval: number
 				updating: {
 					out: string
 				}
@@ -130,9 +140,11 @@ namespace slime.tools.documentation.updater {
 
 	(
 		function(
+			Packages: slime.jrunscript.Packages,
 			fifty: slime.fifty.test.Kit
 		) {
 			const { $api, jsh } = fifty.global;
+			const { verify } = fifty;
 
 			var script: Script = fifty.$loader.script("documentation-updater.js");
 			var subject = script({
@@ -148,7 +160,111 @@ namespace slime.tools.documentation.updater {
 			});
 
 			fifty.tests.suite = function() {
+				var temporary = fifty.jsh.file.temporary.directory();
+				var root = Packages.java.nio.file.Paths.get(temporary.pathname.toString());
+				var files = Packages.java.nio.file.Files;
+				var changes = 0;
+				var watcher: {
+					run: (onChange: () => void) => void
+					stop: () => void
+				} | null = null;
+				var returned = false;
 
+				var directory = function(path: string) {
+					files.createDirectories(root.resolve(path));
+				};
+
+				var file = function(path: string) {
+					files.createFile(root.resolve(path));
+				};
+
+				var waitForChanges = function(expected: number) {
+					var deadline = new Date().getTime() + 5000;
+					while (changes < expected && new Date().getTime() < deadline) {
+						jsh.java.Thread.sleep(25);
+					}
+					verify(changes >= expected).is(true);
+				};
+
+				try {
+					directory("src/nested");
+					directory("local/chrome");
+					directory("local/jsh");
+					directory("node_modules/nested");
+					directory("contributor");
+					directory("node_modules/ignored-project");
+					directory("local/doc/typedoc/nested-project");
+					file("README.fifty.ts");
+					file("contributor/README.fifty.ts");
+					file("node_modules/ignored-project/README.fifty.ts");
+					file("local/doc/typedoc/nested-project/typedoc.json");
+
+					var projects = subject.Projects({ project: temporary.pathname.toString() });
+					verify(projects.length).is(2);
+					verify(projects[0]).is(String(root));
+					verify(projects[1]).is(String(root.resolve("contributor")));
+
+					var rescanWatcher = subject.test.Watcher({ project: temporary.pathname.toString() });
+					try {
+						directory("overflow/missed/deep");
+						rescanWatcher.rescan();
+						verify(rescanWatcher.isRegistered(String(root.resolve("overflow")))).is(true);
+						verify(rescanWatcher.isRegistered(String(root.resolve("overflow/missed/deep")))).is(true);
+					} finally {
+						rescanWatcher.stop();
+					}
+
+					watcher = subject.test.Watcher({ project: temporary.pathname.toString() });
+					var activeWatcher = watcher;
+					jsh.java.Thread.start(function() {
+						activeWatcher.run(function() {
+							changes++;
+						});
+						returned = true;
+					});
+
+					file("src/nested/first.txt");
+					waitForChanges(1);
+
+					file("src/nested/burst-a.txt");
+					file("src/nested/burst-b.txt");
+					file("src/nested/burst-c.txt");
+					waitForChanges(2);
+					jsh.java.Thread.sleep(350);
+					verify(changes).is(2);
+
+					directory("src/new/deep");
+					waitForChanges(3);
+					jsh.java.Thread.sleep(350);
+					file("src/new/deep/after-registration.txt");
+					waitForChanges(4);
+
+					directory(".git");
+					file(".git/ignored.txt");
+					directory("local/bin");
+					file("local/bin/ignored.txt");
+					file("local/chrome/ignored.txt");
+					file("local/jsh/ignored.txt");
+					directory("local/doc/typedoc");
+					file("local/doc/typedoc/ignored.txt");
+					file("node_modules/nested/ignored.js");
+					file("package-lock.json");
+					jsh.java.Thread.sleep(400);
+					verify(changes).is(4);
+				} finally {
+					try {
+						if (watcher) {
+							watcher.stop();
+							var deadline = new Date().getTime() + 5000;
+							while (!returned && new Date().getTime() < deadline) {
+								jsh.java.Thread.sleep(25);
+							}
+							verify(returned).is(true);
+						}
+					} finally {
+						jsh.file.Location.remove({ recursive: true }).simple(temporary);
+					}
+				}
 			};
 
 			//var slime = fifty.jsh.file.relative("../..");
@@ -201,9 +317,6 @@ namespace slime.tools.documentation.updater {
 						},
 						creating: function(e) {
 							jsh.shell.console("Creating documentation ...");
-						},
-						setInterval: function(e) {
-							jsh.shell.console("Set interval to " + e.detail + " milliseconds.");
 						},
 						unchanged: function(e) {
 							jsh.shell.console("Checked; no change.");
@@ -304,7 +417,7 @@ namespace slime.tools.documentation.updater {
 			};
 		}
 	//@ts-ignore
-	)(fifty);
+	)(Packages,fifty);
 
 	export type Script = slime.runtime.loader.Scoped<Context,Exports>
 }
