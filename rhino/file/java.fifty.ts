@@ -108,7 +108,6 @@ namespace slime.jrunscript.file.internal.java {
 	}
 
 	export interface OsFilesystem {
-		toString: (path: string) => string
 		isAbsolutePath: (path: string) => boolean
 	}
 

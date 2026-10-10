@@ -938,18 +938,6 @@
 					}
 				},
 				os: {
-					toString: function(path) {
-						var provider = java;
-						var parameters = { path: path }
-						var _peer = provider.newPeer(parameters.path);
-						var rv = provider.peerToString(_peer);
-						if (rv.substring(rv.length - provider.separators.pathname.length) == provider.separators.pathname) {
-							$api.deprecate(function () {
-								rv = rv.substring(0, rv.length - provider.separators.pathname.length);
-							})();
-						}
-						return rv;
-					},
 					isAbsolutePath: function(path) {
 						return java.isAbsolutePath(path);
 					}

@@ -37,7 +37,6 @@
 					},
 					Streams: $context.api.io.Streams,
 					Resource: $context.api.io.Resource,
-					filesystems: $context.library.world.filesystems,
 					prototypes: prototypes,
 					//	Only use of $context.pathext in the module
 					pathext: $context.pathext
@@ -53,7 +52,7 @@
 				 * @type { slime.jrunscript.file.Exports["filesystems"] }
 				 */
 				var filesystems = {
-					os: new os.Filesystem($context.library.world.filesystems.os),
+					os: new os.Filesystem($context.world.filesystem.os),
 					cygwin: ($context.cygwin) ? $loader.file("cygwin.js", {
 						cygwin: $context.cygwin,
 						Filesystem: os.Filesystem,

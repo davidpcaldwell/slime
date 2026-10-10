@@ -29,12 +29,22 @@
 			archive: $loader.script("archive.js")
 		}
 
-		var world = code.java({
-			api: {
-				java: $context.api.java,
-				io: $context.api.io
+		var world = (
+			function() {
+				var j = code.java({
+					api: {
+						java: $context.api.java,
+						io: $context.api.io
+					}
+				});
+				return {
+					filesystems: {
+						os: j.filesystems.os
+					}
+				}
 			}
-		});
+		)();
+
 
 		var mock = code.mock({
 			library: {
@@ -60,8 +70,12 @@
 				io: $context.api.io
 			},
 			library: {
-				world: world,
 				Location: wo.Location
+			},
+			world: {
+				filesystem: {
+					os: world.filesystems.os
+				}
 			},
 			pathext: $context.pathext,
 			cygwin: $context.cygwin,
