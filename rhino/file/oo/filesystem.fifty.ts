@@ -14,7 +14,7 @@ namespace slime.jrunscript.file.internal.filesystem {
 	export interface Exports {
 		Filesystem: new (
 			filesystem: slime.jrunscript.file.internal.java.Exports["filesystems"]["os"]
-		) => OsFilesystem
+		) => Filesystem
 	}
 
 	/**
