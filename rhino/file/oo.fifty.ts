@@ -219,8 +219,13 @@ namespace slime.jrunscript.file.internal.oo {
 		}
 
 		library: {
-			world: slime.jrunscript.file.internal.java.Exports
 			Location: slime.jrunscript.file.location.Exports
+		}
+
+		world: {
+			filesystem: {
+				os: slime.jrunscript.file.internal.java.Exports["filesystems"]["os"]
+			}
 		}
 
 		pathext: slime.jrunscript.file.Context["pathext"]
