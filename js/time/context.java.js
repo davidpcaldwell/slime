@@ -9,7 +9,7 @@
 	/**
 	 *
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { slime.loader.Export<slime.time.Context> } $export
+	 * @param { slime.loader.Export<slime.time.PlatformExports> } $export
 	 */
 	function(Packages,$export) {
 		var Zone = function(peer) {
@@ -29,46 +29,51 @@
 				},
 				unix: function(local) {
 					var calendar = Calendar.getInstance(peer);
-					//Packages.java.lang.System.err.println("zone = " + peer + " calendar = " + calendar);
+					calendar.clear();
 					var second = Math.floor(local.second);
 					var fraction = local.second - second;
 					var milliseconds = Math.round(fraction * 1000);
-					//Packages.java.lang.System.err.println("Calling Calendar.set");
-					calendar.set(local.year, local.month-1, local.day, local.hour, local.minute, local.second);
-					//Packages.java.lang.System.err.println("Calling Calendar.set (MILLISECONDS)");
+					calendar.set(local.year, local.month-1, local.day, local.hour, local.minute, second);
 					calendar.set(Calendar.MILLISECOND, milliseconds);
 					return Number(calendar.getTimeInMillis());
 				}
 			}
 		};
 
-		$export({
-			zones: (
-				function() {
-					var TimeZone = Packages.java.util.TimeZone;
-					var ZoneId = (/** @type { any } */(Packages.java)).time.ZoneId;
-					/** @type { slime.time.Context["zones"] } */
-					var rv = {};
+		var zones = (
+			function() {
+				var TimeZone = Packages.java.util.TimeZone;
+				var ZoneId = (/** @type { any } */(Packages.java)).time.ZoneId;
+				/** @type { { [id: string]: slime.time.Zone } } */
+				var rv = {};
 
-					// Use canonical tzdb IDs to avoid Java 25 deprecation warnings for legacy 3-letter IDs.
-					var zoneIds = ZoneId.getAvailableZoneIds().toArray();
-					for (var i=0; i<zoneIds.length; i++) {
-						var zoneId = String(zoneIds[i]);
-						rv[zoneId] = Zone(TimeZone.getTimeZone(ZoneId.of(zoneId)));
-					}
-
-					// Preserve historical short aliases (EST, PST, etc.) by mapping to canonical ZoneIds.
-					var aliases = ZoneId.SHORT_IDS.entrySet().toArray();
-					for (var j=0; j<aliases.length; j++) {
-						var alias = aliases[j].getKey();
-						var target = aliases[j].getValue();
-						rv[String(alias)] = Zone(TimeZone.getTimeZone(ZoneId.of(String(target))));
-					}
-
-					return rv;
+				// Use canonical tzdb IDs to avoid Java 25 deprecation warnings for legacy 3-letter IDs.
+				var zoneIds = ZoneId.getAvailableZoneIds().toArray();
+				for (var i=0; i<zoneIds.length; i++) {
+					var zoneId = String(zoneIds[i]);
+					rv[zoneId] = Zone(TimeZone.getTimeZone(ZoneId.of(zoneId)));
 				}
-			)()
-		})
+
+				// Preserve historical short aliases (EST, PST, etc.) by mapping to canonical ZoneIds.
+				var aliases = ZoneId.SHORT_IDS.entrySet().toArray();
+				for (var j=0; j<aliases.length; j++) {
+					var alias = aliases[j].getKey();
+					var target = aliases[j].getValue();
+					rv[String(alias)] = Zone(TimeZone.getTimeZone(ZoneId.of(String(target))));
+				}
+
+				return rv;
+			}
+			)();
+		$export({
+			importZones: function() {
+				return zones;
+			},
+			world: {
+				now: { read: function() { return new Date().getTime(); } },
+				zone: { read: function() { return Zone(Packages.java.util.TimeZone.getDefault()); } }
+			}
+		});
 	}
 //@ts-ignore
 )(Packages,$export);

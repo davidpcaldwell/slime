@@ -15,43 +15,40 @@
 		/** @type { slime.time.Exports["world"] } */
 		var worlds = {
 			Date: {
-				now: { read: function() { return new Date().getTime(); } },
-				Zone: {
-					local: {
-						local: function(unix) {
-							var date = new Date(unix);
-							return {
-								year: date.getFullYear(), month: date.getMonth()+1, day: date.getDate(),
-								hour: date.getHours(), minute: date.getMinutes(), second: date.getSeconds() + date.getMilliseconds() / 1000
-							}
-						},
-						unix: function(local) {
-							return new Date(local.year,local.month-1,local.day,local.hour,local.minute,local.second).getTime();
-						}
-					},
-					UTC: {
-						local: function(unix) {
-							var date = new Date(unix);
-							return {
-								year: date.getUTCFullYear(), month: date.getUTCMonth()+1, day: date.getUTCDate(),
-								hour: date.getUTCHours(), minute: date.getUTCMinutes(), second: date.getUTCSeconds() + date.getUTCMilliseconds() / 1000
-							};
-						},
-						unix: function(local) {
-							var wholeSeconds = Math.floor(local.second);
-							var milliseconds = Math.round((local.second - Math.floor(local.second)) * 1000);
-							return Date.UTC(local.year,local.month-1,local.day,local.hour,local.minute,wholeSeconds,milliseconds);
-						}
-					}
-				}
+				now: { read: function() { return new Date().getTime(); } }
 			}
 		};
 
-		// /** @type { slime.time.World } */
-		// var context = {
-		// 	now: ($context.world && $context.world.now) || { read: function() { return new Date().getTime(); } },
-		// 	zones: $api.Object.compose(worlds.Date.Zone, ($context.world && $context.world.zones) || {})
-		// };
+		var defaultZones = {
+			local: {
+				local: function(unix) {
+					var date = new Date(unix);
+					return {
+						year: date.getFullYear(), month: date.getMonth()+1, day: date.getDate(),
+						hour: date.getHours(), minute: date.getMinutes(), second: date.getSeconds() + date.getMilliseconds() / 1000
+					}
+				},
+				unix: function(local) {
+					var second = Math.floor(local.second);
+					var milliseconds = Math.round((local.second - second) * 1000);
+					return new Date(local.year,local.month-1,local.day,local.hour,local.minute,second,milliseconds).getTime();
+				}
+			},
+			UTC: {
+				local: function(unix) {
+					var date = new Date(unix);
+					return {
+						year: date.getUTCFullYear(), month: date.getUTCMonth()+1, day: date.getUTCDate(),
+						hour: date.getUTCHours(), minute: date.getUTCMinutes(), second: date.getUTCSeconds() + date.getUTCMilliseconds() / 1000
+					};
+				},
+				unix: function(local) {
+					var wholeSeconds = Math.floor(local.second);
+					var milliseconds = Math.round((local.second - Math.floor(local.second)) * 1000);
+					return Date.UTC(local.year,local.month-1,local.day,local.hour,local.minute,wholeSeconds,milliseconds);
+				}
+			}
+		};
 
 		var harmonize = function(y,m,d) {
 			if (typeof(y) != "number") throw "y not number: " + y;
@@ -479,8 +476,12 @@
 			return js.getUTCFullYear() === year && js.getUTCMonth() === month-1 && js.getUTCDate() === day;
 		}
 
-		/** @type { slime.time.Exports["use"] } */
-		var use = function(world) {
+		/**
+		 * @param { slime.time.World } world
+		 * @param { slime.time.Context["old"] } old
+		 * @returns { slime.time.Interface }
+		 */
+		var create = function(world, old) {
 			/** @type { slime.time.date.Exports["format"] } */
 			var format = function(mask) {
 				return function(date) {
@@ -561,7 +562,7 @@
 
 				//	TODO	Use getters on platforms supporting them
 				this.year = year;
-				this.month = ($context.old && $context.old.Day_month) ? month.id : month;
+				this.month = (old && old.Day_month) ? month.id : month;
 				this.day = day;
 
 				this.weekday = WeekDayId.get(toDate().getDay());
@@ -1130,7 +1131,7 @@
 					} else if (parsedTime[8] == "Z") {
 						offset = 0;
 					}
-					var utc = worlds.Date.Zone.UTC.unix({
+					var utc = defaultZones.UTC.unix({
 						year: Number(parsedTime[1]),
 						month: Number(parsedTime[2]),
 						day: Number(parsedTime[3]),
@@ -1143,7 +1144,7 @@
 				}
 
 				this.encode = function(when) {
-					return when.local(worlds.Date.Zone.UTC).format("yyyy-mm-ddTHR:mi:sc.###Z");
+					return when.local(defaultZones.UTC).format("yyyy-mm-ddTHR:mi:sc.###Z");
 				}
 			}
 			When.codec.Date = new function() {
@@ -1342,9 +1343,10 @@
 						return Date_add(first, -1);
 					}
 				},
-				//	For now, we automatically include "local" and "UTC" if not present in the context, for compatibility, though
-				//	this API may well change anyway
-				Timezone: $api.Object.compose(worlds.Date.Zone, $context.zones || {}),
+				Timezone: $api.Object.compose(
+					defaultZones,
+					($context.importZones && $context.importZones()) || {}
+				),
 				zone: {
 					Time: {
 						codec: {
@@ -1476,7 +1478,7 @@
 										hour: datetime.hour,
 										minute: datetime.minute,
 										second: datetime.second,
-										offset: Math.round((worlds.Date.Zone.UTC.unix(datetime) - zone.unix(datetime)) / (60 * 1000))
+										offset: Math.round((defaultZones.UTC.unix(datetime) - zone.unix(datetime)) / (60 * 1000))
 									}
 								}
 							},
@@ -1490,7 +1492,7 @@
 										hour: datetime.hour,
 										minute: datetime.minute,
 										second: datetime.second,
-										offset: Math.round((worlds.Date.Zone.UTC.unix(datetime) - value) / (60 * 1000))
+										offset: Math.round((defaultZones.UTC.unix(datetime) - value) / (60 * 1000))
 									}
 								}
 							}
@@ -1525,7 +1527,7 @@
 							if (time.offset < -1439 || time.offset > 1439) {
 								throw new TypeError(message);
 							}
-							var localAsUtc = worlds.Date.Zone.UTC.unix({
+							var localAsUtc = defaultZones.UTC.unix({
 								year: time.year,
 								month: time.month,
 								day: time.day,
@@ -1562,7 +1564,10 @@
 				Time: Object.assign(
 					Time,
 					{
-						Zone: $api.Object.compose(worlds.Date.Zone, $context.zones || {})
+						Zone: $api.Object.compose(
+							defaultZones,
+							($context.importZones && $context.importZones()) || {}
+						)
 					}
 				),
 				Year: Year,
@@ -1577,15 +1582,18 @@
 
 		var exports = {
 			world: worlds,
-			use: use
+			/** @type { slime.time.Exports["use"] } */
+			use: function(world) {
+				return create(world, void(0));
+			}
 		};
 
 		var adapted = $api.Object.compose(
 			exports,
-			use({
-				now: ($context.world && $context.world.now) || { read: function() { return new Date().getTime(); } },
-				zone: { read: function() { return worlds.Date.Zone.local; } }
-			})
+			create({
+				now: ($context.world && $context.world.now) || worlds.Date.now,
+				zone: ($context.world && $context.world.zone) || { read: function() { return defaultZones.local; } }
+			}, $context.old)
 		);
 
 		$export(adapted);

@@ -46,32 +46,44 @@ namespace slime.time {
 		unix: (time: Datetime) => slime.external.lib.es5.TimeValue
 	}
 
-	export namespace world {
-		export type Zone = slime.time.Zone
-	}
-
 	export interface World {
 		/**
-		 * A function that returns the number of milliseconds since the UNIX epoch. If not supplied, the standard JavaScript
-		 * implementation will be used.
+		 * A clock that reads milliseconds since the UNIX epoch. Required by `use`; the default adapter supplies the standard
+		 * JavaScript implementation. Readers are invoked as methods so their receiver is preserved.
 		 */
 		now: slime.$api.fp.impure.Reading<number>
 
+		/** Reads the timezone used when a caller does not explicitly select one. */
 		zone: slime.$api.fp.impure.Reading<slime.time.Zone>
 	}
 
 	export interface Context {
-		zones?: {
-			[id: string]: world.Zone
+		/**
+		 * Returns the adapter-provided named timezones. This is a static import-like dependency, not runtime state.
+		 */
+		importZones?: () => {
+			[id: string]: slime.time.Zone
 		}
 
+		/**
+		 * @deprecated Use an explicit world object provided by the runtime adapter instead.
+		 */
 		world?: {
 			now?: World["now"]
+			zone?: World["zone"]
 		}
 	}
 
+	/** Platform adapters expose an explicit world and the static zone registry as separate explicit values. */
+	export interface PlatformExports extends Context {
+		importZones: () => {
+			[id: string]: slime.time.Zone
+		}
+		world: World
+	}
+
 	export namespace test {
-		export const { subject, load } = (function(fifty: slime.fifty.test.Kit) {
+		export const { subject, platform, load } = (function(fifty: slime.fifty.test.Kit) {
 			var script: Script = fifty.$loader.script("module.js");
 			var context: Context = (
 				function() {
@@ -81,6 +93,7 @@ namespace slime.time {
 			)();
 			return {
 				subject: script(context),
+				platform: context as PlatformExports,
 				load: function(context: Context) {
 					return script(context);
 				}
@@ -172,6 +185,48 @@ namespace slime.time {
 					});
 
 					verify(configured).value().is(instant);
+				};
+
+				fifty.tests.exports.world = function() {
+					var subject = load({
+						old: { Day_month: true }
+					});
+					var clock = { base: 999, read: function() { return this.base + 1; } };
+					var configured = subject.use({
+						now: clock,
+						zone: { read: function() { return subject.Timezone.UTC; } }
+					});
+
+					verify(configured).value().is(1000);
+					verify(configured).Value.now().is(1000);
+					verify(configured).Timezone.UTC.is(subject.Timezone.UTC);
+					verify(configured).Time.Zone.UTC.is(subject.Timezone.UTC);
+					verify(new configured.Day(2026, 1, 2)).month.id.index.is(1);
+				};
+
+				fifty.tests.exports.platform = function() {
+					var world = test.platform.world;
+					var configured = test.subject.use(world);
+					verify(configured.value()).is.type("number");
+					verify(world.zone.read().local(0)).year.is.type("number");
+					var zones = ["UTC", "America/New_York", "Pacific/Honolulu", "Asia/Kolkata"];
+					var instants = [
+						Date.UTC(2026, 0, 5, 7, 8, 9, 125),
+						Date.UTC(2026, 5, 5, 7, 8, 9, 125),
+						Date.UTC(2026, 2, 8, 6, 30, 0, 125),
+						Date.UTC(2026, 2, 8, 7, 30, 0, 125),
+						Date.UTC(2026, 2, 7, 21, 0, 0, 125),
+						Date.UTC(2026, 10, 1, 4, 30, 0, 125),
+						Date.UTC(2026, 10, 1, 7, 30, 0, 125),
+						Date.UTC(2026, 0, 5, 0, 0, 0, 125)
+					];
+					zones.forEach(function(id) {
+						var zone = configured.Timezone[id];
+						if (!zone && id == "Asia/Kolkata") zone = configured.Timezone["Asia/Calcutta"];
+						instants.forEach(function(instant) {
+							verify(zone.unix(zone.local(instant)), id + " round trip " + instant).is(instant);
+						});
+					});
 				};
 
 				fifty.tests.exports.datetime = function() {
@@ -1245,14 +1300,6 @@ namespace slime.time {
 				 * A `Reading` that uses the global Date function to determine the current time value.
 				 */
 				now: World["now"]
-
-				Zone: {
-					/**
-					 * A timezone that uses the global Date function to handle timezone offsets.
-					 */
-					local: world.Zone
-					UTC: world.Zone
-				}
 			}
 		}
 	}
