@@ -69,6 +69,24 @@
 			rv[it.id] = it.implementation;
 			return rv;
 		}, {});
+		var localZone = {
+			local: function(unix) {
+				var date = new Date(unix);
+				return {
+					year: date.getFullYear(),
+					month: date.getMonth() + 1,
+					day: date.getDate(),
+					hour: date.getHours(),
+					minute: date.getMinutes(),
+					second: date.getSeconds() + date.getMilliseconds() / 1000
+				};
+			},
+			unix: function(datetime) {
+				var second = Math.floor(datetime.second);
+				var milliseconds = Math.round((datetime.second - second) * 1000);
+				return new Date(datetime.year, datetime.month - 1, datetime.day, datetime.hour, datetime.minute, second, milliseconds).getTime();
+			}
+		};
 
 		$export({
 			importZones: function() {
@@ -76,7 +94,7 @@
 			},
 			world: {
 				now: { read: function() { return new Date().getTime(); } },
-				zone: { read: function() { return zones[Intl.DateTimeFormat().resolvedOptions().timeZone]; } }
+				zone: { read: function() { return localZone; } }
 			}
 		});
 	}
