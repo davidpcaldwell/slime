@@ -108,6 +108,31 @@ To run all tests for a file:
 * Browser-compatible tests: `./fifty test.browser <test-file>`
 * In both cases, a 0 exit status indicates the tests passed.
 
+#### Cross-platform module tests
+
+When a module is expected to behave the same way under both `jsh` and browser runtimes, prefer the standard Fifty cross-platform pattern:
+
+```ts
+(
+  function(fifty: slime.fifty.test.Kit) {
+    fifty.tests.suite = function() {
+      // tests here
+    };
+
+    fifty.test.platforms();
+  }
+//@ts-ignore
+)(fifty);
+```
+
+This creates a `platforms` part that runs the suite under `jsh` and then again in the browser. To execute it:
+
+```bash
+./fifty test.jsh <test-file> --part platforms
+```
+
+This is the correct way to validate runtime-sensitive modules that have both Java and browser adapters.
+
 ### Documentation
 
 A module's documentation typically is contained in a primary TypeScript namespace. Namespaces with `internal` in the name are

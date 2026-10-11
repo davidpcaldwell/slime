@@ -113,6 +113,32 @@ Within the `local` container, these ports are used as follows:
 If you need unique naming for non-devcontainer Compose usage, set `COMPOSE_PROJECT_NAME` (or pass `--project-name`) when invoking
 `docker compose`.
 
+## Cross-platform module testing
+
+For modules that must behave consistently under both `jsh` and browser runtimes, use the standard Fifty cross-platform pattern
+instead of running only one platform’s suite. The usual pattern is:
+
+```ts
+(
+  function(fifty: slime.fifty.test.Kit) {
+    fifty.tests.suite = function() {
+      // tests here
+    };
+
+    fifty.test.platforms();
+  }
+//@ts-ignore
+)(fifty);
+```
+
+This creates a `platforms` part that runs the same suite under `jsh` and then in a browser. Run it with:
+
+```bash
+./fifty test.jsh <test-file> --part platforms
+```
+
+This is the preferred validation path for modules with Java and browser adapters, or any API that is runtime-sensitive.
+
 ## Continuous integration testing
 
 When code is contributed via a PR, it must pass a series of checks on the server. The `test.yaml` workflow invokes the reusable
