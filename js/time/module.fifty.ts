@@ -214,7 +214,11 @@ namespace slime.time {
 						Date.UTC(2026, 0, 5, 7, 8, 9, 125),
 						Date.UTC(2026, 5, 5, 7, 8, 9, 125),
 						Date.UTC(2026, 2, 8, 6, 30, 0, 125),
-						Date.UTC(2026, 2, 8, 7, 30, 0, 125)
+						Date.UTC(2026, 2, 8, 7, 30, 0, 125),
+						Date.UTC(2026, 2, 7, 21, 0, 0, 125),
+						Date.UTC(2026, 10, 1, 4, 30, 0, 125),
+						Date.UTC(2026, 10, 1, 7, 30, 0, 125),
+						Date.UTC(2026, 0, 5, 0, 0, 0, 125)
 					];
 					zones.forEach(function(id) {
 						var zone = configured.Timezone[id];

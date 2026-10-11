@@ -24,43 +24,46 @@
 			 * @returns { { id: string, implementation: slime.time.Zone } }
 			 */
 			function(zone) {
+				/** @type { Intl.DateTimeFormatOptions & { hourCycle: string } } */
+				var options = {
+					timeZone: zone,
+					year: "numeric", month: "numeric", day: "numeric",
+					hour: "numeric", minute: "numeric", second: "numeric", hourCycle: "h23"
+				};
+				var formatter = /** @type { Intl.DateTimeFormat & { formatToParts: (date: Date) => { type: string, value: string }[] } } */ (new Intl.DateTimeFormat("en-US", options));
+				var local = function(millis) {
+					var date = new Date(millis);
+					var parts = formatter.formatToParts(date).reduce(function(values, part) {
+						values[part.type] = Number(part.value);
+						return values;
+					}, /** @type { { [part: string]: number } } */ ({}));
+					return {
+						year: parts.year,
+						month: parts.month,
+						day: parts.day,
+						hour: parts.hour,
+						minute: parts.minute,
+						second: parts.second + date.getUTCMilliseconds() / 1000
+					};
+				};
 				return {
 					id: zone,
 					implementation: {
-						local: function(millis) {
-							var date = new Date(millis);
-							var formatted = date.toLocaleString("en-US", { timeZone: zone });
-							var zoned = new Date(formatted);
-							return {
-								year: zoned.getFullYear(),
-								month: zoned.getMonth() + 1,
-								day: zoned.getDate(),
-								hour: zoned.getHours(),
-								minute: zoned.getMinutes(),
-								second: zoned.getSeconds() + date.getMilliseconds() / 1000
-							};
-						},
+						local: local,
 						unix: function(datetime) {
-							//	TODO	this is surprisingly messy, and probably still does not work for some cases near DST
-							//			changes. Might need to post-process this result to ensure date is correct. But for now, we
-							//			have a 99.9% case.
 							var second = Math.floor(datetime.second);
 							var milliseconds = Math.round((datetime.second - second) * 1000);
-							var inLocalZone = new Date(datetime.year, datetime.month-1, datetime.day, datetime.hour, datetime.minute, second, milliseconds);
-							var localOffset = inLocalZone.getTimezoneOffset();
-							var otherTimeZoneRendered = inLocalZone.toLocaleString("en-US", { timeZone: zone, timeZoneName: "longOffset"});
-							var otherTimeZoneOffset = (function() {
-								if (otherTimeZoneRendered.substring(otherTimeZoneRendered.length-1) == "Z") return 0;
-								if (otherTimeZoneRendered.substring(otherTimeZoneRendered.length-4) == " GMT") return 0;
-								var otherTimeZoneStringOffset = otherTimeZoneRendered.substring(otherTimeZoneRendered.length - 6);
-								var offsetAbsoluteValueInMinutes = Number(otherTimeZoneStringOffset.substring(1,3)) * 60 + Number(otherTimeZoneStringOffset.substring(4,6));
-								return (function() {
-									if (otherTimeZoneStringOffset.substring(0,1) == "+") return -offsetAbsoluteValueInMinutes;
-									if (otherTimeZoneStringOffset.substring(0,1) == "-") return offsetAbsoluteValueInMinutes;
-									throw new Error("otherTimeZoneStringOffset = " + otherTimeZoneStringOffset);
-								})();
-							})();
-							return inLocalZone.getTime() + (otherTimeZoneOffset - localOffset) * 60000
+							var requested = Date.UTC(datetime.year, datetime.month - 1, datetime.day, datetime.hour, datetime.minute, second, milliseconds);
+							var candidate = requested;
+							for (var attempt = 0; attempt < 3; attempt++) {
+								var datetimeAtCandidate = local(candidate);
+								var localSecond = Math.floor(datetimeAtCandidate.second);
+								var rendered = Date.UTC(datetimeAtCandidate.year, datetimeAtCandidate.month - 1, datetimeAtCandidate.day, datetimeAtCandidate.hour, datetimeAtCandidate.minute, localSecond, Math.round((datetimeAtCandidate.second - localSecond) * 1000));
+								var adjustment = requested - rendered;
+								if (adjustment == 0) return candidate;
+								candidate += adjustment;
+							}
+							return candidate;
 						}
 					}
 				}
