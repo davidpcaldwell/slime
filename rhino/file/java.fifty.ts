@@ -107,10 +107,6 @@ namespace slime.jrunscript.file.internal.java {
 		}
 	}
 
-	export interface OsFilesystem {
-		isAbsolutePath: (path: string) => boolean
-	}
-
 	export interface Exports {
 		//	TODO	new OO APIs should use the world filesystem; providers remain exposed for legacy integrations such as Cygwin
 		providers: {
@@ -123,13 +119,7 @@ namespace slime.jrunscript.file.internal.java {
 		}
 
 		filesystems: {
-			os: slime.jrunscript.file.world.Filesystem & {
-				/**
-				 * Bridging APIs that apply only to the OS-level file system, and are currently used in the rhino/file OO APIs that
-				 * do not contemplate arbitrary filesystem implementations.
-				 */
-				os: OsFilesystem
-			}
+			os: slime.jrunscript.file.world.Filesystem
 		}
 	}
 

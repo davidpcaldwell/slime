@@ -94,9 +94,6 @@
 				}
 			}
 
-			this.isAbsolutePath = function(path) {
-				return fs.os.isAbsolutePath(path);
-			}
 		}
 
 		/**

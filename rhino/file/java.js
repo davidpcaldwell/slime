@@ -937,11 +937,6 @@
 						return copy_impure(p.from,p.to);
 					}
 				},
-				os: {
-					isAbsolutePath: function(path) {
-						return java.isAbsolutePath(path);
-					}
-				},
 				java: {
 					codec: {
 						File: {

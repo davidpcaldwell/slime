@@ -30,7 +30,12 @@
 							//	we don't want to use the location if it is a relative path; it will be handled later by jsh.script.loader
 							//	in the calling code
 							var isAbsolute = function(path) {
-								return jsh.file.filesystems.os.isAbsolutePath(path);
+								if (typeof(path) == "undefined") throw new TypeError("'path' must not be undefined.");
+								if (jsh.file.world.filesystems.os.separator.pathname == "\\") {
+									var normalized = path.replace(/\//g, "\\");
+									return normalized[1] == ":" || normalized.substring(0,2) == "\\\\";
+								}
+								return path.length == 0 || path.substring(0,1) == "/";
 							}
 
 							if (isAbsolute(string)) {
