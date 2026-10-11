@@ -9,14 +9,9 @@
 	/**
 	 *
 	 * @param { slime.$api.Global } $api
-	 * @param { slime.loader.Export<slime.time.Context> } $export
+	 * @param { slime.loader.Export<slime.time.PlatformExports> } $export
 	 */
 	function($api,$export) {
-		//	TODO	local time zone:
-		//	Intl.DateTimeFormat().resolvedOptions().timeZone
-		//
-		//	Intl.supportedValuesOf('timeZone');
-
 		//	TODO	should we build out API of Intl in TypeScript?
 
 		/** @type { string[] } */
@@ -42,14 +37,16 @@
 								day: zoned.getDate(),
 								hour: zoned.getHours(),
 								minute: zoned.getMinutes(),
-								second: zoned.getSeconds()
+								second: zoned.getSeconds() + date.getMilliseconds() / 1000
 							};
 						},
 						unix: function(datetime) {
 							//	TODO	this is surprisingly messy, and probably still does not work for some cases near DST
 							//			changes. Might need to post-process this result to ensure date is correct. But for now, we
 							//			have a 99.9% case.
-							var inLocalZone = new Date(datetime.year, datetime.month-1, datetime.day, datetime.hour, datetime.minute, datetime.second);
+							var second = Math.floor(datetime.second);
+							var milliseconds = Math.round((datetime.second - second) * 1000);
+							var inLocalZone = new Date(datetime.year, datetime.month-1, datetime.day, datetime.hour, datetime.minute, second, milliseconds);
 							var localOffset = inLocalZone.getTimezoneOffset();
 							var otherTimeZoneRendered = inLocalZone.toLocaleString("en-US", { timeZone: zone, timeZoneName: "longOffset"});
 							var otherTimeZoneOffset = (function() {
@@ -74,7 +71,13 @@
 		}, {});
 
 		$export({
-			zones: zones
+			importZones: function() {
+				return zones;
+			},
+			world: {
+				now: { read: function() { return new Date().getTime(); } },
+				zone: { read: function() { return zones[Intl.DateTimeFormat().resolvedOptions().timeZone]; } }
+			}
 		});
 	}
 //@ts-ignore
