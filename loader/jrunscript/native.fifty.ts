@@ -463,7 +463,7 @@ namespace slime.jrunscript {
 					}
 
 					export namespace Loader {
-						export interface Resource {
+						export interface Resource extends java.lang.Object {
 							getInputStream(): slime.jrunscript.native.java.io.InputStream
 							getLength(): {
 								longValue(): number
@@ -888,7 +888,15 @@ namespace slime.jrunscript {
 								}
 
 								github: any
-								Resource: any
+								Resource: JavaClass<
+									slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource,
+									{
+										create: {
+											(file: slime.jrunscript.native.java.io.File): slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource
+											(url: slime.jrunscript.native.java.net.URL): slime.jrunscript.native.inonit.script.engine.Code.Loader.Resource
+										}
+									}
+								>
 								URI: any
 								zip: {
 									(p: slime.jrunscript.native.java.io.File): slime.jrunscript.native.inonit.script.engine.Code.Loader
