@@ -9,7 +9,7 @@
 //	TODO	Redefine JavaAdapter to be slime.jrunscript.JavaAdapter and XML to be slime.external.e4x.XMLConstructor
 	/**
 	 * @param { slime.jrunscript.Packages } Packages
-	 * @param { any } JavaAdapter
+	 * @param { slime.jrunscript.JavaAdapter } JavaAdapter
 	 * @param { any } XML
 	 * @param { slime.jrunscript.runtime.Scope["$loader"] } $loader
 	 * @param { slime.jrunscript.runtime.Scope["$javahost"] } $javahost
