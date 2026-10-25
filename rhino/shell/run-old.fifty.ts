@@ -234,8 +234,20 @@ namespace slime.jrunscript.shell {
 					});
 
 					var tell = subject.world.action(bogus);
-					fifty.verify(tell).evaluate(function(f) { return $api.fp.world.now.tell(f); }).threw.type(Error);
-					fifty.verify(tell).evaluate(function(f) { return $api.fp.world.now.tell(f); }).threw.evaluate.property("name").is("JavaException");
+					fifty.verify(tell).evaluate(function(f) { return $api.fp.world.now.tell(f); }).threw.evaluate(function(error) {
+						type JavaThrowable = {
+							getClass: () => { getName: () => string }
+							getCause: () => JavaThrowable | null
+						};
+						var isJavaThrowable = function(value: unknown): value is JavaThrowable {
+							return value !== null && typeof(value) == "object" && typeof((value as JavaThrowable).getClass) == "function";
+						};
+						var isIOException = function(cause: unknown) {
+							return isJavaThrowable(cause) && cause.getClass().getName() == "java.io.IOException";
+						};
+						if (error.name == "JavaException") return isIOException("javaException" in error ? error.javaException : error);
+						return isJavaThrowable(error) && error.getClass().getName() == "java.lang.RuntimeException" && isIOException(error.getCause());
+					}).is(true);
 				});
 
 				var directory = fifty.jsh.file.object.getRelativePath(".").directory;
