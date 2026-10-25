@@ -655,6 +655,35 @@ namespace slime.jrunscript.http.client {
 							skip(verify);
 						}
 					});
+
+					fifty.run(function acceptHeader() {
+						if (!$jsapi.environment.windowsSocketsError10106 && !context.notomcat) {
+							var client = new module.Client();
+							servlet.set(function(request,response) {
+								response.getWriter().print(String(request.getHeader("Accept")));
+							});
+							var url = "http://127.0.0.1:" + context.port + "/";
+							var defaulted = client.request({
+								url: url,
+								evaluate: function(response) {
+									return response.body.stream.character().asString();
+								}
+							});
+							verify(defaulted, "default Accept header").is("*/*");
+							var explicit = client.request({
+								url: url,
+								headers: [
+									{ name: "accept", value: "application/json" }
+								],
+								evaluate: function(response) {
+									return response.body.stream.character().asString();
+								}
+							});
+							verify(explicit, "explicit Accept header").is("application/json");
+						} else {
+							skip(verify);
+						}
+					});
 				}
 			}
 		//@ts-ignore
