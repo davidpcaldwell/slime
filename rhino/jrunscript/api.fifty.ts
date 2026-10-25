@@ -487,6 +487,9 @@ namespace slime.internal.jrunscript.bootstrap {
 
 			copy: (from: slime.jrunscript.native.java.io.InputStream, to: slime.jrunscript.native.java.io.OutputStream) => void
 
+			/**
+			 * Downloads a resource to a file, accepting any response media type.
+			 */
 			download: (p: {
 				url: string
 				to: slime.jrunscript.native.java.io.File
@@ -649,6 +652,18 @@ namespace slime.internal.jrunscript.bootstrap {
 				})();
 				var same = (jshReadThisFile == bootstrapReadThisFile);
 				verify(same, "files are the same").is(true);
+
+				var parent = jsh.shell.TMPDIR.createTemporary({ directory: true });
+				try {
+					var destination = parent.getRelativePath("missing/download.txt");
+					global.$api.io.download({
+						url: String(thisPathname.java.adapt().toURI().toURL()),
+						to: destination.java.adapt()
+					});
+					verify(destination.file.read(String)).is(jshReadThisFile);
+				} finally {
+					parent.remove();
+				}
 			}
 
 			fifty.tests.rhino = function() {

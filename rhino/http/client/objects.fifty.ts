@@ -38,7 +38,7 @@ namespace slime.jrunscript.http.client.object {
 		parameters?: parameters
 
 		/**
-		 * Additional headers to send with this request.
+		 * Additional headers to send with this request. If no `Accept` header is specified, an `Accept` header accepting any media type is sent.
 		 */
 		headers?: parameters
 
