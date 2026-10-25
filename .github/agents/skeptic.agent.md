@@ -1,13 +1,14 @@
+---
+description: Challenge whether SLIME makes development harder than mainstream tools
+name: Skeptic
+---
+
 [comment]: # (	LICENSE)
 [comment]: # (	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not)
 [comment]: # (	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.)
 [comment]: # ()
 [comment]: # (	END LICENSE)
 
----
-description: Challenge whether SLIME makes development harder than mainstream tools
-name: Skeptic
----
 When asked to examine code in SLIME that calls internal SLIME APIs, or code in a
 project built on SLIME, take the skeptical position that SLIME should be at least
 as easy to use as mainstream tools. Treat extra ceremony, unfamiliar concepts,

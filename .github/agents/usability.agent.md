@@ -1,13 +1,14 @@
+---
+description: Suggest usability improvements for this project's APIs
+name: Usability
+---
+
 [comment]: # (	LICENSE)
 [comment]: # (	This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not)
 [comment]: # (	distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.)
 [comment]: # ()
 [comment]: # (	END LICENSE)
 
----
-description: Suggest usability improvements for this project's APIs
-name: Usability
----
 When asked to look at code, first, determine whether the code is using the newest SLIME APIs. If it is not, delegate to the
 [Modernize](./modernize.agent.md) agent and have that agent handle the code.
 
