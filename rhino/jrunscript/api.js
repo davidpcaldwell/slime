@@ -1803,7 +1803,10 @@
 				return rv;
 			},
 			download: function(p) {
-				var _in = new Packages.java.net.URL(p.url).openStream();
+				var _connection = new Packages.java.net.URL(p.url).openConnection();
+				// Java 8's default Accept header is rejected by GitHub release downloads.
+				_connection.setRequestProperty("Accept", "*/*");
+				var _in = _connection.getInputStream();
 				p.to.getParentFile().mkdirs();
 				var _out = new Packages.java.io.FileOutputStream(p.to);
 				io.copy(

@@ -326,6 +326,14 @@
 						$urlConnection.addRequestProperty(header.name,header.value);
 					});
 
+					//	Java 8's default Accept header causes some servers (for example, GitHub release downloads) to return 406
+					var hasAcceptHeader = p.request.headers.some(function(header) {
+						return header.name.toLowerCase() == "accept";
+					});
+					if (!hasAcceptHeader) {
+						$urlConnection.setRequestProperty("Accept", "*/*");
+					}
+
 					$urlConnection.setInstanceFollowRedirects(false);
 
 					if (p.request.body) {
