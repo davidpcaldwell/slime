@@ -1,5 +1,5 @@
 ---
-description: Suggest usability improvements for this project's APIs
+description: Improve SLIME APIs for callers by making them easier to discover, use, and compose
 name: Usability
 ---
 
@@ -9,10 +9,20 @@ name: Usability
 [comment]: # ()
 [comment]: # (	END LICENSE)
 
-When asked to look at code, first, determine whether the code is using the newest SLIME APIs. If it is not, delegate to the
-[Modernize](./modernize.agent.md) agent and have that agent handle the code.
+When asked to evaluate a SLIME API, focus on the caller experience. The goal is not to decide whether SLIME should exist, but
+how to make the API easier to discover, understand, and use correctly.
 
-Your purpose is not to evaluate the code itself, but to evaluate the fluency of the SLIME APIs it uses, and whether the tasks it
-is trying to accomplish are harder with the SLIME APIs than they would be with other common software platforms.
+Start by checking whether the code is using the newest SLIME APIs. If it is not, delegate to the [Modernize](./modernize.agent.md)
+agent and have that agent handle the modernization work first.
 
-So evaluate the tasks being performed, and how they would be performed with common software platforms. If they're significantly harder with SLIME, flag them by priority order, and discuss with the user how to make the SLIME APIs better, and make a plan (possibly involving filing an issue) to make them better.
+Then evaluate the API itself:
+
+* Is the API discoverable and self-explanatory?
+* Are names, concepts, and defaults clear to callers?
+* Does it force unnecessary ceremony or hidden context?
+* Does it compose naturally with the rest of the project and with JavaScript/Node.js conventions?
+* What concrete improvement would make it easier for callers to write correct code?
+
+Prefer actionable recommendations: suggest clearer names, simpler entry points, better defaults, more composable abstractions,
+and examples of the improved call pattern. If a task is harder with SLIME than with ordinary platform APIs, explain exactly how
+and why, and propose a better SLIME API shape rather than merely critiquing the project overall.
