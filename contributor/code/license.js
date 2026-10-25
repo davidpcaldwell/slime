@@ -145,6 +145,17 @@
 				if (lines.length == 0) return 0;
 				if (lines[0].substring(0,2) == "#!") return 1;
 				if (lines[0].substring(0,5) == "<?xml") return 1;
+				if (lines[0] == "---") {
+					for (var i = 1; i < lines.length; i++) {
+						if (lines[i] == "---") {
+							var index = i + 1;
+							while (index < lines.length && /^\s*$/.test(lines[index])) {
+								index++;
+							}
+							return index;
+						}
+					}
+				}
 				return 0;
 			}
 
@@ -224,8 +235,9 @@
 
 				var getLicenseStart = function(lines) {
 					var start = (prefix+"\t"+"LICENSE"+suffix);
-					if (lines[0] == start) return 0;
-					if (lines[1] == start) return 1;
+					var offset = getInsertLineIndex(lines);
+					if (lines[offset] == start) return offset;
+					if (lines[offset+1] == start) return offset + 1;
 					return null;
 				}
 

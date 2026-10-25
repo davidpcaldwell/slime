@@ -11,6 +11,16 @@
 The main documentation for contributors can be found at the contributor [README](./contributor/README.md). This documentation is
 also available in the TypeDoc documentation in the `slime.internal` namespace.
 
+## Custom agents
+
+Project custom agents are defined in [`.github/agents`](.github/agents), the standard workspace location supported by both the
+VS Code Local and Copilot harnesses. In the Agents window, select this project and open **Customizations > Agents** to find
+Modernize, Skeptic, and Usability. Start a new Copilot session after migrating agent files.
+
+Agent files must begin with YAML frontmatter containing their name and description; put license comments after the frontmatter.
+Keep project agents in this standard location rather than configuring `chat.agentFilesLocations`, which the Copilot harness does
+not read.
+
 ## Personal agent instructions
 
 Contributors can configure personal instructions for coding agents via files in the host path
