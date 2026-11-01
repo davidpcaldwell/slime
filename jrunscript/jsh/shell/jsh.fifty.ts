@@ -1032,14 +1032,14 @@ namespace slime.jsh.shell {
 			fifty.tests.exports.jsh.jdwp = function() {
 				assertLegacyTest(
 					fifty.jsh.file.object.getRelativePath("test/jdwp.jsh.js").file,
-					["-view", "stdio"]
+					["-view", "console"]
 				);
 			};
 
 			fifty.tests.exports.jsh.http = function() {
 				assertLegacyTest(
 					fifty.jsh.file.object.getRelativePath("test/test.jsh.js").file,
-					["-scenario", "-view", "stdio"],
+					["-scenario", "-view", "console"],
 					!jsh.httpd.Tomcat
 				);
 			};
