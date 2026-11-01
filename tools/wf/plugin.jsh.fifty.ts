@@ -97,6 +97,53 @@ namespace slime.jsh.wf {
 			fifty.tests.exports = fifty.test.Parent();
 			fifty.tests.manual = {};
 
+			fifty.tests.exports.typedoc = function() {
+				var jsh = fifty.global.jsh;
+				var createProject = function(name: string) {
+					var base = jsh.file.Pathname(fifty.jsh.file.temporary.directory().pathname).directory;
+					base.getRelativePath("README.fifty.ts").write(
+						"export namespace " + name + " { export interface Example { value: string } }\n",
+						{ append: false }
+					);
+					base.getRelativePath("tsconfig.json").write(
+						JSON.stringify({ files: ["README.fifty.ts"], compilerOptions: { skipLibCheck: true } }),
+						{ append: false }
+					);
+					base.getRelativePath("typedoc.json").write(
+						JSON.stringify({
+							entryPoints: [base.getRelativePath("README.fifty.ts").toString()],
+							readme: "none"
+						}),
+						{ append: false }
+					);
+					return base;
+				};
+				var defaultProject = createProject("defaultProject");
+				var explicitProject = createProject("explicitProject");
+				var script = defaultProject.getRelativePath("generate.jsh.js");
+				script.write(
+					"if (!jsh.wf.typescript.typedoc.now()) jsh.shell.exit(1);\n"
+					+ "if (!jsh.wf.typescript.typedoc.now({ project: jsh.file.Pathname("
+					+ JSON.stringify(explicitProject.pathname.toString())
+					+ ").directory })) jsh.shell.exit(1);\n",
+					{ append: false }
+				);
+				var result = jsh.shell.run({
+					command: jsh.shell.jsh.src.getFile("jsh.bash"),
+					arguments: [script.file],
+					directory: defaultProject,
+					environment: Object.assign({}, jsh.shell.environment, {
+						PROJECT: defaultProject.pathname.toString()
+					}),
+					stdio: { output: String, error: String },
+					evaluate: function(result) { return result; }
+				});
+				if (result.status != 0) jsh.shell.console(result.stdio.output + result.stdio.error);
+				fifty.verify(result).status.is(0);
+				fifty.verify(Boolean(defaultProject.getFile("local/doc/typedoc/index.html"))).is(true);
+				fifty.verify(Boolean(explicitProject.getFile("local/doc/typedoc/index.html"))).is(true);
+			};
+
 			fifty.tests.exports.subprojects = function() {
 				var jsh = fifty.global.jsh;
 				var base = jsh.shell.TMPDIR.createTemporary({ directory: true }) as slime.jrunscript.file.Directory;
@@ -171,7 +218,8 @@ namespace slime.jsh.wf {
 			tsc: (p?: { project: slime.jrunscript.file.Directory }) => boolean
 
 			/**
-			 * Runs TypeDoc on the project, emitting the output to `local/doc/typedoc`.
+			 * Runs TypeDoc on the project, emitting the output to `local/doc/typedoc`. With no argument,
+			 * uses the current `wf` project and default standard I/O.
 			 */
 			typedoc: {
 				now: (

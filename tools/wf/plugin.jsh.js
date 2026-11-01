@@ -795,7 +795,7 @@
 							now: function(p) {
 								var project = (p && p.project) ? p.project : inputs.base();
 								//@ts-ignore
-								var getShellInvocation = getTypedocCommand(p.stdio, { base: project.pathname.toString() }, void(0));
+								var getShellInvocation = getTypedocCommand(p && p.stdio, { base: project.pathname.toString() }, void(0));
 								var question = $api.fp.world.now.ask(
 									getShellInvocation,
 									{
