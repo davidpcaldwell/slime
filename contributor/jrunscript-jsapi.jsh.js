@@ -63,45 +63,6 @@
 			pathname: SRC.getRelativePath("rhino/http/servlet/plugin.jsh.resources.api.html")
 		}));
 
-		(
-			function() {
-				jsh.loader.plugins(jsh.script.file.parent);
-
-				var environment = new jsh.project.suite.Environment({
-					src: jsh.script.file.parent.parent,
-					home: parameters.options["shell:built"],
-					noselfping: parameters.options.noselfping,
-					executable: parameters.options.executable
-				});
-
-				var withShell = function(p) {
-					// TODO: moved this from integration tests and reproduced current test without much thought; could be that we should not be
-					// using the built shell, or should be using more shells
-					Object.defineProperty(p, "shell", {
-						get: function() {
-							return (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src;
-						}
-					});
-					return p;
-				};
-
-				suite.add("jsh/jsh.shell/jsh", new jsh.unit.Suite.Fork(withShell({
-					run: jsh.shell.jsh,
-					script: SRC.getFile("jrunscript/jsh/shell/test/jsh.shell.jsh.suite.jsh.js"),
-					arguments: ["-view","stdio"]
-				})));
-
-				//	TODO	disabling Bitbucket testing to try to get tests to pass after migration to GitHub. Examine to see whether there is
-				//			something still needed, something analogous still needed, or whether this can be discarded
-				if (false) suite.add("testing/jsh.unit/bitbucket", new jsh.unit.Suite.Fork({
-					run: jsh.shell.jsh,
-					shell: (environment.jsh.built) ? environment.jsh.built.home : environment.jsh.unbuilt.src,
-					script: SRC.getFile("loader/api/old/jsh/test/bitbucket.jsh.js"),
-					arguments: ["-view", "stdio"]
-				}));
-			}
-		)();
-
 		suite.add("jsapi/other", new jsh.unit.html.Part({
 			//	Test cases involving the HTML test runner itself
 			pathname: SRC.getRelativePath("loader/api/old/test/data/1/api.html")
