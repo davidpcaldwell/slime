@@ -240,6 +240,12 @@
 
 							return String(_result);
 						});
+					} else if (tokens[i] == "-e") {
+						var remote = /^load\((['"])(https?:\/\/[^'"]+\/rhino\/jrunscript\/api\.js\?jsh)\1\);?$/.exec(tokens[++i]);
+						if (remote) {
+							rv.main = remote[2];
+							break;
+						}
 					} else if (isMain(tokens[i])) {
 						rv.main = toAbsolute(tokens[i]);
 						break;

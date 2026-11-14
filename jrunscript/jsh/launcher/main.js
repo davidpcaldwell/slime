@@ -493,12 +493,19 @@
 		}
 
 		var invocation = $api.jsh.invocation.toProperties();
+		var passthrough = ["http.proxyHost","http.proxyPort","https.proxyHost","https.proxyPort","jsh.github.user","jsh.github.password"];
+		var remoteInvocation = /^https?:\/\//.test(invocation["jsh.launcher.invocation.main"]);
+		var prefix = "jsh.launcher.invocation.properties.";
 		for (var x in invocation) {
 			command.systemProperty(x, invocation[x]);
+			//	Remote `jrunscript -e load(...)` consumes -D options, so forward them to the loader VM as well.
+			if (remoteInvocation && x.indexOf(prefix) == 0) {
+				var name = x.substring(prefix.length);
+				if (passthrough.indexOf(name) == -1) command.systemProperty(name, $api.properties.get(name));
+			}
 		}
 
 		//	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch from GitHub
-		var passthrough = ["http.proxyHost","http.proxyPort","https.proxyHost","https.proxyPort","jsh.github.user","jsh.github.password"];
 		var noProxy = $api.slime.settings.byName("jsh.loader.noproxy").getLauncherProperty();
 		$api.debug("noProxy = " + noProxy);
 		for (var i=0; i<passthrough.length; i++) {

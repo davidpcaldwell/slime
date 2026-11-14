@@ -749,9 +749,10 @@ namespace slime.jsh.shell {
 		 */
 		export interface Invocation<R = Result> {
 			/**
-			 * The pathname of the script to run.
+			 * The local file or URL of the script to run. URL scripts execute in a separate process even when `fork` is omitted
+			 * or `false`.
 			 */
-			script: slime.jrunscript.file.File
+			script: slime.jrunscript.file.File | slime.web.Url
 
 			arguments?: Argument[]
 
@@ -771,6 +772,10 @@ namespace slime.jsh.shell {
 			stdio?: any
 			directory?: any
 			workingDirectory?: any
+			/**
+			 * System properties for the child. For a remote shell, these are supplied to both bootstrap and loader VMs,
+			 * overriding inherited invocation properties.
+			 */
 			properties?: { [x: string]: string }
 
 			/**
@@ -783,6 +788,7 @@ namespace slime.jsh.shell {
 		}
 
 		export interface EngineInvocation<R = EngineResult> extends Invocation<R> {
+			script: slime.jrunscript.file.File
 			fork?: false
 			evaluate?: evaluate<EngineResult,R>
 		}
@@ -802,11 +808,19 @@ namespace slime.jsh.shell {
 
 			evaluate?: evaluate<ForkResult,R>
 		}
+
+		/**
+		 * Invokes a URL script. `fork: false` permits automatic dispatch; it does not require in-process execution.
+		 */
+		export interface UrlInvocation<R = ForkResult> extends Omit<ForkInvocation<R>, "script" | "fork"> {
+			script: slime.web.Url
+			fork?: boolean
+		}
 	}
 
 	//	TODO	add tests for packaged shell
-	//	TODO	add tests for remote shell
 	export interface JshOldInvoke {
+		<R>(p: oo.UrlInvocation<R>): R
 		<R>(p: oo.ForkInvocation<R>): R
 		<R>(p: oo.EngineInvocation<R>): R
 	}

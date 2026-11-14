@@ -60,7 +60,7 @@ namespace slime.jsh.internal.launcher {
 			classpath: string[]
 			/** Java system properties passed before the script-engine entry point; script arguments are excluded. */
 			properties: { [name: string]: string }
-			/** The script-engine entry point used to launch the shell. */
+			/** The script-engine entry point: a local pathname, or the URL passed to `load()` for a remote shell. */
 			main: string
 		}
 
@@ -153,6 +153,19 @@ namespace slime.jsh.internal.launcher {
 
 				fifty.tests.invocation.scriptArguments = function() {
 					check(parse("com.sun.tools.script.shell.Main -Dlauncher=present ./rhino/jrunscript/api.js jsh test.jsh.js -Dscript=argument -classpath ignored.jar /other/rhino/jrunscript/api.js -Djsh.launcher.invocation.main=/other/rhino/jrunscript/api.js"), [], { launcher: "present" });
+				};
+
+				fifty.tests.invocation.remote = function() {
+					const url = "http://raw.githubusercontent.com/davidpcaldwell/slime/local/rhino/jrunscript/api.js?jsh";
+					["'", "\""].forEach(function(quote) {
+						const output = parse("java.scripting/com.sun.tools.script.shell.Main -Dhttp.proxyHost=127.0.0.1 -classpath ./local/jsh/lib/nashorn.jar -e load(" + quote + url + quote + ") remote-script.js -Dscript=argument /other/rhino/jrunscript/api.js");
+						verify(output).main.is(url);
+						verify(output).jrunscript.is(String(jrunscript.toString()));
+						verify(output).classpath.evaluate(equalsArray([jsh.file.os.directory.relativePath("local/jsh/lib/nashorn.jar")(pwd)])).is(true);
+						verify(output).properties.evaluate(equalsObject({ "http.proxyHost": "127.0.0.1" })).is(true);
+					});
+					verify(parse("com.sun.tools.script.shell.Main -e load('https://raw.githubusercontent.com/davidpcaldwell/slime/main/rhino/jrunscript/api.js?jsh') test.js")).main.is("https://raw.githubusercontent.com/davidpcaldwell/slime/main/rhino/jrunscript/api.js?jsh");
+					verify(parse("com.sun.tools.script.shell.Main -e print('not-a-launcher') test.js")).main.is(void(0));
 				};
 
 				const runClasspathInvocationTest = function() {
