@@ -24,7 +24,7 @@ jsh.test.integration({
 		var server = jsh.httpd.Tomcat.serve({ directory: jsh.script.file.parent });
 		var url = "http://127.0.0.1:" + server.port + "/test.jsh.js";
 		this.part("1", {
-			name: "HTTP unforked",
+			name: "HTTP fork omitted",
 			execute: function(scope,verify) {
 				jsh.shell.jsh({
 					script: jsh.web.Url.parse(

@@ -875,22 +875,49 @@ namespace slime.jsh.shell {
 			}
 
 			fifty.tests.exports.jsh.shells = function() {
-				var unbuilt = run(test.shells.unbuilt().invoke({
+				var directory = fifty.jsh.file.temporary.directory();
+				var canonicalDirectory = String(jsh.file.Pathname(directory.pathname).java.adapt().getCanonicalPath());
+				var coverageEnvironment = $api.Object.compose(environment, {
+					SLIME_JSH_TEST_COVERAGE: "environment"
+				});
+				var coverageInvocation = {
 					script: script,
-					environment: $api.fp.Mapping.all(environment),
+					arguments: ["--coverage-argument", "argument"],
+					environment: $api.fp.Mapping.all(coverageEnvironment),
+					properties: {
+						"slime.jsh.test.coverage": "property"
+					},
+					directory: directory.pathname.toString(),
 					stdio: stdio
+				};
+				var unbuilt = run(test.shells.unbuilt().invoke({
+					...coverageInvocation
 				}));
 
 				var built = run(test.shells.built(false).invoke({
-					script: script,
-					environment: $api.fp.Mapping.all(environment),
-					stdio: stdio
+					...coverageInvocation
 				}));
 
 				var packaged = run(test.shells.packaged(script).invoke({
-					environment: $api.fp.Mapping.all(environment),
-					stdio: stdio
+					arguments: coverageInvocation.arguments,
+					environment: coverageInvocation.environment,
+					directory: coverageInvocation.directory,
+					stdio: coverageInvocation.stdio
 				}));
+
+				var verifyCoverageInvocation = function(output: any, verifyProperties: boolean) {
+					verify(output).arguments.length.is(2);
+					verify(output).arguments[0].is("--coverage-argument");
+					verify(output).arguments[1].is("argument");
+					verify(output).environment.evaluate.property("SLIME_JSH_TEST_COVERAGE").is("environment");
+					verify(output).directory.evaluate(String).is(canonicalDirectory);
+					if (verifyProperties) {
+						verify(output).properties.evaluate.property("slime.jsh.test.coverage").is("property");
+					}
+				};
+				verifyCoverageInvocation(unbuilt, true);
+				verifyCoverageInvocation(built, true);
+				verifyCoverageInvocation(packaged, false);
 
 				if (jsh.httpd.Tomcat) {
 					var remote = run(test.shells.remote().getShellIntention({
@@ -918,6 +945,103 @@ namespace slime.jsh.shell {
 				//	TODO	make sure this is of type URL
 				if (jsh.httpd.Tomcat) verify(remote).evaluate.property("jsh.shell.jsh.url").evaluate(getString).is("http://raw.githubusercontent.com/davidpcaldwell/slime/local/");
 				if (jsh.httpd.Tomcat) verify(remote).evaluate.property("jsh.shell.jsh.url").evaluate.property("path").is("/davidpcaldwell/slime/local/");
+			};
+
+			fifty.tests.exports.jsh.invocation = fifty.test.Parent();
+
+			var invocationScript = fifty.jsh.file.object.getRelativePath("test/test.jsh.js").file;
+
+			var hasJshScript = function(result: slime.jsh.shell.oo.Result): boolean {
+				if (!("jsh" in result)) return false;
+				var invocation = result.jsh;
+				return Boolean(
+					invocation
+					&& typeof(invocation) == "object"
+					&& "script" in invocation
+					&& invocation.script
+				);
+			};
+
+			fifty.tests.exports.jsh.invocation.unforked = function() {
+				const result = jsh.shell.jsh({
+					script: invocationScript,
+					arguments: [],
+					evaluate: function(result) { return result; }
+				});
+				verify(result).status.is(2);
+				verify(result).evaluate(function(result) { return "command" in result; }).is(false);
+				verify(result).evaluate(function(result) { return "arguments" in result; }).is(false);
+				verify(hasJshScript(result)).is(true);
+			};
+
+			fifty.tests.exports.jsh.invocation.forked = function() {
+				const result = jsh.shell.jsh({
+					script: invocationScript,
+					arguments: [],
+					fork: true,
+					stdio: {
+						output: "string",
+						error: "string"
+					},
+					evaluate: function(result) { return result; }
+				});
+				verify(result).status.is(2);
+				if (!("command" in result)) throw new Error("Forked invocation did not return a command.");
+				verify(String(result.command)).is(String(jsh.shell.java.jrunscript));
+				verify(result.arguments.length).is.not(0);
+				verify(hasJshScript(result)).is(true);
+				verify(result.stdio.output.length).is.not(0);
+			};
+
+			fifty.tests.exports.jsh.invocation.default = function() {
+				const result = jsh.shell.jsh({
+					script: invocationScript,
+					evaluate: function(result) {
+						return result.status == 2 ? "worked" : "did not work";
+					}
+				});
+				verify(result).is("worked");
+			};
+
+			var assertLegacyTest = function(script: slime.jrunscript.file.File, args: string[], skip?: boolean) {
+				if (skip) {
+					jsh.shell.console("Skipping legacy shell suite scenario because Tomcat is unavailable.");
+					verify(Boolean(jsh.httpd.Tomcat)).is(false);
+					return;
+				}
+				const result = jsh.shell.jsh({
+					script: script,
+					arguments: args,
+					fork: true,
+					stdio: {
+						output: "string",
+						error: "string"
+					},
+					evaluate: function(result) { return result; }
+				});
+				if (result.status != 0) {
+					throw new Error(
+						"Shell suite scenario exited with status " + result.status
+						+ "\nStandard output:\n" + result.stdio.output
+						+ "\nStandard error:\n" + result.stdio.error
+					);
+				}
+				verify(result).status.is(0);
+			};
+
+			fifty.tests.exports.jsh.jdwp = function() {
+				assertLegacyTest(
+					fifty.jsh.file.object.getRelativePath("test/jdwp.jsh.js").file,
+					["-view", "console"]
+				);
+			};
+
+			fifty.tests.exports.jsh.http = function() {
+				assertLegacyTest(
+					fifty.jsh.file.object.getRelativePath("test/test.jsh.js").file,
+					["-scenario", "-view", "console"],
+					!jsh.httpd.Tomcat
+				);
 			};
 
 			fifty.tests.exports.jsh.fork = fifty.test.Parent();

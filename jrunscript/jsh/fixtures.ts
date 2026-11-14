@@ -6,14 +6,19 @@
 
 namespace slime.jsh.test {
 	export namespace shells {
+		export type Invocation = {
+			//	Not provided for packaged shells
+			script?: string
+			arguments?: string[]
+		} & Partial<Pick<slime.jrunscript.shell.run.Intention,"environment"|"directory"|"stdio">>
+
 		export type Invocable = {
+			invoke: (p: Invocation) => slime.jrunscript.shell.run.Intention
+		}
+
+		export type InvocableWithProperties = {
 			invoke: (
-				p: {
-					//	Not provided for packaged shells
-					script?: string
-					arguments?: string[]
-				}
-				& Partial<Pick<slime.jrunscript.shell.run.Intention,"environment"|"directory"|"stdio">>
+				p: Invocation & Partial<Pick<slime.jsh.shell.Intention,"properties">>
 			) => slime.jrunscript.shell.run.Intention
 		}
 
@@ -50,19 +55,19 @@ namespace slime.jsh.test {
 	export interface Shells {
 		unbuilt: slime.$api.fp.Thunk<
 			slime.jsh.shell.UnbuiltInstallation
-			& shells.Invocable
+			& shells.InvocableWithProperties
 		>
 
 		built: slime.$api.fp.Mapping<
 			boolean,
 			(
 				slime.jsh.shell.BuiltInstallation
-				& shells.Invocable
+				& shells.InvocableWithProperties
 			)
 		>
 
 		/**
-		 * Maps an operating system pathname to a packaged shell.
+		 * Maps an operating system pathname to a packaged shell. Packaged invocations do not currently pass JVM system properties.
 		 */
 		packaged: slime.$api.fp.Mapping<
 			string,
@@ -172,7 +177,7 @@ namespace slime.jsh.test {
 												script: p.script,
 												arguments: p.arguments,
 												environment: p.environment,
-												properties: properties,
+												properties: $api.Object.compose(properties, p.properties || {}),
 												directory: p.directory,
 												stdio: p.stdio
 											}
@@ -250,6 +255,7 @@ namespace slime.jsh.test {
 														script: p.script,
 														arguments: p.arguments,
 														environment: p.environment,
+														properties: p.properties,
 														directory: p.directory,
 														stdio: p.stdio
 													}
