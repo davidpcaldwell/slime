@@ -14,6 +14,7 @@ namespace slime.jsh.test.remote {
 		invocation: slime.jsh.internal.launcher.invocation.Output
 		java: string
 		engine: string
+		grandchild?: SubshellResult
 	}
 
 	export interface SubshellResult {
@@ -124,7 +125,24 @@ namespace slime.jsh.test.remote {
 						verify(output.environment.parent).is("inherited from remote parent");
 						verify(output.environment.child).is(child.mode);
 						verify(output.properties["slime.issue69"]).is("property " + child.mode);
+						verify(output.invocation.properties["slime.issue69"]).is("property " + child.mode);
 						verify(output.properties["slime.issue69.inherited"]).is("parent=69");
+						verify(output.grandchild.status).is(24);
+						if (output.grandchild.status != 24) throw new Error("Remote grandchild (" + child.mode + ") exit status: " + output.grandchild.status + "\nstderr:\n" + output.grandchild.error);
+						verify(output.grandchild.command).is(data.parent.invocation.jrunscript);
+						verify(output.grandchild.error).evaluate(function(error) {
+							return error.slice(-"issue69 grandchild stderr\n".length);
+						}).is("issue69 grandchild stderr\n");
+						verify(output.grandchild.output.indexOf("issue69 grandchild stderr")).is(-1);
+						var grandchild: SubshellDescription = JSON.parse(output.grandchild.output);
+						verify(grandchild.url).is(output.url);
+						verify(grandchild.installation.url).is(output.installation.url);
+						verify(JSON.stringify(grandchild.arguments)).is(JSON.stringify(["grandchild", child.mode]));
+						verify(grandchild.properties["slime.issue69"]).is("property " + child.mode);
+						verify(grandchild.invocation.properties["slime.issue69"]).is("property " + child.mode);
+						verify(grandchild.properties["slime.issue69.inherited"]).is("parent=69");
+						verify(grandchild.environment.parent).is(output.environment.parent);
+						verify(grandchild.environment.child).is(output.environment.child);
 						["http.proxyHost", "http.proxyPort", "https.proxyHost", "https.proxyPort"].forEach(function(name) {
 							verify(output.properties[name]).is(data.parent.properties[name]);
 						});

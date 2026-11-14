@@ -497,12 +497,13 @@
 		var remoteInvocation = /^https?:\/\//.test(invocation["jsh.launcher.invocation.main"]);
 		var prefix = "jsh.launcher.invocation.properties.";
 		for (var x in invocation) {
-			command.systemProperty(x, invocation[x]);
-			//	Remote `jrunscript -e load(...)` consumes -D options, so forward them to the loader VM as well.
+			//	Remote -D values need both loader forwarding and metadata from live properties, not whitespace-split tokens.
 			if (remoteInvocation && x.indexOf(prefix) == 0) {
 				var name = x.substring(prefix.length);
-				if (passthrough.indexOf(name) == -1) command.systemProperty(name, $api.properties.get(name));
+				invocation[x] = $api.properties.get(name);
+				if (passthrough.indexOf(name) == -1) command.systemProperty(name, invocation[x]);
 			}
+			command.systemProperty(x, invocation[x]);
 		}
 
 		//	TODO	try to figure out a way to get rid of HTTP property passthrough; used for testing of HTTP-based launch from GitHub

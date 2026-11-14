@@ -37,8 +37,29 @@
 			};
 		};
 
-		if (jsh.script.arguments[0] == "child") {
+		if (jsh.script.arguments[0] == "grandchild") {
 			jsh.shell.echo(JSON.stringify(describe()));
+			jsh.shell.console("issue69 grandchild stderr");
+			jsh.shell.exit(24);
+		}
+
+		if (jsh.script.arguments[0] == "child") {
+			var child = describe();
+			child.grandchild = jsh.shell.jsh({
+				script: jsh.script.url,
+				arguments: ["grandchild", jsh.script.arguments[1]],
+				stdio: { output: "string", error: "string" },
+				evaluate: function(result) {
+					return {
+						mode: jsh.script.arguments[1],
+						status: result.status,
+						output: result.stdio.output,
+						error: result.stdio.error,
+						command: String(result.command)
+					};
+				}
+			});
+			jsh.shell.echo(JSON.stringify(child));
 			jsh.shell.console("issue69 child stderr");
 			jsh.shell.exit(23);
 		}
