@@ -27,6 +27,11 @@ namespace slime.jsh.test {
 		}
 
 		export interface Remote {
+			/**
+			 * Stops the mock server. A subsequent `shells.remote()` call creates a new fixture.
+			 */
+			stop: () => void
+
 			//	TODO	not strictly pertaining to the shell, but rather to mock GitHub. Should refactor.
 			getLoaderProperties: () => { [name: string]: string }
 
@@ -109,7 +114,7 @@ namespace slime.jsh.test {
 				};
 			};
 
-			var remote = function(): shells.Remote {
+			var remote = function(onStop: () => void): shells.Remote {
 				var current = jsh.shell.jsh.Installation.from.current();
 
 				if (jsh.shell.jsh.Installation.is.unbuilt(current)) {
@@ -133,8 +138,15 @@ namespace slime.jsh.test {
 					};
 
 					var server = library.testing.startMock(jsh);
+					var stopped = false;
 
 					return {
+						stop: function() {
+							if (stopped) return;
+							server.stop();
+							stopped = true;
+							onStop();
+						},
 						getLoaderProperties: function() {
 							return {
 								"http.proxyHost": "127.0.0.1",
@@ -164,6 +176,7 @@ namespace slime.jsh.test {
 			$export({
 				shells: function(fifty) {
 					if (!fifty.global["jrunscript/jsh/fixtures.ts:shells"]) {
+						var cachedRemote: shells.Remote;
 						var shells: Shells = {
 							unbuilt: function() {
 								return {
@@ -171,7 +184,7 @@ namespace slime.jsh.test {
 									invoke: $api.fp.pipe(
 										function(p): slime.jsh.shell.Intention {
 											//	TODO	this must be elsewhere
-											var properties = /^http(s?)\:/.test(p.script) ? remote().getLoaderProperties() : {}
+											var properties = /^http(s?)\:/.test(p.script) ? shells.remote().getLoaderProperties() : {}
 											return {
 												shell: unbuilt(),
 												script: p.script,
@@ -337,7 +350,12 @@ namespace slime.jsh.test {
 									};
 								}
 							),
-							remote: $api.fp.Thunk.memoize(remote)
+							remote: function() {
+								if (!cachedRemote) cachedRemote = remote(function() {
+									cachedRemote = void(0);
+								});
+								return cachedRemote;
+							}
 						}
 						fifty.global["jrunscript/jsh/fixtures.ts:shells"] = shells;
 					}

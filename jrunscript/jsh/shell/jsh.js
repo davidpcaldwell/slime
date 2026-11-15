@@ -279,7 +279,7 @@
 		}
 
 		/**
-		 * @type { (p: slime.jsh.shell.oo.Invocation) => p is slime.jsh.shell.oo.ForkInvocation }
+		 * @type { (p: slime.jsh.shell.oo.Invocation) => p is slime.jsh.shell.oo.ForkInvocation | slime.jsh.shell.oo.UrlInvocation }
 		 */
 		var isForkInvocation = function(p) {
 			if (p["fork"]) return true;
@@ -340,7 +340,7 @@
 
 		/**
 		 *
-		 * @param { slime.jsh.shell.oo.ForkInvocation } p
+		 * @param { slime.jsh.shell.oo.ForkInvocation | slime.jsh.shell.oo.UrlInvocation } p
 		 * @returns { slime.jrunscript.shell.jrunscript.old.Invocation }
 		 */
 		var getJrunscriptForkCommand = function(p) {
@@ -363,7 +363,7 @@
 						jargs.push(argument);
 					});
 				}
-				if (p.properties) {
+				if (p.properties && !isRemoteShell) {
 					for (var x in p.properties) {
 						jargs.push("-D" + x + "=" + p.properties[x]);
 					}
@@ -377,6 +377,11 @@
 
 			var deprecationArguments = $context.api.bootstrap.nashorn.getDeprecationArguments($context.api.bootstrap.java.getMajorVersion());
 
+			/** @param { string } url */
+			var remoteEntryPointArguments = function(url) {
+				return ["-e", "load(" + JSON.stringify(url) + ")"];
+			};
+
 			/**
 			 * Reuses the launcher's captured jrunscript invocation for current-shell forks (#2159).
 			 * @param { slime.jsh.internal.launcher.invocation.Output } output
@@ -385,13 +390,20 @@
 			var fromCapturedInvocation = function(output) {
 				/** @type { string[] } */
 				var rv = [];
-				for (var name in output.properties) {
-					rv.push("-D" + name + "=" + output.properties[name]);
+				var properties = /^https?:\/\//.test(output.main)
+					? $api.Object.compose(output.properties, p.properties)
+					: output.properties;
+				for (var name in properties) {
+					rv.push("-D" + name + "=" + properties[name]);
 				}
 				if (output.classpath.length) {
 					rv.push("-classpath", output.classpath.join(String(Packages.java.io.File.pathSeparator)));
 				}
-				rv.push(output.main, "jsh");
+				if (/^https?:\/\//.test(output.main)) {
+					rv.push.apply(rv, remoteEntryPointArguments(output.main));
+				} else {
+					rv.push(output.main, "jsh");
+				}
 				return rv;
 			};
 
@@ -453,10 +465,7 @@
 							};
 
 							var remote = function(url) {
-								return [
-									"-e",
-									"load('" + url.resolve("rhino/jrunscript/api.js?jsh") + "')"
-								];
+								return remoteEntryPointArguments(String(url.resolve("rhino/jrunscript/api.js?jsh")));
 							}
 
 							if (shell) {
@@ -480,7 +489,7 @@
 					);
 			})();
 
-			var isRemoteShell = bootstrapShellInvocationArguments[0] == "-e";
+			var isRemoteShell = bootstrapShellInvocationArguments.indexOf("-e") != -1;
 
 			//	Properties to be sent to main.js launcher; other properties will be sent as arguments using addCommandTo
 			var launcherProperties = {};
@@ -503,6 +512,7 @@
 				copySystemPropertyToLauncherPropertiesIfPresent("http.proxyPort");
 				copySystemPropertyToLauncherPropertiesIfPresent("https.proxyHost");
 				copySystemPropertyToLauncherPropertiesIfPresent("https.proxyPort");
+				launcherProperties = $api.Object.compose(launcherProperties, p.properties);
 			}
 
 			//	TODO	the jrunscript method also handles vmarguments, perhaps we should pass those through?
