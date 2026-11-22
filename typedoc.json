@@ -11,6 +11,7 @@
 	],
 	"tsconfig": "typedoc-tsconfig.json",
 	"name": "SLIME",
+	"customCss": "typedoc.css",
 	"sort": [
 		"source-order"
 	]
