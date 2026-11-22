@@ -55,7 +55,9 @@
  * This invokes the underlying `tools/fifty/test-browser.jsh.js` script. The
  * script itself, included below, defines the semantics of the command-line arguments.
  *
+ * <div class="include-code">
  * {@includeCode ./test-browser.jsh.js}
+ * </div>
  *
  * ### Running Fifty tests in both `jsh` and a browser
  *

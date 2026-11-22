@@ -17,7 +17,9 @@
  *
  * Here is a working example that uses various techniques (and functions as an automated test of Fifty itself):
  *
+ * <div class="include-code">
  * {@includeCode ./test/data/module.fifty.ts}
+ * </div>
  *
  * ## Fifty definitions: authoring documentation
  *
