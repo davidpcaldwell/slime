@@ -219,6 +219,17 @@ public class Command {
 
 		Integer getPid() {
 			try {
+				java.lang.reflect.Method method = java.lang.Process.class.getMethod("pid");
+				return Math.toIntExact(((Long)method.invoke(delegate)).longValue());
+			} catch (NoSuchMethodException e) {
+				return getLegacyPid();
+			} catch (IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
+				throw new IllegalStateException("Cannot obtain subprocess PID", e);
+			}
+		}
+
+		private Integer getLegacyPid() {
+			try {
 				java.lang.reflect.Field field = delegate.getClass().getDeclaredField("pid");
 				field.setAccessible(true);
 				return (Integer)field.get(delegate);

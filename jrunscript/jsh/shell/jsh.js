@@ -923,7 +923,7 @@
 				},
 				/** @type { slime.jsh.shell.JshShellJsh["Installation"]["is"]["packaged"] } */
 				packaged: function(p) {
-					return Boolean[p["package"]];
+					return Boolean(p["package"]);
 				}
 			}
 		};
