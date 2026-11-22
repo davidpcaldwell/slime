@@ -1225,7 +1225,7 @@ namespace slime.jsh.shell {
 		 * * `stdio`: set to `undefined`
 		 *
 		 * The value returned by the transform will be used to invoke `jsh`, and the exit status of the spawned process will be used
-		 * as the exit status of the current process.
+		 * as the exit status of the current process. Packaged invocations do not currently pass `properties` to the new JVM.
 		 *
 		 */
 		relaunch: (p?: slime.$api.fp.Transform<slime.jsh.shell.Intention>) => never
@@ -1272,6 +1272,43 @@ namespace slime.jsh.shell {
 				verify(output).directory.evaluate(String).is(toCanonicalPath(TMPDIR.pathname));
 				verify(output).properties.evaluate.property("foo.bar").is("baz");
 			}
+
+			fifty.tests.exports.jsh.packagedRelaunch = function() {
+				var packaged = test.shells.packaged(fifty.jsh.file.relative("test/relaunch-packaged.jsh.js").pathname);
+				var directory = fifty.jsh.file.temporary.directory();
+				var canonicalDirectory = toCanonicalPath(directory.pathname);
+				var environment = $api.Object.compose(jsh.shell.environment, { SLIME_RELAUNCH_TEST: "preserved" });
+
+				["identity", "transform"].forEach(function(mode) {
+					var marker = jsh.file.Location.directory.relativePath(mode + ".marker")(directory).pathname;
+					var result = $api.fp.world.Sensor.now({
+						sensor: jsh.shell.subprocess.question,
+						subject: packaged.invoke({
+							arguments: [mode, marker, "original"],
+							directory: directory.pathname,
+							environment: $api.fp.Mapping.all(environment),
+							stdio: { output: "string", error: "string" }
+						})
+					});
+					if (result.status != 23) throw new Error(
+						"Packaged " + mode + " relaunch exited " + result.status + ": " + result.stdio.error
+					);
+					var output: {
+						arguments: string[], package: string, directory: string, environment: string, javaVersion: string
+					} = JSON.parse(result.stdio.output);
+					verify(output).arguments.length.is(3);
+					verify(output).arguments[0].is(mode == "identity" ? "identity" : "transformed");
+					verify(output).arguments[1].is(marker);
+					verify(output).arguments[2].is(mode == "identity" ? "original" : "changed");
+					verify(output).package.is(toCanonicalPath(packaged.package));
+					verify(output).directory.is(canonicalDirectory);
+					verify(output).environment.is("preserved");
+					verify(output).javaVersion.is(String(Packages.java.lang.System.getProperty("java.version")));
+				});
+				verify(jsh.shell.jsh.Installation.is.packaged({ package: packaged.package })).is(true);
+				verify(jsh.shell.jsh.Installation.is.packaged({ src: test.shells.unbuilt().src })).is(false);
+				verify(jsh.shell.jsh.Installation.is.packaged({ home: "/example" })).is(false);
+			};
 		}
 	//@ts-ignore
 	)(Packages,fifty);

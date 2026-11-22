@@ -827,6 +827,7 @@ namespace slime.jrunscript.shell {
 				fifty.verify(captured).start.command.evaluate(function(p) { return String(p) }).is("ls");
 				fifty.verify(captured).start.directory.evaluate(function(directory) { return directory.toString(); }).is(here.toString());
 				fifty.verify(captured).start.pid.is.type("number");
+				fifty.verify(captured.start.pid > 0).is(true);
 				fifty.verify(captured).start.kill.is.type("function");
 
 				fifty.verify(captured).terminate.status.is(0);
